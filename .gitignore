@@ -1,0 +1,16 @@
+# JS and other stuff.
+node_modules
+.env
+coverage
+coverage.json
+typechain
+
+# Hardhat files.
+cache/
+artifacts/
+
+# Openzeppelin stuff.
+.openzeppelin/*-31337.json
+
+# Other generated stuff.
+typechain-types/
