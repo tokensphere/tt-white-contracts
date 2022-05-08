@@ -23,6 +23,11 @@ contract FastRegistry is Initializable {
 
   /// Contract setters.
 
+  function setSpcAddress(ISpc _spc)
+      external spcGovernance {
+    spc = _spc;
+  }
+
   function setAccessAddress(IFastAccess _access)
       external spcGovernance {
     access = _access;

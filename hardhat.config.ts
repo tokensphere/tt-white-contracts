@@ -1,10 +1,12 @@
 import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
 import '@openzeppelin/hardhat-upgrades';
-import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
+import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-waffle';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+
 // Loads `.env` file into `process.env`.
 dotenv.config();
 

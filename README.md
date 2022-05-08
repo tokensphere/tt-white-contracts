@@ -81,7 +81,7 @@ For example, to mint new tokens:
 ```shell
 yarn hardhat \
   fast-mint \
-    0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82 \
+    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
     --network localhost \
     --amount 1000000 \
     --ref "Much tokens, very wow, such bling."
@@ -92,7 +92,7 @@ Or to obtain the balance of an account over a particular FAST:
 ```shell
 yarn hardhat \
   fast-balance \
-    0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82 \
+    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
     --network localhost \
     --account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
@@ -102,7 +102,7 @@ If you would like to query the minted and unallocated tokens, you can instead qu
 ```shell
 yarn hardhat \
   fast-balance \
-    0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82 \
+    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
     --network localhost \
     --account 0x0000000000000000000000000000000000000000
 ```

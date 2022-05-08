@@ -9,11 +9,14 @@
     "declaration": true
   },
   "include": [
-    "./src/**/*",
-    "./test/**/*",
-    "./typechain"
+    "./src",
+    "./src/tasks",
+    "./src/scripts",
+    "./test",
+    "./typechain-types"
   ],
   "files": [
-    "./hardhat.config.ts"
+    "./hardhat.config.ts",
+    "./typings.d.ts"
   ]
 }

@@ -2,21 +2,22 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { Contract, ContractFactory } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
+import { Spc, Spc__factory } from '../typechain-types';
 
 describe("Spc contract", () => {
-  let Spc: ContractFactory;
-  let spc: Contract;
+  let SpcFactory: ContractFactory;
+  let spc: Spc;
   let governor: SignerWithAddress,
     bob: SignerWithAddress, alice: SignerWithAddress;
 
   before(async () => {
     [/*deployer*/, governor, bob, alice] = await ethers.getSigners();
     const addressSetLib = await (await ethers.getContractFactory("AddressSetLib")).deploy();
-    Spc = await ethers.getContractFactory("Spc", { libraries: { AddressSetLib: addressSetLib.address } });
+    SpcFactory = await ethers.getContractFactory("Spc", { libraries: { AddressSetLib: addressSetLib.address } });
   });
 
   beforeEach(async () => {
-    spc = await upgrades.deployProxy(Spc, [governor.address]);
+    spc = await upgrades.deployProxy(SpcFactory, [governor.address]) as Spc;
   });
 
   describe('initializer', async () => {

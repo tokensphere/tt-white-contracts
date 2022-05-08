@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import './lib/PaginationLib.sol';
 import './interfaces/IFastHistory.sol';
 import './FastRegistry.sol';
 
@@ -19,10 +20,8 @@ contract FastHistory is Initializable, IFastHistory {
 
   // All transfer proofs are kept here.
   IFastHistory.TransferProof[] private transferProofs;
-  // All transfers IDs for a given sender are kept here.
-  mapping(address => uint256[]) public senderTransferProofs;
-  // All transfers IDs for a given recipient are kept here.
-  mapping(address => uint256[]) public recipientTransferProofs;
+  // All transfers IDs involving a given address are kept here.
+  mapping(address => uint256[]) public transferProofInvolvements;
 
   function initialize(FastRegistry _reg)
       external initializer {
@@ -48,23 +47,9 @@ contract FastHistory is Initializable, IFastHistory {
     return mintingProofs.length;
   }
 
-  function mintingProofAt(uint256 index)
-      external view returns(IFastHistory.MintingProof memory) {
-    return mintingProofs[index];
-  }
-
-  function mintingProofsAt(uint256 cursor, uint256 perPage)
-    public view returns(IFastHistory.MintingProof[] memory, uint256) {
-      uint256 count = mintingProofs.length;
-      uint256 length = perPage;
-      if (length > count - cursor) {
-          length = count - cursor;
-      }
-      IFastHistory.MintingProof[] memory values = new IFastHistory.MintingProof[](length);
-      for (uint256 i = 0; i < length; i++) {
-          values[i] = mintingProofs[cursor + i];
-      }
-      return (values, cursor + length);
+  function paginateMintingProofs(uint256 cursor, uint256 perPage)
+      public view returns(IFastHistory.MintingProof[] memory, uint256) {
+    return PaginationLib.mintingProofs(mintingProofs, cursor, perPage);
   }
 
   /// Transfer history-keeping methods.
@@ -72,9 +57,9 @@ contract FastHistory is Initializable, IFastHistory {
   function addTransferProof(address spender, address from, address to, uint256 amount, string memory ref)
       public override {
     // Keep track of the transfer proof ID for the sender.
-    senderTransferProofs[from].push(transferProofs.length);
+    transferProofInvolvements[from].push(transferProofs.length);
     // Keep track of the transfer proof ID for the recipient.
-    recipientTransferProofs[to].push(transferProofs.length);
+    transferProofInvolvements[to].push(transferProofs.length);
     // Keep track of the transfer proof globally.
     transferProofs.push(
       IFastHistory.TransferProof({
@@ -93,22 +78,13 @@ contract FastHistory is Initializable, IFastHistory {
     return transferProofs.length;
   }
 
-  function transferProofAt(uint256 index)
-      external view returns(IFastHistory.TransferProof memory) {
-    return transferProofs[index];
+  function paginateTransferProofs(uint256 cursor, uint256 perPage)
+      public view returns(IFastHistory.TransferProof[] memory, uint256) {
+    return PaginationLib.transferProofs(transferProofs, cursor, perPage);
   }
 
-  function transferProofsAt(uint256 cursor, uint256 perPage)
-    public view returns(IFastHistory.TransferProof[] memory, uint256) {
-      uint256 count = transferProofs.length;
-      uint256 length = perPage;
-      if (length > count - cursor) {
-          length = count - cursor;
-      }
-      IFastHistory.TransferProof[] memory values = new IFastHistory.TransferProof[](length);
-      for (uint256 i = 0; i < length; i++) {
-          values[i] = transferProofs[cursor + i];
-      }
-      return (values, cursor + length);
+  function paginateTransferProofsByInvolvee(address involvee, uint256 cursor, uint256 perPage)
+      public view returns(uint256[] memory, uint256) {
+    return PaginationLib.uint256s(transferProofInvolvements[involvee], cursor, perPage);
   }
 }

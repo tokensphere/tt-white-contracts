@@ -3,6 +3,7 @@ import "@openzeppelin/hardhat-upgrades";
 import { checkNetwork } from "../utils";
 import { StateManager } from '../StateManager';
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { Spc, Spc__factory } from "../../typechain-types";
 
 interface SpcDeployParams {
   readonly governor: string;
@@ -29,12 +30,11 @@ task("spc-deploy", "Deploys the main SPC contract")
 async function deploySpc(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
   addressSetLibAddr: string,
-  governor: string) {
+  governor: string): Promise<Spc> {
   // We deploy our SPC contract.
   const libraries = { AddressSetLib: addressSetLibAddr }
-  const Spc = await ethers.getContractFactory("Spc", { libraries });
-  const spc = await upgrades.deployProxy(Spc, [governor]);
-  return spc;
+  const Spc = await ethers.getContractFactory("Spc", { libraries }) as Spc__factory;
+  return await upgrades.deployProxy(Spc, [governor]) as Spc;
 }
 
 export { deploySpc };

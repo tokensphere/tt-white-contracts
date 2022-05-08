@@ -30,9 +30,11 @@ task('lib-deploy', 'Deploys the AddressSetLib library')
 
 // Reusable functions.
 
-async function deployLibrary({ ethers }: HardhatRuntimeEnvironment, name: string) {
-  const contract = await ethers.getContractFactory(name);
-  return contract.deploy();
+async function deployLibrary(
+  { ethers }: HardhatRuntimeEnvironment,
+  name: string
+) {
+  return (await ethers.getContractFactory(name)).deploy();
 }
 
 export { deployLibrary };
