@@ -1,13 +1,16 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { Contract, ContractFactory } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
-import { Spc, Spc__factory } from '../typechain-types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { Spc__factory, Spc } from '../typechain-types';
 
 describe('Spc', () => {
-  let governor: SignerWithAddress, bob: SignerWithAddress, alice: SignerWithAddress;
+  let
+    governor: SignerWithAddress,
+    bob: SignerWithAddress,
+    alice: SignerWithAddress;
   let spcFactory: Spc__factory;
   let spc: Spc;
+  let governedSpc: Spc;
 
   before(async () => {
     // Keep track of a few signers.
@@ -22,6 +25,7 @@ describe('Spc', () => {
 
   beforeEach(async () => {
     spc = await upgrades.deployProxy(spcFactory, [governor.address]) as Spc;
+    governedSpc = await spc.connect(governor);
   });
 
   describe('initializer', async () => {
@@ -44,7 +48,6 @@ describe('Spc', () => {
 
   describe('paginateGovernors', async () => {
     it('returns pages of governors', async () => {
-      const governedSpc = spc.connect(governor);
       await governedSpc.addGovernor(bob.address);
       await governedSpc.addGovernor(alice.address);
 
@@ -69,12 +72,6 @@ describe('Spc', () => {
   });
 
   describe('addGovernor', async () => {
-    let governedSpc: Contract;
-
-    beforeEach(async () => {
-      governedSpc = await spc.connect(governor);
-    });
-
     it('requires that the sender is a governor', async () => {
       const subject = spc.addGovernor(alice.address);
       await expect(subject).to.be.revertedWith('Missing governorship');
@@ -93,10 +90,7 @@ describe('Spc', () => {
   });
 
   describe('removeGovernor', async () => {
-    let governedSpc: Contract;
-
     beforeEach(async () => {
-      governedSpc = spc.connect(governor);
       await governedSpc.addGovernor(bob.address);
     });
 

@@ -21,9 +21,9 @@ contract FastAccess is Initializable, IFastAccess {
   FastRegistry public reg;
 
   /// @dev We hold list of governors in here.
-  AddressSetLib.Data governorList;
+  AddressSetLib.Data private governorSet;
   /// @dev We keep the list of members in here.
-  AddressSetLib.Data memberList;
+  AddressSetLib.Data private memberSet;
 
   /// Events.
 
@@ -42,35 +42,21 @@ contract FastAccess is Initializable, IFastAccess {
       initializer
       external {
     reg = _reg;
-    memberList.add(governor);
-    governorList.add(governor);
+    memberSet.add(governor);
+    governorSet.add(governor);
   }
 
   /// Governorship related stuff.
 
   /**
-   * @dev Returns a page of governors.
-   */
-  function governorsAt(uint256 index, uint256 perPage)
-      public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(governorList.values, index, perPage);
-  }
-
-  /**
-   * @dev Queries whether a given address is a governor or not.
-   */
-  function isGovernor(address _a)
-      public view override returns(bool) {
-    return governorList.contains(_a);
-  }
-
-  /**
    * @dev Adds a governor to the governorship list.
    */
   function addGovernor(address _a)
-      spcOrGovernance(msg.sender)
+      spcGovernance(msg.sender)
       public override {
-    governorList.add(_a);
+    // Add governor to list.
+    governorSet.add(_a);
+    // Emit!
     emit GovernorAdded(_a);
   }
 
@@ -78,30 +64,39 @@ contract FastAccess is Initializable, IFastAccess {
    * @dev Removes a governor from the governorship list.
    */
   function removeGovernor(address _a)
-      spcOrGovernance(msg.sender)
+      spcGovernance(msg.sender)
       public {
-    require(msg.sender != _a, 'Cannot self-destruct');
-    governorList.remove(_a);
+    // Remove governor.
+    governorSet.remove(_a);
+    // Emit!
     emit GovernorRemoved(_a);
   }
 
-  /// Membership related stuff.
-
   /**
-   * @dev Returns a page of members.
+   * @dev Queries whether a given address is a governor or not.
    */
-  function membersAt(uint256 cursor, uint256 perPage)
-      public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(memberList.values, cursor, perPage);
-  }
-
-  /**
-   * @dev Queries whether a given address is a member or not.
-   */
-  function isMember(address _a)
+  function isGovernor(address _a)
       public view override returns(bool) {
-    return memberList.contains(_a);
+    return governorSet.contains(_a);
   }
+
+  /**
+   * @dev Queries the number of governors in the governorship list.
+   */
+  function governorCount()
+      external view returns(uint256) {
+    return governorSet.values.length;
+  }
+
+  /**
+   * @dev Returns a page of governors.
+   */
+  function paginateGovernors(uint256 index, uint256 perPage)
+      public view returns(address[] memory, uint256) {
+    return PaginationLib.addresses(governorSet.values, index, perPage);
+  }
+
+  /// Membership related stuff.
 
   /**
    * @dev Adds a member to the membership list.
@@ -109,7 +104,7 @@ contract FastAccess is Initializable, IFastAccess {
   function addMember(address _a)
       governance(msg.sender)
       public override {
-    memberList.add(_a);
+    memberSet.add(_a);
     emit MemberAdded(_a);
   }
 
@@ -119,8 +114,32 @@ contract FastAccess is Initializable, IFastAccess {
   function removeMember(address _a)
       governance(msg.sender)
       public {
-    memberList.remove(_a);
+    memberSet.remove(_a);
     emit MemberRemoved(_a);
+  }
+
+  /**
+   * @dev Queries whether a given address is a member or not.
+   */
+  function isMember(address _a)
+      public view override returns(bool) {
+    return memberSet.contains(_a);
+  }
+
+  /**
+   * @dev Queries the number of members in the membership list.
+   */
+  function memberCount()
+      external view returns(uint256) {
+    return memberSet.values.length;
+  }
+
+  /**
+   * @dev Returns a page of members.
+   */
+  function paginateMembers(uint256 index, uint256 perPage)
+      public view returns(address[] memory, uint256) {
+    return PaginationLib.addresses(memberSet.values, index, perPage);
   }
 
   /// Flags.
@@ -137,32 +156,15 @@ contract FastAccess is Initializable, IFastAccess {
       });
   }
 
-  /**
-   * @dev Sets all flags for a given address, in one go.
-   */
-  function setFlags(address _a, IFastAccess.Flags calldata _flags)
-      governance(msg.sender)
-      external {
-    if (isGovernor(_a) != _flags.isGovernor) {
-      _flags.isGovernor ? addGovernor(_a) : removeGovernor(_a);
-    }
-    if (isMember(_a) != _flags.isMember) {
-      _flags.isMember ? addMember(_a) : removeMember(_a);
-    }
-  }
-
   // Modifiers.
 
-  modifier spcOrGovernance(address _a) {
-    require(
-      reg.spc().isGovernor(_a) || governorList.contains(_a),
-      'Missing governorship'
-    );
+  modifier spcGovernance(address _a) {
+    require(reg.spc().isGovernor(_a), 'Missing SPC governorship');
     _;
   }
 
   modifier governance(address _a) {
-    require(governorList.contains(_a), 'Missing governorship');
+    require(governorSet.contains(_a), 'Missing governorship');
     _;
   }
 }

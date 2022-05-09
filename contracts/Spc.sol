@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
+import './FastRegistry.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';
 
@@ -13,46 +14,44 @@ contract Spc is Initializable {
 
   event GovernorAdded(address indexed governor);
   event GovernorRemoved(address indexed governor);
-  event TokenRegistered(address indexed token);
+  event FastRegistered(FastRegistry indexed registry);
 
   /// Members.
 
   // This is where we hold our governors data.
-  AddressSetLib.Data governors;
+  AddressSetLib.Data private governorSet;
   // This is where we keep our list of deployed fast FASTs.
-  address[] fastTokens;
+  address[] private fastRegistries;
 
   /// Public stuff.
 
   function initialize(address _governor)
       public
       initializer {
-    governors.add(_governor);
+    governorSet.add(_governor);
   }
 
   /// Governance management.
 
   function governorCount() external view returns(uint256) {
-    return governors.values.length;
+    return governorSet.values.length;
   }
 
   function paginateGovernors(uint256 cursor, uint256 perPage)
       external view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(governors.values, cursor, perPage);
+    return PaginationLib.addresses(governorSet.values, cursor, perPage);
   }
 
   function isGovernor(address candidate)
       external view returns(bool) {
-    return governors.contains(candidate);
+    return governorSet.contains(candidate);
   }
 
-  function addGovernor(address payable governor)
+  function addGovernor(address governor)
       governance
-      external payable {
+      external {
     // Add the governor to our list.
-    governors.add(governor);
-    // Immediatelly send the paid ETH to the new governor.
-    governor.transfer(msg.value);
+    governorSet.add(governor);
     // Emit!
     emit GovernorAdded(governor);
   }
@@ -60,38 +59,36 @@ contract Spc is Initializable {
   function removeGovernor(address governor)
       governance
       external {
-    governors.remove(governor);
+    governorSet.remove(governor);
     emit GovernorRemoved(governor);
   }
 
   // FAST management related methods.
 
+  function registerFastRegistry(FastRegistry registry)
+      governance
+      external {
+    // Add the FAST Registry to our list.
+    fastRegistries.push(address(registry));
+    // Emit!
+    emit FastRegistered(registry);
+  }
+
   function fastTokenCount()
       external view returns(uint256) {
-    return fastTokens.length;
+    return fastRegistries.length;
   }
 
   function paginateFastTokens(uint256 cursor, uint256 perPage)
       external view
       returns(address[] memory, uint256) {
-    return PaginationLib.addresses(fastTokens, cursor, perPage);
-  }
-
-  function registerToken(address payable token)
-      governance
-      external payable {
-    // Add the fast token to our list.
-    fastTokens.push(token);
-    // Immediatelly send the paid ETH to the token contract.
-    token.transfer(msg.value);
-    // Emit!
-    emit TokenRegistered(token);
+    return PaginationLib.addresses(fastRegistries, cursor, perPage);
   }
 
   // Modifiers.
 
   modifier governance() {
-    require(governors.contains(msg.sender), 'Missing governorship');
+    require(governorSet.contains(msg.sender), 'Missing governorship');
     _;
   }
 }

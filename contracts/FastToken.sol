@@ -65,7 +65,14 @@ contract FastToken is Initializable, IFastToken {
     (transferCredits, hasFixedSupply) = (0, _hasFixedSupply);
   }
 
-  /// SPC Governance methods.
+  function setHasFixedSupply(bool _hasFixedSupply)
+      spcGovernance(msg.sender)
+      external returns(bool) {
+    hasFixedSupply = _hasFixedSupply;
+    return true;
+  }
+
+  /// Minting methods.
 
   function mint(uint256 amount, string memory ref)
       spcGovernance(msg.sender)
@@ -101,7 +108,7 @@ contract FastToken is Initializable, IFastToken {
     return true;
   }
 
-  /// ERC20 implementation.
+  /// ERC20 implementation and transfer related methods.
 
   function balanceOf(address owner)
       external view override returns(uint256) {
@@ -153,7 +160,7 @@ contract FastToken is Initializable, IFastToken {
     return _transfer(msg.sender, from, to, amount, ref);
   }
 
-  // ERC1404 implementation.
+  /// ERC1404 implementation.
 
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
