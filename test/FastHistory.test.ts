@@ -7,7 +7,7 @@ import { BigNumber } from 'ethers';
 describe('FastHistory', () => {
   let
     deployer: SignerWithAddress,
-    spcGovernor: SignerWithAddress,
+    spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     access: SignerWithAddress,
     token: SignerWithAddress,
@@ -22,20 +22,20 @@ describe('FastHistory', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcGovernor, governor, access, token, alice, bob, john] = await ethers.getSigners();
+    [deployer, spcMember, governor, access, token, alice, bob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
     // Deploy an SPC.
     const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
-    const spc = await upgrades.deployProxy(spcFactory, [spcGovernor.address]) as Spc;
+    const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Deploy a registry.
     const regFactory = await ethers.getContractFactory('FastRegistry');
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
     // As these two contracts will not really be called, we set them to addresses we control.
-    await reg.connect(spcGovernor).setTokenAddress(access.address);
-    await reg.connect(spcGovernor).setTokenAddress(token.address);
+    await reg.connect(spcMember).setTokenAddress(access.address);
+    await reg.connect(spcMember).setTokenAddress(token.address);
 
     const historyLibs = { PaginationLib: paginationLib.address };
     historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });

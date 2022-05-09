@@ -5,7 +5,7 @@ import { Spc__factory, Spc } from '../typechain-types';
 
 describe('Spc', () => {
   let
-    governor: SignerWithAddress,
+    spcMember: SignerWithAddress,
     bob: SignerWithAddress,
     alice: SignerWithAddress;
   let spcFactory: Spc__factory;
@@ -14,7 +14,7 @@ describe('Spc', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [/*deployer*/, governor, bob, alice] = await ethers.getSigners();
+    [/*deployer*/, spcMember, bob, alice] = await ethers.getSigners();
     // Deploy our libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
@@ -24,89 +24,89 @@ describe('Spc', () => {
   });
 
   beforeEach(async () => {
-    spc = await upgrades.deployProxy(spcFactory, [governor.address]) as Spc;
-    governedSpc = await spc.connect(governor);
+    spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
+    governedSpc = await spc.connect(spcMember);
   });
 
   describe('initializer', async () => {
-    it('adds the given governor when deployed', async () => {
-      const subject = await spc.isGovernor(governor.address);
+    it('adds the given member when deployed', async () => {
+      const subject = await spc.isMember(spcMember.address);
       expect(subject).to.eq(true);
     });
   });
 
-  describe('governorCount', async () => {
+  describe('memberCount', async () => {
     beforeEach(async () => {
-      await spc.connect(governor).addGovernor(bob.address)
+      await spc.connect(spcMember).addMember(bob.address)
     });
 
-    it('correctly counts governors', async () => {
-      const subject = await spc.governorCount();
+    it('correctly counts members', async () => {
+      const subject = await spc.memberCount();
       expect(subject).to.eq(2);
     });
   });
 
-  describe('paginateGovernors', async () => {
-    it('returns pages of governors', async () => {
-      await governedSpc.addGovernor(bob.address);
-      await governedSpc.addGovernor(alice.address);
+  describe('paginateMembers', async () => {
+    it('returns pages of members', async () => {
+      await governedSpc.addMember(bob.address);
+      await governedSpc.addMember(alice.address);
 
-      const [[g1, g2, g3],] = await spc.paginateGovernors(0, 3);
+      const [[g1, g2, g3],] = await spc.paginateMembers(0, 3);
 
-      expect(g1).to.eq(governor.address);
+      expect(g1).to.eq(spcMember.address);
       expect(g2).to.eq(bob.address);
       expect(g3).to.eq(alice.address);
     });
   });
 
-  describe('isGovernor', async () => {
-    it('returns true when the candidate is a governor', async () => {
-      const subject = await spc.isGovernor(governor.address);
+  describe('isMember', async () => {
+    it('returns true when the candidate is a member', async () => {
+      const subject = await spc.isMember(spcMember.address);
       expect(subject).to.eq(true);
     });
 
-    it('returns false when the candidate is not a governor', async () => {
-      const subject = await spc.isGovernor(bob.address);
+    it('returns false when the candidate is not a member', async () => {
+      const subject = await spc.isMember(bob.address);
       expect(subject).to.eq(false);
     });
   });
 
-  describe('addGovernor', async () => {
-    it('requires that the sender is a governor', async () => {
-      const subject = spc.addGovernor(alice.address);
-      await expect(subject).to.be.revertedWith('Missing governorship');
+  describe('addMember', async () => {
+    it('requires that the sender is a member', async () => {
+      const subject = spc.addMember(alice.address);
+      await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
 
-    it('adds the governor to the list', async () => {
-      await governedSpc.addGovernor(bob.address);
-      const subject = await spc.isGovernor(bob.address);
+    it('adds the member to the list', async () => {
+      await governedSpc.addMember(bob.address);
+      const subject = await spc.isMember(bob.address);
       expect(subject).to.eq(true);
     });
 
-    it('does not add the same governor twice', async () => {
-      const subject = governedSpc.addGovernor(governor.address);
+    it('does not add the same member twice', async () => {
+      const subject = governedSpc.addMember(spcMember.address);
       await expect(subject).to.be.revertedWith('Address already in set');
     });
   });
 
-  describe('removeGovernor', async () => {
+  describe('removeMember', async () => {
     beforeEach(async () => {
-      await governedSpc.addGovernor(bob.address);
+      await governedSpc.addMember(bob.address);
     });
 
-    it('requires that the sender is a governor', async () => {
-      const subject = spc.removeGovernor(bob.address);
-      await expect(subject).to.be.revertedWith('Missing governorship');
+    it('requires that the sender is a member', async () => {
+      const subject = spc.removeMember(bob.address);
+      await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
 
-    it('removes the governor from the list', async () => {
-      await governedSpc.removeGovernor(bob.address);
-      const subject = await spc.isGovernor(bob.address);
+    it('removes the member from the list', async () => {
+      await governedSpc.removeMember(bob.address);
+      const subject = await spc.isMember(bob.address);
       expect(subject).to.eq(false);
     });
 
-    it('does nothing if the governor is not in the list', async () => {
-      const subject = governedSpc.removeGovernor(alice.address);
+    it('does nothing if the member is not in the list', async () => {
+      const subject = governedSpc.removeMember(alice.address);
       await expect(subject).to.be.revertedWith('Address does not exist in set');
     });
   });

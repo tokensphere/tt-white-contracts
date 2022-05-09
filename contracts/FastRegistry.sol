@@ -24,29 +24,29 @@ contract FastRegistry is Initializable {
   /// Contract setters.
 
   function setSpcAddress(ISpc _spc)
-      external spcGovernance {
+      external spcMembership {
     spc = _spc;
   }
 
   function setAccessAddress(IFastAccess _access)
-      external spcGovernance {
+      external spcMembership {
     access = _access;
   }
 
   function setTokenAddress(IFastToken _token)
-      external spcGovernance {
+      external spcMembership {
     token = _token;
   }
 
   function setHistoryAddress(IFastHistory _history)
-      external spcGovernance {
+      external spcMembership {
     history = _history;
   }
 
   /// Modifiers.
 
-  modifier spcGovernance() {
-    require(spc.isGovernor(msg.sender), 'Missing SPC governorship');
+  modifier spcMembership() {
+    require(spc.isMember(msg.sender), 'Missing SPC membership');
     _;
   }
 }

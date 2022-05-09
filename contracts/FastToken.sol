@@ -66,7 +66,7 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function setHasFixedSupply(bool _hasFixedSupply)
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       external returns(bool) {
     hasFixedSupply = _hasFixedSupply;
     return true;
@@ -75,7 +75,7 @@ contract FastToken is Initializable, IFastToken {
   /// Minting methods.
 
   function mint(uint256 amount, string memory ref)
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       external returns(bool) {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
@@ -95,14 +95,14 @@ contract FastToken is Initializable, IFastToken {
   /// Tranfer Credit management.
 
   function addTransferCredits(uint256 _amount)
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       external returns(bool) {
     transferCredits += _amount;
     return true;
   }
 
   function drainTransferCredits()
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       external returns(bool) {
     transferCredits = 0;
     return true;
@@ -215,8 +215,8 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier spcGovernance(address a) {
-    require(reg.spc().isGovernor(a), 'Missing SPC governorship');
+  modifier spcMembership(address a) {
+    require(reg.spc().isMember(a), 'Missing SPC membership');
     _;
   }
 

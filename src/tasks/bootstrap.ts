@@ -8,7 +8,7 @@ import { deploySpc } from "./spc";
 import { deployFastAccess, deployFastHistory, deployFastRegistry, deployFastToken, mintTokens } from "./fast";
 
 interface BootstrapTaskParams {
-  readonly spcGovernor: string;
+  readonly spcMember: string;
   readonly governor: string;
   readonly name: string;
   readonly symbol: string;
@@ -19,7 +19,7 @@ interface BootstrapTaskParams {
 };
 
 task("bootstrap", "Deploys everything needed to run the FAST network")
-  .addParam('spcGovernor', 'The address of the SPC governor', undefined, types.string)
+  .addParam('spcMember', 'The address of the SPC governor', undefined, types.string)
   .addParam('governor', 'The address of the SPC', '', types.string)
   .addOptionalParam('name', 'The name for the new FAST', 'Consilience Ventures Digital Share', types.string)
   .addOptionalParam('symbol', 'The symbol for the new FAST', 'CVDS', types.string)
@@ -64,7 +64,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const paginationLib = await deployLibrary(hre, 'PaginationLib');
 
   // Deploy the main SPC contract.
-  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, params.spcGovernor);
+  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, params.spcMember);
 
   // First, deploy a registry contract.
   const registry = await deployFastRegistry(hre, spc.address);

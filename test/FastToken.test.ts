@@ -14,7 +14,7 @@ const ERC20_TOKEN_DECIMALS = 18;
 describe('FastAccess', () => {
   let
     deployer: SignerWithAddress,
-    spcGovernor: SignerWithAddress,
+    spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
@@ -30,14 +30,14 @@ describe('FastAccess', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcGovernor, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
     // Deploy an SPC.
     const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
-    const spc = await upgrades.deployProxy(spcFactory, [spcGovernor.address]) as Spc;
+    const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
 
     // Create our Registry.
     const regFactory = await ethers.getContractFactory('FastRegistry');
@@ -48,14 +48,14 @@ describe('FastAccess', () => {
     const accessFactory = await ethers.getContractFactory('FastAccess', { libraries: accessLibs });
     access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
     // Link the access contract with the registry.
-    await reg.connect(spcGovernor).setAccessAddress(access.address);
+    await reg.connect(spcMember).setAccessAddress(access.address);
 
     // Create our history factory and contract.
     const historyLibs = { PaginationLib: paginationLib.address };
     const historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
     history = await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
     // Register the history contract with the registry.
-    await reg.connect(spcGovernor).setHistoryAddress(history.address);
+    await reg.connect(spcMember).setHistoryAddress(history.address);
 
     // Finally, create our token factory.
     const tokenLibs = { PaginationLib: paginationLib.address };
@@ -68,8 +68,8 @@ describe('FastAccess', () => {
       [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true]
     ) as FastToken;
     governedToken = await token.connect(governor);
-    spcGovernedToken = await token.connect(spcGovernor);
-    await reg.connect(spcGovernor).setTokenAddress(token.address);
+    spcGovernedToken = await token.connect(spcMember);
+    await reg.connect(spcMember).setTokenAddress(token.address);
   });
 
   /// Public stuff.
@@ -107,11 +107,11 @@ describe('FastAccess', () => {
 
     before(async () => {
       historyMock = await smock.fake('FastHistory');
-      reg.connect(spcGovernor).setHistoryAddress(historyMock.address);
+      reg.connect(spcMember).setHistoryAddress(historyMock.address);
     });
 
     after(async () => {
-      reg.connect(spcGovernor).setHistoryAddress(history.address);
+      reg.connect(spcMember).setHistoryAddress(history.address);
     });
 
     describe('with fixed supply', async () => {
@@ -124,7 +124,7 @@ describe('FastAccess', () => {
 
     describe('with continuous supply', async () => {
       beforeEach(async () => {
-        await token.connect(spcGovernor).setHasFixedSupply(false);
+        await token.connect(spcMember).setHasFixedSupply(false);
       });
 
       it('is allowed more than once', async () => {
@@ -137,18 +137,18 @@ describe('FastAccess', () => {
 
     it('requires SPC governance (anonymous)', async () => {
       const subject = token.mint(5_000, 'Attempt 1');
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires SPC governance (member)', async () => {
       await access.connect(governor).addMember(alice.address);
       const subject = token.connect(alice).mint(5_000, 'Attempt 1');
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires SPC governance (governor)', async () => {
       const subject = governedToken.mint(5_000, 'Attempt 1');
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('delegates to the history contract', async () => {

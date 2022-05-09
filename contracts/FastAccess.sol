@@ -52,7 +52,7 @@ contract FastAccess is Initializable, IFastAccess {
    * @dev Adds a governor to the governorship list.
    */
   function addGovernor(address _a)
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       public override {
     // Add governor to list.
     governorSet.add(_a);
@@ -64,7 +64,7 @@ contract FastAccess is Initializable, IFastAccess {
    * @dev Removes a governor from the governorship list.
    */
   function removeGovernor(address _a)
-      spcGovernance(msg.sender)
+      spcMembership(msg.sender)
       public {
     // Remove governor.
     governorSet.remove(_a);
@@ -158,8 +158,8 @@ contract FastAccess is Initializable, IFastAccess {
 
   // Modifiers.
 
-  modifier spcGovernance(address _a) {
-    require(reg.spc().isGovernor(_a), 'Missing SPC governorship');
+  modifier spcMembership(address _a) {
+    require(reg.spc().isMember(_a), 'Missing SPC membership');
     _;
   }
 

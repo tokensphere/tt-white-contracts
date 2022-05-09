@@ -6,7 +6,7 @@ import { Spc, FastRegistry, FastAccess__factory, FastAccess } from '../typechain
 describe('FastAccess', () => {
   let
     deployer: SignerWithAddress,
-    spcGovernor: SignerWithAddress,
+    spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
@@ -20,14 +20,14 @@ describe('FastAccess', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcGovernor, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
     // Deploy an SPC.
     const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
-    const spc = await upgrades.deployProxy(spcFactory, [spcGovernor.address]) as Spc;
+    const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Create our Registry.
     const regFactory = await ethers.getContractFactory('FastRegistry');
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
@@ -39,7 +39,7 @@ describe('FastAccess', () => {
   beforeEach(async () => {
     access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
     governedAccess = await access.connect(governor);
-    spcGovernedAccess = await access.connect(spcGovernor);
+    spcGovernedAccess = await access.connect(spcMember);
   });
 
   /// Public stuff.
@@ -67,12 +67,12 @@ describe('FastAccess', () => {
     it('requires SPC governance (anonymous)', async () => {
       const subject = access.addGovernor(alice.address);
       // Check that the registry
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires SPC governance (governor)', async () => {
       const subject = governedAccess.addGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires that the address is not a governor yet', async () => {
@@ -95,12 +95,12 @@ describe('FastAccess', () => {
 
     it('requires SPC governance (anonymous)', async () => {
       const subject = access.removeGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires SPC governance (governor)', async () => {
       const subject = governedAccess.removeGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC governorship');
+      await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
     it('requires that the address is an existing governor', async () => {

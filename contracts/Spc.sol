@@ -12,55 +12,55 @@ contract Spc is Initializable {
 
   /// Events.
 
-  event GovernorAdded(address indexed governor);
-  event GovernorRemoved(address indexed governor);
+  event MemberAdded(address indexed member);
+  event MemberRemoved(address indexed member);
   event FastRegistered(FastRegistry indexed registry);
 
   /// Members.
 
-  // This is where we hold our governors data.
-  AddressSetLib.Data private governorSet;
+  // This is where we hold our members data.
+  AddressSetLib.Data private memberSet;
   // This is where we keep our list of deployed fast FASTs.
   address[] private fastRegistries;
 
   /// Public stuff.
 
-  function initialize(address _governor)
+  function initialize(address _member)
       public
       initializer {
-    governorSet.add(_governor);
+    memberSet.add(_member);
   }
 
   /// Governance management.
 
-  function governorCount() external view returns(uint256) {
-    return governorSet.values.length;
+  function memberCount() external view returns(uint256) {
+    return memberSet.values.length;
   }
 
-  function paginateGovernors(uint256 cursor, uint256 perPage)
+  function paginateMembers(uint256 cursor, uint256 perPage)
       external view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(governorSet.values, cursor, perPage);
+    return PaginationLib.addresses(memberSet.values, cursor, perPage);
   }
 
-  function isGovernor(address candidate)
+  function isMember(address candidate)
       external view returns(bool) {
-    return governorSet.contains(candidate);
+    return memberSet.contains(candidate);
   }
 
-  function addGovernor(address governor)
+  function addMember(address member)
       governance
       external {
-    // Add the governor to our list.
-    governorSet.add(governor);
+    // Add the member to our list.
+    memberSet.add(member);
     // Emit!
-    emit GovernorAdded(governor);
+    emit MemberAdded(member);
   }
 
-  function removeGovernor(address governor)
+  function removeMember(address member)
       governance
       external {
-    governorSet.remove(governor);
-    emit GovernorRemoved(governor);
+    memberSet.remove(member);
+    emit MemberRemoved(member);
   }
 
   // FAST management related methods.
@@ -88,7 +88,7 @@ contract Spc is Initializable {
   // Modifiers.
 
   modifier governance() {
-    require(governorSet.contains(msg.sender), 'Missing governorship');
+    require(memberSet.contains(msg.sender), 'Missing SPC membership');
     _;
   }
 }

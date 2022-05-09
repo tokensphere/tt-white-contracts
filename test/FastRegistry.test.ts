@@ -4,7 +4,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry__factory, FastRegistry } from '../typechain-types';
 
 describe('FastRegistry', () => {
-  let spcGovernor: SignerWithAddress, governor: SignerWithAddress, bob: SignerWithAddress, alice: SignerWithAddress;
+  let spcMember: SignerWithAddress, governor: SignerWithAddress, bob: SignerWithAddress, alice: SignerWithAddress;
   let spc: Spc;
   let regFactory: FastRegistry__factory;
   let reg: FastRegistry;
@@ -12,21 +12,21 @@ describe('FastRegistry', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [/*deployer*/, spcGovernor, governor, bob, alice] = await ethers.getSigners();
+    [/*deployer*/, spcMember, governor, bob, alice] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
     // Deploy an SPC.
     const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs }) as Spc__factory;
-    spc = await upgrades.deployProxy(spcFactory, [spcGovernor.address]) as Spc;
+    spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Cache our Registry factory.
     regFactory = await ethers.getContractFactory('FastRegistry');
   });
 
   beforeEach(async () => {
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-    spcGovernedReg = await reg.connect(spcGovernor);
+    spcGovernedReg = await reg.connect(spcMember);
   });
 
   describe('initializer', async () => {
@@ -39,7 +39,7 @@ describe('FastRegistry', () => {
   describe('setAccessAddress', async () => {
     it('requires SPC governance', async () => {
       const subject = reg.setAccessAddress(alice.address);
-      await expect(subject).to.be.revertedWith('Missing SPC governorship');
+      await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
 
     it('keeps track of the FastAccess address', async () => {
@@ -52,7 +52,7 @@ describe('FastRegistry', () => {
   describe('setTokenAddress', async () => {
     it('requires SPC governance', async () => {
       const subject = reg.setTokenAddress(alice.address);
-      await expect(subject).to.be.revertedWith('Missing SPC governorship');
+      await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
 
     it('keeps track of the FastToken address', async () => {
@@ -65,7 +65,7 @@ describe('FastRegistry', () => {
   describe('setHistoryAddress', async () => {
     it('requires SPC governance', async () => {
       const subject = reg.setHistoryAddress(alice.address);
-      await expect(subject).to.be.revertedWith('Missing SPC governorship');
+      await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
 
     it('keeps track of the FastHistory address', async () => {
