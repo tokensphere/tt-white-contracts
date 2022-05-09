@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./lib/AddressSetLib.sol";
+import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
+import './lib/AddressSetLib.sol';
+import './lib/PaginationLib.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract Spc is Initializable {
-  using AddressSetLib for AddressSetLib.Data;
   using AddressSetLib for AddressSetLib.Data;
 
   /// Events.
@@ -18,9 +18,9 @@ contract Spc is Initializable {
   /// Members.
 
   // This is where we hold our governors data.
-  AddressSetLib.Data private governors;
+  AddressSetLib.Data governors;
   // This is where we keep our list of deployed fast FASTs.
-  address[] private fastTokens;
+  address[] fastTokens;
 
   /// Public stuff.
 
@@ -33,26 +33,12 @@ contract Spc is Initializable {
   /// Governance management.
 
   function governorCount() external view returns(uint256) {
-    return governors.count();
+    return governors.values.length;
   }
 
-  function governorAt(uint256 index) external view returns(address) {
-    (address[] memory governor, /*cursor*/) = governorsAt(index, 1);
-    return governor[0];
-  }
-
-  function governorsAt(uint256 cursor, uint256 perPage)
-    public view returns(address[] memory values, uint256 newCursor) {
-      uint256 count = governors.values.length;
-      uint256 length = perPage;
-      if (length > count - cursor) {
-          length = count - cursor;
-      }
-      values = new address[](length);
-      for (uint256 i = 0; i < length; i++) {
-          values[i] = governors.values[cursor + i];
-      }
-      return (values, cursor + length);
+  function paginateGovernors(uint256 cursor, uint256 perPage)
+      external view returns(address[] memory, uint256) {
+    return PaginationLib.addresses(governors.values, cursor, perPage);
   }
 
   function isGovernor(address candidate)
@@ -85,9 +71,10 @@ contract Spc is Initializable {
     return fastTokens.length;
   }
 
-  function fastTokenAt(uint256 index)
-    external view returns(address) {
-    return fastTokens[index];
+  function paginateFastTokens(uint256 cursor, uint256 perPage)
+      external view
+      returns(address[] memory, uint256) {
+    return PaginationLib.addresses(fastTokens, cursor, perPage);
   }
 
   function registerToken(address payable token)

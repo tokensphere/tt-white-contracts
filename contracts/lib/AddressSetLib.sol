@@ -39,15 +39,6 @@ library AddressSetLib {
   }
 
   /**
-   * @dev Counts the number of elements in the internal set.
-   * @param d is the internal data storage to use.
-   * @return the number of elements in the set.
-   */
-  function count(Data storage d) external view returns(uint256) {
-    return d.values.length;
-  }
-
-  /**
    * @dev Tests whether or not a given item already exists in the set.
    * @param d is the internal data storage to use.
    * @param key is the address to test.

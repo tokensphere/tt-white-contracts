@@ -17,11 +17,13 @@ task("spc-deploy", "Deploys the main SPC contract")
     const stateManager = new StateManager(31337);
     // Check for libraries...
     if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
+    else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib library' }
     // Already deployed?
     else if (stateManager.state.Spc) { throw `Already deployed at ${stateManager.state.Spc}` }
 
     const addressSetLibAddr: string = stateManager.state.AddressSetLib;
-    const spc = await deploySpc(hre, addressSetLibAddr, params.governor);
+    const paginationLibAddr: string = stateManager.state.PaginationLib;
+    const spc = await deploySpc(hre, addressSetLibAddr, paginationLibAddr, params.governor);
     // We keep track of its address in our state file.
     stateManager.state = { ...stateManager.state, Spc: spc.address };
     console.log('Deployed Spc', spc.address);
@@ -30,9 +32,10 @@ task("spc-deploy", "Deploys the main SPC contract")
 async function deploySpc(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
   addressSetLibAddr: string,
+  paginationLibAddr: string,
   governor: string): Promise<Spc> {
   // We deploy our SPC contract.
-  const libraries = { AddressSetLib: addressSetLibAddr }
+  const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr };
   const Spc = await ethers.getContractFactory("Spc", { libraries }) as Spc__factory;
   return await upgrades.deployProxy(Spc, [governor]) as Spc;
 }

@@ -4,20 +4,24 @@ import { Contract, ContractFactory } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
 import { Spc, Spc__factory } from '../typechain-types';
 
-describe("Spc contract", () => {
-  let SpcFactory: ContractFactory;
+describe('Spc', () => {
+  let governor: SignerWithAddress, bob: SignerWithAddress, alice: SignerWithAddress;
+  let spcFactory: Spc__factory;
   let spc: Spc;
-  let governor: SignerWithAddress,
-    bob: SignerWithAddress, alice: SignerWithAddress;
 
   before(async () => {
+    // Keep track of a few signers.
     [/*deployer*/, governor, bob, alice] = await ethers.getSigners();
-    const addressSetLib = await (await ethers.getContractFactory("AddressSetLib")).deploy();
-    SpcFactory = await ethers.getContractFactory("Spc", { libraries: { AddressSetLib: addressSetLib.address } });
+    // Deploy our libraries.
+    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    // We can now cache a ready-to-use SPC factory.
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
   });
 
   beforeEach(async () => {
-    spc = await upgrades.deployProxy(SpcFactory, [governor.address]) as Spc;
+    spc = await upgrades.deployProxy(spcFactory, [governor.address]) as Spc;
   });
 
   describe('initializer', async () => {
@@ -38,15 +42,13 @@ describe("Spc contract", () => {
     });
   });
 
-  describe('governorAt', async () => {
-    it('returns governors by index', async () => {
+  describe('paginateGovernors', async () => {
+    it('returns pages of governors', async () => {
       const governedSpc = spc.connect(governor);
       await governedSpc.addGovernor(bob.address);
       await governedSpc.addGovernor(alice.address);
 
-      const g1 = await spc.governorAt(0);
-      const g2 = await spc.governorAt(1);
-      const g3 = await spc.governorAt(2);
+      const [[g1, g2, g3],] = await spc.paginateGovernors(0, 3);
 
       expect(g1).to.eq(governor.address);
       expect(g2).to.eq(bob.address);

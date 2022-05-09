@@ -64,7 +64,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const paginationLib = await deployLibrary(hre, 'PaginationLib');
 
   // Deploy the main SPC contract.
-  const spc = await deploySpc(hre, addressSetLib.address, params.spcGovernor);
+  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, params.spcGovernor);
 
   // First, deploy a registry contract.
   const registry = await deployFastRegistry(hre, spc.address);

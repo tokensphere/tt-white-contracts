@@ -31,7 +31,8 @@ contract FastHistory is Initializable, IFastHistory {
   /// Minting history-keeping methods.
 
   function addMintingProof(uint256 amount, string memory ref)
-      public override {
+      tokenContract(msg.sender)
+      external override {
     // Keep track of the mint.
     mintingProofs.push(
       IFastHistory.MintingProof({
@@ -55,7 +56,8 @@ contract FastHistory is Initializable, IFastHistory {
   /// Transfer history-keeping methods.
 
   function addTransferProof(address spender, address from, address to, uint256 amount, string memory ref)
-      public override {
+      tokenContract(msg.sender)
+      external override {
     // Keep track of the transfer proof ID for the sender.
     transferProofInvolvements[from].push(transferProofs.length);
     // Keep track of the transfer proof ID for the recipient.
@@ -86,5 +88,12 @@ contract FastHistory is Initializable, IFastHistory {
   function paginateTransferProofsByInvolvee(address involvee, uint256 cursor, uint256 perPage)
       public view returns(uint256[] memory, uint256) {
     return PaginationLib.uint256s(transferProofInvolvements[involvee], cursor, perPage);
+  }
+
+  /// Modifiers.
+
+  modifier tokenContract(address a) {
+    require(a == address(reg.token()), 'Cannot be called directly');
+    _;
   }
 }

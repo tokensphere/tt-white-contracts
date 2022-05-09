@@ -15,6 +15,15 @@ contract FastToken is Initializable, IFastToken {
   // to it will always come in handy.
   address constant ZERO_ADDRESS = address(0);
 
+  // Restriction codes.
+  uint8 public constant INSUFICIENT_TRANSFER_CREDITS = 1;
+  uint8 public constant SENDER_NOT_MEMBER = 2;
+  uint8 public constant RECIPIENT_NOT_MEMBER = 3;
+  // Restriction messages.
+  string public constant INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
+  string public constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
+  string public constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
+
   /// Members.
 
   // This is a pointer to our contracts registry.
@@ -26,10 +35,11 @@ contract FastToken is Initializable, IFastToken {
   uint256 public decimals;
   uint256 public override totalSupply;
 
-  // Every time a transaction is executed, the credit decreases.
+  // Every time a transfer is executed, the credit decreases by the amount
+  // of said transfer.
   // It becomes impossible to transact once it reaches zero, and must
   // be provisioned by an SPC governor.
-  uint256 public txCredits;
+  uint256 public transferCredits;
 
   // We have to track whether this token has continuous minting or fixed supply.
   bool public hasFixedSupply;
@@ -52,13 +62,14 @@ contract FastToken is Initializable, IFastToken {
     // Set up ERC20 related stuff.
     (name, symbol, decimals, totalSupply) = (_name, _symbol, _decimals, 0);
     // Initialize other internal stuff.
-    (txCredits, hasFixedSupply) = (0, _hasFixedSupply);
+    (transferCredits, hasFixedSupply) = (0, _hasFixedSupply);
   }
 
   /// SPC Governance methods.
 
   function mint(uint256 amount, string memory ref)
-      external spcGovernance returns(bool) {
+      spcGovernance(msg.sender)
+      external returns(bool) {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
@@ -76,15 +87,17 @@ contract FastToken is Initializable, IFastToken {
 
   /// Tranfer Credit management.
 
-  function addTxCredits(uint256 _amount)
-      external spcGovernance returns(bool) {
-    txCredits += _amount;
+  function addTransferCredits(uint256 _amount)
+      spcGovernance(msg.sender)
+      external returns(bool) {
+    transferCredits += _amount;
     return true;
   }
 
-  function drainTxCredits()
-      external spcGovernance returns(bool) {
-    txCredits = 0;
+  function drainTransferCredits()
+      spcGovernance(msg.sender)
+      external returns(bool) {
+    transferCredits = 0;
     return true;
   }
 
@@ -101,8 +114,7 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
-      public requiresTxCredit membership(msg.sender) membership(to) returns(bool) {
-    txCredits--;
+      public returns(bool) {
     return _transfer(msg.sender, msg.sender, to, amount, ref);
   }
 
@@ -118,7 +130,8 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function approve(address spender, uint256 amount)
-      external override membership(msg.sender) returns(bool) {
+      senderMembership(msg.sender)
+      external override returns(bool) {
     // Store allowance...
     allowances[msg.sender][spender] = amount;
 
@@ -133,24 +146,19 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      public requiresTxCredit membership(from) membership(to) returns(bool) {
+      requiresTxCredit(amount) senderMembership(from) recipientMembership(to)
+      public returns(bool) {
     require(allowances[from][msg.sender] >= amount, 'Insuficient allowance');
-    txCredits--;
     allowances[from][msg.sender] -= amount;
     return _transfer(msg.sender, from, to, amount, ref);
   }
 
   // ERC1404 implementation.
 
-  // Restriction codes.
-  uint8 public constant NO_TRANSACTION_CREDITS = 1;
-  uint8 public constant SENDER_NOT_MEMBER = 2;
-  uint8 public constant RECIPIENT_NOT_MEMBER = 3;
-
-  function detectTransferRestriction(address from, address to, uint256 /*amount*/)
+  function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
-    if (txCredits==0) {
-      return NO_TRANSACTION_CREDITS;
+    if (transferCredits < amount) {
+      return INSUFICIENT_TRANSFER_CREDITS;
     } else if (!reg.access().isMember(from)) {
       return SENDER_NOT_MEMBER;
     } else if (!reg.access().isMember(to)) {
@@ -159,15 +167,10 @@ contract FastToken is Initializable, IFastToken {
     return 0;
   }
 
-  // Restriction messages.
-  string public constant NO_TRANSACTION_CREDITS_MESSAGE = 'Insuficient transaction credits';
-  string public constant SENDER_NOT_MEMBER_MESSAGE = 'Sender not a member';
-  string public constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Recipient not a member';
-
   function messageForTransferRestriction(uint8 restrictionCode)
       pure external override returns(string memory) {
-    if (restrictionCode == NO_TRANSACTION_CREDITS) {
-      return NO_TRANSACTION_CREDITS_MESSAGE;
+    if (restrictionCode == INSUFICIENT_TRANSFER_CREDITS) {
+      return INSUFICIENT_TRANSFER_CREDITS_MESSAGE;
     } else if (restrictionCode == SENDER_NOT_MEMBER) {
       return SENDER_NOT_MEMBER_MESSAGE;
     } else if (restrictionCode == RECIPIENT_NOT_MEMBER) {
@@ -180,12 +183,15 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
+      requiresTxCredit(amount) senderMembership(from) recipientMembership(to)
       internal returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
 
     // Keep track of the transfer.
     reg.history().addTransferProof(spender, from, to, amount, ref);
 
+    // Decrease transfer credits.
+    transferCredits -= amount;
     // Keep track of the balances.
     balances[from] -= amount;
     balances[to] += amount;
@@ -197,13 +203,13 @@ contract FastToken is Initializable, IFastToken {
 
   // Modifiers.
 
-  modifier requiresTxCredit() {
-    require(txCredits > 0, 'Insuficient credits');
+  modifier requiresTxCredit(uint256 amount) {
+    require(transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
     _;
   }
 
-  modifier spcGovernance() {
-    require(reg.spc().isGovernor(msg.sender), 'This method must be called by an SPC governor');
+  modifier spcGovernance(address a) {
+    require(reg.spc().isGovernor(a), 'Missing SPC governorship');
     _;
   }
 
@@ -212,8 +218,13 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier membership(address a) {
-    require(reg.access().isMember(a), 'Missing membership');
+  modifier senderMembership(address a) {
+    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
+    _;
+  }
+
+  modifier recipientMembership(address a) {
+    require(reg.access().isMember(a), RECIPIENT_NOT_MEMBER_MESSAGE);
     _;
   }
 }
