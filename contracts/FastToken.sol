@@ -117,7 +117,7 @@ contract FastToken is Initializable, IFastToken {
 
   function transfer(address to, uint256 amount)
       public override returns(bool) {
-    return transferWithRef(to, amount, 'Unspecified - via ERC20');
+    return _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)

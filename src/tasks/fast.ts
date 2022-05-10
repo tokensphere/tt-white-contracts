@@ -46,7 +46,7 @@ task('fast-deploy', 'Deploys a FAST')
     const access = await deployFastAccess(hre, addressSetLibAddr, paginationLibAddr, registry.address, taskParams.governor);
     console.log('Deployed Access', access.address);
     // Tell our registry where our access contract is.
-    await registry.setHistoryAddress(access.address);
+    await registry.setAccessAddress(access.address);
 
     // We can now deploy a history contract.
     const history = await deployFastHistory(hre, paginationLibAddr, registry.address);
@@ -120,11 +120,11 @@ async function deployFastAccess(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
   addressSetLibAddr: string,
   paginationLibAddr: string,
-  spcAddr: string,
+  regAddr: string,
   governor: string): Promise<FastAccess> {
   const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr }
   const Access = await ethers.getContractFactory('FastAccess', { libraries });
-  return await upgrades.deployProxy(Access, [spcAddr, governor]) as FastAccess;
+  return await upgrades.deployProxy(Access, [regAddr, governor]) as FastAccess;
 }
 
 // Deploys a FAST History contract.
@@ -146,7 +146,7 @@ async function deployFastToken(
   const { hasFixedSupply } = taskParams;
   const hasFixedSupplyBool = hasFixedSupply === true || hasFixedSupply === "true";
 
-  // Then, we can deploy our FAST contract.
+  // Deploy the token contract.
   const Token = await ethers.getContractFactory('FastToken');
   return await upgrades.deployProxy(Token, [accessAddress, name, symbol, decimals, hasFixedSupplyBool]) as FastToken;
 }

@@ -15,6 +15,8 @@ contract Spc is Initializable {
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
   event FastRegistered(FastRegistry indexed registry);
+  event EtherReceived(address indexed from, uint256 amount);
+  event EtherWithdrawed(address indexed to, uint256 amount);
 
   /// Members.
 
@@ -29,6 +31,19 @@ contract Spc is Initializable {
       public
       initializer {
     memberSet.add(_member);
+  }
+
+  receive ()
+      external payable {
+    emit EtherReceived(msg.sender, msg.value);
+  }
+
+  function withdrawEther()
+      membership(msg.sender)
+      external {
+    uint256 amount = address(this).balance;
+    payable(msg.sender).transfer(amount);
+    emit EtherWithdrawed(msg.sender, amount);
   }
 
   /// Governance management.
@@ -48,7 +63,7 @@ contract Spc is Initializable {
   }
 
   function addMember(address member)
-      governance
+      membership(msg.sender)
       external {
     // Add the member to our list.
     memberSet.add(member);
@@ -57,7 +72,7 @@ contract Spc is Initializable {
   }
 
   function removeMember(address member)
-      governance
+      membership(msg.sender)
       external {
     memberSet.remove(member);
     emit MemberRemoved(member);
@@ -66,7 +81,7 @@ contract Spc is Initializable {
   // FAST management related methods.
 
   function registerFastRegistry(FastRegistry registry)
-      governance
+      membership(msg.sender)
       external {
     // Add the FAST Registry to our list.
     fastRegistries.push(address(registry));
@@ -87,8 +102,8 @@ contract Spc is Initializable {
 
   // Modifiers.
 
-  modifier governance() {
-    require(memberSet.contains(msg.sender), 'Missing SPC membership');
+  modifier membership(address a) {
+    require(memberSet.contains(a), 'Missing SPC membership');
     _;
   }
 }

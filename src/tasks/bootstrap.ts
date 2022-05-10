@@ -72,7 +72,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   // First, deploy an access contract, required for the FAST permissioning.
   const access = await deployFastAccess(hre, addressSetLib.address, paginationLib.address, registry.address, params.governor);
   // Tell our registry where our access contract is.
-  await registry.setHistoryAddress(access.address);
+  await registry.setAccessAddress(access.address);
 
   // We can now deploy a history contract.
   const history = await deployFastHistory(hre, paginationLib.address, registry.address);
@@ -87,7 +87,11 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   // At this point, we can start minting a few tokens.
   const { symbol, decimals, baseAmount } = await mintTokens(token, params.mint, 'Bootstrap initial mint');
 
-  return { addressSetLib, paginationLib, spc, registry, access, history, token, symbol, decimals, baseAmount };
+  return {
+    addressSetLib, paginationLib,
+    spc, registry, access, history, token,
+    symbol, decimals, baseAmount
+  };
 }
 
 export { bootstrap };

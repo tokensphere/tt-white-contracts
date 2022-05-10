@@ -41,6 +41,10 @@ yarn hardhat \
   lib-deploy \
     AddressSetLib \
     --network localhost
+yarn hardhat \
+  lib-deploy \
+    PaginationLib \
+    --network localhost
 ```
 
 ## SPC Tasks (See `src/tasks/spc.ts`)
