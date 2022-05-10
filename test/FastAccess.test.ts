@@ -16,7 +16,7 @@ describe('FastAccess', () => {
   let accessFactory: FastAccess__factory;
   let access: FastAccess;
   let governedAccess: FastAccess;
-  let spcGovernedAccess: FastAccess;
+  let spcMemberAccess: FastAccess;
 
   before(async () => {
     // Keep track of a few signers.
@@ -39,7 +39,7 @@ describe('FastAccess', () => {
   beforeEach(async () => {
     access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
     governedAccess = await access.connect(governor);
-    spcGovernedAccess = await access.connect(spcMember);
+    spcMemberAccess = await access.connect(spcMember);
   });
 
   /// Public stuff.
@@ -76,13 +76,13 @@ describe('FastAccess', () => {
     });
 
     it('requires that the address is not a governor yet', async () => {
-      await spcGovernedAccess.addGovernor(alice.address)
-      const subject = spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address)
+      const subject = spcMemberAccess.addGovernor(alice.address);
       await expect(subject).to.revertedWith('Address already in set');
     });
 
     it('adds the given address as a governor', async () => {
-      await spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address);
       const subject = await access.isGovernor(alice.address);
       expect(subject).to.eq(true);
     });
@@ -90,7 +90,7 @@ describe('FastAccess', () => {
 
   describe('removeGovernor', async () => {
     beforeEach(async () => {
-      await spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address);
     });
 
     it('requires SPC governance (anonymous)', async () => {
@@ -104,12 +104,12 @@ describe('FastAccess', () => {
     });
 
     it('requires that the address is an existing governor', async () => {
-      const subject = spcGovernedAccess.removeGovernor(bob.address);
+      const subject = spcMemberAccess.removeGovernor(bob.address);
       await expect(subject).to.revertedWith('Address does not exist in set');
     });
 
     it('removes the given address as a governor', async () => {
-      await spcGovernedAccess.removeGovernor(alice.address);
+      await spcMemberAccess.removeGovernor(alice.address);
       const subject = await access.isGovernor(alice.address);
       expect(subject).to.eq(false);
     });
@@ -117,7 +117,7 @@ describe('FastAccess', () => {
 
   describe('isGovernor', async () => {
     beforeEach(async () => {
-      await spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address);
     });
 
     it('returns true when the address is a governor', async () => {
@@ -133,7 +133,7 @@ describe('FastAccess', () => {
 
   describe('governorCount', async () => {
     beforeEach(async () => {
-      await spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address);
     });
 
     it('returns the current count of governors', async () => {
@@ -145,10 +145,10 @@ describe('FastAccess', () => {
   describe('paginateGovernors', async () => {
     beforeEach(async () => {
       // Add 4 governors - so there is a total of 5.
-      await spcGovernedAccess.addGovernor(alice.address);
-      await spcGovernedAccess.addGovernor(bob.address);
-      await spcGovernedAccess.addGovernor(john.address);
-      await spcGovernedAccess.addGovernor(rob.address);
+      await spcMemberAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(bob.address);
+      await spcMemberAccess.addGovernor(john.address);
+      await spcMemberAccess.addGovernor(rob.address);
     });
 
     it('returns the cursor to the next page', async () => {
@@ -185,7 +185,7 @@ describe('FastAccess', () => {
     });
 
     it('requires governance (SPC governor)', async () => {
-      const subject = spcGovernedAccess.addMember(alice.address);
+      const subject = spcMemberAccess.addMember(alice.address);
       await expect(subject).to.revertedWith('Missing governorship');
     });
 
@@ -213,7 +213,7 @@ describe('FastAccess', () => {
     });
 
     it('requires governance (SPC governor)', async () => {
-      const subject = spcGovernedAccess.removeMember(alice.address);
+      const subject = spcMemberAccess.removeMember(alice.address);
       await expect(subject).to.revertedWith('Missing governorship');
     });
 
@@ -300,7 +300,7 @@ describe('FastAccess', () => {
     });
 
     it('is accurate when only isGovernor is set', async () => {
-      await spcGovernedAccess.addGovernor(alice.address);
+      await spcMemberAccess.addGovernor(alice.address);
       const { isGovernor, isMember } = await access.flags(alice.address);
       expect(isGovernor).to.eq(true);
       expect(isMember).to.eq(false);

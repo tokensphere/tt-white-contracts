@@ -80,7 +80,7 @@ contract FastToken is Initializable, IFastToken {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    require(!hasFixedSupply || totalSupply == 0, 'Minting not possible at this point');
+    require(!hasFixedSupply || totalSupply == 0, 'Minting not possible at this time');
 
     // Prepare the minted amount on the zero address, accrue total supply.
     balances[ZERO_ADDRESS] += amount;
@@ -155,8 +155,12 @@ contract FastToken is Initializable, IFastToken {
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       requiresTxCredit(amount) senderMembership(from) recipientMembership(to)
       public returns(bool) {
-    require(allowances[from][msg.sender] >= amount, 'Insuficient allowance');
-    allowances[from][msg.sender] -= amount;
+    if (from == ZERO_ADDRESS) {
+      require(reg.access().isGovernor(msg.sender), 'Missing governorship');
+    } else {
+      require(allowances[from][msg.sender] >= amount, 'Insuficient allowance');
+      allowances[from][msg.sender] -= amount;
+    }
     return _transfer(msg.sender, from, to, amount, ref);
   }
 
@@ -226,7 +230,7 @@ contract FastToken is Initializable, IFastToken {
   }
 
   modifier senderMembership(address a) {
-    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
+    require(reg.access().isMember(a) || a == ZERO_ADDRESS, SENDER_NOT_MEMBER_MESSAGE);
     _;
   }
 

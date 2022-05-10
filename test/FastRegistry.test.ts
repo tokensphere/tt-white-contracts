@@ -8,7 +8,7 @@ describe('FastRegistry', () => {
   let spc: Spc;
   let regFactory: FastRegistry__factory;
   let reg: FastRegistry;
-  let spcGovernedReg: FastRegistry;
+  let spcMemberReg: FastRegistry;
 
   before(async () => {
     // Keep track of a few signers.
@@ -26,7 +26,7 @@ describe('FastRegistry', () => {
 
   beforeEach(async () => {
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-    spcGovernedReg = await reg.connect(spcMember);
+    spcMemberReg = await reg.connect(spcMember);
   });
 
   describe('initializer', async () => {
@@ -43,7 +43,7 @@ describe('FastRegistry', () => {
     });
 
     it('keeps track of the FastAccess address', async () => {
-      await spcGovernedReg.setAccessAddress(alice.address);
+      await spcMemberReg.setAccessAddress(alice.address);
       const subject = await reg.access();
       expect(subject).to.eq(alice.address);
     });
@@ -56,7 +56,7 @@ describe('FastRegistry', () => {
     });
 
     it('keeps track of the FastToken address', async () => {
-      await spcGovernedReg.setTokenAddress(alice.address);
+      await spcMemberReg.setTokenAddress(alice.address);
       const subject = await reg.token();
       expect(subject).to.eq(alice.address);
     });
@@ -69,7 +69,7 @@ describe('FastRegistry', () => {
     });
 
     it('keeps track of the FastHistory address', async () => {
-      await spcGovernedReg.setHistoryAddress(alice.address);
+      await spcMemberReg.setHistoryAddress(alice.address);
       const subject = await reg.history();
       expect(subject).to.eq(alice.address);
     });
