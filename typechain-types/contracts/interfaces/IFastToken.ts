@@ -33,6 +33,7 @@ export interface IFastTokenInterface extends utils.Interface {
     "balanceOf(address)": FunctionFragment;
     "detectTransferRestriction(address,address,uint256)": FunctionFragment;
     "messageForTransferRestriction(uint8)": FunctionFragment;
+    "symbol()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -45,6 +46,7 @@ export interface IFastTokenInterface extends utils.Interface {
       | "balanceOf"
       | "detectTransferRestriction"
       | "messageForTransferRestriction"
+      | "symbol"
       | "totalSupply"
       | "transfer"
       | "transferFrom"
@@ -67,6 +69,7 @@ export interface IFastTokenInterface extends utils.Interface {
     functionFragment: "messageForTransferRestriction",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
@@ -91,6 +94,7 @@ export interface IFastTokenInterface extends utils.Interface {
     functionFragment: "messageForTransferRestriction",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -187,6 +191,10 @@ export interface IFastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    symbol(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transfer(
@@ -229,6 +237,10 @@ export interface IFastToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  symbol(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transfer(
@@ -270,6 +282,8 @@ export interface IFastToken extends BaseContract {
       code: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    symbol(overrides?: CallOverrides): Promise<string>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -338,6 +352,10 @@ export interface IFastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    symbol(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
@@ -382,6 +400,10 @@ export interface IFastToken extends BaseContract {
     messageForTransferRestriction(
       code: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    symbol(
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;

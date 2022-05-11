@@ -37,7 +37,6 @@ export interface FastRegistryInterface extends utils.Interface {
     "provisionWithEth()": FunctionFragment;
     "setAccessAddress(address)": FunctionFragment;
     "setHistoryAddress(address)": FunctionFragment;
-    "setSpcAddress(address)": FunctionFragment;
     "setTokenAddress(address)": FunctionFragment;
     "spc()": FunctionFragment;
     "token()": FunctionFragment;
@@ -53,7 +52,6 @@ export interface FastRegistryInterface extends utils.Interface {
       | "provisionWithEth"
       | "setAccessAddress"
       | "setHistoryAddress"
-      | "setSpcAddress"
       | "setTokenAddress"
       | "spc"
       | "token"
@@ -77,10 +75,6 @@ export interface FastRegistryInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setHistoryAddress",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setSpcAddress",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -111,10 +105,6 @@ export interface FastRegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setSpcAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setTokenAddress",
     data: BytesLike
   ): Result;
@@ -122,15 +112,32 @@ export interface FastRegistryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
 
   events: {
+    "AccessAddressSet(address)": EventFragment;
     "EthDrained(address,uint256)": EventFragment;
     "EthReceived(address,uint256)": EventFragment;
+    "HistoryAddressSet(address)": EventFragment;
     "Initialized(uint8)": EventFragment;
+    "TokenAddressSet(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AccessAddressSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EthDrained"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EthReceived"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "HistoryAddressSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TokenAddressSet"): EventFragment;
 }
+
+export interface AccessAddressSetEventObject {
+  access: string;
+}
+export type AccessAddressSetEvent = TypedEvent<
+  [string],
+  AccessAddressSetEventObject
+>;
+
+export type AccessAddressSetEventFilter =
+  TypedEventFilter<AccessAddressSetEvent>;
 
 export interface EthDrainedEventObject {
   to: string;
@@ -154,12 +161,33 @@ export type EthReceivedEvent = TypedEvent<
 
 export type EthReceivedEventFilter = TypedEventFilter<EthReceivedEvent>;
 
+export interface HistoryAddressSetEventObject {
+  history: string;
+}
+export type HistoryAddressSetEvent = TypedEvent<
+  [string],
+  HistoryAddressSetEventObject
+>;
+
+export type HistoryAddressSetEventFilter =
+  TypedEventFilter<HistoryAddressSetEvent>;
+
 export interface InitializedEventObject {
   version: number;
 }
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
+
+export interface TokenAddressSetEventObject {
+  token: string;
+}
+export type TokenAddressSetEvent = TypedEvent<
+  [string],
+  TokenAddressSetEventObject
+>;
+
+export type TokenAddressSetEventFilter = TypedEventFilter<TokenAddressSetEvent>;
 
 export interface FastRegistry extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -221,11 +249,6 @@ export interface FastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setSpcAddress(
-      _spc: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setTokenAddress(
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -269,11 +292,6 @@ export interface FastRegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setSpcAddress(
-    _spc: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setTokenAddress(
     _token: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -307,8 +325,6 @@ export interface FastRegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setSpcAddress(_spc: string, overrides?: CallOverrides): Promise<void>;
-
     setTokenAddress(_token: string, overrides?: CallOverrides): Promise<void>;
 
     spc(overrides?: CallOverrides): Promise<string>;
@@ -317,6 +333,11 @@ export interface FastRegistry extends BaseContract {
   };
 
   filters: {
+    "AccessAddressSet(address)"(
+      access?: string | null
+    ): AccessAddressSetEventFilter;
+    AccessAddressSet(access?: string | null): AccessAddressSetEventFilter;
+
     "EthDrained(address,uint256)"(
       to?: string | null,
       amount?: null
@@ -329,8 +350,18 @@ export interface FastRegistry extends BaseContract {
     ): EthReceivedEventFilter;
     EthReceived(from?: string | null, amount?: null): EthReceivedEventFilter;
 
+    "HistoryAddressSet(address)"(
+      history?: string | null
+    ): HistoryAddressSetEventFilter;
+    HistoryAddressSet(history?: string | null): HistoryAddressSetEventFilter;
+
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
+
+    "TokenAddressSet(address)"(
+      token?: string | null
+    ): TokenAddressSetEventFilter;
+    TokenAddressSet(token?: string | null): TokenAddressSetEventFilter;
   };
 
   estimateGas: {
@@ -364,11 +395,6 @@ export interface FastRegistry extends BaseContract {
 
     setHistoryAddress(
       _history: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setSpcAddress(
-      _spc: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -413,11 +439,6 @@ export interface FastRegistry extends BaseContract {
 
     setHistoryAddress(
       _history: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setSpcAddress(
-      _spc: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

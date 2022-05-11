@@ -4,6 +4,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 
+// TODO: Test events.
+
 describe('Spc', () => {
   let
     spcMember: SignerWithAddress,
@@ -166,6 +168,8 @@ describe('Spc', () => {
       const regFactory = await ethers.getContractFactory('FastRegistry');
       reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
     });
+
+    it('forbids adding two FASTS with the same symbol');
 
     it('adds the given address to the list of registries');
 

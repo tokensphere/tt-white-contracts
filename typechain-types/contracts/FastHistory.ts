@@ -165,9 +165,13 @@ export interface FastHistoryInterface extends utils.Interface {
 
   events: {
     "Initialized(uint8)": EventFragment;
+    "MintingProofAdded(uint256,uint256,string)": EventFragment;
+    "TransferProofAdded(address,address,address,uint256,uint256,string)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MintingProofAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferProofAdded"): EventFragment;
 }
 
 export interface InitializedEventObject {
@@ -176,6 +180,35 @@ export interface InitializedEventObject {
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
+
+export interface MintingProofAddedEventObject {
+  amount: BigNumber;
+  blockNumber: BigNumber;
+  ref: string;
+}
+export type MintingProofAddedEvent = TypedEvent<
+  [BigNumber, BigNumber, string],
+  MintingProofAddedEventObject
+>;
+
+export type MintingProofAddedEventFilter =
+  TypedEventFilter<MintingProofAddedEvent>;
+
+export interface TransferProofAddedEventObject {
+  from: string;
+  spender: string;
+  to: string;
+  amount: BigNumber;
+  blockNumber: BigNumber;
+  ref: string;
+}
+export type TransferProofAddedEvent = TypedEvent<
+  [string, string, string, BigNumber, BigNumber, string],
+  TransferProofAddedEventObject
+>;
+
+export type TransferProofAddedEventFilter =
+  TypedEventFilter<TransferProofAddedEvent>;
 
 export interface FastHistory extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -360,6 +393,34 @@ export interface FastHistory extends BaseContract {
   filters: {
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
+
+    "MintingProofAdded(uint256,uint256,string)"(
+      amount?: BigNumberish | null,
+      blockNumber?: BigNumberish | null,
+      ref?: string | null
+    ): MintingProofAddedEventFilter;
+    MintingProofAdded(
+      amount?: BigNumberish | null,
+      blockNumber?: BigNumberish | null,
+      ref?: string | null
+    ): MintingProofAddedEventFilter;
+
+    "TransferProofAdded(address,address,address,uint256,uint256,string)"(
+      from?: string | null,
+      spender?: string | null,
+      to?: string | null,
+      amount?: null,
+      blockNumber?: null,
+      ref?: null
+    ): TransferProofAddedEventFilter;
+    TransferProofAdded(
+      from?: string | null,
+      spender?: string | null,
+      to?: string | null,
+      amount?: null,
+      blockNumber?: null,
+      ref?: null
+    ): TransferProofAddedEventFilter;
   };
 
   estimateGas: {

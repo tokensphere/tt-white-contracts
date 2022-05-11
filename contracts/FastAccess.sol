@@ -17,6 +17,13 @@ import './lib/PaginationLib.sol';
 contract FastAccess is Initializable, IFastAccess {
   using AddressSetLib for AddressSetLib.Data;
 
+  /// Events.
+
+  event GovernorAdded(address indexed governor);
+  event GovernorRemoved(address indexed governor);
+  event MemberAdded(address indexed member);
+  event MemberRemoved(address indexed member);
+
   /// Constants.
 
   // This represents how much Eth we provision new governors with.
@@ -33,13 +40,6 @@ contract FastAccess is Initializable, IFastAccess {
   AddressSetLib.Data private governorSet;
   /// @dev We keep the list of members in here.
   AddressSetLib.Data private memberSet;
-
-  /// Events.
-
-  event GovernorAdded(address indexed governor);
-  event GovernorRemoved(address indexed governor);
-  event MemberAdded(address indexed member);
-  event MemberRemoved(address indexed member);
 
   /// Public stuff.
 

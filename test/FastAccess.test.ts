@@ -3,6 +3,8 @@ import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc, FastRegistry, FastAccess__factory, FastAccess } from '../typechain-types';
 
+// TODO: Test events.
+
 describe('FastAccess', () => {
   let
     deployer: SignerWithAddress,

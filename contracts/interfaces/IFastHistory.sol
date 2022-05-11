@@ -3,6 +3,8 @@ pragma solidity ^0.8.4;
 
 
 interface IFastHistory {
+  /// Data structures.
+
   // Minting operations are recorded for papertrail. This is the
   // structure that keeps track of them.
   struct MintingProof {

@@ -177,6 +177,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "symbol",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "totalSupply",
     outputs: [
       {

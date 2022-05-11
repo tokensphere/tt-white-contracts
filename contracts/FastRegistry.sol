@@ -5,11 +5,15 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/ISpc.sol';
 import './interfaces/IFastRegistry.sol';
 import './interfaces/IFastAccess.sol';
-import './interfaces/IFastToken.sol';
 import './interfaces/IFastHistory.sol';
+import './interfaces/IFastToken.sol';
 
 contract FastRegistry is Initializable, IFastRegistry {
   /// Events.
+
+  event AccessAddressSet(address indexed access);
+  event HistoryAddressSet(address indexed history);
+  event TokenAddressSet(address indexed token);
 
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
@@ -19,8 +23,8 @@ contract FastRegistry is Initializable, IFastRegistry {
   // The registry holds pointers to various contracts of the ecosystem.
   ISpc public override spc;
   IFastAccess public override access;
-  IFastToken public override token;
   IFastHistory public override history;
+  IFastToken public override token;
 
   function initialize(ISpc _spc)
       public payable
@@ -28,17 +32,16 @@ contract FastRegistry is Initializable, IFastRegistry {
     spc = _spc;
   }
 
-  fallback() external payable {
-    emit EthReceived(msg.sender, msg.value);
-  }
+  // fallback() external payable {
+  //   emit EthReceived(msg.sender, msg.value);
+  // }
 
-  receive() external payable {
-    emit EthReceived(msg.sender, msg.value);
-  }
+  // receive() external payable {
+  //   emit EthReceived(msg.sender, msg.value);
+  // }
 
   function provisionWithEth()
       external payable {
-    require(msg.value > 0, 'Missing attached ETH');
     emit EthReceived(msg.sender, msg.value);
   }
 
@@ -52,24 +55,19 @@ contract FastRegistry is Initializable, IFastRegistry {
 
   /// Contract setters.
 
-  function setSpcAddress(ISpc _spc)
-      external spcMembership(msg.sender) {
-    spc = _spc;
-  }
-
   function setAccessAddress(IFastAccess _access)
       external spcMembership(msg.sender) {
     access = _access;
   }
 
-  function setTokenAddress(IFastToken _token)
-      external spcMembership(msg.sender) {
-    token = _token;
-  }
-
   function setHistoryAddress(IFastHistory _history)
       external spcMembership(msg.sender) {
     history = _history;
+  }
+
+  function setTokenAddress(IFastToken _token)
+      external spcMembership(msg.sender) {
+    token = _token;
   }
 
   /// Eth provisioning.

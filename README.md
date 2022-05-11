@@ -81,8 +81,10 @@ yarn hardhat \
     --spc 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 \
     --network localhost \
     --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
-    --name "Consilience Ventures Digital Share" \
-    --symbol "CVDS" \
+    --name "Some Awesome FAST Stuff" \
+    --symbol "SAF" \
+    --decimals 18 \
+    --has-fixed-supply true \
     --mint 1000000 \
     --tx-credits 1000000
 ```

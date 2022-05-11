@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastHistory__factory, FastHistory, Spc } from '../typechain-types';
-import { BigNumber } from 'ethers';
+
+// TODO: Test events.
 
 describe('FastHistory', () => {
   let

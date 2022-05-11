@@ -30,6 +30,7 @@ import type {
 export interface SpcInterface extends utils.Interface {
   functions: {
     "addMember(address)": FunctionFragment;
+    "checkSymbolAvailability(string)": FunctionFragment;
     "drainEth()": FunctionFragment;
     "fastRegistryCount()": FunctionFragment;
     "initialize(address)": FunctionFragment;
@@ -45,6 +46,7 @@ export interface SpcInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "addMember"
+      | "checkSymbolAvailability"
       | "drainEth"
       | "fastRegistryCount"
       | "initialize"
@@ -58,6 +60,10 @@ export interface SpcInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "addMember", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "checkSymbolAvailability",
+    values: [string]
+  ): string;
   encodeFunctionData(functionFragment: "drainEth", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fastRegistryCount",
@@ -91,6 +97,10 @@ export interface SpcInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "addMember", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "checkSymbolAvailability",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "drainEth", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "fastRegistryCount",
@@ -225,6 +235,11 @@ export interface Spc extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    checkSymbolAvailability(
+      symbol: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     drainEth(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -272,6 +287,11 @@ export interface Spc extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  checkSymbolAvailability(
+    symbol: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   drainEth(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -315,6 +335,11 @@ export interface Spc extends BaseContract {
 
   callStatic: {
     addMember(member: string, overrides?: CallOverrides): Promise<void>;
+
+    checkSymbolAvailability(
+      symbol: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     drainEth(overrides?: CallOverrides): Promise<void>;
 
@@ -377,6 +402,11 @@ export interface Spc extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    checkSymbolAvailability(
+      symbol: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     drainEth(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -423,6 +453,11 @@ export interface Spc extends BaseContract {
     addMember(
       member: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    checkSymbolAvailability(
+      symbol: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     drainEth(

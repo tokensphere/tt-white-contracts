@@ -5,7 +5,6 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './FastRegistry.sol';
 import './interfaces/IFastToken.sol';
 import './interfaces/IERC20.sol';
-import './interfaces/IERC1404.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract FastToken is Initializable, IFastToken {
@@ -31,7 +30,7 @@ contract FastToken is Initializable, IFastToken {
 
   // ERC20 related properties for this FAST Token.
   string public name;
-  string public symbol;
+  string public override symbol;
   uint256 public decimals;
   uint256 public override totalSupply;
 

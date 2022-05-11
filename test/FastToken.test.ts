@@ -6,6 +6,8 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc, FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
 chai.use(smock.matchers);
 
+// TODO: Test events.
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';

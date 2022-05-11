@@ -19,9 +19,12 @@ contract Spc is Initializable {
 
   /// Events.
 
+  // Membership related events.
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
+  // Fast registry related events.
   event FastRegistered(FastRegistry indexed reg);
+  // Eth provisioning related events.
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
 
@@ -31,6 +34,8 @@ contract Spc is Initializable {
   AddressSetLib.Data private memberSet;
   // This is where we keep our list of deployed fast FASTs.
   address[] private fastRegistries;
+  // We keep track of the FAST symbols that were already used.
+  mapping(string => IFastRegistry) private fastSymbols;
 
   /// Designated nitializer - we do not want a constructor!
 
@@ -86,17 +91,29 @@ contract Spc is Initializable {
   function removeMember(address member)
       membership(msg.sender)
       external {
+    // Remove the member from the set.
     memberSet.remove(member);
+    // TODO: Do we need to return the member's tokens to the zero address?
+    // Emit!
     emit MemberRemoved(member);
   }
 
   // FAST management related methods.
 
+  function checkSymbolAvailability(string memory symbol)
+    public view returns(bool) {
+      return fastSymbols[symbol] == IFastRegistry(address(0));
+    }
+
   function registerFastRegistry(FastRegistry reg)
       membership(msg.sender)
       external {
+    string memory symbol = reg.token().symbol();
+    require(fastSymbols[symbol] == IFastRegistry(address(0)), 'Symbol already taken');
     // Add the FAST Registry to our list.
     fastRegistries.push(address(reg));
+    // Add the fast symbol to our list.
+    fastSymbols[symbol] = reg;
     // Provision the new fast with Eth.
     reg.provisionWithEth{ value: FAST_ETH_PROVISION }();
     // Emit!
