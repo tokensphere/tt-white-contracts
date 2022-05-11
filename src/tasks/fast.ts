@@ -16,6 +16,8 @@ interface FastDeployParams {
   readonly symbol: string;
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
+  readonly mint: number;
+  readonly txCredits: number;
 };
 
 task('fast-deploy', 'Deploys a FAST')
@@ -25,6 +27,8 @@ task('fast-deploy', 'Deploys a FAST')
   .addParam('symbol', 'The symbol for the new FAST', undefined, types.string)
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addOptionalParam('hasFixedSupply', 'The minting scheme for the new FAST', true, types.boolean)
+  .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', 1000000, types.int)
+  .addOptionalParam('txCredits', 'The number of credits available for this new FAST', 50000, types.int)
   .setAction(async (params: FastDeployParams, hre) => {
     checkNetwork(hre);
 
@@ -62,9 +66,21 @@ task('fast-deploy', 'Deploys a FAST')
 
     // We can finally deploy our token contract.
     const token = await deployFastToken(hre, registry.address, params);
+    const spcMemberToken = token.connect(spcMember);
     console.log('Deployed FastToken', token.address);
     // Tell our registry where our token contract is.
     await spcMemberRegistry.setTokenAddress(token.address);
+
+    // Register our newly created FAST registry into the SPC.
+    await spc.connect(spcMember).registerFastRegistry(registry.address);
+
+    // At this point, we can start minting a few tokens.
+    const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, params.mint, 'Bootstrap initial mint');
+    // Also add transfer credits.
+    await fastAddTransferCredits(spcMemberToken, params.mint);
+    console.log(`Minted ${symbol} and provisioned transfer credits:`);
+    console.log(`  In base unit: =${baseAmount}`);
+    console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
   });
 
 interface FastMintParams {

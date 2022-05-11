@@ -37,7 +37,7 @@ describe('FastRegistry', () => {
   });
 
   describe('setAccessAddress', async () => {
-    it('requires SPC governance', async () => {
+    it('requires SPC membership', async () => {
       const subject = reg.setAccessAddress(alice.address);
       await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
@@ -50,7 +50,7 @@ describe('FastRegistry', () => {
   });
 
   describe('setTokenAddress', async () => {
-    it('requires SPC governance', async () => {
+    it('requires SPC membership', async () => {
       const subject = reg.setTokenAddress(alice.address);
       await expect(subject).to.be.revertedWith('Missing SPC membership');
     });
@@ -63,7 +63,7 @@ describe('FastRegistry', () => {
   });
 
   describe('setHistoryAddress', async () => {
-    it('requires SPC governance', async () => {
+    it('requires SPC membership', async () => {
       const subject = reg.setHistoryAddress(alice.address);
       await expect(subject).to.be.revertedWith('Missing SPC membership');
     });

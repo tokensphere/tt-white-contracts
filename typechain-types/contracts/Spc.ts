@@ -31,11 +31,11 @@ export interface SpcInterface extends utils.Interface {
   functions: {
     "addMember(address)": FunctionFragment;
     "drainEth()": FunctionFragment;
-    "fastTokenCount()": FunctionFragment;
+    "fastRegistryCount()": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "isMember(address)": FunctionFragment;
     "memberCount()": FunctionFragment;
-    "paginateFastTokens(uint256,uint256)": FunctionFragment;
+    "paginateFastRegistries(uint256,uint256)": FunctionFragment;
     "paginateMembers(uint256,uint256)": FunctionFragment;
     "provisionWithEth()": FunctionFragment;
     "registerFastRegistry(address)": FunctionFragment;
@@ -46,11 +46,11 @@ export interface SpcInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "addMember"
       | "drainEth"
-      | "fastTokenCount"
+      | "fastRegistryCount"
       | "initialize"
       | "isMember"
       | "memberCount"
-      | "paginateFastTokens"
+      | "paginateFastRegistries"
       | "paginateMembers"
       | "provisionWithEth"
       | "registerFastRegistry"
@@ -60,7 +60,7 @@ export interface SpcInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "addMember", values: [string]): string;
   encodeFunctionData(functionFragment: "drainEth", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "fastTokenCount",
+    functionFragment: "fastRegistryCount",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "initialize", values: [string]): string;
@@ -70,7 +70,7 @@ export interface SpcInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "paginateFastTokens",
+    functionFragment: "paginateFastRegistries",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -93,7 +93,7 @@ export interface SpcInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "addMember", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "drainEth", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "fastTokenCount",
+    functionFragment: "fastRegistryCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -103,7 +103,7 @@ export interface SpcInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "paginateFastTokens",
+    functionFragment: "paginateFastRegistries",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -163,7 +163,7 @@ export type EthReceivedEvent = TypedEvent<
 export type EthReceivedEventFilter = TypedEventFilter<EthReceivedEvent>;
 
 export interface FastRegisteredEventObject {
-  registry: string;
+  reg: string;
 }
 export type FastRegisteredEvent = TypedEvent<
   [string],
@@ -229,18 +229,18 @@ export interface Spc extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    fastTokenCount(overrides?: CallOverrides): Promise<[BigNumber]>;
+    fastRegistryCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     initialize(
       _member: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     isMember(candidate: string, overrides?: CallOverrides): Promise<[boolean]>;
 
     memberCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    paginateFastTokens(
+    paginateFastRegistries(
       cursor: BigNumberish,
       perPage: BigNumberish,
       overrides?: CallOverrides
@@ -257,7 +257,7 @@ export interface Spc extends BaseContract {
     ): Promise<ContractTransaction>;
 
     registerFastRegistry(
-      registry: string,
+      reg: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -276,18 +276,18 @@ export interface Spc extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  fastTokenCount(overrides?: CallOverrides): Promise<BigNumber>;
+  fastRegistryCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   initialize(
     _member: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   isMember(candidate: string, overrides?: CallOverrides): Promise<boolean>;
 
   memberCount(overrides?: CallOverrides): Promise<BigNumber>;
 
-  paginateFastTokens(
+  paginateFastRegistries(
     cursor: BigNumberish,
     perPage: BigNumberish,
     overrides?: CallOverrides
@@ -304,7 +304,7 @@ export interface Spc extends BaseContract {
   ): Promise<ContractTransaction>;
 
   registerFastRegistry(
-    registry: string,
+    reg: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -318,7 +318,7 @@ export interface Spc extends BaseContract {
 
     drainEth(overrides?: CallOverrides): Promise<void>;
 
-    fastTokenCount(overrides?: CallOverrides): Promise<BigNumber>;
+    fastRegistryCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(_member: string, overrides?: CallOverrides): Promise<void>;
 
@@ -326,7 +326,7 @@ export interface Spc extends BaseContract {
 
     memberCount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    paginateFastTokens(
+    paginateFastRegistries(
       cursor: BigNumberish,
       perPage: BigNumberish,
       overrides?: CallOverrides
@@ -340,10 +340,7 @@ export interface Spc extends BaseContract {
 
     provisionWithEth(overrides?: CallOverrides): Promise<void>;
 
-    registerFastRegistry(
-      registry: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    registerFastRegistry(reg: string, overrides?: CallOverrides): Promise<void>;
 
     removeMember(member: string, overrides?: CallOverrides): Promise<void>;
   };
@@ -361,10 +358,8 @@ export interface Spc extends BaseContract {
     ): EthReceivedEventFilter;
     EthReceived(from?: string | null, amount?: null): EthReceivedEventFilter;
 
-    "FastRegistered(address)"(
-      registry?: string | null
-    ): FastRegisteredEventFilter;
-    FastRegistered(registry?: string | null): FastRegisteredEventFilter;
+    "FastRegistered(address)"(reg?: string | null): FastRegisteredEventFilter;
+    FastRegistered(reg?: string | null): FastRegisteredEventFilter;
 
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
@@ -386,18 +381,18 @@ export interface Spc extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    fastTokenCount(overrides?: CallOverrides): Promise<BigNumber>;
+    fastRegistryCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _member: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     isMember(candidate: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     memberCount(overrides?: CallOverrides): Promise<BigNumber>;
 
-    paginateFastTokens(
+    paginateFastRegistries(
       cursor: BigNumberish,
       perPage: BigNumberish,
       overrides?: CallOverrides
@@ -414,7 +409,7 @@ export interface Spc extends BaseContract {
     ): Promise<BigNumber>;
 
     registerFastRegistry(
-      registry: string,
+      reg: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -434,11 +429,11 @@ export interface Spc extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    fastTokenCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    fastRegistryCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _member: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     isMember(
@@ -448,7 +443,7 @@ export interface Spc extends BaseContract {
 
     memberCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    paginateFastTokens(
+    paginateFastRegistries(
       cursor: BigNumberish,
       perPage: BigNumberish,
       overrides?: CallOverrides
@@ -465,7 +460,7 @@ export interface Spc extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     registerFastRegistry(
-      registry: string,
+      reg: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

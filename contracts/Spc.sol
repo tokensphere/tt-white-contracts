@@ -21,7 +21,7 @@ contract Spc is Initializable {
 
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
-  event FastRegistered(FastRegistry indexed registry);
+  event FastRegistered(FastRegistry indexed reg);
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
 
@@ -35,7 +35,7 @@ contract Spc is Initializable {
   /// Designated nitializer - we do not want a constructor!
 
   function initialize(address _member)
-      public
+      public payable
       initializer {
     memberSet.add(_member);
   }
@@ -92,23 +92,23 @@ contract Spc is Initializable {
 
   // FAST management related methods.
 
-  function registerFastRegistry(FastRegistry registry)
+  function registerFastRegistry(FastRegistry reg)
       membership(msg.sender)
       external {
     // Add the FAST Registry to our list.
-    fastRegistries.push(address(registry));
+    fastRegistries.push(address(reg));
     // Provision the new fast with Eth.
-    ensureEthProvisioning(payable(address(registry)), FAST_ETH_PROVISION);
+    reg.provisionWithEth{ value: FAST_ETH_PROVISION }();
     // Emit!
-    emit FastRegistered(registry);
+    emit FastRegistered(reg);
   }
 
-  function fastTokenCount()
+  function fastRegistryCount()
       external view returns(uint256) {
     return fastRegistries.length;
   }
 
-  function paginateFastTokens(uint256 cursor, uint256 perPage)
+  function paginateFastRegistries(uint256 cursor, uint256 perPage)
       external view
       returns(address[] memory, uint256) {
     return PaginationLib.addresses(fastRegistries, cursor, perPage);

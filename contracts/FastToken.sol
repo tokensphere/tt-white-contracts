@@ -201,8 +201,10 @@ contract FastToken is Initializable, IFastToken {
     // Keep track of the transfer.
     reg.history().addTransferProof(spender, from, to, amount, ref);
 
-    // Decrease transfer credits.
-    transferCredits -= amount;
+    // Decrease transfer credits, unless they are moved from the zero address.
+    if (from != ZERO_ADDRESS) {
+      transferCredits -= amount;
+    }
     // Keep track of the balances.
     balances[from] -= amount;
     balances[to] += amount;

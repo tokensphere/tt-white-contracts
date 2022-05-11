@@ -1,15 +1,15 @@
-import { task, types } from "hardhat/config";
-import "@openzeppelin/hardhat-upgrades";
-import { checkNetwork } from "../utils";
+import { task, types } from 'hardhat/config';
+import '@openzeppelin/hardhat-upgrades';
+import { checkNetwork } from '../utils';
 import { StateManager } from '../StateManager';
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Spc, Spc__factory } from "../../typechain-types";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { Spc, Spc__factory } from '../../typechain-types';
 
 interface SpcDeployParams {
   readonly member: string;
 };
 
-task("spc-deploy", "Deploys the main SPC contract")
+task('spc-deploy', 'Deploys the main SPC contract')
   .addParam('member', 'The SPC member address', undefined, types.string)
   .setAction(async (params: SpcDeployParams, hre) => {
     checkNetwork(hre);
@@ -32,8 +32,13 @@ async function deploySpc(
   member: string): Promise<Spc> {
   // We deploy our SPC contract.
   const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr };
-  const Spc = await ethers.getContractFactory("Spc", { libraries }) as Spc__factory;
-  return await upgrades.deployProxy(Spc, [member]) as Spc;
+  const Spc = await ethers.getContractFactory('Spc', { libraries }) as Spc__factory;
+  const spc = await upgrades.deployProxy(Spc, [member]) as Spc;
+  // Provision the SPC with Eth.
+  await spc.provisionWithEth({ value: ethers.utils.parseEther('500') });
+
+  // Much wow.
+  return spc;
 }
 
 export { deploySpc };

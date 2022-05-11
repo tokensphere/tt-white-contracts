@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./interfaces/ISpc.sol";
-import "./interfaces/IFastRegistry.sol";
-import "./interfaces/IFastAccess.sol";
-import "./interfaces/IFastToken.sol";
-import "./interfaces/IFastHistory.sol";
+import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
+import './interfaces/ISpc.sol';
+import './interfaces/IFastRegistry.sol';
+import './interfaces/IFastAccess.sol';
+import './interfaces/IFastToken.sol';
+import './interfaces/IFastHistory.sol';
 
 contract FastRegistry is Initializable, IFastRegistry {
   /// Events.
@@ -23,7 +23,8 @@ contract FastRegistry is Initializable, IFastRegistry {
   IFastHistory public override history;
 
   function initialize(ISpc _spc)
-      public initializer {
+      public payable
+      initializer {
     spc = _spc;
   }
 
@@ -71,10 +72,18 @@ contract FastRegistry is Initializable, IFastRegistry {
     history = _history;
   }
 
-  /// Eth proviisioning.
+  /// Eth provisioning.
 
+  /**
+  * @dev This function allows other contracts of the FAST network to request ETH
+  * provisioning to arbitrary addresses.
+  */
   function ensureEthProvisioning(address payable a, uint256 amount)
-      external override knownContract(msg.sender) {
+      external override {
+    // Make sure that the caller is the access contract. No other callers should
+    // be allowed to request a FastRegistry to provision Eth otherwise.
+    require(msg.sender == address(access), 'Cannot be called directly');
+    // Memoize balance.
     uint256 available = address(this).balance;
     // If this contract is storing less than the amount, cap the amount.
     if (amount > available) { amount = available; }
@@ -90,11 +99,6 @@ contract FastRegistry is Initializable, IFastRegistry {
 
   modifier spcMembership(address a) {
     require(spc.isMember(a), 'Missing SPC membership');
-    _;
-  }
-
-  modifier knownContract(address a) {
-    require(a == address(access), 'Cannot be called directly');
     _;
   }
 }

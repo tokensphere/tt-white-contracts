@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Spc__factory, Spc } from '../typechain-types';
+import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('Spc', () => {
   let
@@ -44,9 +45,35 @@ describe('Spc', () => {
     });
 
     it('is payable and keeps the attached Eth', async () => {
-      await spc.provisionWithEth({ value: 1000 });
+      const amount = 42;
+      await spc.provisionWithEth({ value: amount });
       const subject = await spc.provider.getBalance(spc.address);
-      expect(subject).to.eq(1000);
+      expect(subject).to.eq(amount);
+    });
+  });
+
+  describe('drainEth', async () => {
+    it('requires SPC membership', async () => {
+      const subject = spc.drainEth();
+      await expect(subject).to.revertedWith('Missing SPC membership');
+    });
+
+    it('transfers all the locked Eth to the caller', async () => {
+      const amount = 42;
+      await spc.provisionWithEth({ value: amount });
+      const spcBalanceBefore = await spc.provider.getBalance(spc.address);
+      const memberBalanceBefore = await spc.provider.getBalance(spcMember.address);
+      await governedSpc.drainEth();
+      const spcBalanceAfter = await spc.provider.getBalance(spc.address);
+      const memberBalanceAfter = await spc.provider.getBalance(spcMember.address);
+
+      // Check SPC contract balance.
+      expect(spcBalanceBefore).to.eq(amount);
+      expect(spcBalanceAfter).to.eq(0);
+
+      // Check member balance.
+      // TODO: Find a way to account for the gas spent...
+      // expect(memberBalanceBefore.add(amount)).to.eq(memberBalanceAfter);
     });
   });
 
@@ -104,6 +131,8 @@ describe('Spc', () => {
       const subject = governedSpc.addMember(spcMember.address);
       await expect(subject).to.be.revertedWith('Address already in set');
     });
+
+    it('provisions the member with some Eth')
   });
 
   describe('removeMember', async () => {
@@ -130,15 +159,34 @@ describe('Spc', () => {
 
   /// FAST management stuff.
 
-  describe('fastTokenCount', async () => {
-    it('returns the number of registered tokens');
+  describe.only('registerFastRegistry', async () => {
+    let reg: FastRegistry;
+
+    beforeEach(async () => {
+      const regFactory = await ethers.getContractFactory('FastRegistry');
+      reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
+    });
+
+    it('adds the given address to the list of registries');
+
+    it('provisions the registry address with some Eth', async () => {
+      const balanceBefore = await reg.provider.getBalance(reg.address);
+      await governedSpc.registerFastRegistry(reg.address);
+      const balanceAfter = await reg.provider.getBalance(reg.address);
+
+      console.log(balanceBefore);
+      console.log(balanceAfter);
+      // const args = reg.provisionWithEth.getCall(0).args;
+      // expect(args[0]).to.eq(5_000);
+      // expect(args[1]).to.eq('Attempt 1');
+    });
   });
 
-  describe('fastTokenAt', async () => {
-    it('returns the token address registered at a given index');
+  describe('fastRegistryCount', async () => {
+    it('returns the number of registries');
   });
 
-  describe('registerToken', async () => {
-    it('adds the given address to the list of registered tokens');
+  describe('paginateFastRegistries', async () => {
+    it('NEEDS MORE TESTS');
   });
 });

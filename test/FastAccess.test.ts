@@ -69,13 +69,13 @@ describe('FastAccess', () => {
   /// Governorship related stuff.
 
   describe('addGovernor', async () => {
-    it('requires SPC governance (anonymous)', async () => {
+    it('requires SPC membership (anonymous)', async () => {
       const subject = access.addGovernor(alice.address);
       // Check that the registry
       await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (governor)', async () => {
+    it('requires SPC membership (governor)', async () => {
       const subject = governedAccess.addGovernor(alice.address);
       await expect(subject).to.revertedWith('Missing SPC membership');
     });
@@ -98,12 +98,12 @@ describe('FastAccess', () => {
       await spcMemberAccess.addGovernor(alice.address);
     });
 
-    it('requires SPC governance (anonymous)', async () => {
+    it('requires SPC membership (anonymous)', async () => {
       const subject = access.removeGovernor(alice.address);
       await expect(subject).to.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (governor)', async () => {
+    it('requires SPC membership (governor)', async () => {
       const subject = governedAccess.removeGovernor(alice.address);
       await expect(subject).to.revertedWith('Missing SPC membership');
     });

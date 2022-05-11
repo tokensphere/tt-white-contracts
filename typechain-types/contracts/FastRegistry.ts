@@ -204,7 +204,7 @@ export interface FastRegistry extends BaseContract {
 
     initialize(
       _spc: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     provisionWithEth(
@@ -252,7 +252,7 @@ export interface FastRegistry extends BaseContract {
 
   initialize(
     _spc: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   provisionWithEth(
@@ -350,7 +350,7 @@ export interface FastRegistry extends BaseContract {
 
     initialize(
       _spc: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     provisionWithEth(
@@ -399,7 +399,7 @@ export interface FastRegistry extends BaseContract {
 
     initialize(
       _spc: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     provisionWithEth(

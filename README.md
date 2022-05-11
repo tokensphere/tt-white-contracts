@@ -5,7 +5,15 @@ This project uses Hardhat to allow for streamlined development and testing, as w
 
 Most deploy tasks takes care of updating the `.openzeppelin/state-${NETWORK_ID}.json` file so that it is easier to track addresses of previously deployed contracts.
 
-## Bootstrapping a Functional System
+## Bootstrapping a Functional System Locally
+
+Note that for development systems, we use local signers (Eg `ethers.getSigners()`). In the following paragraphs, you can assume that:
+- `zero_address` is `0x0000000000000000000000000000000000000000`.
+- `deployer` is the very first signer from the signers list.
+- `spcMember` is the second signer from the signers list.
+- `governor` is the third signer from the signers list.
+- `member` is the fourth signer from the signers list.
+- `random` is a random - non-signer at address `0xF7e5800E52318834E8689c37dCCCD2230427a905`.
 
 Simply run this command:
 
@@ -13,14 +21,19 @@ Simply run this command:
 yarn hardhat \
   bootstrap \
     --network localhost \
-    --spc-member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 \
-    --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
-    --name "Consilience Ventures Digital Share" \
-    --symbol "CVDS" \
-    --decimals 6 \
-    --has-fixed-supply true \
-    --mint 1000000
+    --name "Some Awesome FAST Stuff" \
+    --symbol "SAF" \
+    --decimals 18 \
+    --has-fixed-supply true
 ```
+
+The `bootstrap` task will:
+
+- Deploy all needed libraries and overwrite the `.openzeppelin/state-31337.json` file to keep track of their addresses.
+- Deploy an SPC contract using `spcMember` as the main member. It will also provision the SPC contract with some ethers sent from the `deployer` signer.
+- Deploy a FAST set of contracts, register everything together. At this end of this step, the deployed `FastRegistry` should have been provisioned by the SPC contract with some Eth.
+- Mint some tokens and provision some transfer credits.
+- Add the `member` address to the FAST members, and as a by-product of this `member` should be credited some extra Eth.
 
 ## Account Tasks (See `src/tasks/accounts.ts`)
 
@@ -69,7 +82,9 @@ yarn hardhat \
     --network localhost \
     --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
     --name "Consilience Ventures Digital Share" \
-    --symbol "CVDS"
+    --symbol "CVDS" \
+    --mint 1000000 \
+    --tx-credits 1000000
 ```
 
 This task will execute a more complex orchestration. The contracts deployed during this phase are:

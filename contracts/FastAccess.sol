@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/IFastAccess.sol';
 import './FastRegistry.sol';
 import './lib/AddressSetLib.sol';
@@ -65,7 +65,7 @@ contract FastAccess is Initializable, IFastAccess {
       public override {
     // Add governor to list.
     governorSet.add(a);
-    // Provision the new governor with Eth if needed.
+    // Let the registry provision the new governor with Eth if possible.
     reg.ensureEthProvisioning(a, GOVERNOR_ETH_PROVISION);
     // Emit!
     emit GovernorAdded(a);
@@ -117,7 +117,7 @@ contract FastAccess is Initializable, IFastAccess {
       public override {
     // Add the member.
     memberSet.add(a);
-    // Provision the new member with Eth if needed.
+    // Let the registry provision the new member with Eth if possible.
     reg.ensureEthProvisioning(a, MEMBER_ETH_PROVISION);
     // Emit!
     emit MemberAdded(a);

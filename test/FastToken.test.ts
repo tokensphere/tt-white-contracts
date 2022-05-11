@@ -3,8 +3,7 @@ import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, FastRegistry, FastAccess__factory, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
-import { BigNumber } from 'ethers';
+import { Spc, FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
 chai.use(smock.matchers);
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -103,9 +102,9 @@ describe('FastAccess', () => {
   });
 
   describe('setHasFixedSupply', async () => {
-    it('requires SPC governance (anonymous)');
-    it('requires SPC governance (member)');
-    it('requires SPC governance (governor)');
+    it('requires SPC membership (anonymous)');
+    it('requires SPC membership (member)');
+    it('requires SPC membership (governor)');
     it('changes the state of the fixed supply flag');
   });
 
@@ -121,17 +120,17 @@ describe('FastAccess', () => {
       await reg.connect(spcMember).setHistoryAddress(history.address);
     });
 
-    it('requires SPC governance (anonymous)', async () => {
+    it('requires SPC membership (anonymous)', async () => {
       const subject = token.mint(5_000, 'Attempt 1');
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (member)', async () => {
+    it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).mint(5_000, 'Attempt 1');
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (governor)', async () => {
+    it('requires SPC membership (governor)', async () => {
       const subject = governedToken.mint(5_000, 'Attempt 1');
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
@@ -180,17 +179,17 @@ describe('FastAccess', () => {
   /// Tranfer Credit management.
 
   describe('addTransferCredits', async () => {
-    it('requires SPC governance (anonymous)', async () => {
+    it('requires SPC membership (anonymous)', async () => {
       const subject = token.addTransferCredits(10);
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (member)', async () => {
+    it('requires SPC membership (member)', async () => {
       const subject = memberToken.addTransferCredits(10);
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (governor)', async () => {
+    it('requires SPC membership (governor)', async () => {
       const subject = governedToken.addTransferCredits(10);
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
@@ -204,17 +203,17 @@ describe('FastAccess', () => {
   });
 
   describe('drainTransferCredits', async () => {
-    it('requires SPC governance (anonymous)', async () => {
+    it('requires SPC membership (anonymous)', async () => {
       const subject = token.drainTransferCredits();
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (member)', async () => {
+    it('requires SPC membership (member)', async () => {
       const subject = memberToken.drainTransferCredits();
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
 
-    it('requires SPC governance (governor)', async () => {
+    it('requires SPC membership (governor)', async () => {
       const subject = governedToken.drainTransferCredits();
       await expect(subject).to.have.revertedWith('Missing SPC membership');
     });
@@ -274,6 +273,9 @@ describe('FastAccess', () => {
         const subject = memberToken.transfer(alice.address, 100_001);
         await expect(subject).to.have.revertedWith('Insuficient funds');
       });
+
+      it('requires sufficient transfer credits');
+      it('does not require transfer credits when funds are move from the zero address');
 
       it('transfers to the given wallet address', async () => {
         const subject = () => token.connect(alice).transfer(bob.address, 1_000);
