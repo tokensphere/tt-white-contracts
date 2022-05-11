@@ -11,6 +11,3 @@ artifacts/
 
 # Openzeppelin stuff.
 .openzeppelin/*-31337.json
-
-# Other generated stuff.
-typechain-types/
