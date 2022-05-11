@@ -19,7 +19,6 @@ interface BootstrapTaskParams {
   readonly symbol: string;
   readonly decimals: number;
   readonly hasFixedSupply: number;
-  readonly txCredits: number;
 };
 
 task('bootstrap', 'Deploys everything needed to run the FAST network')
@@ -65,7 +64,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const signers = await hre.ethers.getSigners();
   const spcMember = signers[1];
   const governor = signers[2];
-  const member = signers[3]
+  const member = signers[3];
 
   // Deploy the main SPC contract.
   const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, spcMember.address);
@@ -92,7 +91,8 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   await spcMemberRegistry.setTokenAddress(token.address);
 
   // Add our FAST registry to the SPC.
-  spc.connect(spcMember).registerFastRegistry(registry.address);
+  const spcMemberSpc = spc.connect(spcMember);
+  await spcMemberSpc.registerFastRegistry(registry.address);
 
   // At this point, we can start minting a few tokens.
   const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, 1_000_000, 'Bootstrap initial mint');

@@ -26,9 +26,9 @@ task('fast-deploy', 'Deploys a FAST')
   .addParam('name', 'The name for the new FAST', undefined, types.string)
   .addParam('symbol', 'The symbol for the new FAST', undefined, types.string)
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
-  .addOptionalParam('hasFixedSupply', 'The minting scheme for the new FAST', true, types.boolean)
-  .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', 1000000, types.int)
-  .addOptionalParam('txCredits', 'The number of credits available for this new FAST', 50000, types.int)
+  .addParam('hasFixedSupply', 'The minting scheme for the new FAST', undefined, types.boolean)
+  .addParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
+  .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
   .setAction(async (params: FastDeployParams, hre) => {
     checkNetwork(hre);
 
