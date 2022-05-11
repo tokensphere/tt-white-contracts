@@ -13,16 +13,16 @@ contract FastToken is Initializable, IFastToken {
 
   // We use the 0x0 address for all minting operations. A constant
   // to it will always come in handy.
-  address constant ZERO_ADDRESS = address(0);
+  address constant private ZERO_ADDRESS = address(0);
 
   // Restriction codes.
-  uint8 public constant INSUFICIENT_TRANSFER_CREDITS = 1;
-  uint8 public constant SENDER_NOT_MEMBER = 2;
-  uint8 public constant RECIPIENT_NOT_MEMBER = 3;
+  uint8 private constant INSUFICIENT_TRANSFER_CREDITS = 1;
+  uint8 private constant SENDER_NOT_MEMBER = 2;
+  uint8 private constant RECIPIENT_NOT_MEMBER = 3;
   // Restriction messages.
-  string public constant INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
-  string public constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
-  string public constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
+  string private constant INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
+  string private constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
+  string private constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
 
   /// Members.
 

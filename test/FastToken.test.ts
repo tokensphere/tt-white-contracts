@@ -62,7 +62,7 @@ describe('FastAccess', () => {
     const historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
     history = await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
     // Register the history contract with the registry.
-    await reg.connect(spcMember).setHistoryAddress(history.address);
+    reg.connect(spcMember).setHistoryAddress(history.address);
 
     // Finally, create our token factory.
     tokenFactory = await ethers.getContractFactory('FastToken');
@@ -73,15 +73,15 @@ describe('FastAccess', () => {
       tokenFactory,
       [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true]
     ) as FastToken;
-    governedToken = await token.connect(governor);
-    memberToken = await token.connect(member);
-    spcMemberToken = await token.connect(spcMember);
+    governedToken = token.connect(governor);
+    memberToken = token.connect(member);
+    spcMemberToken = token.connect(spcMember);
     await reg.connect(spcMember).setTokenAddress(token.address);
   });
 
   /// Public stuff.
 
-  describe('initializer', async () => {
+  describe('initialize', async () => {
     it('keeps track of the Registry address', async () => {
       const subject = await token.reg();
       expect(subject).to.eq(reg.address);
@@ -114,11 +114,11 @@ describe('FastAccess', () => {
 
     beforeEach(async () => {
       historyMock = await smock.fake('FastHistory');
-      reg.connect(spcMember).setHistoryAddress(historyMock.address);
+      await reg.connect(spcMember).setHistoryAddress(historyMock.address);
     });
 
     afterEach(async () => {
-      reg.connect(spcMember).setHistoryAddress(history.address);
+      await reg.connect(spcMember).setHistoryAddress(history.address);
     });
 
     it('requires SPC governance (anonymous)', async () => {
@@ -345,63 +345,21 @@ describe('FastAccess', () => {
     });
 
     describe('transferFrom', async () => {
-      // let historyMock: FakeContract<FastHistory>;
-
-      // beforeEach(async () => {
-      //   historyMock = await smock.fake('FastHistory');
-      //   reg.connect(spcMember).setHistoryAddress(historyMock.address);
-      // });
-
-      // afterEach(async () => {
-      //   reg.connect(spcMember).setHistoryAddress(history.address);
-      // });
-
-      // it('requires sender membership', async () => {
-      //   const subject = token.transferFrom(bob.address, 100);
-      //   await expect(subject).to.have.revertedWith('Missing sender membership');
-      // });
-
-      // it('requires recipient membership', async () => {
-      //   const subject = token.connect(alice).transferFrom(john.address, 100);
-      //   await expect(subject).to.have.revertedWith('Missing recipient membership');
-      // });
-
-      // it('requires sufficient funds', async () => {
-      //   const subject = memberToken.transferFrom(alice.address, 100_001);
-      //   await expect(subject).to.have.revertedWith('Insuficient funds');
-      // });
-
-      // it('transfers to the given wallet address', async () => {
-      //   const subject = () => token.connect(alice).transferFrom(bob.address, 1_000);
-      //   await expect(subject).to.changeTokenBalances(token, [alice, bob], [-1_000, 1_000]);
-      // });
-
-      // it('delegates to the history contract', async () => {
-      //   await token.connect(alice).transferFrom(bob.address, 123)
-      //   const args = historyMock.addTransferProof.getCall(0).args;
-      //   expect(args[0]).to.eq(alice.address);
-      //   expect(args[1]).to.eq(alice.address);
-      //   expect(args[2]).to.eq(bob.address);
-      //   expect(args[3]).to.eq(123);
-      //   expect(args[4]).to.eq('Unspecified - via ERC20');
-      // });
+      it('NEEDS MORE TESTS');
     });
 
     describe('transferFromWithRef', async () => {
-      it('', async () => {
-      });
+      it('NEEDS MORE TESTS');
     });
   });
 
   /// ERC1404 implementation.
 
   describe('detectTransferRestriction', async () => {
-    it('', async () => {
-    });
+    it('NEEDS MORE TESTS');
   });
 
   describe('messageForTransferRestriction', async () => {
-    it('', async () => {
-    });
+    it('NEEDS MORE TESTS');
   });
 });

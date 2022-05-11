@@ -33,9 +33,10 @@ describe('FastHistory', () => {
     // Deploy a registry.
     const regFactory = await ethers.getContractFactory('FastRegistry');
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
+    const spcMemberReg = reg.connect(spcMember);
     // As these two contracts will not really be called, we set them to addresses we control.
-    await reg.connect(spcMember).setTokenAddress(access.address);
-    await reg.connect(spcMember).setTokenAddress(token.address);
+    spcMemberReg.setTokenAddress(access.address);
+    spcMemberReg.setTokenAddress(token.address);
 
     const historyLibs = { PaginationLib: paginationLib.address };
     historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
@@ -43,7 +44,7 @@ describe('FastHistory', () => {
 
   beforeEach(async () => {
     history = await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
-    governedHistory = await history.connect(governor);
+    governedHistory = history.connect(governor);
   });
 
   /// Public stuff.
@@ -69,7 +70,7 @@ describe('FastHistory', () => {
     });
 
     it('adds an entry to the minting proof list', async () => {
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       await tokenedHistory.addMintingProof(3, 'Three');
       const [[{ amount, ref, blockNumber }],] = await history.paginateMintingProofs(0, 1);
       expect(amount).to.eq(3);
@@ -81,7 +82,7 @@ describe('FastHistory', () => {
   describe('mintingProofCount', async () => {
     beforeEach(async () => {
       // Add a bunch of minting proofs.
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addMintingProof(index, value);
       }));
@@ -96,7 +97,7 @@ describe('FastHistory', () => {
   describe('paginateMintingProofs', async () => {
     beforeEach(async () => {
       // Add a bunch of minting proofs.
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addMintingProof((index + 1) * 100, value);
       }));
@@ -141,7 +142,7 @@ describe('FastHistory', () => {
     });
 
     it('adds an entry to the transfer proof list', async () => {
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       tokenedHistory.addTransferProof(alice.address, bob.address, john.address, 300, 'Attempt 3');
       const [[{ spender, from, to, amount, ref, blockNumber }],] = await history.paginateTransferProofs(0, 1);
       expect(spender).to.eq(alice.address);
@@ -156,7 +157,7 @@ describe('FastHistory', () => {
   describe('transferProofCount', async () => {
     beforeEach(async () => {
       // Add a bunch of transfer proofs.
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));
@@ -171,7 +172,7 @@ describe('FastHistory', () => {
   describe('paginateTransferProofs', async () => {
     beforeEach(async () => {
       // Add a bunch of transfer proofs.
-      const tokenedHistory = await governedHistory.connect(token);
+      const tokenedHistory = governedHistory.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));

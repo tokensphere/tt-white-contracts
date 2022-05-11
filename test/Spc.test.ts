@@ -25,15 +25,32 @@ describe('Spc', () => {
 
   beforeEach(async () => {
     spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
-    governedSpc = await spc.connect(spcMember);
+    governedSpc = spc.connect(spcMember);
   });
 
-  describe('initializer', async () => {
+  describe('initialize', async () => {
     it('adds the given member when deployed', async () => {
       const subject = await spc.isMember(spcMember.address);
       expect(subject).to.eq(true);
     });
   });
+
+  /// Eth provisioning stuff.
+
+  describe('provisionWithEth', async () => {
+    it('reverts when no Eth is attached', async () => {
+      const subject = spc.provisionWithEth();
+      await expect(subject).to.revertedWith('');
+    });
+
+    it('is payable and keeps the attached Eth', async () => {
+      await spc.provisionWithEth({ value: 1000 });
+      const subject = await spc.provider.getBalance(spc.address);
+      expect(subject).to.eq(1000);
+    });
+  });
+
+  /// Membership management.
 
   describe('memberCount', async () => {
     beforeEach(async () => {
@@ -110,6 +127,8 @@ describe('Spc', () => {
       await expect(subject).to.be.revertedWith('Address does not exist in set');
     });
   });
+
+  /// FAST management stuff.
 
   describe('fastTokenCount', async () => {
     it('returns the number of registered tokens');

@@ -10,13 +10,20 @@ import './lib/PaginationLib.sol';
 contract Spc is Initializable {
   using AddressSetLib for AddressSetLib.Data;
 
+  /// Constants.
+
+  // This represents how much Eth we provision new SPC members with.
+  uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
+  // This represents how much Eth new FAST registries are provisioned with.
+  uint256 constant private FAST_ETH_PROVISION = 100 ether;
+
   /// Events.
 
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
   event FastRegistered(FastRegistry indexed registry);
-  event EtherReceived(address indexed from, uint256 amount);
-  event EtherWithdrawed(address indexed to, uint256 amount);
+  event EthReceived(address indexed from, uint256 amount);
+  event EthDrained(address indexed to, uint256 amount);
 
   /// Members.
 
@@ -25,7 +32,7 @@ contract Spc is Initializable {
   // This is where we keep our list of deployed fast FASTs.
   address[] private fastRegistries;
 
-  /// Public stuff.
+  /// Designated nitializer - we do not want a constructor!
 
   function initialize(address _member)
       public
@@ -33,20 +40,23 @@ contract Spc is Initializable {
     memberSet.add(_member);
   }
 
-  receive ()
+  /// Eth provisioning stuff.
+
+  function provisionWithEth()
       external payable {
-    emit EtherReceived(msg.sender, msg.value);
+    require(msg.value > 0, 'Missing attached ETH');
+    emit EthReceived(msg.sender, msg.value);
   }
 
-  function withdrawEther()
+  function drainEth()
       membership(msg.sender)
       external {
     uint256 amount = address(this).balance;
     payable(msg.sender).transfer(amount);
-    emit EtherWithdrawed(msg.sender, amount);
+    emit EthDrained(msg.sender, amount);
   }
 
-  /// Governance management.
+  /// Membership management.
 
   function memberCount() external view returns(uint256) {
     return memberSet.values.length;
@@ -62,11 +72,13 @@ contract Spc is Initializable {
     return memberSet.contains(candidate);
   }
 
-  function addMember(address member)
+  function addMember(address payable member)
       membership(msg.sender)
       external {
     // Add the member to our list.
     memberSet.add(member);
+    // Provision the member with some Eth.
+    ensureEthProvisioning(member, MEMBER_ETH_PROVISION);
     // Emit!
     emit MemberAdded(member);
   }
@@ -85,6 +97,8 @@ contract Spc is Initializable {
       external {
     // Add the FAST Registry to our list.
     fastRegistries.push(address(registry));
+    // Provision the new fast with Eth.
+    ensureEthProvisioning(payable(address(registry)), FAST_ETH_PROVISION);
     // Emit!
     emit FastRegistered(registry);
   }
@@ -100,7 +114,22 @@ contract Spc is Initializable {
     return PaginationLib.addresses(fastRegistries, cursor, perPage);
   }
 
-  // Modifiers.
+  /// Private.
+
+  function ensureEthProvisioning(address payable a, uint256 amount)
+      private {
+    uint256 available = address(this).balance;
+    // If this contract is storing less than the amount, cap the amount.
+    if (amount > available) { amount = available; }
+    // If the recipient has more than the amount, don't do anything.
+    if (a.balance >= amount) { return; }
+    // Otherwise, cap the amount to the missing part from the recipient's balance.
+    amount = amount - a.balance;
+    // Transfer some eth!
+    a.transfer(amount);
+  }
+
+  /// Modifiers.
 
   modifier membership(address a) {
     require(memberSet.contains(a), 'Missing SPC membership');

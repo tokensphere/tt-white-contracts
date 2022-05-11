@@ -38,13 +38,18 @@ describe('FastAccess', () => {
 
   beforeEach(async () => {
     access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
-    governedAccess = await access.connect(governor);
-    spcMemberAccess = await access.connect(spcMember);
+    await Promise.all([
+
+    ]);
+    governedAccess = access.connect(governor);
+    spcMemberAccess = access.connect(spcMember);
+    // Add our access contract to our registry.
+    await reg.connect(spcMember).setAccessAddress(access.address);
   });
 
   /// Public stuff.
 
-  describe('initializer', async () => {
+  describe('initialize', async () => {
     it('keeps track of the Registry address', async () => {
       const subject = await access.reg();
       expect(subject).to.eq(reg.address);

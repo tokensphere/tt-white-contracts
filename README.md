@@ -13,8 +13,8 @@ Simply run this command:
 yarn hardhat \
   bootstrap \
     --network localhost \
-    --spc-governor 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 \
-    --governor 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 \
+    --spc-member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 \
+    --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
     --name "Consilience Ventures Digital Share" \
     --symbol "CVDS" \
     --decimals 6 \
@@ -55,7 +55,7 @@ You can then subsequently deploy the main SPC by running:
 yarn hardhat \
   spc-deploy \
     --network localhost \
-    --governor 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+    --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
 
 ## FAST Token Tasks (See `src/tasks/fast.ts`)
@@ -65,8 +65,9 @@ Then you can start deploying FAST:
 ```shell
 yarn hardhat \
   fast-deploy \
+    --spc 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 \
     --network localhost \
-    --governor 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 \
+    --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
     --name "Consilience Ventures Digital Share" \
     --symbol "CVDS"
 ```
@@ -85,28 +86,40 @@ For example, to mint new tokens:
 ```shell
 yarn hardhat \
   fast-mint \
-    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
+    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
     --network localhost \
     --amount 1000000 \
     --ref "Much tokens, very wow, such bling."
 ```
 
-Or to obtain the balance of an account over a particular FAST:
+At this point, it's important to add transfer credits to the token contract, so that transfers
+can freely be executed.
 
 ```shell
 yarn hardhat \
-  fast-balance \
-    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
+  fast-add-transfer-credits \
+    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
     --network localhost \
-    --account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
+    --spc 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 \
+    --credits 5000000
 ```
 
-If you would like to query the minted and unallocated tokens, you can instead query address zero:
+To obtain the balance of an account over a particular FAST:
 
 ```shell
 yarn hardhat \
   fast-balance \
-    0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1 \
+    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
+    --network localhost \
+    --account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+```
+
+If you would like to query the minted (unallocated) tokens, you can instead query address zero:
+
+```shell
+yarn hardhat \
+  fast-balance \
+    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
     --network localhost \
     --account 0x0000000000000000000000000000000000000000
 ```

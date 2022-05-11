@@ -41,7 +41,6 @@ export function toBaseUnit(rawAmount: BigNumber, decimals: BigNumber) {
   if (!wholeStr) { wholeStr = '0'; }
   if (!fractionStr) { fractionStr = '0'; }
   if (BigNumber.from(fractionStr.length) > decimals) {
-    console.log("Blah");
     throw new Error('Too many decimal places');
   }
   while (BigNumber.from(fractionStr.length) < decimals) {

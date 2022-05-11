@@ -26,10 +26,10 @@ describe('FastRegistry', () => {
 
   beforeEach(async () => {
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-    spcMemberReg = await reg.connect(spcMember);
+    spcMemberReg = reg.connect(spcMember);
   });
 
-  describe('initializer', async () => {
+  describe('initialize', async () => {
     it('keeps track of the SPC address', async () => {
       const subject = await reg.spc();
       expect(subject).to.eq(spc.address);

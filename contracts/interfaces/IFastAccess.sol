@@ -17,8 +17,8 @@ interface IFastAccess {
   }
 
   function isGovernor(address c) external view returns(bool);
-  function addGovernor(address c) external;
+  function addGovernor(address payable c) external;
 
   function isMember(address c) external view returns(bool);
-  function addMember(address c) external;
+  function addMember(address payable c) external;
 }

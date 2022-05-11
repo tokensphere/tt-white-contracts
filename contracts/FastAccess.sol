@@ -17,6 +17,15 @@ import './lib/PaginationLib.sol';
 contract FastAccess is Initializable, IFastAccess {
   using AddressSetLib for AddressSetLib.Data;
 
+  /// Constants.
+
+  // This represents how much Eth we provision new governors with.
+  uint256 constant private GOVERNOR_ETH_PROVISION = 10 ether;
+  // This represents how much Eth we provision new members with.
+  uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
+
+  /// Members.
+
   /// @dev This is where the parent SPC is deployed.
   FastRegistry public reg;
 
@@ -38,10 +47,10 @@ contract FastAccess is Initializable, IFastAccess {
   * @dev Designated initializer - replaces the constructor as we are
   * using the proxy pattern allowing for logic upgrades.
   */
-  function initialize(FastRegistry _reg, address governor)
+  function initialize(FastRegistry pReg, address governor)
       initializer
       external {
-    reg = _reg;
+    reg = pReg;
     memberSet.add(governor);
     governorSet.add(governor);
   }
@@ -51,33 +60,35 @@ contract FastAccess is Initializable, IFastAccess {
   /**
    * @dev Adds a governor to the governorship list.
    */
-  function addGovernor(address _a)
+  function addGovernor(address payable a)
       spcMembership(msg.sender)
       public override {
     // Add governor to list.
-    governorSet.add(_a);
+    governorSet.add(a);
+    // Provision the new governor with Eth if needed.
+    reg.ensureEthProvisioning(a, GOVERNOR_ETH_PROVISION);
     // Emit!
-    emit GovernorAdded(_a);
+    emit GovernorAdded(a);
   }
 
   /**
    * @dev Removes a governor from the governorship list.
    */
-  function removeGovernor(address _a)
+  function removeGovernor(address a)
       spcMembership(msg.sender)
       public {
     // Remove governor.
-    governorSet.remove(_a);
+    governorSet.remove(a);
     // Emit!
-    emit GovernorRemoved(_a);
+    emit GovernorRemoved(a);
   }
 
   /**
    * @dev Queries whether a given address is a governor or not.
    */
-  function isGovernor(address _a)
+  function isGovernor(address a)
       public view override returns(bool) {
-    return governorSet.contains(_a);
+    return governorSet.contains(a);
   }
 
   /**
@@ -101,29 +112,33 @@ contract FastAccess is Initializable, IFastAccess {
   /**
    * @dev Adds a member to the membership list.
    */
-  function addMember(address _a)
+  function addMember(address payable a)
       governance(msg.sender)
       public override {
-    memberSet.add(_a);
-    emit MemberAdded(_a);
+    // Add the member.
+    memberSet.add(a);
+    // Provision the new member with Eth if needed.
+    reg.ensureEthProvisioning(a, MEMBER_ETH_PROVISION);
+    // Emit!
+    emit MemberAdded(a);
   }
 
   /**
    * @dev Removes a member from the membership list.
    */
-  function removeMember(address _a)
+  function removeMember(address a)
       governance(msg.sender)
       public {
-    memberSet.remove(_a);
-    emit MemberRemoved(_a);
+    memberSet.remove(a);
+    emit MemberRemoved(a);
   }
 
   /**
    * @dev Queries whether a given address is a member or not.
    */
-  function isMember(address _a)
+  function isMember(address a)
       public view override returns(bool) {
-    return memberSet.contains(_a);
+    return memberSet.contains(a);
   }
 
   /**
@@ -147,24 +162,24 @@ contract FastAccess is Initializable, IFastAccess {
   /**
    * @dev Retrieves flags for a given address.
    */
-  function flags(address _a)
+  function flags(address a)
       public view returns(IFastAccess.Flags memory) {
     return
       IFastAccess.Flags({
-        isGovernor: isGovernor(_a),
-        isMember: isMember(_a)
+        isGovernor: isGovernor(a),
+        isMember: isMember(a)
       });
   }
 
   // Modifiers.
 
-  modifier spcMembership(address _a) {
-    require(reg.spc().isMember(_a), 'Missing SPC membership');
+  modifier spcMembership(address a) {
+    require(reg.spc().isMember(a), 'Missing SPC membership');
     _;
   }
 
-  modifier governance(address _a) {
-    require(governorSet.contains(_a), 'Missing governorship');
+  modifier governance(address a) {
+    require(governorSet.contains(a), 'Missing governorship');
     _;
   }
 }
