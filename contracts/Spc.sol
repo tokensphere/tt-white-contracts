@@ -5,6 +5,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './FastRegistry.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';
+import './lib/HelpersLib.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract Spc is Initializable {
@@ -84,7 +85,7 @@ contract Spc is Initializable {
     memberSet.add(member);
 
     // Provision the member with some Eth.
-    uint256 amount = upTo(member, MEMBER_ETH_PROVISION);
+    uint256 amount = HelpersLib.upTo(member, MEMBER_ETH_PROVISION);
     if (amount != 0) { member.transfer(amount); }
 
     // Emit!
@@ -120,7 +121,7 @@ contract Spc is Initializable {
     fastSymbols[symbol] = reg;
 
     // Provision the new fast with Eth.
-    uint256 amount = upTo(address(reg), FAST_ETH_PROVISION);
+    uint256 amount = HelpersLib.upTo(address(reg), FAST_ETH_PROVISION);
     if (amount != 0) {
       reg.provisionWithEth{ value: amount }();
     }
@@ -137,22 +138,6 @@ contract Spc is Initializable {
       external view
       returns(address[] memory, uint256) {
     return PaginationLib.addresses(fastRegistries, cursor, perPage);
-  }
-
-  /// Private.
-
-  function upTo(address recipient, uint256 amount)
-      private view returns(uint256) {
-    // If the recipient has more than what is ought to be paid, return.
-    uint256 recipientBalance = recipient.balance;
-    if (recipientBalance >= amount) { return 0; }
-    // If the recipient has some Eth we should only pay the top-up.
-    amount = amount - recipientBalance;
-    // If the available eth is less than what we should pay, just cap it.
-    uint256 available = address(this).balance;
-    if (available < amount) { amount = available; }
-    // Provision the new fast with Eth.
-    return amount;
   }
 
   /// Modifiers.

@@ -40,6 +40,7 @@ task('fast-deploy', 'Deploys a FAST')
 
     const addressSetLibAddr: string = stateManager.state.AddressSetLib;
     const paginationLibAddr: string = stateManager.state.PaginationLib;
+    const helpersLibAddr: string = stateManager.state.HelpersLib;
 
     // Grab a handle on the deployed SPC contract.
     const spc = await hre.ethers.getContractAt('Spc', params.spc);
@@ -48,7 +49,7 @@ task('fast-deploy', 'Deploys a FAST')
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
 
     // First, deploy a registry contract.
-    const registry = await deployFastRegistry(hre, params.spc);
+    const registry = await deployFastRegistry(hre, helpersLibAddr, params.spc);
     const spcMemberRegistry = registry.connect(spcMember);
     console.log('Deployed FastRegistry', registry.address);
 
@@ -155,8 +156,10 @@ task('fast-balance', 'Retrieves the balance of a given account')
 // Deploys a FAST Registry contract.
 async function deployFastRegistry(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
+  helpersLibAddr: string,
   spcAddr: string): Promise<FastRegistry> {
-  const Registry = await ethers.getContractFactory('FastRegistry');
+  const libraries = { HelpersLib: helpersLibAddr };
+  const Registry = await ethers.getContractFactory('FastRegistry', { libraries });
   return await upgrades.deployProxy(Registry, [spcAddr]) as FastRegistry;
 };
 

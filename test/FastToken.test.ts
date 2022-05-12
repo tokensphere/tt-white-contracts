@@ -13,7 +13,7 @@ const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
 const ERC20_TOKEN_DECIMALS = 18;
 
-describe('FastAccess', () => {
+describe('FastToken', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
@@ -21,7 +21,6 @@ describe('FastAccess', () => {
     governor: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
-    rob: SignerWithAddress,
     john: SignerWithAddress;
   let reg: FastRegistry;
   let tokenFactory: FastToken__factory;
@@ -34,20 +33,21 @@ describe('FastAccess', () => {
     spcMemberToken: FastToken;
 
   before(async () => {
+    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
-    [deployer, spcMember, member, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, spcMember, member, governor, alice, bob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
     // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
     const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
-
     // Create our Registry.
-    const regFactory = await ethers.getContractFactory('FastRegistry');
+    const regLibs = { HelpersLib: helpersLib.address };
+    const regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-
     // Create our access factory and contract.
     const accessLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     const accessFactory = await ethers.getContractFactory('FastAccess', { libraries: accessLibs });

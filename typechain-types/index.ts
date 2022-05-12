@@ -30,6 +30,8 @@ export type { IFastToken } from "./contracts/interfaces/IFastToken";
 export { IFastToken__factory } from "./factories/contracts/interfaces/IFastToken__factory";
 export type { ISpc } from "./contracts/interfaces/ISpc";
 export { ISpc__factory } from "./factories/contracts/interfaces/ISpc__factory";
+export type { HelpersLib } from "./contracts/lib/HelpersLib";
+export { HelpersLib__factory } from "./factories/contracts/lib/HelpersLib__factory";
 export type { PaginationLib } from "./contracts/lib/PaginationLib";
 export { PaginationLib__factory } from "./factories/contracts/lib/PaginationLib__factory";
 export type { Spc } from "./contracts/Spc";

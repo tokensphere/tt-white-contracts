@@ -21,17 +21,20 @@ describe('FastAccess', () => {
   let spcMemberAccess: FastAccess;
 
   before(async () => {
+    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
     [deployer, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
     // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
     const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Create our Registry.
-    const regFactory = await ethers.getContractFactory('FastRegistry');
+    const regLibs = { HelpersLib: helpersLib.address };
+    const regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
     // Finally create and cache our access factory.
     const accessLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
@@ -154,8 +157,8 @@ describe('FastAccess', () => {
       // Add 4 governors - so there is a total of 5.
       await spcMemberAccess.addGovernor(alice.address);
       await spcMemberAccess.addGovernor(bob.address);
-      await spcMemberAccess.addGovernor(john.address);
       await spcMemberAccess.addGovernor(rob.address);
+      await spcMemberAccess.addGovernor(john.address);
     });
 
     it('returns the cursor to the next page', async () => {
@@ -177,8 +180,8 @@ describe('FastAccess', () => {
         governor.address,
         alice.address,
         bob.address,
+        rob.address,
         john.address,
-        rob.address
       ]);
     });
   });
@@ -268,8 +271,8 @@ describe('FastAccess', () => {
       // Add 4 governors - so there is a total of 5.
       await governedAccess.addMember(alice.address);
       await governedAccess.addMember(bob.address);
-      await governedAccess.addMember(john.address);
       await governedAccess.addMember(rob.address);
+      await governedAccess.addMember(john.address);
     });
 
     it('returns the cursor to the next page', async () => {
@@ -291,8 +294,8 @@ describe('FastAccess', () => {
         governor.address,
         alice.address,
         bob.address,
-        john.address,
-        rob.address
+        rob.address,
+        john.address
       ]);
     });
   });

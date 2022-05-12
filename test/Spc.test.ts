@@ -3,7 +3,6 @@ import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { BigNumber, Contract } from 'ethers';
 import { toHexString } from '../src/utils';
 
 // TODO: Test events.
@@ -22,8 +21,6 @@ const negOneHundred = oneHundred.mul(-1);
 const oneMilion = ethers.utils.parseEther('1000000.0');
 
 describe('Spc', () => {
-  let addressSetLib: Contract,
-    paginationLib: Contract;
   let
     spcMember: SignerWithAddress,
     bob: SignerWithAddress,
@@ -33,13 +30,15 @@ describe('Spc', () => {
   let spcMemberSpc: Spc;
 
   before(async () => {
+    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
     [/*deployer*/, spcMember, bob, alice] = await ethers.getSigners();
     // Deploy our libraries.
-    addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
-    paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
     // We can now cache a ready-to-use SPC factory.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
     spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
   });
 

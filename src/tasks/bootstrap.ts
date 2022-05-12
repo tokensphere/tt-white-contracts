@@ -31,7 +31,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
 
     // Prepare a state manager.
     const {
-      addressSetLib, paginationLib,
+      addressSetLib, paginationLib, helpersLib,
       spc,
       registry, access, history, token,
       symbol, decimals, baseAmount
@@ -60,6 +60,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   // Deploy all needed libraries.
   const addressSetLib = await deployLibrary(hre, 'AddressSetLib');
   const paginationLib = await deployLibrary(hre, 'PaginationLib');
+  const helpersLib = await deployLibrary(hre, 'HelpersLib');
 
   const signers = await hre.ethers.getSigners();
   const spcMember = signers[1];
@@ -67,10 +68,10 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const member = signers[3];
 
   // Deploy the main SPC contract.
-  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, spcMember.address);
+  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, helpersLib.address, spcMember.address);
 
   // First, deploy a registry contract.
-  const registry = await deployFastRegistry(hre, spc.address);
+  const registry = await deployFastRegistry(hre, helpersLib.address, spc.address);
   const spcMemberRegistry = registry.connect(spcMember);
 
   // First, deploy an access contract, required for the FAST permissioning.
@@ -104,7 +105,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   await governedAccess.addMember('0xF7e5800E52318834E8689c37dCCCD2230427a905');
 
   return {
-    addressSetLib, paginationLib,
+    addressSetLib, paginationLib, helpersLib,
     spc, registry, access, history, token,
     symbol, decimals, baseAmount
   };

@@ -16,12 +16,14 @@ task('spc-deploy', 'Deploys the main SPC contract')
 
     const stateManager = new StateManager(31337);
     // Check for libraries...
-    if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
-    else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib library' }
+    if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib' }
+    else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib' }
+    else if (!stateManager.state.HelpersLib) { throw 'Missing HelpersLib' }
 
     const addressSetLibAddr: string = stateManager.state.AddressSetLib;
     const paginationLibAddr: string = stateManager.state.PaginationLib;
-    const spc = await deploySpc(hre, addressSetLibAddr, paginationLibAddr, params.member);
+    const helpersLibAddr: string = stateManager.state.HelpersLib;
+    const spc = await deploySpc(hre, addressSetLibAddr, paginationLibAddr, helpersLibAddr, params.member);
     console.log('Deployed Spc', spc.address);
   });
 
@@ -29,9 +31,10 @@ async function deploySpc(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
   addressSetLibAddr: string,
   paginationLibAddr: string,
+  helpersLibAddr: string,
   member: string): Promise<Spc> {
   // We deploy our SPC contract.
-  const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr };
+  const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr, HelpersLib: helpersLibAddr };
   const Spc = await ethers.getContractFactory('Spc', { libraries }) as Spc__factory;
   const spc = await upgrades.deployProxy(Spc, [member]) as Spc;
   // Provision the SPC with Eth.

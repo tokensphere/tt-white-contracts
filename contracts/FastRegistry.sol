@@ -7,7 +7,9 @@ import './interfaces/IFastRegistry.sol';
 import './interfaces/IFastAccess.sol';
 import './interfaces/IFastHistory.sol';
 import './interfaces/IFastToken.sol';
+import './lib/HelpersLib.sol';
 
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract FastRegistry is Initializable, IFastRegistry {
   /// Events.
 
@@ -74,17 +76,11 @@ contract FastRegistry is Initializable, IFastRegistry {
     // be allowed to request a FastRegistry to provision Eth otherwise.
     require(msg.sender == address(access), 'Cannot be called directly');
     
-    // If the recipient has more than what is ought to be paid, return.
-    uint256 recipientBalance = recipient.balance;
-    if (recipientBalance >= amount) { return; }
-    // If the recipient has some Eth we should only pay the top-up.
-    amount = amount - recipientBalance;
-    // If the available eth is less than what we should pay, just cap it.
-    uint256 available = address(this).balance;
-    if (available < amount) { amount = available; }
-
-    // Transfer some eth!
-    recipient.transfer(amount);
+    amount = HelpersLib.upTo(recipient, amount);
+    if (amount != 0) {
+      // Transfer some eth!
+      recipient.transfer(amount);
+    }
   }
 
   /// Modifiers.

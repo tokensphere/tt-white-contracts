@@ -15,24 +15,26 @@ describe('FastHistory', () => {
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress;
-  let spc: Spc;
   let reg: FastRegistry;
   let historyFactory: FastHistory__factory;
   let history: FastHistory;
   let governedHistory: FastHistory;
 
   before(async () => {
+    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
     [deployer, spcMember, governor, access, token, alice, bob, john] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
     // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
     const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Deploy a registry.
-    const regFactory = await ethers.getContractFactory('FastRegistry');
+    const regLibs = { HelpersLib: helpersLib.address };
+    const regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
     const spcMemberReg = reg.connect(spcMember);
     // As these two contracts will not really be called, we set them to addresses we control.

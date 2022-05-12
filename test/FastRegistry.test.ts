@@ -13,17 +13,20 @@ describe('FastRegistry', () => {
   let spcMemberReg: FastRegistry;
 
   before(async () => {
+    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
     [/*deployer*/, spcMember, governor, bob, alice] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
     // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
     const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs }) as Spc__factory;
     spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
     // Cache our Registry factory.
-    regFactory = await ethers.getContractFactory('FastRegistry');
+    const regLibs = { HelpersLib: helpersLib.address };
+    regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
   });
 
   beforeEach(async () => {

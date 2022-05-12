@@ -61,6 +61,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ISpc__factory>;
     getContractFactory(
+      name: "HelpersLib",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.HelpersLib__factory>;
+    getContractFactory(
       name: "PaginationLib",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PaginationLib__factory>;
@@ -129,6 +133,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ISpc>;
+    getContractAt(
+      name: "HelpersLib",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.HelpersLib>;
     getContractAt(
       name: "PaginationLib",
       address: string,

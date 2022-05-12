@@ -58,6 +58,10 @@ yarn hardhat \
   lib-deploy \
     PaginationLib \
     --network localhost
+yarn hardhat \
+  lib-deploy \
+    HelpersLib \
+    --network localhost
 ```
 
 ## SPC Tasks (See `src/tasks/spc.ts`)
