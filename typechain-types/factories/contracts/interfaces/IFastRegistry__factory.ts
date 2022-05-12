@@ -24,6 +24,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "history",
+    outputs: [
+      {
+        internalType: "contract IFastHistory",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address payable",
@@ -36,21 +49,8 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "ensureEthProvisioning",
+    name: "payUpTo",
     outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "history",
-    outputs: [
-      {
-        internalType: "contract IFastHistory",
-        name: "",
-        type: "address",
-      },
-    ],
     stateMutability: "nonpayable",
     type: "function",
   },

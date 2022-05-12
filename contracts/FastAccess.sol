@@ -66,7 +66,7 @@ contract FastAccess is Initializable, IFastAccess {
     // Add governor to list.
     governorSet.add(a);
     // Let the registry provision the new governor with Eth if possible.
-    reg.ensureEthProvisioning(a, GOVERNOR_ETH_PROVISION);
+    reg.payUpTo(a, GOVERNOR_ETH_PROVISION);
     // Emit!
     emit GovernorAdded(a);
   }
@@ -118,7 +118,7 @@ contract FastAccess is Initializable, IFastAccess {
     // Add the member.
     memberSet.add(a);
     // Let the registry provision the new member with Eth if possible.
-    reg.ensureEthProvisioning(a, MEMBER_ETH_PROVISION);
+    reg.payUpTo(a, MEMBER_ETH_PROVISION);
     // Emit!
     emit MemberAdded(a);
   }

@@ -82,8 +82,11 @@ contract Spc is Initializable {
       external {
     // Add the member to our list.
     memberSet.add(member);
+
     // Provision the member with some Eth.
-    ensureEthProvisioning(member, MEMBER_ETH_PROVISION);
+    uint256 amount = upTo(member, MEMBER_ETH_PROVISION);
+    if (amount != 0) { member.transfer(amount); }
+
     // Emit!
     emit MemberAdded(member);
   }
@@ -110,12 +113,17 @@ contract Spc is Initializable {
       external {
     string memory symbol = reg.token().symbol();
     require(fastSymbols[symbol] == IFastRegistry(address(0)), 'Symbol already taken');
+
     // Add the FAST Registry to our list.
     fastRegistries.push(address(reg));
     // Add the fast symbol to our list.
     fastSymbols[symbol] = reg;
+
     // Provision the new fast with Eth.
-    reg.provisionWithEth{ value: FAST_ETH_PROVISION }();
+    uint256 amount = upTo(address(reg), FAST_ETH_PROVISION);
+    if (amount != 0) {
+      reg.provisionWithEth{ value: amount }();
+    }
     // Emit!
     emit FastRegistered(reg);
   }
@@ -133,17 +141,18 @@ contract Spc is Initializable {
 
   /// Private.
 
-  function ensureEthProvisioning(address payable a, uint256 amount)
-      private {
+  function upTo(address recipient, uint256 amount)
+      private view returns(uint256) {
+    // If the recipient has more than what is ought to be paid, return.
+    uint256 recipientBalance = recipient.balance;
+    if (recipientBalance >= amount) { return 0; }
+    // If the recipient has some Eth we should only pay the top-up.
+    amount = amount - recipientBalance;
+    // If the available eth is less than what we should pay, just cap it.
     uint256 available = address(this).balance;
-    // If this contract is storing less than the amount, cap the amount.
-    if (amount > available) { amount = available; }
-    // If the recipient has more than the amount, don't do anything.
-    if (a.balance >= amount) { return; }
-    // Otherwise, cap the amount to the missing part from the recipient's balance.
-    amount = amount - a.balance;
-    // Transfer some eth!
-    a.transfer(amount);
+    if (available < amount) { amount = available; }
+    // Provision the new fast with Eth.
+    return amount;
   }
 
   /// Modifiers.

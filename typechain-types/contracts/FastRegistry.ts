@@ -31,9 +31,9 @@ export interface FastRegistryInterface extends utils.Interface {
   functions: {
     "access()": FunctionFragment;
     "drainEth()": FunctionFragment;
-    "ensureEthProvisioning(address,uint256)": FunctionFragment;
     "history()": FunctionFragment;
     "initialize(address)": FunctionFragment;
+    "payUpTo(address,uint256)": FunctionFragment;
     "provisionWithEth()": FunctionFragment;
     "setAccessAddress(address)": FunctionFragment;
     "setHistoryAddress(address)": FunctionFragment;
@@ -46,9 +46,9 @@ export interface FastRegistryInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "access"
       | "drainEth"
-      | "ensureEthProvisioning"
       | "history"
       | "initialize"
+      | "payUpTo"
       | "provisionWithEth"
       | "setAccessAddress"
       | "setHistoryAddress"
@@ -59,12 +59,12 @@ export interface FastRegistryInterface extends utils.Interface {
 
   encodeFunctionData(functionFragment: "access", values?: undefined): string;
   encodeFunctionData(functionFragment: "drainEth", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "ensureEthProvisioning",
-    values: [string, BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "history", values?: undefined): string;
   encodeFunctionData(functionFragment: "initialize", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "payUpTo",
+    values: [string, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "provisionWithEth",
     values?: undefined
@@ -86,12 +86,9 @@ export interface FastRegistryInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "access", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "drainEth", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ensureEthProvisioning",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "history", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "payUpTo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "provisionWithEth",
     data: BytesLike
@@ -222,17 +219,17 @@ export interface FastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     history(overrides?: CallOverrides): Promise<[string]>;
 
     initialize(
       _spc: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    payUpTo(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     provisionWithEth(
@@ -265,17 +262,17 @@ export interface FastRegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  ensureEthProvisioning(
-    a: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   history(overrides?: CallOverrides): Promise<string>;
 
   initialize(
     _spc: string,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  payUpTo(
+    recipient: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   provisionWithEth(
@@ -306,15 +303,15 @@ export interface FastRegistry extends BaseContract {
 
     drainEth(overrides?: CallOverrides): Promise<void>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     history(overrides?: CallOverrides): Promise<string>;
 
     initialize(_spc: string, overrides?: CallOverrides): Promise<void>;
+
+    payUpTo(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     provisionWithEth(overrides?: CallOverrides): Promise<void>;
 
@@ -371,17 +368,17 @@ export interface FastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     history(overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _spc: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    payUpTo(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     provisionWithEth(
@@ -415,17 +412,17 @@ export interface FastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     history(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _spc: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    payUpTo(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     provisionWithEth(

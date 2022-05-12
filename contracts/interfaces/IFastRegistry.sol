@@ -11,5 +11,5 @@ interface IFastRegistry {
   function access() external returns(IFastAccess);
   function token() external returns(IFastToken);
   function history() external returns(IFastHistory);
-  function ensureEthProvisioning(address payable a, uint256 amount) external;
+  function payUpTo(address payable a, uint256 amount) external;
 }

@@ -25,36 +25,28 @@ import type {
 export interface IFastRegistryInterface extends utils.Interface {
   functions: {
     "access()": FunctionFragment;
-    "ensureEthProvisioning(address,uint256)": FunctionFragment;
     "history()": FunctionFragment;
+    "payUpTo(address,uint256)": FunctionFragment;
     "spc()": FunctionFragment;
     "token()": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic:
-      | "access"
-      | "ensureEthProvisioning"
-      | "history"
-      | "spc"
-      | "token"
+    nameOrSignatureOrTopic: "access" | "history" | "payUpTo" | "spc" | "token"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "access", values?: undefined): string;
+  encodeFunctionData(functionFragment: "history", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "ensureEthProvisioning",
+    functionFragment: "payUpTo",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "history", values?: undefined): string;
   encodeFunctionData(functionFragment: "spc", values?: undefined): string;
   encodeFunctionData(functionFragment: "token", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "access", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ensureEthProvisioning",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "history", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "payUpTo", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "spc", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
 
@@ -92,13 +84,13 @@ export interface IFastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
+    history(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    history(
+    payUpTo(
+      a: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -115,13 +107,13 @@ export interface IFastRegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  ensureEthProvisioning(
-    a: string,
-    amount: BigNumberish,
+  history(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  history(
+  payUpTo(
+    a: string,
+    amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -136,13 +128,13 @@ export interface IFastRegistry extends BaseContract {
   callStatic: {
     access(overrides?: CallOverrides): Promise<string>;
 
-    ensureEthProvisioning(
+    history(overrides?: CallOverrides): Promise<string>;
+
+    payUpTo(
       a: string,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    history(overrides?: CallOverrides): Promise<string>;
 
     spc(overrides?: CallOverrides): Promise<string>;
 
@@ -156,13 +148,13 @@ export interface IFastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
+    history(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    history(
+    payUpTo(
+      a: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -180,13 +172,13 @@ export interface IFastRegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    ensureEthProvisioning(
-      a: string,
-      amount: BigNumberish,
+    history(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    history(
+    payUpTo(
+      a: string,
+      amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

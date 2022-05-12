@@ -32,14 +32,6 @@ contract FastRegistry is Initializable, IFastRegistry {
     spc = _spc;
   }
 
-  // fallback() external payable {
-  //   emit EthReceived(msg.sender, msg.value);
-  // }
-
-  // receive() external payable {
-  //   emit EthReceived(msg.sender, msg.value);
-  // }
-
   function provisionWithEth()
       external payable {
     emit EthReceived(msg.sender, msg.value);
@@ -76,21 +68,23 @@ contract FastRegistry is Initializable, IFastRegistry {
   * @dev This function allows other contracts of the FAST network to request ETH
   * provisioning to arbitrary addresses.
   */
-  function ensureEthProvisioning(address payable a, uint256 amount)
+  function payUpTo(address payable recipient, uint256 amount)
       external override {
     // Make sure that the caller is the access contract. No other callers should
     // be allowed to request a FastRegistry to provision Eth otherwise.
     require(msg.sender == address(access), 'Cannot be called directly');
-    // Memoize balance.
+    
+    // If the recipient has more than what is ought to be paid, return.
+    uint256 recipientBalance = recipient.balance;
+    if (recipientBalance >= amount) { return; }
+    // If the recipient has some Eth we should only pay the top-up.
+    amount = amount - recipientBalance;
+    // If the available eth is less than what we should pay, just cap it.
     uint256 available = address(this).balance;
-    // If this contract is storing less than the amount, cap the amount.
-    if (amount > available) { amount = available; }
-    // If the recipient has more than the amount, don't do anything.
-    if (a.balance >= amount) { return; }
-    // Otherwise, cap the amount to the missing part from the recipient's balance.
-    amount = amount - a.balance;
+    if (available < amount) { amount = available; }
+
     // Transfer some eth!
-    a.transfer(amount);
+    recipient.transfer(amount);
   }
 
   /// Modifiers.

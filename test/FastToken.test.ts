@@ -111,11 +111,11 @@ describe('FastAccess', () => {
   });
 
   describe('mint', async () => {
-    let historyMock: FakeContract<FastHistory>;
+    let history: FakeContract<FastHistory>;
 
     beforeEach(async () => {
-      historyMock = await smock.fake('FastHistory');
-      await reg.connect(spcMember).setHistoryAddress(historyMock.address);
+      history = await smock.fake('FastHistory');
+      await reg.connect(spcMember).setHistoryAddress(history.address);
     });
 
     afterEach(async () => {
@@ -160,7 +160,7 @@ describe('FastAccess', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      const args = historyMock.addMintingProof.getCall(0).args;
+      const args = history.addMintingProof.getCall(0).args;
       expect(args[0]).to.eq(5_000);
       expect(args[1]).to.eq('Attempt 1');
     });
@@ -250,11 +250,11 @@ describe('FastAccess', () => {
     });
 
     describe('transfer', async () => {
-      let historyMock: FakeContract<FastHistory>;
+      let history: FakeContract<FastHistory>;
 
       beforeEach(async () => {
-        historyMock = await smock.fake('FastHistory');
-        reg.connect(spcMember).setHistoryAddress(historyMock.address);
+        history = await smock.fake('FastHistory');
+        reg.connect(spcMember).setHistoryAddress(history.address);
       });
 
       afterEach(async () => {
@@ -286,7 +286,7 @@ describe('FastAccess', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transfer(bob.address, 123)
-        const args = historyMock.addTransferProof.getCall(0).args;
+        const args = history.addTransferProof.getCall(0).args;
         expect(args[0]).to.eq(alice.address);
         expect(args[1]).to.eq(alice.address);
         expect(args[2]).to.eq(bob.address);
@@ -296,11 +296,11 @@ describe('FastAccess', () => {
     });
 
     describe('transferWithRef', async () => {
-      let historyMock: FakeContract<FastHistory>;
+      let history: FakeContract<FastHistory>;
 
       beforeEach(async () => {
-        historyMock = await smock.fake('FastHistory');
-        reg.connect(spcMember).setHistoryAddress(historyMock.address);
+        history = await smock.fake('FastHistory');
+        reg.connect(spcMember).setHistoryAddress(history.address);
       });
 
       afterEach(async () => {
@@ -329,7 +329,7 @@ describe('FastAccess', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 123, 'Because I can')
-        const args = historyMock.addTransferProof.getCall(0).args;
+        const args = history.addTransferProof.getCall(0).args;
         expect(args[0]).to.eq(alice.address);
         expect(args[1]).to.eq(alice.address);
         expect(args[2]).to.eq(bob.address);

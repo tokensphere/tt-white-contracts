@@ -1,5 +1,5 @@
-import { BigNumber } from "ethers";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { BigNumber } from 'ethers';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 function checkNetwork({ network }: HardhatRuntimeEnvironment, doThrow: boolean = true): boolean {
   if (network.name === 'hardhat') {
@@ -13,13 +13,13 @@ function checkNetwork({ network }: HardhatRuntimeEnvironment, doThrow: boolean =
   return true;
 }
 
-export function fromBaseUnit(amount: BigNumber, decimals: BigNumber): BigNumber {
+function fromBaseUnit(amount: BigNumber, decimals: BigNumber): BigNumber {
   const ten = BigNumber.from(10);
   const exp = ten.pow(decimals);
   return amount.div(exp);
 }
 
-export function toBaseUnit(rawAmount: BigNumber, decimals: BigNumber) {
+function toBaseUnit(rawAmount: BigNumber, decimals: BigNumber) {
   rawAmount = BigNumber.from(rawAmount);
   decimals = BigNumber.from(decimals);
 
@@ -55,4 +55,8 @@ export function toBaseUnit(rawAmount: BigNumber, decimals: BigNumber) {
   return BigNumber.from(wei.toString());
 }
 
-export { checkNetwork }
+function toHexString(amount: BigNumber) {
+  return amount.toHexString().replace(/0x0+/, '0x');
+}
+
+export { checkNetwork, fromBaseUnit, toBaseUnit, toHexString }
