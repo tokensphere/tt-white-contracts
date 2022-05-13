@@ -12,7 +12,7 @@ contract FastHistory is Initializable, IFastHistory {
   /// Events.
 
   event MintingProofAdded(uint256 indexed amount, uint256 indexed blockNumber, string indexed ref);
-  event TransferProofAdded(address indexed from, address indexed spender, address indexed to, uint256 amount, uint256 blockNumber, string ref);
+  event TransferProofAdded(address indexed spender, address indexed from, address indexed to, uint256 amount, uint256 blockNumber, string ref);
 
   /// Members.
   
@@ -69,8 +69,8 @@ contract FastHistory is Initializable, IFastHistory {
     // Keep track of the transfer proof globally.
     transferProofs.push(
       IFastHistory.TransferProof({
-        from: from,
         spender: spender,
+        from: from,
         to: to,
         amount: amount,
         blockNumber: block.number,
@@ -78,7 +78,7 @@ contract FastHistory is Initializable, IFastHistory {
       })
     );
     // Emit!
-    emit TransferProofAdded(from, spender, to, amount, block.number, ref);
+    emit TransferProofAdded(spender, from, to, amount, block.number, ref);
   }
 
   function transferProofCount()

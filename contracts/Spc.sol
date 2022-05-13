@@ -43,7 +43,10 @@ contract Spc is Initializable {
   function initialize(address _member)
       public payable
       initializer {
+    // Add member to our list.
     memberSet.add(_member);
+    // Emit!
+    emit MemberAdded(_member);
   }
 
   /// Eth provisioning stuff.

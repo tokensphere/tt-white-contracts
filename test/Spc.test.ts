@@ -4,12 +4,13 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { toHexString } from '../src/utils';
-import { negNine, negNinety, negOneHundred, negTen, negTwo, nine, ninety, one, oneHundred, oneMilion, ten, two } from './utils';
+import { negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty, nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty } from './utils';
 
 // TODO: Test events.
 
 describe('Spc', () => {
   let
+    deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
     bob: SignerWithAddress,
     alice: SignerWithAddress;
@@ -18,9 +19,8 @@ describe('Spc', () => {
   let spcMemberSpc: Spc;
 
   before(async () => {
-    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
-    [/*deployer*/, spcMember, bob, alice] = await ethers.getSigners();
+    [deployer, spcMember, bob, alice] = await ethers.getSigners();
     // Deploy our libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
@@ -42,6 +42,8 @@ describe('Spc', () => {
       const subject = await spc.isMember(spcMember.address);
       expect(subject).to.eq(true);
     });
+
+    it('emits a MemberAdded event');
   });
 
   /// Eth provisioning stuff.
@@ -70,6 +72,23 @@ describe('Spc', () => {
       // Do it!
       const subject = async () => await spcMemberSpc.drainEth();
       await expect(subject).to.changeEtherBalances([spc, spcMember], [negOneHundred, oneHundred]);
+    });
+
+    it('emits a EthReceived event', async () => {
+      const subject = spc.provisionWithEth({ value: ninety });
+      await expect(subject).to
+        .emit(spc, 'EthReceived')
+        .withArgs(deployer.address, ninety)
+    });
+
+    it('emits a EthDrained event', async () => {
+      // Provision the SPC account with 1_000_000 Eth.
+      await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
+      // Do it!
+      const subject = spcMemberSpc.drainEth();
+      await expect(subject).to
+        .emit(spc, 'EthDrained')
+        .withArgs(spcMember.address, oneHundred);
     });
   });
 
@@ -152,6 +171,8 @@ describe('Spc', () => {
       // Check balances.
       await expect(subject).to.changeEtherBalances([spc, bob], [negTwo, two]);
     });
+
+    it('emits a MemberAdded event');
   });
 
   describe('removeMember', async () => {
@@ -174,9 +195,16 @@ describe('Spc', () => {
       const subject = spcMemberSpc.removeMember(alice.address);
       await expect(subject).to.be.revertedWith('Address does not exist in set');
     });
+
+    it('emits a MemberRemoved event');
   });
 
   /// FAST management stuff.
+
+  describe('checkSymbolAvailability', async () => {
+    it('returns true when the symbol is available');
+    it('returns false when the symbol is already in use');
+  });
 
   describe('registerFastRegistry', async () => {
     let reg: FakeContract<FastRegistry>;
@@ -208,20 +236,21 @@ describe('Spc', () => {
 
     it('keeps track of the symbol');
 
-    it('provisions the registry with 100 Eth', async () => {
+    it('provisions the registry with 250 Eth', async () => {
       await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
       // Do it!
       const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
       // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, reg], [negOneHundred, oneHundred]);
+      await expect(subject).to.changeEtherBalances([spc, reg], [negTwoHundredFifty, twoHundredFifty]);
     });
 
-    it('only tops-up the registry if it already has eth', async () => {
+    it('only tops-up the registry if it already has Eth', async () => {
+      await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneMilion)]);
       await ethers.provider.send("hardhat_setBalance", [reg.address, toHexString(ten)]);
       // Do it!
       const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
       // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, reg], [negNinety, ninety]);
+      await expect(subject).to.changeEtherBalances([spc, reg], [negTwoHundredFourty, twoHundredFourty]);
     });
 
     it('only provisions the registry up to the available balance', async () => {
@@ -232,6 +261,8 @@ describe('Spc', () => {
       // Check balances.
       await expect(subject).to.changeEtherBalances([spc, reg], [negTwo, two]);
     });
+
+    it('emits a FastRegistered event');
   });
 
   describe('fastRegistryCount', async () => {

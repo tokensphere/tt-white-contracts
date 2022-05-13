@@ -50,9 +50,14 @@ contract FastAccess is Initializable, IFastAccess {
   function initialize(FastRegistry pReg, address governor)
       initializer
       external {
+    // Keep track of the registry.
     reg = pReg;
+    // Add the governor both as a governor and as a member.
     memberSet.add(governor);
     governorSet.add(governor);
+    // Emit!
+    emit GovernorAdded(governor);
+    emit MemberAdded(governor);
   }
 
   /// Governorship related stuff.

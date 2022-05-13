@@ -16,8 +16,8 @@ interface IFastHistory {
   // Every transfer in is recorded. This is the structure that keeps
   // track of them.
   struct TransferProof {
-    address from;
     address spender;
+    address from;
     address to;
     uint256 amount;
     uint256 blockNumber;

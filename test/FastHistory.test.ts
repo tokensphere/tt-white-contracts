@@ -4,8 +4,6 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastHistory__factory, FastHistory, Spc } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 
-// TODO: Test events.
-
 describe('FastHistory', () => {
   let
     spcMember: SignerWithAddress,
@@ -77,19 +75,28 @@ describe('FastHistory', () => {
     });
 
     it('adds an entry to the minting proof list', async () => {
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       await tokenedHistory.addMintingProof(3, 'Three');
       const [[{ amount, ref, blockNumber }],] = await history.paginateMintingProofs(0, 1);
       expect(amount).to.eq(3);
       expect(ref).to.eq('Three');
       expect(blockNumber.toNumber()).to.be.greaterThan(1);
     });
+
+    it('emits a MintingProofAdded event', async () => {
+      const tokenedHistory = history.connect(token);
+      const subject = tokenedHistory.addMintingProof(3, 'Three');
+      const expBlockNum = (await (await subject).wait()).blockNumber
+      await expect(subject).to
+        .emit(history, 'MintingProofAdded')
+        .withArgs(3, expBlockNum, 'Three');
+    });
   });
 
   describe('mintingProofCount', async () => {
     beforeEach(async () => {
       // Add a bunch of minting proofs.
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addMintingProof(index, value);
       }));
@@ -104,7 +111,7 @@ describe('FastHistory', () => {
   describe('paginateMintingProofs', async () => {
     beforeEach(async () => {
       // Add a bunch of minting proofs.
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addMintingProof((index + 1) * 100, value);
       }));
@@ -149,7 +156,7 @@ describe('FastHistory', () => {
     });
 
     it('adds an entry to the transfer proof list', async () => {
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       tokenedHistory.addTransferProof(alice.address, bob.address, john.address, 300, 'Attempt 3');
       const [[{ spender, from, to, amount, ref, blockNumber }],] = await history.paginateTransferProofs(0, 1);
       expect(spender).to.eq(alice.address);
@@ -159,12 +166,21 @@ describe('FastHistory', () => {
       expect(ref).to.eq('Attempt 3');
       expect(blockNumber.toNumber()).to.be.greaterThan(1);
     });
+
+    it('emits a TransferProof event', async () => {
+      const tokenedHistory = history.connect(token);
+      const subject = tokenedHistory.addTransferProof(alice.address, bob.address, john.address, 300, 'Attempt 3');
+      const expBlockNum = (await (await subject).wait()).blockNumber
+      await expect(subject).to
+        .emit(history, 'TransferProofAdded')
+        .withArgs(alice.address, bob.address, john.address, 300, expBlockNum, 'Attempt 3');
+    });
   });
 
   describe('transferProofCount', async () => {
     beforeEach(async () => {
       // Add a bunch of transfer proofs.
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));
@@ -179,7 +195,7 @@ describe('FastHistory', () => {
   describe('paginateTransferProofs', async () => {
     beforeEach(async () => {
       // Add a bunch of transfer proofs.
-      const tokenedHistory = governedHistory.connect(token);
+      const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
         return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));

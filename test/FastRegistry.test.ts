@@ -6,8 +6,6 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { toHexString } from '../src/utils';
 import { negNinety, negOneHundred, negTwo, ninety, oneHundred, ten, two } from './utils';
 
-// TODO: Test events.
-
 describe('FastRegistry', () => {
   let
     deployer: SignerWithAddress,
@@ -77,6 +75,13 @@ describe('FastRegistry', () => {
       const subject = async () => await reg.provisionWithEth({ value: ninety });
       await expect(subject).to.have.changeEtherBalance(reg, ninety);
     });
+
+    it('emits a EthReceived event', async () => {
+      const subject = reg.provisionWithEth({ value: ninety });
+      await expect(subject).to
+        .emit(reg, 'EthReceived')
+        .withArgs(deployer.address, ninety)
+    });
   });
 
   describe('drainEth', async () => {
@@ -91,6 +96,16 @@ describe('FastRegistry', () => {
       // Do it!
       const subject = async () => await spcMemberReg.drainEth();
       await expect(subject).to.changeEtherBalances([reg, spcMember], [negOneHundred, oneHundred]);
+    });
+
+    it('emits a EthDrained event', async () => {
+      // Provision the SPC account with 1_000_000 Eth.
+      await ethers.provider.send("hardhat_setBalance", [reg.address, toHexString(oneHundred)]);
+      // Do it!
+      const subject = spcMemberReg.drainEth();
+      await expect(subject).to
+        .emit(reg, 'EthDrained')
+        .withArgs(spcMember.address, oneHundred);
     });
   });
 
@@ -131,6 +146,8 @@ describe('FastRegistry', () => {
       const subject = await reg.access();
       expect(subject).to.eq(alice.address);
     });
+
+    it('emits a AccessAddressSet event');
   });
 
   describe('setTokenAddress', async () => {
@@ -144,6 +161,8 @@ describe('FastRegistry', () => {
       const subject = await reg.token();
       expect(subject).to.eq(alice.address);
     });
+
+    it('emits a TokenAddressSet event');
   });
 
   describe('setHistoryAddress', async () => {
@@ -157,5 +176,7 @@ describe('FastRegistry', () => {
       const subject = await reg.history();
       expect(subject).to.eq(alice.address);
     });
+
+    it('emits a HistoryAddressSet event');
   });
 });

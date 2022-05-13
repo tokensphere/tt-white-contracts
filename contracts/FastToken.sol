@@ -23,6 +23,11 @@ contract FastToken is Initializable, IFastToken {
   string private constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
   string private constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
 
+  /// Events.
+
+  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
+  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
+
   /// Members.
 
   // This is a pointer to our contracts registry.
@@ -86,6 +91,7 @@ contract FastToken is Initializable, IFastToken {
     totalSupply += amount;
 
     // Keep track of the minting operation.
+    // Note that we're not emitting here, as the history contract will.
     reg.history().addMintingProof(amount, ref);
 
     return true;
@@ -97,12 +103,14 @@ contract FastToken is Initializable, IFastToken {
       spcMembership(msg.sender)
       external returns(bool) {
     transferCredits += _amount;
+    emit TransferCreditsAdded(msg.sender, _amount);
     return true;
   }
 
   function drainTransferCredits()
       spcMembership(msg.sender)
       external returns(bool) {
+    emit TransferCreditsDrained(msg.sender, transferCredits);
     transferCredits = 0;
     return true;
   }
