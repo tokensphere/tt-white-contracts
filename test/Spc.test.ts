@@ -4,21 +4,9 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { toHexString } from '../src/utils';
+import { negNine, negNinety, negOneHundred, negTen, negTwo, nine, ninety, one, oneHundred, oneMilion, ten, two } from './utils';
 
 // TODO: Test events.
-
-const one = ethers.utils.parseEther('1.0');
-const two = ethers.utils.parseEther('2.0');
-const negTwo = two.mul(-1);
-const ten = ethers.utils.parseEther('10.0');
-const negTen = ten.mul(-1);
-const nine = ethers.utils.parseEther('9.0');
-const negNine = nine.mul(-1);
-const ninety = ethers.utils.parseEther('90.0');
-const negNinety = ninety.mul(-1);
-const oneHundred = ethers.utils.parseEther('100.0');
-const negOneHundred = oneHundred.mul(-1);
-const oneMilion = ethers.utils.parseEther('1000000.0');
 
 describe('Spc', () => {
   let
@@ -77,7 +65,7 @@ describe('Spc', () => {
     });
 
     it('transfers all the locked Eth to the caller', async () => {
-      // Provision the SPC account with 1_000_000 Eth.
+      // Provision the SPC account with a lot of Eth.
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
       // Do it!
       const subject = async () => await spcMemberSpc.drainEth();
@@ -141,7 +129,6 @@ describe('Spc', () => {
     });
 
     it('provisions the member with 10 Eth', async () => {
-      // Drain bob's wallet.
       await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
       // Do it!
       const subject = async () => await spcMemberSpc.addMember(bob.address);
@@ -150,7 +137,6 @@ describe('Spc', () => {
     });
 
     it('only tops-up the member if they already have eth', async () => {
-      // Set bob's wallet to just one eth.
       await ethers.provider.send("hardhat_setBalance", [bob.address, toHexString(one)]);
       // Do it!
       const subject = async () => await spcMemberSpc.addMember(bob.address);
@@ -159,7 +145,6 @@ describe('Spc', () => {
     });
 
     it('only provisions the member up to the available balance', async () => {
-      // Put 200 wei in the SPC contract, 500 wei in bob's wallet.
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
       await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
       // Do it!
@@ -224,7 +209,6 @@ describe('Spc', () => {
     it('keeps track of the symbol');
 
     it('provisions the registry with 100 Eth', async () => {
-      // Put a milion eth in the SPC contract, drain bob's wallet.
       await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
       // Do it!
       const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
@@ -233,7 +217,6 @@ describe('Spc', () => {
     });
 
     it('only tops-up the registry if it already has eth', async () => {
-      // Put a milion eth in the SPC contract, drain bob's wallet.
       await ethers.provider.send("hardhat_setBalance", [reg.address, toHexString(ten)]);
       // Do it!
       const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
@@ -242,7 +225,6 @@ describe('Spc', () => {
     });
 
     it('only provisions the registry up to the available balance', async () => {
-      // Put 200 wei in the SPC contract, 500 wei in bob's wallet.
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
       await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
       // Do it!

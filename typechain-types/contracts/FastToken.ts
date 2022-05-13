@@ -30,10 +30,8 @@ export interface FastTokenInterface extends utils.Interface {
   functions: {
     "addTransferCredits(uint256)": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
-    "allowances(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "balances(address)": FunctionFragment;
     "decimals()": FunctionFragment;
     "detectTransferRestriction(address,address,uint256)": FunctionFragment;
     "drainTransferCredits()": FunctionFragment;
@@ -57,10 +55,8 @@ export interface FastTokenInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "addTransferCredits"
       | "allowance"
-      | "allowances"
       | "approve"
       | "balanceOf"
-      | "balances"
       | "decimals"
       | "detectTransferRestriction"
       | "drainTransferCredits"
@@ -89,15 +85,10 @@ export interface FastTokenInterface extends utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "allowances",
-    values: [string, string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "balances", values: [string]): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "detectTransferRestriction",
@@ -160,10 +151,8 @@ export interface FastTokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "allowances", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "balances", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "detectTransferRestriction",
@@ -292,12 +281,6 @@ export interface FastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    allowances(
-      arg0: string,
-      arg1: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     approve(
       spender: string,
       amount: BigNumberish,
@@ -305,8 +288,6 @@ export interface FastToken extends BaseContract {
     ): Promise<ContractTransaction>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    balances(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     decimals(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -398,12 +379,6 @@ export interface FastToken extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  allowances(
-    arg0: string,
-    arg1: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   approve(
     spender: string,
     amount: BigNumberish,
@@ -411,8 +386,6 @@ export interface FastToken extends BaseContract {
   ): Promise<ContractTransaction>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  balances(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -504,12 +477,6 @@ export interface FastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    allowances(
-      arg0: string,
-      arg1: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     approve(
       spender: string,
       amount: BigNumberish,
@@ -517,8 +484,6 @@ export interface FastToken extends BaseContract {
     ): Promise<boolean>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    balances(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -636,12 +601,6 @@ export interface FastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    allowances(
-      arg0: string,
-      arg1: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     approve(
       spender: string,
       amount: BigNumberish,
@@ -649,8 +608,6 @@ export interface FastToken extends BaseContract {
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    balances(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -743,12 +700,6 @@ export interface FastToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    allowances(
-      arg0: string,
-      arg1: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     approve(
       spender: string,
       amount: BigNumberish,
@@ -757,11 +708,6 @@ export interface FastToken extends BaseContract {
 
     balanceOf(
       owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    balances(
-      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

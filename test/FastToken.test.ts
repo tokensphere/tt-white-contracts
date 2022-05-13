@@ -22,12 +22,12 @@ describe('FastToken', () => {
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress;
-  let reg: FastRegistry;
-  let tokenFactory: FastToken__factory;
-  let access: FastAccess,
-    governedAccess: FastAccess;
-  let history: FastHistory;
-  let token: FastToken,
+  let
+    reg: FakeContract<FastRegistry>,
+    tokenFactory: FastToken__factory,
+    access: FakeContract<FastAccess>,
+    history: FakeContract<FastHistory>,
+    token: FastToken,
     memberToken: FastToken,
     governedToken: FastToken,
     spcMemberToken: FastToken;
@@ -37,43 +37,48 @@ describe('FastToken', () => {
     // Keep track of a few signers.
     [deployer, spcMember, member, governor, alice, bob, john] = await ethers.getSigners();
     // Deploy the libraries.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
-    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
-    // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
-    const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
-    const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
-    // Create our Registry.
-    const regLibs = { HelpersLib: helpersLib.address };
-    const regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
-    reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-    // Create our access factory and contract.
-    const accessLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
-    const accessFactory = await ethers.getContractFactory('FastAccess', { libraries: accessLibs });
-    access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
-    governedAccess = await access.connect(governor);
-    // Link the access contract with the registry.
-    await reg.connect(spcMember).setAccessAddress(access.address);
-    // Add a bunch of members.
-    await Promise.all([member, alice, bob].map(async ({ address }) => governedAccess.addMember(address)));
 
-    // Create our history factory and contract.
-    const historyLibs = { PaginationLib: paginationLib.address };
-    const historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
-    history = await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
-    // Register the history contract with the registry.
-    reg.connect(spcMember).setHistoryAddress(history.address);
+    // Deploy an SPC.
+    // const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
+    // const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
+    // const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
+
+    reg = await smock.fake('FastRegistry');
+
+    // Create an SPC mock.
+    const spc = await smock.fake('Spc');
+    // Configure SPC memberships with our SPC mock.
+    spc.isMember.returns(false);
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    // Make sure our registry mock keeps track of the SPC mock address.
+    reg.spc.returns(spc.address);
+
+    // Create an access contract mock.
+    access = await smock.fake('FastAccess');
+    // Make sure the access mock can return the address of our registry.
+    access.reg.returns(reg.address);
+    // Configure governorship in our access mock.
+    access.isGovernor.returns(false);
+    access.isGovernor.whenCalledWith(governor.address).returns(true);
+    // Configure membbership into our access contract.
+    access.isMember.returns(false);
+    [member, alice, bob].forEach(({ address }) => access.isMember.whenCalledWith(address).returns(true))
+    // Make sure that our registry mock keeps track of the access mock address.
+    reg.access.returns(access.address);
+
+    // Create a history contract mock.
+    history = await smock.fake('FastHistory');
+    // Make sure that our registry mock is tracking the history mock address.
+    reg.history.returns(history.address);
 
     // Finally, create our token factory.
     tokenFactory = await ethers.getContractFactory('FastToken');
   });
 
   beforeEach(async () => {
-    token = await upgrades.deployProxy(
-      tokenFactory,
-      [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true]
-    ) as FastToken;
+    const tokenParams = [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true];
+    token = await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
     governedToken = token.connect(governor);
     memberToken = token.connect(member);
     spcMemberToken = token.connect(spcMember);
@@ -103,6 +108,38 @@ describe('FastToken', () => {
     });
   });
 
+  /// Public member getters.
+
+  describe('reg', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('name', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('symbols', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('decimals', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('totalSupply', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('transferCredits', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('hasFixedSupply', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  /// Other stuff.
+
   describe('setHasFixedSupply', async () => {
     it('requires SPC membership (anonymous)');
     it('requires SPC membership (member)');
@@ -111,15 +148,8 @@ describe('FastToken', () => {
   });
 
   describe('mint', async () => {
-    let history: FakeContract<FastHistory>;
-
     beforeEach(async () => {
-      history = await smock.fake('FastHistory');
-      await reg.connect(spcMember).setHistoryAddress(history.address);
-    });
-
-    afterEach(async () => {
-      await reg.connect(spcMember).setHistoryAddress(history.address);
+      history.addMintingProof.reset();
     });
 
     it('requires SPC membership (anonymous)', async () => {
@@ -148,6 +178,7 @@ describe('FastToken', () => {
     describe('with continuous supply', async () => {
       beforeEach(async () => {
         await token.connect(spcMember).setHasFixedSupply(false);
+        history.addMintingProof.reset();
       });
 
       it('is allowed more than once', async () => {
@@ -160,9 +191,9 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      const args = history.addMintingProof.getCall(0).args;
-      expect(args[0]).to.eq(5_000);
-      expect(args[1]).to.eq('Attempt 1');
+      const args = history.addMintingProof.getCall(0).args as any;
+      expect(args.amount).to.eq(5_000);
+      expect(args.ref).to.eq('Attempt 1');
     });
 
     it('adds the minted tokens to the zero address', async () => {
@@ -250,15 +281,8 @@ describe('FastToken', () => {
     });
 
     describe('transfer', async () => {
-      let history: FakeContract<FastHistory>;
-
       beforeEach(async () => {
-        history = await smock.fake('FastHistory');
-        reg.connect(spcMember).setHistoryAddress(history.address);
-      });
-
-      afterEach(async () => {
-        reg.connect(spcMember).setHistoryAddress(history.address);
+        history.addTransferProof.reset();
       });
 
       it('requires sender membership', async () => {
@@ -286,25 +310,18 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transfer(bob.address, 123)
-        const args = history.addTransferProof.getCall(0).args;
-        expect(args[0]).to.eq(alice.address);
-        expect(args[1]).to.eq(alice.address);
-        expect(args[2]).to.eq(bob.address);
-        expect(args[3]).to.eq(123);
-        expect(args[4]).to.eq('Unspecified - via ERC20');
+        const args = history.addTransferProof.getCall(0).args as any;
+        expect(args.spender).to.eq(alice.address);
+        expect(args.from).to.eq(alice.address);
+        expect(args.to).to.eq(bob.address);
+        expect(args.amount).to.eq(123);
+        expect(args.ref).to.eq('Unspecified - via ERC20');
       });
     });
 
     describe('transferWithRef', async () => {
-      let history: FakeContract<FastHistory>;
-
       beforeEach(async () => {
-        history = await smock.fake('FastHistory');
-        reg.connect(spcMember).setHistoryAddress(history.address);
-      });
-
-      afterEach(async () => {
-        reg.connect(spcMember).setHistoryAddress(history.address);
+        history.addTransferProof.reset();
       });
 
       it('requires sender membership', async () => {
@@ -329,12 +346,12 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 123, 'Because I can')
-        const args = history.addTransferProof.getCall(0).args;
-        expect(args[0]).to.eq(alice.address);
-        expect(args[1]).to.eq(alice.address);
-        expect(args[2]).to.eq(bob.address);
-        expect(args[3]).to.eq(123);
-        expect(args[4]).to.eq('Because I can');
+        const args = history.addTransferProof.getCall(0).args as any;
+        expect(args.spender).to.eq(alice.address);
+        expect(args.from).to.eq(alice.address);
+        expect(args.to).to.eq(bob.address);
+        expect(args.amount).to.eq(123);
+        expect(args.ref).to.eq('Because I can');
       });
     });
 
@@ -342,10 +359,12 @@ describe('FastToken', () => {
       it('does not require any particular rights');
       it('returns the allowance for a given member');
       it('always covers address zero for governors');
+      it('NEEDS MORE TESTS');
     });
 
     describe('approve', async () => {
       it('adds an allowance with the correct parameters');
+      it('NEEDS MORE TESTS');
     });
 
     describe('transferFrom', async () => {

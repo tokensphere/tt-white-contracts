@@ -2,12 +2,12 @@ import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastHistory__factory, FastHistory, Spc } from '../typechain-types';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 // TODO: Test events.
 
 describe('FastHistory', () => {
   let
-    deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     access: SignerWithAddress,
@@ -15,31 +15,29 @@ describe('FastHistory', () => {
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress;
-  let reg: FastRegistry;
+  let reg: FakeContract<FastRegistry>;
   let historyFactory: FastHistory__factory;
   let history: FastHistory;
   let governedHistory: FastHistory;
 
   before(async () => {
-    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
-    [deployer, spcMember, governor, access, token, alice, bob, john] = await ethers.getSigners();
-    // Deploy the libraries.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
+    [/*deployer*/, spcMember, governor, access, token, alice, bob, john] = await ethers.getSigners();
+
+    // Deploy the libraries we need.
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
-    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
-    // Deploy an SPC.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
-    const spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
-    const spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
-    // Deploy a registry.
-    const regLibs = { HelpersLib: helpersLib.address };
-    const regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
-    reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
-    const spcMemberReg = reg.connect(spcMember);
-    // As these two contracts will not really be called, we set them to addresses we control.
-    spcMemberReg.setTokenAddress(access.address);
-    spcMemberReg.setTokenAddress(token.address);
+
+    // Mock an SPC contract.
+    const spc: FakeContract<Spc> = await smock.fake('Spc');
+    // Make sure that the SPC contract returns membership flags for an address we control.
+    spc.isMember.returns(false);
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+
+    // Create a registry contract mock.
+    reg = await smock.fake('FastRegistry');
+    // Register a few addresses here to simulate calls from known contracts addresses.
+    reg.access.returns(access.address);
+    reg.token.returns(token.address);
 
     const historyLibs = { PaginationLib: paginationLib.address };
     historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
@@ -57,6 +55,12 @@ describe('FastHistory', () => {
       const subject = await history.reg();
       expect(subject).to.eq(reg.address);
     });
+  });
+
+  /// Public member getters.
+
+  describe('spc', async () => {
+    it('NEEDS MORE TESTS');
   });
 
   /// Minting proof stuff.
@@ -204,5 +208,9 @@ describe('FastHistory', () => {
       expect(proof3.amount).to.eq(300);
       expect(proof3.ref).to.eq('Three');
     });
+  });
+
+  describe('paginateTransferProofsByInvolvee', async () => {
+
   });
 });

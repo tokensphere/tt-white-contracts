@@ -61,15 +61,24 @@ export declare namespace IFastHistory {
 
 export interface PaginationLibInterface extends utils.Interface {
   functions: {
+    "addresses(address[],uint256,uint256)": FunctionFragment;
     "mintingProofs((uint256,uint256,string)[],uint256,uint256)": FunctionFragment;
     "transferProofs((address,address,address,uint256,uint256,string)[],uint256,uint256)": FunctionFragment;
     "uint256s(uint256[],uint256,uint256)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "mintingProofs" | "transferProofs" | "uint256s"
+    nameOrSignatureOrTopic:
+      | "addresses"
+      | "mintingProofs"
+      | "transferProofs"
+      | "uint256s"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "addresses",
+    values: [string[], BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "mintingProofs",
     values: [IFastHistory.MintingProofStruct[], BigNumberish, BigNumberish]
@@ -83,6 +92,7 @@ export interface PaginationLibInterface extends utils.Interface {
     values: [BigNumberish[], BigNumberish, BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "addresses", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "mintingProofs",
     data: BytesLike
@@ -123,6 +133,13 @@ export interface PaginationLib extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    addresses(
+      collection: string[],
+      cursor: BigNumberish,
+      perPage: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string[], BigNumber]>;
+
     mintingProofs(
       collection: IFastHistory.MintingProofStruct[],
       cursor: BigNumberish,
@@ -144,6 +161,13 @@ export interface PaginationLib extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[], BigNumber]>;
   };
+
+  addresses(
+    collection: string[],
+    cursor: BigNumberish,
+    perPage: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<[string[], BigNumber]>;
 
   mintingProofs(
     collection: IFastHistory.MintingProofStruct[],
@@ -167,6 +191,13 @@ export interface PaginationLib extends BaseContract {
   ): Promise<[BigNumber[], BigNumber]>;
 
   callStatic: {
+    addresses(
+      collection: string[],
+      cursor: BigNumberish,
+      perPage: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string[], BigNumber]>;
+
     mintingProofs(
       collection: IFastHistory.MintingProofStruct[],
       cursor: BigNumberish,
@@ -192,6 +223,13 @@ export interface PaginationLib extends BaseContract {
   filters: {};
 
   estimateGas: {
+    addresses(
+      collection: string[],
+      cursor: BigNumberish,
+      perPage: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     mintingProofs(
       collection: IFastHistory.MintingProofStruct[],
       cursor: BigNumberish,
@@ -215,6 +253,13 @@ export interface PaginationLib extends BaseContract {
   };
 
   populateTransaction: {
+    addresses(
+      collection: string[],
+      cursor: BigNumberish,
+      perPage: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     mintingProofs(
       collection: IFastHistory.MintingProofStruct[],
       cursor: BigNumberish,

@@ -25,7 +25,7 @@ contract FastHistory is Initializable, IFastHistory {
   // All transfer proofs are kept here.
   IFastHistory.TransferProof[] private transferProofs;
   // All transfers IDs involving a given address are kept here.
-  mapping(address => uint256[]) public transferProofInvolvements;
+  mapping(address => uint256[]) private transferProofInvolvements;
 
   function initialize(FastRegistry _reg)
       external initializer {
@@ -63,9 +63,8 @@ contract FastHistory is Initializable, IFastHistory {
   function addTransferProof(address spender, address from, address to, uint256 amount, string memory ref)
       tokenContract(msg.sender)
       external override {
-    // Keep track of the transfer proof ID for the sender.
+    // Keep track of the transfer proof ID for the sender and for the recipient.
     transferProofInvolvements[from].push(transferProofs.length);
-    // Keep track of the transfer proof ID for the recipient.
     transferProofInvolvements[to].push(transferProofs.length);
     // Keep track of the transfer proof globally.
     transferProofs.push(

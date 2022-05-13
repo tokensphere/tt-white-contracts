@@ -76,7 +76,6 @@ export interface FastHistoryInterface extends utils.Interface {
     "paginateTransferProofsByInvolvee(address,uint256,uint256)": FunctionFragment;
     "reg()": FunctionFragment;
     "transferProofCount()": FunctionFragment;
-    "transferProofInvolvements(address,uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -90,7 +89,6 @@ export interface FastHistoryInterface extends utils.Interface {
       | "paginateTransferProofsByInvolvee"
       | "reg"
       | "transferProofCount"
-      | "transferProofInvolvements"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -123,10 +121,6 @@ export interface FastHistoryInterface extends utils.Interface {
     functionFragment: "transferProofCount",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "transferProofInvolvements",
-    values: [string, BigNumberish]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "addMintingProof",
@@ -156,10 +150,6 @@ export interface FastHistoryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "reg", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferProofCount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferProofInvolvements",
     data: BytesLike
   ): Result;
 
@@ -281,12 +271,6 @@ export interface FastHistory extends BaseContract {
     reg(overrides?: CallOverrides): Promise<[string]>;
 
     transferProofCount(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    transferProofInvolvements(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
   };
 
   addMintingProof(
@@ -334,12 +318,6 @@ export interface FastHistory extends BaseContract {
 
   transferProofCount(overrides?: CallOverrides): Promise<BigNumber>;
 
-  transferProofInvolvements(
-    arg0: string,
-    arg1: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   callStatic: {
     addMintingProof(
       amount: BigNumberish,
@@ -382,12 +360,6 @@ export interface FastHistory extends BaseContract {
     reg(overrides?: CallOverrides): Promise<string>;
 
     transferProofCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transferProofInvolvements(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   filters: {
@@ -468,12 +440,6 @@ export interface FastHistory extends BaseContract {
     reg(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferProofCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transferProofInvolvements(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -521,12 +487,6 @@ export interface FastHistory extends BaseContract {
     reg(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferProofCount(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    transferProofInvolvements(
-      arg0: string,
-      arg1: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

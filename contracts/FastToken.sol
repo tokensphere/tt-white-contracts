@@ -44,9 +44,9 @@ contract FastToken is Initializable, IFastToken {
   bool public hasFixedSupply;
 
   // Our members balances are held here.
-  mapping(address => uint256) public balances;
+  mapping(address => uint256) private balances;
   // Allowances are stored here.
-  mapping(address => mapping(address => uint256)) public allowances;
+  mapping(address => mapping(address => uint256)) private allowances;
 
   /// Public stuff.
 

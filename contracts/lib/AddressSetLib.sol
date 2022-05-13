@@ -15,7 +15,8 @@ library AddressSetLib {
    * @param d is the internal data storage to use.
    * @param key is the address to be added.
    */
-  function add(Data storage d, address key) internal {
+  function add(Data storage d, address key)
+      external {
     require(!contains(d, key), "Address already in set");
     d.indices[key] = d.values.length;
     d.values.push(key);
@@ -27,7 +28,8 @@ library AddressSetLib {
    * @param d is the internal data storage to use.
    * @param key is the address to be removed.
    */
-  function remove(Data storage d, address key) internal {
+  function remove(Data storage d, address key)
+      external {
     require(contains(d, key), "Address does not exist in set");
     uint256 lastIndex = d.values.length - 1;
     address keyToMove = d.values[lastIndex];
@@ -44,7 +46,8 @@ library AddressSetLib {
    * @param key is the address to test.
    * @return a boolean.
    */
-  function contains(Data storage d, address key) public view returns(bool) {
+  function contains(Data storage d, address key)
+      public view returns(bool) {
     return d.values.length == 0
       ? false
       : d.values[d.indices[key]] == key;

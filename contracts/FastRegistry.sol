@@ -34,8 +34,11 @@ contract FastRegistry is Initializable, IFastRegistry {
     spc = _spc;
   }
 
+  /// Eth provisioning stuff.
+
   function provisionWithEth()
       external payable {
+    require(msg.value > 0, 'Missing attached ETH');
     emit EthReceived(msg.sender, msg.value);
   }
 
@@ -75,7 +78,7 @@ contract FastRegistry is Initializable, IFastRegistry {
     // Make sure that the caller is the access contract. No other callers should
     // be allowed to request a FastRegistry to provision Eth otherwise.
     require(msg.sender == address(access), 'Cannot be called directly');
-    
+
     amount = HelpersLib.upTo(recipient, amount);
     if (amount != 0) {
       // Transfer some eth!
