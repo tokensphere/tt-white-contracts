@@ -40,6 +40,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     console.log('==========');
     console.log('Deployed AddressSetLib', addressSetLib.address);
     console.log('Deployed PaginationLib', paginationLib.address);
+    console.log('Deployed HelpersLib', helpersLib.address);
     console.log('==========');
     console.log('Deployed SPC', spc.address);
     console.log('==========');

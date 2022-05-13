@@ -16,7 +16,7 @@ contract Spc is Initializable {
   // This represents how much Eth we provision new SPC members with.
   uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
   // This represents how much Eth new FAST registries are provisioned with.
-  uint256 constant private FAST_ETH_PROVISION = 100 ether;
+  uint256 constant private FAST_ETH_PROVISION = 250 ether;
 
   /// Events.
 

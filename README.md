@@ -82,7 +82,7 @@ Then you can start deploying FAST:
 ```shell
 yarn hardhat \
   fast-deploy \
-    --spc 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 \
+    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
     --network localhost \
     --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
     --name "Some Awesome FAST Stuff" \
@@ -121,7 +121,7 @@ yarn hardhat \
   fast-add-transfer-credits \
     0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
     --network localhost \
-    --spc 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 \
+    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
     --credits 5000000
 ```
 
