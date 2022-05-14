@@ -43,7 +43,14 @@ describe('Spc', () => {
       expect(subject).to.eq(true);
     });
 
-    it('emits a MemberAdded event');
+    it('emits a MemberAdded event', async () => {
+      // Since we cannot get the transaction of a proxy-deployed contract
+      // via `upgrades.deployProxy`, we will deploy it manually and call its
+      // initializer.
+      const contract = await spcFactory.deploy();
+      const subject = contract.initialize(spcMember.address);
+      await expect(subject).to.emit(contract, 'MemberAdded').withArgs(spcMember.address);
+    });
   });
 
   /// Eth provisioning stuff.
@@ -172,7 +179,10 @@ describe('Spc', () => {
       await expect(subject).to.changeEtherBalances([spc, bob], [negTwo, two]);
     });
 
-    it('emits a MemberAdded event');
+    it('emits a MemberAdded event', async () => {
+      const subject = spcMemberSpc.addMember(bob.address);
+      await expect(subject).to.emit(spc, 'MemberAdded').withArgs(bob.address);
+    });
   });
 
   describe('removeMember', async () => {
@@ -191,12 +201,15 @@ describe('Spc', () => {
       expect(subject).to.eq(false);
     });
 
-    it('does nothing if the member is not in the list', async () => {
+    it('reverts if the member is not in the list', async () => {
       const subject = spcMemberSpc.removeMember(alice.address);
       await expect(subject).to.be.revertedWith('Address does not exist in set');
     });
 
-    it('emits a MemberRemoved event');
+    it('emits a MemberRemoved event', async () => {
+      const subject = spcMemberSpc.removeMember(bob.address);
+      await expect(subject).to.emit(spc, 'MemberRemoved').withArgs(bob.address);
+    });
   });
 
   /// FAST management stuff.
@@ -262,18 +275,22 @@ describe('Spc', () => {
       await expect(subject).to.changeEtherBalances([spc, reg], [negTwo, two]);
     });
 
-    it('emits a FastRegistered event');
+    it('emits a FastRegistered event', async () => {
+      const subject = spcMemberSpc.registerFastRegistry(reg.address);
+      await expect(subject).to.emit(spc, 'FastRegistered').withArgs(reg.address);
+    });
   });
 
   describe('fastRegistryCount', async () => {
     it('returns the registry count', async () => {
       // Register a few token mocks.
-      const fixture = ['FS1', 'FS2', 'FS3'];
+      const fixture = ['FS1', 'FS2'];
       await Promise.all(
         fixture.map(async (symbol) => {
           // Set up a mock registry.
-          const reg = await smock.fake('FastRegistry');
-          const token = await smock.fake('FastToken');
+          const [reg, token] = await Promise.all(
+            ['FastRegistry', 'FastToken'].map(async (c) => await smock.fake(c))
+          );
           // Stub a few things.
           token.symbol.returns(symbol);
           reg.token.returns(token.address);

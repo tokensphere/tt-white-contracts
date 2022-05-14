@@ -18,7 +18,16 @@ import './src/tasks/fast';
 import './src/tasks/bootstrap';
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.4',
+  solidity: {
+    version: '0.8.4',
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout']
+        }
+      }
+    }
+  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || '',

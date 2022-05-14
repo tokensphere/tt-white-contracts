@@ -111,31 +111,52 @@ describe('FastToken', () => {
   /// Public member getters.
 
   describe('reg', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the registry address', async () => {
+      const subject = await token.reg();
+      expect(subject).to.eq(reg.address);
+    });
   });
 
   describe('name', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the name', async () => {
+      const subject = await token.name();
+      expect(subject).to.eq(ERC20_TOKEN_NAME);
+    });
   });
 
-  describe('symbols', async () => {
-    it('NEEDS MORE TESTS');
+  describe('symbol', async () => {
+    it('returns the symbol', async () => {
+      const subject = await token.symbol();
+      expect(subject).to.eq(ERC20_TOKEN_SYMBOL);
+    });
   });
 
   describe('decimals', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the decimals', async () => {
+      const subject = await token.decimals();
+      expect(subject).to.eq(ERC20_TOKEN_DECIMALS);
+    });
   });
 
   describe('totalSupply', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the total supply', async () => {
+      const subject = await token.totalSupply();
+      expect(subject).to.eq(0);
+    });
   });
 
   describe('transferCredits', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the remaining transfer credits', async () => {
+      const subject = await token.transferCredits();
+      expect(subject).to.eq(0);
+    });
   });
 
   describe('hasFixedSupply', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the token fixed supply parameter', async () => {
+      const subject = await token.hasFixedSupply();
+      expect(subject).to.eq(true);
+    });
   });
 
   /// Other stuff.
@@ -233,6 +254,8 @@ describe('FastToken', () => {
       ));
       expect(await token.transferCredits()).to.eq(100);
     });
+
+    it('emits a TransferCreditsAdded event');
   });
 
   describe('drainTransferCredits', async () => {
@@ -256,6 +279,8 @@ describe('FastToken', () => {
       await spcMemberToken.drainTransferCredits();
       expect(await token.transferCredits()).to.eq(0);
     });
+
+    it('emits a TransferCreditsDrained event');
   });
 
   /// ERC20 implementation.
@@ -317,6 +342,8 @@ describe('FastToken', () => {
         expect(args.amount).to.eq(123);
         expect(args.ref).to.eq('Unspecified - via ERC20');
       });
+
+      it('emits a IERC20.Transfer event');
     });
 
     describe('transferWithRef', async () => {
@@ -353,6 +380,8 @@ describe('FastToken', () => {
         expect(args.amount).to.eq(123);
         expect(args.ref).to.eq('Because I can');
       });
+
+      it('emits a IERC20.Transfer event');
     });
 
     describe('allowance', async () => {
@@ -364,15 +393,18 @@ describe('FastToken', () => {
 
     describe('approve', async () => {
       it('adds an allowance with the correct parameters');
+      it('emits a IERC20.Approval event')
       it('NEEDS MORE TESTS');
     });
 
     describe('transferFrom', async () => {
       it('NEEDS MORE TESTS');
+      it('emits a IERC20.Transfer event');
     });
 
     describe('transferFromWithRef', async () => {
       it('NEEDS MORE TESTS');
+      it('emits a IERC20.Transfer event');
     });
   });
 

@@ -5,11 +5,8 @@ import { FastRegistry, FastAccess__factory, FastAccess } from '../typechain-type
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { one, ten } from './utils';
 
-// TODO: Test events.
-
 describe('FastAccess', () => {
   let
-    deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
@@ -24,7 +21,7 @@ describe('FastAccess', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [/*deployer*/, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
 
     // Deploy the libraries we need.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
@@ -70,13 +67,24 @@ describe('FastAccess', () => {
       expect(subject).to.eq(true);
     });
 
-    it('emits a GovernorAdded and a MemberAdded event');
+    it('emits a GovernorAdded and a MemberAdded event', async () => {
+      // Since we cannot get the transaction of a proxy-deployed contract
+      // via `upgrades.deployProxy`, we will deploy it manually and call its
+      // initializer.
+      const contract = await accessFactory.deploy();
+      const subject = contract.initialize(reg.address, governor.address);
+      await expect(subject).to.emit(contract, 'GovernorAdded').withArgs(governor.address);
+      await expect(subject).to.emit(contract, 'MemberAdded').withArgs(governor.address);
+    });
   });
 
   /// Public member getters.
 
   describe('reg', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the registry address', async () => {
+      const subject = await access.reg();
+      expect(subject).to.eq(reg.address);
+    });
   });
 
   /// Governorship related stuff.
@@ -108,8 +116,9 @@ describe('FastAccess', () => {
     it('delegates provisioning Eth to the governor using the registry', async () => {
       reg.payUpTo.reset();
       await spcMemberAccess.addGovernor(alice.address);
-      // TODO.
-      // expect(reg.payUpTo).to.have.been.calledOnceWith(alice.address, ten);
+      const args = reg.payUpTo.getCall(0).args as any;
+      expect(args.recipient).to.eq(alice.address);
+      expect(args.amount).to.eq(ten);
     });
 
     it('emits a GovernorAdded event', async () => {
@@ -243,8 +252,9 @@ describe('FastAccess', () => {
     it('delegates provisioning Eth to the governor using the registry', async () => {
       reg.payUpTo.reset();
       await governedAccess.addMember(alice.address);
-      // TODO.
-      // expect(reg.payUpTo).to.have.been.calledOnceWith(alice.address, one);
+      const args = reg.payUpTo.getCall(0).args as any;
+      expect(args.recipient).to.eq(alice.address);
+      expect(args.amount).to.eq(one);
     });
 
     it('emits a MemberAdded event', async () => {

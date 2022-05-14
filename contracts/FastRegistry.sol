@@ -13,9 +13,9 @@ import './lib/HelpersLib.sol';
 contract FastRegistry is Initializable, IFastRegistry {
   /// Events.
 
-  event AccessAddressSet(address indexed access);
-  event HistoryAddressSet(address indexed history);
-  event TokenAddressSet(address indexed token);
+  event AccessAddressSet(IFastAccess indexed access);
+  event HistoryAddressSet(IFastHistory indexed history);
+  event TokenAddressSet(IFastToken indexed token);
 
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
@@ -55,16 +55,19 @@ contract FastRegistry is Initializable, IFastRegistry {
   function setAccessAddress(IFastAccess _access)
       external spcMembership(msg.sender) {
     access = _access;
+    emit AccessAddressSet(access);
   }
 
   function setHistoryAddress(IFastHistory _history)
       external spcMembership(msg.sender) {
     history = _history;
+    emit HistoryAddressSet(history);
   }
 
   function setTokenAddress(IFastToken _token)
       external spcMembership(msg.sender) {
     token = _token;
+    emit TokenAddressSet(token);
   }
 
   /// Eth provisioning.

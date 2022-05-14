@@ -57,8 +57,11 @@ describe('FastHistory', () => {
 
   /// Public member getters.
 
-  describe('spc', async () => {
-    it('NEEDS MORE TESTS');
+  describe('reg', async () => {
+    it('returns the address of the registry contract', async () => {
+      const subject = await history.reg();
+      expect(subject).to.eq(reg.address);
+    });
   });
 
   /// Minting proof stuff.

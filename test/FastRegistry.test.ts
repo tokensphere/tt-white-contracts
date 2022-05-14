@@ -10,7 +10,10 @@ describe('FastRegistry', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
-    alice: SignerWithAddress;
+    alice: SignerWithAddress,
+    access: SignerWithAddress,
+    history: SignerWithAddress,
+    token: SignerWithAddress;
   let spc: FakeContract<Spc>;
   let regFactory: FastRegistry__factory;
   let reg: FastRegistry;
@@ -18,7 +21,7 @@ describe('FastRegistry', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, alice] = await ethers.getSigners();
+    [deployer, access, history, token, spcMember, alice] = await ethers.getSigners();
     // Deploy the libraries.
     const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
 
@@ -34,6 +37,12 @@ describe('FastRegistry', () => {
   beforeEach(async () => {
     reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
     spcMemberReg = reg.connect(spcMember);
+    // Register a few addresses in the registry.
+    await Promise.all([
+      spcMemberReg.setAccessAddress(access.address),
+      spcMemberReg.setHistoryAddress(history.address),
+      spcMemberReg.setTokenAddress(token.address)
+    ]);
   });
 
   /// Public stuff.
@@ -48,19 +57,31 @@ describe('FastRegistry', () => {
   /// Public member getters.
 
   describe('spc', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the address of the SPC contract', async () => {
+      const subject = await reg.spc();
+      expect(subject).to.eq(spc.address);
+    });
   });
 
   describe('access', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the address of the access contract', async () => {
+      const subject = await reg.access();
+      expect(subject).to.eq(access.address);
+    });
   });
 
   describe('history', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the address of the history contract', async () => {
+      const subject = await reg.history();
+      expect(subject).to.eq(history.address);
+    });
   });
 
   describe('token', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the address of the token contract', async () => {
+      const subject = await reg.token();
+      expect(subject).to.eq(token.address);
+    });
   });
 
   /// Eth provisioning stuff.
@@ -147,7 +168,12 @@ describe('FastRegistry', () => {
       expect(subject).to.eq(alice.address);
     });
 
-    it('emits a AccessAddressSet event');
+    it('emits a AccessAddressSet event', async () => {
+      const subject = spcMemberReg.setAccessAddress(access.address);
+      await expect(subject).to
+        .emit(reg, 'AccessAddressSet')
+        .withArgs(access.address)
+    });
   });
 
   describe('setTokenAddress', async () => {
@@ -162,7 +188,12 @@ describe('FastRegistry', () => {
       expect(subject).to.eq(alice.address);
     });
 
-    it('emits a TokenAddressSet event');
+    it('emits a TokenAddressSet event', async () => {
+      const subject = spcMemberReg.setTokenAddress(token.address);
+      await expect(subject).to
+        .emit(reg, 'TokenAddressSet')
+        .withArgs(token.address)
+    });
   });
 
   describe('setHistoryAddress', async () => {
@@ -177,6 +208,11 @@ describe('FastRegistry', () => {
       expect(subject).to.eq(alice.address);
     });
 
-    it('emits a HistoryAddressSet event');
+    it('emits a HistoryAddressSet event', async () => {
+      const subject = spcMemberReg.setHistoryAddress(history.address);
+      await expect(subject).to
+        .emit(reg, 'HistoryAddressSet')
+        .withArgs(history.address)
+    });
   });
 });
