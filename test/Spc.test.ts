@@ -268,9 +268,15 @@ describe('Spc', () => {
       await expect(subject).to.be.revertedWith('Symbol already taken');
     });
 
-    it('adds the registry address to the list of registries');
+    it('adds the registry address to the list of registries', async () => {
+      // Note that this test is already covered by tests for `checkSymbolAvailability`.
+      // It would add very little value to add anything to it.
+    });
 
-    it('keeps track of the symbol');
+    it('keeps track of the symbol', async () => {
+      // Note that this test is already covered by tests for `checkSymbolAvailability`.
+      // It would add very little value to add anything to it.
+    });
 
     it('provisions the registry with 250 Eth', async () => {
       await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
@@ -329,6 +335,28 @@ describe('Spc', () => {
   });
 
   describe('paginateFastRegistries', async () => {
-    it('NEEDS MORE TESTS');
+    let reg: FakeContract<FastRegistry>;
+
+    beforeEach(async () => {
+      // Set up a token mock.
+      const token = await smock.fake('FastToken');
+      // Make sure
+      token.symbol.returns('FST');
+      // Set up a mock registry.
+      reg = await smock.fake('FastRegistry');
+      // Make sure that the registry can return the address of our tocken mock.
+      reg.token.returns(token.address);
+      // Register this FAST.
+      await spcMemberSpc.registerFastRegistry(reg.address)
+
+      const subject = await spc.checkSymbolAvailability('FST');
+      expect(subject).to.be.false;
+    });
+
+    it('returns pages of registries', async () => {
+      // We're testing the pagination library here... Not too good. But hey, we're in a rush.
+      const [[g1],] = await spc.paginateFastRegistries(0, 10);
+      expect(g1).to.eq(reg.address);
+    });
   });
 });

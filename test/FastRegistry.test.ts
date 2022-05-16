@@ -131,6 +131,11 @@ describe('FastRegistry', () => {
   });
 
   describe('payUpTo', async () => {
+    it('requires that the caller is access contract', async () => {
+      const subject = reg.payUpTo(alice.address, oneHundred);
+      await expect(subject).to.have.revertedWith('Cannot be called directly');
+    });
+
     it('only tops-up the member if they already have eth', async () => {
       // Set alice's wallet to just one eth.
       await ethers.provider.send("hardhat_setBalance", [reg.address, toHexString(oneHundred)]);

@@ -124,10 +124,7 @@ contract Spc is Initializable {
     fastSymbols[symbol] = reg;
 
     // Provision the new fast with Eth.
-    uint256 amount = HelpersLib.upTo(address(reg), FAST_ETH_PROVISION);
-    if (amount != 0) {
-      reg.provisionWithEth{ value: amount }();
-    }
+    reg.provisionWithEth{ value: HelpersLib.upTo(address(reg), FAST_ETH_PROVISION) }();
     // Emit!
     emit FastRegistered(reg);
   }

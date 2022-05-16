@@ -193,8 +193,7 @@ contract FastToken is Initializable, IFastToken {
     } else if (restrictionCode == RECIPIENT_NOT_MEMBER) {
       return RECIPIENT_NOT_MEMBER_MESSAGE;
     }
-    require(false, 'Unknown restriction code');
-    return 'Unknown restriction code.';
+    revert('Unknown restriction code');
   }
 
   // Private.

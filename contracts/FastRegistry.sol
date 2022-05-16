@@ -83,10 +83,8 @@ contract FastRegistry is Initializable, IFastRegistry {
     require(msg.sender == address(access), 'Cannot be called directly');
 
     amount = HelpersLib.upTo(recipient, amount);
-    if (amount != 0) {
-      // Transfer some eth!
-      recipient.transfer(amount);
-    }
+    // Transfer some eth!
+    recipient.transfer(amount);
   }
 
   /// Modifiers.

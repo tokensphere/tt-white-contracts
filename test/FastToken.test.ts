@@ -587,6 +587,24 @@ describe('FastToken', () => {
           .changeTokenBalances(token, [bob, alice], [-100, 100]);
       });
 
+      it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
+        const subject = spcMemberToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
+      it('requires that zero address can only be spent from as a governor (member)', async () => {
+        const subject = token.connect(bob).transferFrom(ZERO_ADDRESS, alice.address, 100);
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
+      it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
+        const subject = token.transferFrom(ZERO_ADDRESS, alice.address, 100);
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
       it('allows governors to transfer from the zero address', async () => {
         const subject = () => governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to
@@ -609,7 +627,7 @@ describe('FastToken', () => {
       });
     });
 
-    describe('transferFromWithRef', async () => {
+    describe.only('transferFromWithRef', async () => {
       beforeEach(async () => {
         // Reset history calls.
         history.addTransferProof.reset();
@@ -688,8 +706,26 @@ describe('FastToken', () => {
           .changeTokenBalances(token, [bob, alice], [-100, 100]);
       });
 
+      it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
+        const subject = spcMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
+      it('requires that zero address can only be spent from as a governor (member)', async () => {
+        const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
+      it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
+        const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
+        await expect(subject).to.have
+          .revertedWith('Missing governorship')
+      });
+
       it('allows governors to transfer from the zero address', async () => {
-        const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
+        const subject = governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
         await expect(subject).to
           .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
       });
