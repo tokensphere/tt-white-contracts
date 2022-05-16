@@ -6,8 +6,6 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { toHexString } from '../src/utils';
 import { negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty, nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty } from './utils';
 
-// TODO: Test events.
-
 describe('Spc', () => {
   let
     deployer: SignerWithAddress,
@@ -49,7 +47,9 @@ describe('Spc', () => {
       // initializer.
       const contract = await spcFactory.deploy();
       const subject = contract.initialize(spcMember.address);
-      await expect(subject).to.emit(contract, 'MemberAdded').withArgs(spcMember.address);
+      await expect(subject).to
+        .emit(contract, 'MemberAdded')
+        .withArgs(spcMember.address);
     });
   });
 
@@ -181,7 +181,9 @@ describe('Spc', () => {
 
     it('emits a MemberAdded event', async () => {
       const subject = spcMemberSpc.addMember(bob.address);
-      await expect(subject).to.emit(spc, 'MemberAdded').withArgs(bob.address);
+      await expect(subject).to
+        .emit(spc, 'MemberAdded')
+        .withArgs(bob.address);
     });
   });
 
@@ -208,15 +210,35 @@ describe('Spc', () => {
 
     it('emits a MemberRemoved event', async () => {
       const subject = spcMemberSpc.removeMember(bob.address);
-      await expect(subject).to.emit(spc, 'MemberRemoved').withArgs(bob.address);
+      await expect(subject).to
+        .emit(spc, 'MemberRemoved')
+        .withArgs(bob.address);
     });
   });
 
   /// FAST management stuff.
 
   describe('checkSymbolAvailability', async () => {
-    it('returns true when the symbol is available');
-    it('returns false when the symbol is already in use');
+    it('returns true when the symbol is available', async () => {
+      const subject = await spc.checkSymbolAvailability('FST');
+      expect(subject).to.be.true;
+    });
+
+    it('returns false when the symbol is already in use', async () => {
+      // Set up a token mock.
+      const token = await smock.fake('FastToken');
+      // Make sure
+      token.symbol.returns('FST');
+      // Set up a mock registry.
+      const reg = await smock.fake('FastRegistry');
+      // Make sure that the registry can return the address of our tocken mock.
+      reg.token.returns(token.address);
+      // Register this FAST.
+      await spcMemberSpc.registerFastRegistry(reg.address)
+
+      const subject = await spc.checkSymbolAvailability('FST');
+      expect(subject).to.be.false;
+    });
   });
 
   describe('registerFastRegistry', async () => {
@@ -236,7 +258,8 @@ describe('Spc', () => {
 
     it('requires SPC membership', async () => {
       const subject = spc.registerFastRegistry(reg.address);
-      await expect(subject).to.have.revertedWith('Missing SPC membership');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
     });
 
     it('forbids adding two FASTS with the same symbol', async () => {
@@ -277,7 +300,9 @@ describe('Spc', () => {
 
     it('emits a FastRegistered event', async () => {
       const subject = spcMemberSpc.registerFastRegistry(reg.address);
-      await expect(subject).to.emit(spc, 'FastRegistered').withArgs(reg.address);
+      await expect(subject).to
+        .emit(spc, 'FastRegistered')
+        .withArgs(reg.address);
     });
   });
 

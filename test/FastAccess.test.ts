@@ -73,8 +73,12 @@ describe('FastAccess', () => {
       // initializer.
       const contract = await accessFactory.deploy();
       const subject = contract.initialize(reg.address, governor.address);
-      await expect(subject).to.emit(contract, 'GovernorAdded').withArgs(governor.address);
-      await expect(subject).to.emit(contract, 'MemberAdded').withArgs(governor.address);
+      await expect(subject).to
+        .emit(contract, 'GovernorAdded')
+        .withArgs(governor.address);
+      await expect(subject).to
+        .emit(contract, 'MemberAdded')
+        .withArgs(governor.address);
     });
   });
 
@@ -93,18 +97,21 @@ describe('FastAccess', () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = access.addGovernor(alice.address);
       // Check that the registry
-      await expect(subject).to.revertedWith('Missing SPC membership');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedAccess.addGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC membership');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
     });
 
     it('requires that the address is not a governor yet', async () => {
       await spcMemberAccess.addGovernor(alice.address)
       const subject = spcMemberAccess.addGovernor(alice.address);
-      await expect(subject).to.revertedWith('Address already in set');
+      await expect(subject).to.have
+        .revertedWith('Address already in set');
     });
 
     it('adds the given address as a governor', async () => {
@@ -136,17 +143,20 @@ describe('FastAccess', () => {
 
     it('requires SPC membership (anonymous)', async () => {
       const subject = access.removeGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC membership');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedAccess.removeGovernor(alice.address);
-      await expect(subject).to.revertedWith('Missing SPC membership');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
     });
 
     it('requires that the address is an existing governor', async () => {
       const subject = spcMemberAccess.removeGovernor(bob.address);
-      await expect(subject).to.revertedWith('Address does not exist in set');
+      await expect(subject).to.have
+        .revertedWith('Address does not exist in set');
     });
 
     it('removes the given address as a governor', async () => {
@@ -229,18 +239,21 @@ describe('FastAccess', () => {
   describe('addMember', async () => {
     it('requires governance (anonymous)', async () => {
       const subject = access.addMember(alice.address);
-      await expect(subject).to.revertedWith('Missing governorship');
+      await expect(subject).to.have
+        .revertedWith('Missing governorship');
     });
 
     it('requires governance (SPC governor)', async () => {
       const subject = spcMemberAccess.addMember(alice.address);
-      await expect(subject).to.revertedWith('Missing governorship');
+      await expect(subject).to.have
+        .revertedWith('Missing governorship');
     });
 
     it('requires that the address is not a member yet', async () => {
       await governedAccess.addMember(alice.address)
       const subject = governedAccess.addMember(alice.address);
-      await expect(subject).to.revertedWith('Address already in set');
+      await expect(subject).to.have
+        .revertedWith('Address already in set');
     });
 
     it('adds the given address as a member', async () => {
@@ -272,17 +285,20 @@ describe('FastAccess', () => {
 
     it('requires governance (anonymous)', async () => {
       const subject = access.removeMember(alice.address);
-      await expect(subject).to.revertedWith('Missing governorship');
+      await expect(subject).to.have
+        .revertedWith('Missing governorship');
     });
 
     it('requires governance (SPC governor)', async () => {
       const subject = spcMemberAccess.removeMember(alice.address);
-      await expect(subject).to.revertedWith('Missing governorship');
+      await expect(subject).to.have
+        .revertedWith('Missing governorship');
     });
 
     it('requires that the address is an existing member', async () => {
       const subject = governedAccess.removeMember(bob.address);
-      await expect(subject).to.revertedWith('Address does not exist in set');
+      await expect(subject).to.have
+        .revertedWith('Address does not exist in set');
     });
 
     it('removes the given address as a member', async () => {

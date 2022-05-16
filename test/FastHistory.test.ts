@@ -12,7 +12,8 @@ describe('FastHistory', () => {
     token: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
-    john: SignerWithAddress;
+    john: SignerWithAddress,
+    rob: SignerWithAddress;
   let reg: FakeContract<FastRegistry>;
   let historyFactory: FastHistory__factory;
   let history: FastHistory;
@@ -20,7 +21,7 @@ describe('FastHistory', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [/*deployer*/, spcMember, governor, access, token, alice, bob, john] = await ethers.getSigners();
+    [/*deployer*/, spcMember, governor, access, token, alice, bob, john, rob] = await ethers.getSigners();
 
     // Deploy the libraries we need.
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
@@ -69,12 +70,14 @@ describe('FastHistory', () => {
   describe('addMintingProof', async () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.addMintingProof(1, 'One');
-      await expect(subject).to.revertedWith('Cannot be called directly');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.addMintingProof(2, 'Two');
-      await expect(subject).to.revertedWith('Cannot be called directly');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
     });
 
     it('adds an entry to the minting proof list', async () => {
@@ -150,12 +153,14 @@ describe('FastHistory', () => {
   describe('addTransferProof', async () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.addTransferProof(alice.address, bob.address, john.address, 100, 'Attempt 1');
-      await expect(subject).to.revertedWith('Cannot be called directly');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.addTransferProof(alice.address, bob.address, john.address, 100, 'Attempt 2');
-      await expect(subject).to.revertedWith('Cannot be called directly');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
     });
 
     it('adds an entry to the transfer proof list', async () => {
@@ -230,6 +235,53 @@ describe('FastHistory', () => {
   });
 
   describe('paginateTransferProofsByInvolvee', async () => {
+    beforeEach(async () => {
+      // Add three transfers from bob to john performed by alice.
+      const tokenedHistory = history.connect(token);
+      await Promise.all(['A1', 'A2', 'A3'].map((value, index) => {
+        return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
+      }));
+      // Add three transfers from john to rob performed by bob.
+      await Promise.all(['B1', 'B2'].map((value, index) => {
+        return tokenedHistory.addTransferProof(bob.address, john.address, rob.address, (index + 1) * 100, value);
+      }));
+    });
 
+    it('returns the cursor to the next page', async () => {
+      // We're testing the pagination library here... Not too good. But hey, we're in a rush.
+      const [, cursor] = await history.paginateTransferProofsByInvolvee(bob.address, 0, 3);
+      expect(cursor).to.eq(3);
+    });
+
+    it('does not crash when overflowing and returns the correct cursor', async () => {
+      // We're testing the pagination library here... Not too good. But hey, we're in a rush.
+      const [, cursor] = await history.paginateTransferProofsByInvolvee(bob.address, 1, 10);
+      expect(cursor).to.eq(3);
+    });
+
+    it('counts the proofs regardless of the involvement (sender and recipient)', async () => {
+      it('does not crash when overflowing and returns the correct cursor', async () => {
+        const [, cursor] = await history.paginateTransferProofsByInvolvee(john.address, 1, 10);
+        expect(cursor).to.eq(5);
+      });
+    });
+
+    it('categorizes the proofs for the senders', async () => {
+      const [proofs,] = await history.paginateTransferProofsByInvolvee(bob.address, 0, 3);
+      // Check all proofs in order.
+      expect(proofs[0]).to.eq(0);
+      expect(proofs[1]).to.eq(1);
+      expect(proofs[2]).to.eq(2);
+    });
+
+    it('categorizes the proofs for the recipients', async () => {
+      const [proofs,] = await history.paginateTransferProofsByInvolvee(john.address, 0, 5);
+      // Check all proofs in order.
+      expect(proofs[0]).to.eq(0);
+      expect(proofs[1]).to.eq(1);
+      expect(proofs[2]).to.eq(2);
+      expect(proofs[3]).to.eq(3);
+      expect(proofs[4]).to.eq(4);
+    });
   });
 });

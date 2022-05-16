@@ -160,7 +160,6 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      requiresTxCredit(amount) senderMembership(from) recipientMembership(to)
       public returns(bool) {
     if (from == ZERO_ADDRESS) {
       require(reg.access().isGovernor(msg.sender), 'Missing governorship');
@@ -201,17 +200,13 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      requiresTxCredit(amount) senderMembership(from) recipientMembership(to)
+      requiresTxCredit(from, amount) senderMembership(from) recipientMembership(to)
       internal returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
 
     // Keep track of the transfer.
     reg.history().addTransferProof(spender, from, to, amount, ref);
 
-    // Decrease transfer credits, unless they are moved from the zero address.
-    if (from != ZERO_ADDRESS) {
-      transferCredits -= amount;
-    }
     // Keep track of the balances.
     balances[from] -= amount;
     balances[to] += amount;
@@ -223,18 +218,13 @@ contract FastToken is Initializable, IFastToken {
 
   // Modifiers.
 
-  modifier requiresTxCredit(uint256 amount) {
-    require(transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+  modifier requiresTxCredit(address from, uint256 amount) {
+    require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
     _;
   }
 
   modifier spcMembership(address a) {
     require(reg.spc().isMember(a), 'Missing SPC membership');
-    _;
-  }
-
-  modifier governance(address a) {
-    require(reg.access().isGovernor(a), 'Missing governorship');
     _;
   }
 
