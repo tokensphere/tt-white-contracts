@@ -627,7 +627,7 @@ describe('FastToken', () => {
       });
     });
 
-    describe.only('transferFromWithRef', async () => {
+    describe('transferFromWithRef', async () => {
       beforeEach(async () => {
         // Reset history calls.
         history.addTransferProof.reset();
@@ -725,7 +725,7 @@ describe('FastToken', () => {
       });
 
       it('allows governors to transfer from the zero address', async () => {
-        const subject = governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
+        const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
         await expect(subject).to
           .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
       });
