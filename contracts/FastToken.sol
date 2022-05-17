@@ -80,15 +80,14 @@ contract FastToken is Initializable, IFastToken {
 
   function mint(uint256 amount, string memory ref)
       spcMembership(msg.sender)
-      external returns(bool) {
+      external {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    require(!hasFixedSupply || totalSupply == 0, 'Minting not possible at this time');
+    require(!hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) > 0), 'Minting not possible at this time');
 
-    // Prepare the minted amount on the zero address, accrue total supply.
+    // Prepare the minted amount on the zero address.
     balances[ZERO_ADDRESS] += amount;
-    totalSupply += amount;
 
     // Keep track of the minting operation.
     // Note that we're not emitting here, as the history contract will.
@@ -199,7 +198,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      requiresTxCredit(from, amount) senderMembership(from) recipientMembership(to)
+      requiresTxCredit(from, amount) senderMembership(from) recipientMembershipOrZero(to)
       internal returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
 
@@ -210,7 +209,18 @@ contract FastToken is Initializable, IFastToken {
     balances[from] -= amount;
     balances[to] += amount;
 
-    // Emit events.
+    // If the funds are going to the ZERO address, decrease total supply.
+    if (to == ZERO_ADDRESS) {
+      totalSupply -= amount;
+    }
+    // If the funds are moving from the zero address, increase total supply.
+    else if (from == ZERO_ADDRESS) {
+      totalSupply += amount;
+    }
+
+    // Keep track of the transfer.
+    reg.history().transfered(spender, from, to, amount, ref);
+
     emit IERC20.Transfer(from, to, amount);
     return true;
   }
@@ -228,12 +238,12 @@ contract FastToken is Initializable, IFastToken {
   }
 
   modifier senderMembership(address a) {
-    require(reg.access().isMember(a) || a == ZERO_ADDRESS, SENDER_NOT_MEMBER_MESSAGE);
+    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
     _;
   }
 
-  modifier recipientMembership(address a) {
-    require(reg.access().isMember(a), RECIPIENT_NOT_MEMBER_MESSAGE);
+  modifier recipientMembershipOrZero(address a) {
+    require(reg.access().isMember(a) || a == ZERO_ADDRESS, RECIPIENT_NOT_MEMBER_MESSAGE);
     _;
   }
 }
