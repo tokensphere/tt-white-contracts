@@ -242,11 +242,22 @@ describe('FastToken', () => {
       expect(subject).to.eq(3_000);
     });
 
-    it('does not add the minted tokens to the total supply', async () => {
+    it('does not impact total supply', async () => {
       await spcMemberToken.mint(3_000, 'Attempt 1');
       const subject = await token.totalSupply();
       expect(subject).to.eq(0);
     });
+
+    it('emits a Minted event');
+  });
+
+  describe('burn', async () => {
+    it('requires that the supply is continuous');
+    it('requires that the zero address has enough funds');
+    it('removes tokens from the zero address');
+    it('does not impact total supply');
+    it('delegates to the history contract');
+    it('emits a Burnt event');
   });
 
   /// Tranfer Credit management.
