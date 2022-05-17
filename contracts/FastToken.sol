@@ -91,9 +91,24 @@ contract FastToken is Initializable, IFastToken {
 
     // Keep track of the minting operation.
     // Note that we're not emitting here, as the history contract will.
-    reg.history().addMintingProof(amount, ref);
+    reg.history().minted(amount, ref);
+
     // Emit!
-    emit Mint(amount, ref);
+    emit Minted(amount, ref);
+  }
+
+  function burn(uint256 amount, string memory ref)
+      spcMembership(msg.sender)
+      external {
+    require(!hasFixedSupply, 'Unminting not possible at this time');
+    require(balanceOf(ZERO_ADDRESS) >= amount, 'Insuficient funds');
+
+    // Remove the minted amount from the zero address.
+    balances[ZERO_ADDRESS] -= amount;
+
+    // Keep track of the minting operation.
+    // Note that we're not emitting here, as the history contract will.
+    reg.history().burnt(amount, ref);
 
     // Emit!
     emit Burnt(amount, ref);
@@ -120,7 +135,7 @@ contract FastToken is Initializable, IFastToken {
   /// ERC20 implementation and transfer related methods.
 
   function balanceOf(address owner)
-      external view override returns(uint256) {
+      public view override returns(uint256) {
     return balances[owner];
   }
 
@@ -135,7 +150,7 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function allowance(address owner, address spender)
-      external view override returns(uint256) {
+      public view override returns(uint256) {
     // If the allowance being queried is from the zero address and the spender
     // is a governor, we want to make sure that the spender has full rights over it.
     if (owner == ZERO_ADDRESS && reg.access().isGovernor(spender)) {
@@ -163,12 +178,19 @@ contract FastToken is Initializable, IFastToken {
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public returns(bool) {
-    if (from == ZERO_ADDRESS) {
-      require(reg.access().isGovernor(msg.sender), 'Missing governorship');
-    } else {
-      require(allowances[from][msg.sender] >= amount, 'Insuficient allowance');
-      allowances[from][msg.sender] -= amount;
+    require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
+
+    // Only decrease allowances if the sender of the funds isn't the zero address.
+    if (from != ZERO_ADDRESS) {
+      uint256 newAllowance = allowances[from][msg.sender] -= amount;
+      // If the allowance reached zero, we want to remove that allowance from
+      // the various other places where we keep track of them.
+      if (newAllowance == 0) {
+        givenAllowances[from].remove(msg.sender, true);
+        receivedAllowances[msg.sender].remove(from, true);
+      }
     }
+
     return _transfer(msg.sender, from, to, amount, ref);
   }
 
@@ -205,9 +227,6 @@ contract FastToken is Initializable, IFastToken {
       internal returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
 
-    // Keep track of the transfer.
-    reg.history().addTransferProof(spender, from, to, amount, ref);
-
     // Keep track of the balances.
     balances[from] -= amount;
     balances[to] += amount;
@@ -224,6 +243,7 @@ contract FastToken is Initializable, IFastToken {
     // Keep track of the transfer.
     reg.history().transfered(spender, from, to, amount, ref);
 
+    // Emit!
     emit IERC20.Transfer(from, to, amount);
     return true;
   }

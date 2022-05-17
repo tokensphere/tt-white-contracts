@@ -183,7 +183,7 @@ describe('FastToken', () => {
 
   describe('mint', async () => {
     beforeEach(async () => {
-      history.addMintingProof.reset();
+      history.minted.reset();
     });
 
     it('requires SPC membership (anonymous)', async () => {
@@ -216,7 +216,7 @@ describe('FastToken', () => {
     describe('with continuous supply', async () => {
       beforeEach(async () => {
         await token.connect(spcMember).setHasFixedSupply(false);
-        history.addMintingProof.reset();
+        history.minted.reset();
       });
 
       it('is allowed more than once', async () => {
@@ -231,7 +231,7 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      const args = history.addMintingProof.getCall(0).args as any;
+      const args = history.minted.getCall(0).args as any;
       expect(args.amount).to.eq(5_000);
       expect(args.ref).to.eq('Attempt 1');
     });
@@ -355,7 +355,7 @@ describe('FastToken', () => {
     describe('transfer', async () => {
       beforeEach(async () => {
         // Reset our history mock.
-        history.addTransferProof.reset();
+        history.transfered.reset();
       });
 
       // `transfer` specific.
@@ -395,7 +395,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transfer(bob.address, 12)
-        const args = history.addTransferProof.getCall(0).args as any;
+        const args = history.transfered.getCall(0).args as any;
         expect(args.spender).to.eq(alice.address);
         expect(args.from).to.eq(alice.address);
         expect(args.to).to.eq(bob.address);
@@ -416,7 +416,7 @@ describe('FastToken', () => {
 
     describe('transferWithRef', async () => {
       beforeEach(async () => {
-        history.addTransferProof.reset();
+        history.transfered.reset();
       });
 
       // IMPORTANT:
@@ -460,7 +460,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 12, 'Six')
-        const args = history.addTransferProof.getCall(0).args as any;
+        const args = history.transfered.getCall(0).args as any;
         expect(args.spender).to.eq(alice.address);
         expect(args.from).to.eq(alice.address);
         expect(args.to).to.eq(bob.address);
@@ -527,7 +527,7 @@ describe('FastToken', () => {
     describe('transferFrom', async () => {
       beforeEach(async () => {
         // Reset history calls.
-        history.addTransferProof.reset();
+        history.transfered.reset();
         // Let bob give allowance to john.
         await token.connect(bob).approve(john.address, 150);
       });
@@ -571,7 +571,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFrom(bob.address, alice.address, 12)
-        const args = history.addTransferProof.getCall(0).args as any;
+        const args = history.transfered.getCall(0).args as any;
         expect(args.spender).to.eq(john.address);
         expect(args.from).to.eq(bob.address);
         expect(args.to).to.eq(alice.address);
@@ -649,7 +649,7 @@ describe('FastToken', () => {
     describe('transferFromWithRef', async () => {
       beforeEach(async () => {
         // Reset history calls.
-        history.addTransferProof.reset();
+        history.transfered.reset();
         // Let bob give allowance to john.
         await token.connect(bob).approve(john.address, 150);
       });
@@ -693,7 +693,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        const args = history.addTransferProof.getCall(0).args as any;
+        const args = history.transfered.getCall(0).args as any;
         expect(args.spender).to.eq(john.address);
         expect(args.from).to.eq(bob.address);
         expect(args.to).to.eq(alice.address);

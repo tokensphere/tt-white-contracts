@@ -150,22 +150,22 @@ describe('FastHistory', () => {
 
   /// Transfer proof stuff.
 
-  describe('addTransferProof', async () => {
+  describe('transfered', async () => {
     it('requires that the caller is the token (anonymous)', async () => {
-      const subject = history.addTransferProof(alice.address, bob.address, john.address, 100, 'Attempt 1');
+      const subject = history.transfered(alice.address, bob.address, john.address, 100, 'Attempt 1');
       await expect(subject).to.have
         .revertedWith('Cannot be called directly');
     });
 
     it('requires that the caller is the token (governor)', async () => {
-      const subject = governedHistory.addTransferProof(alice.address, bob.address, john.address, 100, 'Attempt 2');
+      const subject = governedHistory.transfered(alice.address, bob.address, john.address, 100, 'Attempt 2');
       await expect(subject).to.have
         .revertedWith('Cannot be called directly');
     });
 
     it('adds an entry to the transfer proof list', async () => {
       const tokenedHistory = history.connect(token);
-      tokenedHistory.addTransferProof(alice.address, bob.address, john.address, 300, 'Attempt 3');
+      tokenedHistory.transfered(alice.address, bob.address, john.address, 300, 'Attempt 3');
       const [[{ spender, from, to, amount, ref, blockNumber }],] = await history.paginateTransferProofs(0, 1);
       expect(spender).to.eq(alice.address);
       expect(from).to.eq(bob.address);
@@ -177,7 +177,7 @@ describe('FastHistory', () => {
 
     it('emits a TransferProof event', async () => {
       const tokenedHistory = history.connect(token);
-      const subject = tokenedHistory.addTransferProof(alice.address, bob.address, john.address, 300, 'Attempt 3');
+      const subject = tokenedHistory.transfered(alice.address, bob.address, john.address, 300, 'Attempt 3');
       const expBlockNum = (await (await subject).wait()).blockNumber
       await expect(subject).to
         .emit(history, 'TransferProofAdded')
@@ -190,7 +190,7 @@ describe('FastHistory', () => {
       // Add a bunch of transfer proofs.
       const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
-        return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
+        return tokenedHistory.transfered(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));
     });
 
@@ -205,7 +205,7 @@ describe('FastHistory', () => {
       // Add a bunch of transfer proofs.
       const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
-        return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
+        return tokenedHistory.transfered(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));
     });
 
@@ -239,11 +239,11 @@ describe('FastHistory', () => {
       // Add three transfers from bob to john performed by alice.
       const tokenedHistory = history.connect(token);
       await Promise.all(['A1', 'A2', 'A3'].map((value, index) => {
-        return tokenedHistory.addTransferProof(alice.address, bob.address, john.address, (index + 1) * 100, value);
+        return tokenedHistory.transfered(alice.address, bob.address, john.address, (index + 1) * 100, value);
       }));
       // Add three transfers from john to rob performed by bob.
       await Promise.all(['B1', 'B2'].map((value, index) => {
-        return tokenedHistory.addTransferProof(bob.address, john.address, rob.address, (index + 1) * 100, value);
+        return tokenedHistory.transfered(bob.address, john.address, rob.address, (index + 1) * 100, value);
       }));
     });
 

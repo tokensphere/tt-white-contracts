@@ -26,11 +26,11 @@ library PaginationLib {
       return (values, cursor + length);
   }
 
-  function mintingProofs(IFastHistory.MintingProof[] memory collection, uint256 cursor, uint256 perPage)
-    external pure returns(IFastHistory.MintingProof[] memory, uint256) {
+  function supplyProofs(IFastHistory.SupplyProof[] memory collection, uint256 cursor, uint256 perPage)
+    external pure returns(IFastHistory.SupplyProof[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
-      IFastHistory.MintingProof[] memory values = new IFastHistory.MintingProof[](length);
+      IFastHistory.SupplyProof[] memory values = new IFastHistory.SupplyProof[](length);
       for (uint256 i = 0; i < length; i++) {
           values[i] = collection[cursor + i];
       }

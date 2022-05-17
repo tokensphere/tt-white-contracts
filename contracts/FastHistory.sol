@@ -15,7 +15,7 @@ contract FastHistory is Initializable, IFastHistory {
   FastRegistry public reg;
 
   // All minting proofs are kept here.
-  IFastHistory.MintingProof[] private mintingProofs;
+  IFastHistory.SupplyProof[] private supplyProofs;
 
   // All transfer proofs are kept here.
   IFastHistory.TransferProof[] private transferProofs;
@@ -29,12 +29,13 @@ contract FastHistory is Initializable, IFastHistory {
 
   /// Minting history-keeping methods.
 
-  function addMintingProof(uint256 amount, string memory ref)
+  function minted(uint256 amount, string memory ref)
       tokenContract(msg.sender)
       external override {
     // Keep track of the mint.
-    mintingProofs.push(
-      IFastHistory.MintingProof({
+    supplyProofs.push(
+      IFastHistory.SupplyProof({
+        op: IFastHistory.SupplyOp.Mint,
         amount: amount,
         blockNumber: block.number,
         ref: ref
@@ -42,19 +43,33 @@ contract FastHistory is Initializable, IFastHistory {
     );
   }
 
-  function mintingProofCount()
-      external view returns(uint256) {
-    return mintingProofs.length;
+  function burnt(uint256 amount, string memory ref)
+      tokenContract(msg.sender)
+      external override {
+    // Keep track of the unmint.
+    supplyProofs.push(
+      IFastHistory.SupplyProof({
+        op: IFastHistory.SupplyOp.Burn,
+        amount: amount,
+        blockNumber: block.number,
+        ref: ref
+      })
+    );
   }
 
-  function paginateMintingProofs(uint256 cursor, uint256 perPage)
-      public view returns(IFastHistory.MintingProof[] memory, uint256) {
-    return PaginationLib.mintingProofs(mintingProofs, cursor, perPage);
+  function supplyProofCount()
+      external view returns(uint256) {
+    return supplyProofs.length;
+  }
+
+  function paginateSupplyProofs(uint256 cursor, uint256 perPage)
+      public view returns(IFastHistory.SupplyProof[] memory, uint256) {
+    return PaginationLib.supplyProofs(supplyProofs, cursor, perPage);
   }
 
   /// Transfer history-keeping methods.
 
-  function addTransferProof(address spender, address from, address to, uint256 amount, string memory ref)
+  function transfered(address spender, address from, address to, uint256 amount, string memory ref)
       tokenContract(msg.sender)
       external override {
     // Keep track of the transfer proof ID for the sender and for the recipient.
