@@ -242,10 +242,10 @@ describe('FastToken', () => {
       expect(subject).to.eq(3_000);
     });
 
-    it('adds the minted tokens to the total supply', async () => {
+    it('does not add the minted tokens to the total supply', async () => {
       await spcMemberToken.mint(3_000, 'Attempt 1');
       const subject = await token.totalSupply();
-      expect(subject).to.eq(3_000);
+      expect(subject).to.eq(0);
     });
   });
 
@@ -398,6 +398,9 @@ describe('FastToken', () => {
           .emit(token, 'Transfer')
           .withArgs(alice.address, bob.address, 98);
       });
+
+      it('increases total supply when transferring from the zero address');
+      it('decreases total supply when transferring to the zero address');
     });
 
     describe('transferWithRef', async () => {
@@ -460,6 +463,9 @@ describe('FastToken', () => {
           .emit(token, 'Transfer')
           .withArgs(alice.address, bob.address, 98);
       });
+
+      it('increases total supply when transferring from the zero address');
+      it('decreases total supply when transferring to the zero address');
     });
 
     describe('allowance', async () => {
@@ -568,6 +574,9 @@ describe('FastToken', () => {
           .emit(token, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
+
+      it('increases total supply when transferring from the zero address');
+      it('decreases total supply when transferring to the zero address');
 
       // `transferFrom` specific!
 
@@ -687,6 +696,9 @@ describe('FastToken', () => {
           .emit(token, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
+
+      it('increases total supply when transferring from the zero address');
+      it('decreases total supply when transferring to the zero address');
 
       // `transferFrom` specific!
 
