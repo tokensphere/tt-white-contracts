@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './lib/AddressSetLib.sol';
+import './lib/PaginationLib.sol';
 import './FastRegistry.sol';
 import './interfaces/IFastToken.sol';
 import './interfaces/IERC20.sol';
@@ -91,7 +92,7 @@ contract FastToken is Initializable, IFastToken {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    require(!hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) > 0), 'Minting not possible at this time');
+    require(!hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0), 'Minting not possible at this time');
 
     // Prepare the minted amount on the zero address.
     balances[ZERO_ADDRESS] += amount;
@@ -168,13 +169,13 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function approve(address spender, uint256 amount)
-      senderMembership(msg.sender)
+      senderMembershipOrZero(msg.sender)
       external override returns(bool) {
     // Store allowance...
-    allowances[msg.sender][spender] = amount;
+    allowances[msg.sender][spender] += amount;
     // Keep track of given and received allowances.
     givenAllowances[msg.sender].add(spender, true);
-    receivedAllowances[msg.sender].add(spender, true);
+    receivedAllowances[spender].add(msg.sender, true);
 
     // Emit events.
     emit IERC20.Approval(msg.sender, spender, amount);
@@ -202,6 +203,18 @@ contract FastToken is Initializable, IFastToken {
     }
 
     return _transfer(msg.sender, from, to, amount, ref);
+  }
+
+  /// Allowances query operations.
+
+  function paginateGivenAllowances(address owner, uint256 index, uint256 perPage)
+      public view returns(address[] memory, uint256) {
+    return PaginationLib.addresses(givenAllowances[owner].values, index, perPage);
+  }
+
+  function paginateReceivedAllowances(address spender, uint256 index, uint256 perPage)
+      public view returns(address[] memory, uint256) {
+    return PaginationLib.addresses(receivedAllowances[spender].values, index, perPage);
   }
 
   /// ERC1404 implementation.
@@ -233,7 +246,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      requiresTxCredit(from, amount) senderMembership(from) recipientMembershipOrZero(to)
+      requiresTxCredit(from, amount) senderMembershipOrZero(from) recipientMembershipOrZero(to)
       internal returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
 
@@ -270,8 +283,8 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier senderMembership(address a) {
-    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
+  modifier senderMembershipOrZero(address a) {
+    require(reg.access().isMember(a) || a == ZERO_ADDRESS, SENDER_NOT_MEMBER_MESSAGE);
     _;
   }
 

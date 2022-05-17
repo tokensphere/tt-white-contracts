@@ -23,9 +23,9 @@ describe('FastToken', () => {
     anonymous: SignerWithAddress;
   let
     reg: FakeContract<FastRegistry>,
-    tokenFactory: FastToken__factory,
     access: FakeContract<FastAccess>,
     history: FakeContract<FastHistory>,
+    tokenFactory: FastToken__factory,
     token: FastToken,
     governedToken: FastToken,
     spcMemberToken: FastToken;
@@ -34,6 +34,7 @@ describe('FastToken', () => {
     // Keep track of a few signers.
     [/*deployer*/, spcMember, governor, alice, bob, john, anonymous] = await ethers.getSigners();
     // Deploy the libraries.
+    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
 
     reg = await smock.fake('FastRegistry');
@@ -55,7 +56,9 @@ describe('FastToken', () => {
     access.isGovernor.whenCalledWith(governor.address).returns(true);
     // Configure membbership into our access contract.
     access.isMember.returns(false);
-    [alice, bob, john].forEach(({ address }) => access.isMember.whenCalledWith(address).returns(true))
+    [alice, bob, john].forEach(
+      ({ address }) => access.isMember.whenCalledWith(address).returns(true)
+    );
     // Make sure that our registry mock keeps track of the access mock address.
     reg.access.returns(access.address);
 
@@ -65,7 +68,8 @@ describe('FastToken', () => {
     reg.history.returns(history.address);
 
     // Finally, create our token factory.
-    tokenFactory = await ethers.getContractFactory('FastToken');
+    const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
   });
 
   beforeEach(async () => {
@@ -220,12 +224,11 @@ describe('FastToken', () => {
       });
 
       it('is allowed more than once', async () => {
-        await Promise.all([
+        const subject = () => Promise.all([
           spcMemberToken.mint(1_000_000, 'Attempt 1'),
           spcMemberToken.mint(1_000_000, 'Attempt 2')
         ]);
-        const subject = await token.totalSupply();
-        expect(subject).to.eq(2_000_000)
+        await expect(subject).to.changeTokenBalance(token, ZERO_ACCOUNT, 2_000_000);
       });
     });
 
@@ -403,15 +406,14 @@ describe('FastToken', () => {
         expect(args.ref).to.eq('Unspecified - via ERC20');
       });
 
+      it('decreases total supply when transferring to the zero address');
+
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(alice).transfer(bob.address, 98);
         await expect(subject).to
           .emit(token, 'Transfer')
           .withArgs(alice.address, bob.address, 98);
       });
-
-      it('increases total supply when transferring from the zero address');
-      it('decreases total supply when transferring to the zero address');
     });
 
     describe('transferWithRef', async () => {
@@ -456,6 +458,15 @@ describe('FastToken', () => {
           .changeTokenBalances(token, [alice, bob], [-100, 100]);
       });
 
+      it('decreases total supply when transferring to the zero address');
+
+      it('emits a IERC20.Transfer event', async () => {
+        const subject = token.connect(alice).transferWithRef(bob.address, 98, 'Seven');
+        await expect(subject).to
+          .emit(token, 'Transfer')
+          .withArgs(alice.address, bob.address, 98);
+      });
+
       // This is the only test that differs from the `transfer` specification.
 
       it('delegates to the history contract', async () => {
@@ -467,16 +478,6 @@ describe('FastToken', () => {
         expect(args.amount).to.eq(12);
         expect(args.ref).to.eq('Six');
       });
-
-      it('emits a IERC20.Transfer event', async () => {
-        const subject = token.connect(alice).transferWithRef(bob.address, 98, 'Seven');
-        await expect(subject).to
-          .emit(token, 'Transfer')
-          .withArgs(alice.address, bob.address, 98);
-      });
-
-      it('increases total supply when transferring from the zero address');
-      it('decreases total supply when transferring to the zero address');
     });
 
     describe('allowance', async () => {
@@ -513,6 +514,8 @@ describe('FastToken', () => {
         const subject = await token.allowance(alice.address, bob.address);
         expect(subject).to.eq(50);
       });
+
+      it('stacks up new allowances');
 
       it('emits a Approval event', async () => {
         // Let alice give allowance to bob.
@@ -586,7 +589,6 @@ describe('FastToken', () => {
           .withArgs(bob.address, alice.address, 98);
       });
 
-      it('increases total supply when transferring from the zero address');
       it('decreases total supply when transferring to the zero address');
 
       // `transferFrom` specific!
@@ -609,19 +611,19 @@ describe('FastToken', () => {
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
         const subject = spcMemberToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('allows governors to transfer from the zero address', async () => {
@@ -644,6 +646,8 @@ describe('FastToken', () => {
         const subject = await token.transferCredits();
         expect(subject).to.eq(creditsBefore);
       });
+
+      it('increases total supply when transferring from the zero address');
     });
 
     describe('transferFromWithRef', async () => {
@@ -701,15 +705,14 @@ describe('FastToken', () => {
         expect(args.ref).to.eq('Five');
       });
 
+      it('decreases total supply when transferring to the zero address');
+
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
         await expect(subject).to
           .emit(token, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
-
-      it('increases total supply when transferring from the zero address');
-      it('decreases total supply when transferring to the zero address');
 
       // `transferFrom` specific!
 
@@ -731,19 +734,19 @@ describe('FastToken', () => {
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
         const subject = spcMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Insuficient allowance')
       });
 
       it('allows governors to transfer from the zero address', async () => {
@@ -766,7 +769,19 @@ describe('FastToken', () => {
         const subject = await token.transferCredits();
         expect(subject).to.eq(creditsBefore);
       });
+
+      it('increases total supply when transferring from the zero address');
     });
+  });
+
+  /// Allowance querying.
+
+  describe('paginateGivenAllowances', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
+  describe('paginateReceivedAllowances', async () => {
+    it('NEEDS MORE TESTS');
   });
 
   /// ERC1404 implementation.

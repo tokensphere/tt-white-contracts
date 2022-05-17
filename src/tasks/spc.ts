@@ -35,8 +35,8 @@ async function deploySpc(
   member: string): Promise<Spc> {
   // We deploy our SPC contract.
   const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr, HelpersLib: helpersLibAddr };
-  const Spc = await ethers.getContractFactory('Spc', { libraries }) as Spc__factory;
-  const spc = await upgrades.deployProxy(Spc, [member]) as Spc;
+  const spcFactory = await ethers.getContractFactory('Spc', { libraries }) as Spc__factory;
+  const spc = await upgrades.deployProxy(spcFactory, [member]) as Spc;
   // Provision the SPC with Eth.
   await spc.provisionWithEth({ value: ethers.utils.parseEther('500') });
 

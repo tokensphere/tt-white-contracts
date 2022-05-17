@@ -87,7 +87,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   await spcMemberRegistry.setHistoryAddress(history.address);
 
   // We can finally deploy our token contract.
-  const token = await deployFastToken(hre, registry.address, params);
+  const token = await deployFastToken(hre, addressSetLib.address, paginationLib.address, registry.address, params);
   const spcMemberToken = token.connect(spcMember);
   // Tell our registry where our token contract is.
   await spcMemberRegistry.setTokenAddress(token.address);

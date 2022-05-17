@@ -65,79 +65,93 @@ describe('FastHistory', () => {
     });
   });
 
-  /// Minting proof stuff.
+  /// Supply proof stuff.
 
-  describe('addMintingProof', async () => {
+  describe('burnt', async () => {
     it('requires that the caller is the token (anonymous)', async () => {
-      const subject = history.addMintingProof(1, 'One');
+      const subject = history.burnt(1, 'One');
       await expect(subject).to.have
         .revertedWith('Cannot be called directly');
     });
 
     it('requires that the caller is the token (governor)', async () => {
-      const subject = governedHistory.addMintingProof(2, 'Two');
+      const subject = governedHistory.burnt(2, 'Two');
       await expect(subject).to.have
         .revertedWith('Cannot be called directly');
     });
 
-    it('adds an entry to the minting proof list', async () => {
+    it('adds an entry to the supply proof list', async () => {
       const tokenedHistory = history.connect(token);
-      await tokenedHistory.addMintingProof(3, 'Three');
-      const [[{ amount, ref, blockNumber }],] = await history.paginateMintingProofs(0, 1);
+      await tokenedHistory.burnt(3, 'Three');
+      const [[{ amount, ref, blockNumber }],] = await history.paginateSupplyProofs(0, 1);
       expect(amount).to.eq(3);
       expect(ref).to.eq('Three');
       expect(blockNumber.toNumber()).to.be.greaterThan(1);
     });
+  });
 
-    it('emits a MintingProofAdded event', async () => {
+  describe('minted', async () => {
+    it('requires that the caller is the token (anonymous)', async () => {
+      const subject = history.minted(1, 'One');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
+    });
+
+    it('requires that the caller is the token (governor)', async () => {
+      const subject = governedHistory.minted(2, 'Two');
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
+    });
+
+    it('adds an entry to the supply proof list', async () => {
       const tokenedHistory = history.connect(token);
-      const subject = tokenedHistory.addMintingProof(3, 'Three');
-      const expBlockNum = (await (await subject).wait()).blockNumber
-      await expect(subject).to
-        .emit(history, 'MintingProofAdded')
-        .withArgs(3, expBlockNum, 'Three');
+      await tokenedHistory.minted(3, 'Three');
+      const [[{ amount, ref, blockNumber }],] = await history.paginateSupplyProofs(0, 1);
+      expect(amount).to.eq(3);
+      expect(ref).to.eq('Three');
+      expect(blockNumber.toNumber()).to.be.greaterThan(1);
     });
   });
 
-  describe('mintingProofCount', async () => {
+  describe('supplyProofCount', async () => {
     beforeEach(async () => {
-      // Add a bunch of minting proofs.
+      // Add a bunch of supply proofs.
       const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
-        return tokenedHistory.addMintingProof(index, value);
+        return tokenedHistory.minted(index, value);
       }));
     });
 
-    it('counts how many minting proofs have been stored', async () => {
-      const subject = await history.mintingProofCount();
+    it('counts how many supply proofs have been stored', async () => {
+      const subject = await history.supplyProofCount();
       expect(subject).to.eq(3);
     });
   });
 
-  describe('paginateMintingProofs', async () => {
+  describe('paginateSupplyProofs', async () => {
     beforeEach(async () => {
-      // Add a bunch of minting proofs.
+      // Add a bunch of supply proofs.
       const tokenedHistory = history.connect(token);
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
-        return tokenedHistory.addMintingProof((index + 1) * 100, value);
+        return tokenedHistory.minted((index + 1) * 100, value);
       }));
     });
 
     it('returns the cursor to the next page', async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-      const [, cursor] = await history.paginateMintingProofs(0, 3);
+      const [, cursor] = await history.paginateSupplyProofs(0, 3);
       expect(cursor).to.eq(3);
     });
 
     it('does not crash when overflowing and returns the correct cursor', async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-      const [, cursor] = await history.paginateMintingProofs(1, 10);
+      const [, cursor] = await history.paginateSupplyProofs(1, 10);
       expect(cursor).to.eq(3);
     });
 
-    it('returns the minting proofs in the order they were added', async () => {
+    it('returns the supply proofs in the order they were added', async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-      const [[proof1, proof2, proof3],] = await history.paginateMintingProofs(0, 3);
+      const [[proof1, proof2, proof3],] = await history.paginateSupplyProofs(0, 3);
       // Check all proofs in order.
       expect(proof1.amount).to.eq(100);
       expect(proof1.ref).to.eq('One');
@@ -173,15 +187,6 @@ describe('FastHistory', () => {
       expect(amount).to.eq(300);
       expect(ref).to.eq('Attempt 3');
       expect(blockNumber.toNumber()).to.be.greaterThan(1);
-    });
-
-    it('emits a TransferProof event', async () => {
-      const tokenedHistory = history.connect(token);
-      const subject = tokenedHistory.transfered(alice.address, bob.address, john.address, 300, 'Attempt 3');
-      const expBlockNum = (await (await subject).wait()).blockNumber
-      await expect(subject).to
-        .emit(history, 'TransferProofAdded')
-        .withArgs(alice.address, bob.address, john.address, 300, expBlockNum, 'Attempt 3');
     });
   });
 
