@@ -15,9 +15,11 @@ library AddressSetLib {
    * @param d is the internal data storage to use.
    * @param key is the address to be added.
    */
-  function add(Data storage d, address key)
+  function add(Data storage d, address key, bool noThrow)
       external {
-    require(!contains(d, key), "Address already in set");
+    bool exists = contains(d, key);
+    if (noThrow && exists) { return; }
+    require(!exists, "Address already in set");
     d.indices[key] = d.values.length;
     d.values.push(key);
   }
@@ -28,9 +30,11 @@ library AddressSetLib {
    * @param d is the internal data storage to use.
    * @param key is the address to be removed.
    */
-  function remove(Data storage d, address key)
+  function remove(Data storage d, address key, bool noThrow)
       external {
-    require(contains(d, key), "Address does not exist in set");
+    bool exists = contains(d, key);
+    if (noThrow && !exists) { return; }
+    require(exists, "Address does not exist in set");
     uint256 lastIndex = d.values.length - 1;
     address keyToMove = d.values[lastIndex];
     uint256 idxToReplace = d.indices[key];

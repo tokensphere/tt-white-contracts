@@ -44,7 +44,7 @@ contract Spc is Initializable {
       public payable
       initializer {
     // Add member to our list.
-    memberSet.add(_member);
+    memberSet.add(_member, false);
     // Emit!
     emit MemberAdded(_member);
   }
@@ -85,7 +85,7 @@ contract Spc is Initializable {
       membership(msg.sender)
       external {
     // Add the member to our list.
-    memberSet.add(member);
+    memberSet.add(member, false);
 
     // Provision the member with some Eth.
     uint256 amount = HelpersLib.upTo(member, MEMBER_ETH_PROVISION);
@@ -99,8 +99,7 @@ contract Spc is Initializable {
       membership(msg.sender)
       external {
     // Remove the member from the set.
-    memberSet.remove(member);
-    // TODO: Do we need to return the member's tokens to the zero address?
+    memberSet.remove(member, false);
     // Emit!
     emit MemberRemoved(member);
   }

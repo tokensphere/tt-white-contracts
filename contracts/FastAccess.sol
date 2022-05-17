@@ -53,8 +53,8 @@ contract FastAccess is Initializable, IFastAccess {
     // Keep track of the registry.
     reg = pReg;
     // Add the governor both as a governor and as a member.
-    memberSet.add(governor);
-    governorSet.add(governor);
+    memberSet.add(governor, false);
+    governorSet.add(governor, false);
     // Emit!
     emit GovernorAdded(governor);
     emit MemberAdded(governor);
@@ -69,7 +69,7 @@ contract FastAccess is Initializable, IFastAccess {
       spcMembership(msg.sender)
       public override {
     // Add governor to list.
-    governorSet.add(a);
+    governorSet.add(a, false);
     // Let the registry provision the new governor with Eth if possible.
     reg.payUpTo(a, GOVERNOR_ETH_PROVISION);
     // Emit!
@@ -83,7 +83,7 @@ contract FastAccess is Initializable, IFastAccess {
       spcMembership(msg.sender)
       public {
     // Remove governor.
-    governorSet.remove(a);
+    governorSet.remove(a, false);
     // Emit!
     emit GovernorRemoved(a);
   }
@@ -117,15 +117,15 @@ contract FastAccess is Initializable, IFastAccess {
   /**
    * @dev Adds a member to the membership list.
    */
-  function addMember(address payable a)
+  function addMember(address payable member)
       governance(msg.sender)
       public override {
     // Add the member.
-    memberSet.add(a);
+    memberSet.add(member, false);
     // Let the registry provision the new member with Eth if possible.
-    reg.payUpTo(a, MEMBER_ETH_PROVISION);
+    reg.payUpTo(member, MEMBER_ETH_PROVISION);
     // Emit!
-    emit MemberAdded(a);
+    emit MemberAdded(member);
   }
 
   /**
@@ -134,7 +134,14 @@ contract FastAccess is Initializable, IFastAccess {
   function removeMember(address a)
       governance(msg.sender)
       public {
-    memberSet.remove(a);
+    // TODO: Do we need to return the member's tokens to the zero address?
+    // We would add a new function in the FastToken contract such as `beforeRemovingMember`
+    // only callable from `reg.access()`.
+    // In that function we would:
+    // - Transfer that member's token back to the ZERO address.
+    // - Make sure that the totalSupply is decreased.
+    // - Remove all allowances given or received for that member (LOOP?!?!).
+    memberSet.remove(a, false);
     emit MemberRemoved(a);
   }
 
