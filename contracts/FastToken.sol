@@ -2,12 +2,15 @@
 pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
+import './lib/AddressSetLib.sol';
 import './FastRegistry.sol';
 import './interfaces/IFastToken.sol';
 import './interfaces/IERC20.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract FastToken is Initializable, IFastToken {
+  using AddressSetLib for AddressSetLib.Data;
+
   /// Constants.
 
   // We use the 0x0 address for all minting operations. A constant
@@ -25,6 +28,8 @@ contract FastToken is Initializable, IFastToken {
 
   /// Events.
 
+  event Minted(uint256 indexed amount, string indexed ref);
+  event Burnt(uint256 indexed amount, string indexed ref);
   event TransferCreditsAdded(address indexed spcMember, uint256 amount);
   event TransferCreditsDrained(address indexed spcMember, uint256 amount);
 
@@ -52,6 +57,8 @@ contract FastToken is Initializable, IFastToken {
   mapping(address => uint256) private balances;
   // Allowances are stored here.
   mapping(address => mapping(address => uint256)) private allowances;
+  mapping(address => AddressSetLib.Data) private givenAllowances;
+  mapping(address => AddressSetLib.Data) private receivedAllowances;
 
   /// Public stuff.
 
@@ -165,6 +172,9 @@ contract FastToken is Initializable, IFastToken {
       external override returns(bool) {
     // Store allowance...
     allowances[msg.sender][spender] = amount;
+    // Keep track of given and received allowances.
+    givenAllowances[msg.sender].add(spender, true);
+    receivedAllowances[msg.sender].add(spender, true);
 
     // Emit events.
     emit IERC20.Approval(msg.sender, spender, amount);
