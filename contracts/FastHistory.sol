@@ -9,11 +9,6 @@ import './FastRegistry.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract FastHistory is Initializable, IFastHistory {
-  /// Events.
-
-  event MintingProofAdded(uint256 indexed amount, uint256 indexed blockNumber, string indexed ref);
-  event TransferProofAdded(address indexed spender, address indexed from, address indexed to, uint256 amount, uint256 blockNumber, string ref);
-
   /// Members.
   
   // Contract registry.
@@ -45,7 +40,6 @@ contract FastHistory is Initializable, IFastHistory {
         ref: ref
       })
     );
-    emit MintingProofAdded(amount, block.number, ref);
   }
 
   function mintingProofCount()
@@ -77,8 +71,6 @@ contract FastHistory is Initializable, IFastHistory {
         ref: ref
       })
     );
-    // Emit!
-    emit TransferProofAdded(spender, from, to, amount, block.number, ref);
   }
 
   function transferProofCount()

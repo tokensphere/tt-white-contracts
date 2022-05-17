@@ -92,8 +92,11 @@ contract FastToken is Initializable, IFastToken {
     // Keep track of the minting operation.
     // Note that we're not emitting here, as the history contract will.
     reg.history().addMintingProof(amount, ref);
+    // Emit!
+    emit Mint(amount, ref);
 
-    return true;
+    // Emit!
+    emit Burnt(amount, ref);
   }
 
   /// Tranfer Credit management.
