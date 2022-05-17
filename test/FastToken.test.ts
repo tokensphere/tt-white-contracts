@@ -31,7 +31,6 @@ describe('FastToken', () => {
     spcMemberToken: FastToken;
 
   before(async () => {
-    // TODO: Replace most of this setup with mocks if possible.
     // Keep track of a few signers.
     [/*deployer*/, spcMember, governor, alice, bob, john, anonymous] = await ethers.getSigners();
     // Deploy the libraries.
