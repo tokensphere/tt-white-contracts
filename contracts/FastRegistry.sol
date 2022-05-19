@@ -29,8 +29,7 @@ contract FastRegistry is Initializable, IFastRegistry {
   IFastToken public override token;
 
   function initialize(ISpc _spc)
-      public payable
-      initializer {
+      external initializer {
     spc = _spc;
   }
 

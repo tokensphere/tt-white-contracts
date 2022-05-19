@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 import './ISpc.sol';
+import './IHasMembers.sol';
+import './IHasGovernors.sol';
+import './IFastRegistry.sol';
 
 /**
  * @dev Interface of the FAST Access standard.
  */
-interface IFastAccess {
+interface IFastAccess is IHasMembers, IHasGovernors {
   /**
    * @dev This structure isn't used anywhere in storage. Instead, it
    * allows various methods of the contract to return all the flags
@@ -15,10 +18,4 @@ interface IFastAccess {
     bool isGovernor;
     bool isMember;
   }
-
-  function isGovernor(address c) external view returns(bool);
-  function addGovernor(address payable c) external;
-
-  function isMember(address c) external view returns(bool);
-  function addMember(address payable c) external;
 }

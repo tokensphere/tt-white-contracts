@@ -1,10 +1,13 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
-import { FakeContract, smock } from '@defi-wonderland/smock';
 import { toHexString } from '../src/utils';
-import { negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty, nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty } from './utils';
+import {
+  negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty,
+  nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty
+} from './utils';
 
 describe('Spc', () => {
   let

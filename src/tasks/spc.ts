@@ -3,7 +3,7 @@ import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork } from '../utils';
 import { StateManager } from '../StateManager';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Spc, Spc__factory } from '../../typechain-types';
+import { Spc__factory, Spc, Exchange, Exchange__factory } from '../../typechain-types';
 
 interface SpcDeployParams {
   readonly member: string;
@@ -25,6 +25,9 @@ task('spc-deploy', 'Deploys the main SPC contract')
     const helpersLibAddr: string = stateManager.state.HelpersLib;
     const spc = await deploySpc(hre, addressSetLibAddr, paginationLibAddr, helpersLibAddr, params.member);
     console.log('Deployed Spc', spc.address);
+
+    const exchange = await deployExchange(hre, spc);
+    console.log('Deployed Exchange', exchange.address);
   });
 
 async function deploySpc(
@@ -44,4 +47,12 @@ async function deploySpc(
   return spc;
 }
 
-export { deploySpc };
+async function deployExchange(
+  { ethers, upgrades }: HardhatRuntimeEnvironment,
+  spc: Spc
+): Promise<Exchange> {
+  const exchangeFactory = await ethers.getContractFactory('Exchange') as Exchange__factory;
+  return await upgrades.deployProxy(exchangeFactory, [spc.address]) as Exchange;
+}
+
+export { deploySpc, deployExchange };

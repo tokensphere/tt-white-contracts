@@ -4,7 +4,7 @@ import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork, fromBaseUnit } from '../utils';
 import { StateManager } from '../StateManager';
 import { deployLibrary } from './libraries';
-import { deploySpc } from './spc';
+import { deployExchange, deploySpc } from './spc';
 import {
   deployFastAccess,
   deployFastHistory,
@@ -32,7 +32,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     // Prepare a state manager.
     const {
       addressSetLib, paginationLib, helpersLib,
-      spc,
+      spc, exchange,
       registry, access, history, token,
       symbol, decimals, baseAmount
     } = await bootstrap(hre, params);
@@ -43,6 +43,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     console.log('Deployed HelpersLib', helpersLib.address);
     console.log('==========');
     console.log('Deployed SPC', spc.address);
+    console.log('Deployed Exchange', exchange.address);
     console.log('==========');
     console.log('Deployed FastRegistry', registry.address);
     console.log('Deployed FastAccess', access.address);
@@ -70,6 +71,8 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
 
   // Deploy the main SPC contract.
   const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, helpersLib.address, spcMember.address);
+  // Deploy an exchange.
+  const exchange = await deployExchange(hre, spc);
 
   // First, deploy a registry contract.
   const registry = await deployFastRegistry(hre, helpersLib.address, spc.address);
@@ -107,7 +110,8 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
 
   return {
     addressSetLib, paginationLib, helpersLib,
-    spc, registry, access, history, token,
+    spc, exchange,
+    registry, access, history, token,
     symbol, decimals, baseAmount
   };
 }

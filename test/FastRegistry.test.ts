@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Spc, FastRegistry__factory, FastRegistry } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
+import { Spc, FastRegistry__factory, FastRegistry } from '../typechain-types';
 import { toHexString } from '../src/utils';
 import { negNinety, negOneHundred, negTwo, ninety, oneHundred, ten, two } from './utils';
 

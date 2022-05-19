@@ -71,7 +71,7 @@ contract FastToken is Initializable, IFastToken {
                       string memory _symbol,
                       uint256 _decimals,
                       bool _hasFixedSupply)
-      public initializer {
+      external initializer {
     // Keep track of the SPC and Access contracts.
     reg = _reg;
     // Set up ERC20 related stuff.
@@ -172,7 +172,7 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function approve(address spender, uint256 amount)
-      senderMembershipOrZero(msg.sender)
+      senderMembership(msg.sender)
       external override returns(bool) {
     _approve(msg.sender, spender, amount);
     return true;
@@ -249,7 +249,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      senderMembershipOrZero(from) recipientMembershipOrZero(to)
+      senderMembership(from) recipientMembership(to)
       private returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
     require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
@@ -325,16 +325,11 @@ contract FastToken is Initializable, IFastToken {
   }
 
   modifier senderMembership(address a) {
-    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
-    _;
-  }
-
-  modifier senderMembershipOrZero(address a) {
     require(reg.access().isMember(a) || a == ZERO_ADDRESS, SENDER_NOT_MEMBER_MESSAGE);
     _;
   }
 
-  modifier recipientMembershipOrZero(address a) {
+  modifier recipientMembership(address a) {
     require(reg.access().isMember(a) || a == ZERO_ADDRESS, RECIPIENT_NOT_MEMBER_MESSAGE);
     _;
   }

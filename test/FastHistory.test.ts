@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastHistory__factory, FastHistory, Spc } from '../typechain-types';
-import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('FastHistory', () => {
   let
@@ -49,7 +49,7 @@ describe('FastHistory', () => {
 
   /// Public stuff.
 
-  describe('initializer', async () => {
+  describe('initialize', async () => {
     it('keeps track of the Registry address', async () => {
       const subject = await history.reg();
       expect(subject).to.eq(reg.address);

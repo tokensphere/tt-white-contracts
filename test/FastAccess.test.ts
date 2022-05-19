@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastAccess__factory, FastAccess, FastToken } from '../typechain-types';
-import { FakeContract, smock } from '@defi-wonderland/smock';
 import { one, ten } from './utils';
 
 describe('FastAccess', () => {

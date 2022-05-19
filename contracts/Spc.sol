@@ -2,13 +2,14 @@
 pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import './FastRegistry.sol';
+import './interfaces/ISpc.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';
 import './lib/HelpersLib.sol';
+import './FastRegistry.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract Spc is Initializable {
+contract Spc is Initializable, ISpc {
   using AddressSetLib for AddressSetLib.Data;
 
   /// Constants.
@@ -20,9 +21,6 @@ contract Spc is Initializable {
 
   /// Events.
 
-  // Membership related events.
-  event MemberAdded(address indexed member);
-  event MemberRemoved(address indexed member);
   // Fast registry related events.
   event FastRegistered(FastRegistry indexed reg);
   // Eth provisioning related events.
@@ -41,12 +39,11 @@ contract Spc is Initializable {
   /// Designated nitializer - we do not want a constructor!
 
   function initialize(address _member)
-      public payable
-      initializer {
+      external initializer {
     // Add member to our list.
     memberSet.add(_member, false);
     // Emit!
-    emit MemberAdded(_member);
+    emit IHasMembers.MemberAdded(_member);
   }
 
   /// Eth provisioning stuff.
@@ -67,23 +64,24 @@ contract Spc is Initializable {
 
   /// Membership management.
 
-  function memberCount() external view returns(uint256) {
+  function isMember(address candidate)
+      external override view returns(bool) {
+    return memberSet.contains(candidate);
+  }
+
+  function memberCount()
+      external override view returns(uint256) {
     return memberSet.values.length;
   }
 
   function paginateMembers(uint256 cursor, uint256 perPage)
-      external view returns(address[] memory, uint256) {
+      external override view returns(address[] memory, uint256) {
     return PaginationLib.addresses(memberSet.values, cursor, perPage);
-  }
-
-  function isMember(address candidate)
-      external view returns(bool) {
-    return memberSet.contains(candidate);
   }
 
   function addMember(address payable member)
       membership(msg.sender)
-      external {
+      external override {
     // Add the member to our list.
     memberSet.add(member, false);
 
@@ -92,22 +90,22 @@ contract Spc is Initializable {
     if (amount != 0) { member.transfer(amount); }
 
     // Emit!
-    emit MemberAdded(member);
+    emit IHasMembers.MemberAdded(member);
   }
 
   function removeMember(address member)
       membership(msg.sender)
-      external {
+      external override {
     // Remove the member from the set.
     memberSet.remove(member, false);
     // Emit!
-    emit MemberRemoved(member);
+    emit IHasMembers.MemberRemoved(member);
   }
 
-  // FAST management related methods.
+  /// FAST management related methods.
 
   function checkSymbolAvailability(string memory symbol)
-    public view returns(bool) {
+    external view returns(bool) {
       return fastSymbols[symbol] == IFastRegistry(address(0));
     }
 

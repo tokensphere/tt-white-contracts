@@ -1,10 +1,11 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { ethers, upgrades } from 'hardhat';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { FakeContract, smock } from '@defi-wonderland/smock';
-import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
 import { BigNumber } from 'ethers';
+import { ethers, upgrades } from 'hardhat';
+import { FakeContract, smock } from '@defi-wonderland/smock';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
+
 chai.use(smock.matchers);
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
