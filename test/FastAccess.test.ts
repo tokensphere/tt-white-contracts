@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { FastRegistry, FastAccess__factory, FastAccess } from '../typechain-types';
+import { FastRegistry, FastAccess__factory, FastAccess, FastToken } from '../typechain-types';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { one, ten } from './utils';
 
@@ -14,6 +14,7 @@ describe('FastAccess', () => {
     rob: SignerWithAddress,
     john: SignerWithAddress;
   let reg: FakeContract<FastRegistry>,
+    token: FakeContract<FastToken>,
     accessFactory: FastAccess__factory,
     access: FastAccess,
     governedAccess: FastAccess,
@@ -32,9 +33,14 @@ describe('FastAccess', () => {
     // Make sure only one address is flagged as a member for our mock.
     spc.isMember.returns(false);
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
+
+    // Mock a token contract.
+    token = await smock.fake('FastToken');
+
     // Also create a registry mock, and make sure it returns the SPC address when queried.
     reg = await smock.fake('FastRegistry');
     reg.spc.returns(spc.address);
+    reg.token.returns(token.address);
 
     // Finally create and cache our access factory.
     const accessLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
@@ -45,8 +51,6 @@ describe('FastAccess', () => {
     access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
     governedAccess = access.connect(governor);
     spcMemberAccess = access.connect(spcMember);
-    // Add our access contract to our registry.
-    await reg.connect(spcMember).setAccessAddress(access.address);
   });
 
   /// Public stuff.
@@ -298,13 +302,20 @@ describe('FastAccess', () => {
     it('requires that the address is an existing member', async () => {
       const subject = governedAccess.removeMember(bob.address);
       await expect(subject).to.have
-        .revertedWith('Address does not exist in set');
+        .revertedWith('Missing membership');
     });
 
     it('removes the given address as a member', async () => {
       await governedAccess.removeMember(alice.address);
       const subject = await access.isMember(alice.address);
       expect(subject).to.eq(false);
+    });
+
+    it('delegates to the token contract', async () => {
+      token.beforeRemovingMember.reset();
+      await governedAccess.removeMember(alice.address);
+      const args = token.beforeRemovingMember.getCall(0).args as any;
+      expect(args.member).to.eq(alice.address);
     });
 
     it('emits a MemberRemoved event', async () => {

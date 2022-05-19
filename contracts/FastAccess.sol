@@ -131,18 +131,15 @@ contract FastAccess is Initializable, IFastAccess {
   /**
    * @dev Removes a member from the membership list.
    */
-  function removeMember(address a)
-      governance(msg.sender)
+  function removeMember(address member)
+      governance(msg.sender) membership(member)
       public {
-    // TODO: Do we need to return the member's tokens to the zero address?
-    // We would add a new function in the FastToken contract such as `beforeRemovingMember`
-    // only callable from `reg.access()`.
-    // In that function we would:
-    // - Transfer that member's token back to the ZERO address.
-    // - Make sure that the totalSupply is decreased.
-    // - Remove all allowances given or received for that member (LOOP?!?!).
-    memberSet.remove(a, false);
-    emit MemberRemoved(a);
+    // Notify token contract.
+    reg.token().beforeRemovingMember(member);
+    // Remove member.
+    memberSet.remove(member, false);
+    // Emit!
+    emit MemberRemoved(member);
   }
 
   /**
@@ -192,6 +189,11 @@ contract FastAccess is Initializable, IFastAccess {
 
   modifier governance(address a) {
     require(governorSet.contains(a), 'Missing governorship');
+    _;
+  }
+
+  modifier membership(address a) {
+    require(memberSet.contains(a), 'Missing membership');
     _;
   }
 }
