@@ -507,6 +507,8 @@ describe('FastToken', () => {
     });
 
     describe('approve', async () => {
+      it('requires that the sender is a member');
+
       it('adds an allowance with the correct parameters', async () => {
         // Let alice give allowance to bob.
         await token.connect(alice).approve(bob.address, 50);
@@ -525,6 +527,14 @@ describe('FastToken', () => {
           .emit(token, 'Approval')
           .withArgs(alice.address, bob.address, 60)
       });
+    });
+
+    describe('disapprove', async () => {
+      it('requires that the sender is a member');
+      it('sets the allowance to zero');
+      it('removes the spender received allowance');
+      it('removes the sender given allowance');
+      it('emits a Disapproval event');
     });
 
     describe('transferFrom', async () => {
@@ -834,4 +844,12 @@ describe('FastToken', () => {
       })
     });
   });
+
+  describe('beforeRemovingMember', async () => {
+    it('cannot be called directly');
+    it('transfers the member tokens back to the zero address');
+    it('removes all given allowances');
+    it('removes all received allowances');
+    it('emits a Disapproval event as many times as it removed allowance');
+  })
 });

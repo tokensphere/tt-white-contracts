@@ -31,8 +31,11 @@ contract FastToken is Initializable, IFastToken {
 
   event Minted(uint256 indexed amount, string indexed ref);
   event Burnt(uint256 indexed amount, string indexed ref);
+
   event TransferCreditsAdded(address indexed spcMember, uint256 amount);
   event TransferCreditsDrained(address indexed spcMember, uint256 amount);
+
+  event Disapproval(address indexed owner, address indexed spender);
 
   /// Members.
 
@@ -171,14 +174,14 @@ contract FastToken is Initializable, IFastToken {
   function approve(address spender, uint256 amount)
       senderMembershipOrZero(msg.sender)
       external override returns(bool) {
-    // Store allowance...
-    allowances[msg.sender][spender] += amount;
-    // Keep track of given and received allowances.
-    givenAllowances[msg.sender].add(spender, true);
-    receivedAllowances[spender].add(msg.sender, true);
+    _approve(msg.sender, spender, amount);
+    return true;
+  }
 
-    // Emit events.
-    emit IERC20.Approval(msg.sender, spender, amount);
+  function disapprove(address spender)
+      senderMembership(msg.sender)
+      external returns(bool) {
+    _disapprove(msg.sender, spender);
     return true;
   }
 
@@ -246,22 +249,19 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      requiresTxCredit(from, amount) senderMembershipOrZero(from) recipientMembershipOrZero(to)
-      internal returns(bool) {
+      senderMembershipOrZero(from) recipientMembershipOrZero(to)
+      private returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
+    require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
 
     // Keep track of the balances.
     balances[from] -= amount;
     balances[to] += amount;
 
     // If the funds are going to the ZERO address, decrease total supply.
-    if (to == ZERO_ADDRESS) {
-      totalSupply -= amount;
-    }
+    if (to == ZERO_ADDRESS) { totalSupply -= amount; }
     // If the funds are moving from the zero address, increase total supply.
-    else if (from == ZERO_ADDRESS) {
-      totalSupply += amount;
-    }
+    else if (from == ZERO_ADDRESS) { totalSupply += amount; }
 
     // Keep track of the transfer.
     reg.history().transfered(spender, from, to, amount, ref);
@@ -271,15 +271,61 @@ contract FastToken is Initializable, IFastToken {
     return true;
   }
 
-  // Modifiers.
+  function _approve(address from, address spender, uint256 amount)
+      private {
+    // Store allowance...
+    allowances[from][spender] += amount;
+    // Keep track of given and received allowances.
+    givenAllowances[from].add(spender, true);
+    receivedAllowances[spender].add(from, true);
 
-  modifier requiresTxCredit(address from, uint256 amount) {
-    require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
-    _;
+    // Emit events.
+    emit IERC20.Approval(from, spender, amount);
   }
+
+  function _disapprove(address from, address spender)
+      private {
+    // Remove allowance.
+    allowances[from][spender] = 0;
+    givenAllowances[from].remove(spender, false);
+    receivedAllowances[spender].remove(from, false);
+    // Emit!
+    emit Disapproval(from, spender);
+  }
+
+  /// Callbacks from other contracts.
+
+  // WARNING: This function contains two loops. We know that this should never
+  // happen in solidity. However:
+  // - In the context of our private chain, gas is cheap.
+  // - It can only be called by a governor.
+  function beforeRemovingMember(address member)
+      accessContract(msg.sender)
+      external override {
+    // If there are token at member's address, move them back to the zero address.
+    uint256 balance = balanceOf(member);
+    if (balance > 0) {
+      _transfer(ZERO_ADDRESS, member, ZERO_ADDRESS, balance, 'Member deletion');
+    }
+
+    // Remove all given allowances.
+    address[] storage gaData = givenAllowances[member].values;
+    while (gaData.length > 0) { _disapprove(member, gaData[0]); }
+
+    // Remove all received allowances.
+    address[] storage raData = receivedAllowances[member].values;
+    while (raData.length > 0) { _disapprove(raData[0], member); }
+  }
+
+  // Modifiers.
 
   modifier spcMembership(address a) {
     require(reg.spc().isMember(a), 'Missing SPC membership');
+    _;
+  }
+
+  modifier senderMembership(address a) {
+    require(reg.access().isMember(a), SENDER_NOT_MEMBER_MESSAGE);
     _;
   }
 
@@ -290,6 +336,11 @@ contract FastToken is Initializable, IFastToken {
 
   modifier recipientMembershipOrZero(address a) {
     require(reg.access().isMember(a) || a == ZERO_ADDRESS, RECIPIENT_NOT_MEMBER_MESSAGE);
+    _;
+  }
+
+  modifier accessContract(address a) {
+    require(a == address(reg.access()), 'Cannot be called directly');
     _;
   }
 }
