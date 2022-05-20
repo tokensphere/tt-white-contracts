@@ -61,8 +61,8 @@ contract FastToken is Initializable, IFastToken {
   mapping(address => uint256) private balances;
   // Allowances are stored here.
   mapping(address => mapping(address => uint256)) private allowances;
-  mapping(address => AddressSetLib.Data) private givenAllowances;
-  mapping(address => AddressSetLib.Data) private receivedAllowances;
+  mapping(address => AddressSetLib.Data) private allowancesByOwner;
+  mapping(address => AddressSetLib.Data) private allowancesBySpender;
 
   /// Public stuff.
 
@@ -192,16 +192,19 @@ contract FastToken is Initializable, IFastToken {
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public returns(bool) {
-    require(from == ZERO_ADDRESS || allowance(from, msg.sender) >= amount, 'Insuficient allowance');
+    // If the funds are coming from the zero address, we must be a governor.
+    if (from == ZERO_ADDRESS) {
+      require(reg.access().isGovernor(msg.sender), 'Missing governorship');
+    } else {
+      require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
 
-    // Only decrease allowances if the sender of the funds isn't the zero address.
-    if (from != ZERO_ADDRESS) {
+      // Only decrease allowances if the sender of the funds isn't the zero address.
       uint256 newAllowance = allowances[from][msg.sender] -= amount;
       // If the allowance reached zero, we want to remove that allowance from
       // the various other places where we keep track of them.
       if (newAllowance == 0) {
-        givenAllowances[from].remove(msg.sender, true);
-        receivedAllowances[msg.sender].remove(from, true);
+        allowancesByOwner[from].remove(msg.sender, true);
+        allowancesBySpender[msg.sender].remove(from, true);
       }
     }
 
@@ -210,14 +213,14 @@ contract FastToken is Initializable, IFastToken {
 
   /// Allowances query operations.
 
-  function paginateGivenAllowances(address owner, uint256 index, uint256 perPage)
+  function paginateAllowancesByOwner(address owner, uint256 index, uint256 perPage)
       public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(givenAllowances[owner].values, index, perPage);
+    return PaginationLib.addresses(allowancesByOwner[owner].values, index, perPage);
   }
 
-  function paginateReceivedAllowances(address spender, uint256 index, uint256 perPage)
+  function paginateAllowancesBySpender(address spender, uint256 index, uint256 perPage)
       public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(receivedAllowances[spender].values, index, perPage);
+    return PaginationLib.addresses(allowancesBySpender[spender].values, index, perPage);
   }
 
   /// ERC1404 implementation.
@@ -276,10 +279,10 @@ contract FastToken is Initializable, IFastToken {
     // Store allowance...
     allowances[from][spender] += amount;
     // Keep track of given and received allowances.
-    givenAllowances[from].add(spender, true);
-    receivedAllowances[spender].add(from, true);
+    allowancesByOwner[from].add(spender, true);
+    allowancesBySpender[spender].add(from, true);
 
-    // Emit events.
+    // Emit!
     emit IERC20.Approval(from, spender, amount);
   }
 
@@ -287,8 +290,9 @@ contract FastToken is Initializable, IFastToken {
       private {
     // Remove allowance.
     allowances[from][spender] = 0;
-    givenAllowances[from].remove(spender, false);
-    receivedAllowances[spender].remove(from, false);
+    allowancesByOwner[from].remove(spender, false);
+    allowancesBySpender[spender].remove(from, false);
+
     // Emit!
     emit Disapproval(from, spender);
   }
@@ -303,18 +307,24 @@ contract FastToken is Initializable, IFastToken {
       accessContract(msg.sender)
       external override {
     // If there are token at member's address, move them back to the zero address.
-    uint256 balance = balanceOf(member);
-    if (balance > 0) {
-      _transfer(ZERO_ADDRESS, member, ZERO_ADDRESS, balance, 'Member deletion');
+    {
+      uint256 balance = balanceOf(member);
+      if (balance > 0) {
+        _transfer(ZERO_ADDRESS, member, ZERO_ADDRESS, balance, 'Member removal');
+      }
     }
 
     // Remove all given allowances.
-    address[] storage gaData = givenAllowances[member].values;
-    while (gaData.length > 0) { _disapprove(member, gaData[0]); }
+    {
+      address[] storage gaData = allowancesByOwner[member].values;
+      while (gaData.length > 0) { _disapprove(member, gaData[0]); }
+    }
 
     // Remove all received allowances.
-    address[] storage raData = receivedAllowances[member].values;
-    while (raData.length > 0) { _disapprove(raData[0], member); }
+    {
+      address[] storage raData = allowancesBySpender[member].values;
+      while (raData.length > 0) { _disapprove(raData[0], member); }
+    }
   }
 
   // Modifiers.
