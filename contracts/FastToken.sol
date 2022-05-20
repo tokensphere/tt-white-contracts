@@ -111,7 +111,7 @@ contract FastToken is Initializable, IFastToken {
   function burn(uint256 amount, string memory ref)
       spcMembership(msg.sender)
       external {
-    require(!hasFixedSupply, 'Unminting not possible at this time');
+    require(!hasFixedSupply, 'Burning not possible at this time');
     require(balanceOf(ZERO_ADDRESS) >= amount, 'Insuficient funds');
 
     // Remove the minted amount from the zero address.
@@ -192,7 +192,7 @@ contract FastToken is Initializable, IFastToken {
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public returns(bool) {
-    require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
+    require(from == ZERO_ADDRESS || allowance(from, msg.sender) >= amount, 'Insuficient allowance');
 
     // Only decrease allowances if the sender of the funds isn't the zero address.
     if (from != ZERO_ADDRESS) {

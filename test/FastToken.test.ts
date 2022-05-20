@@ -5,6 +5,8 @@ import { ethers, upgrades } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
+import { toHexString } from '../src/utils';
+import { oneHundred } from './utils';
 
 chai.use(smock.matchers);
 
@@ -229,7 +231,8 @@ describe('FastToken', () => {
           spcMemberToken.mint(1_000_000, 'Attempt 1'),
           spcMemberToken.mint(1_000_000, 'Attempt 2')
         ]);
-        await expect(subject).to.changeTokenBalance(token, ZERO_ACCOUNT, 2_000_000);
+        await expect(subject).to
+          .changeTokenBalance(token, ZERO_ACCOUNT, 2_000_000);
       });
     });
 
@@ -252,16 +255,78 @@ describe('FastToken', () => {
       expect(subject).to.eq(0);
     });
 
-    it('emits a Minted event');
+    it('emits a Minted event', async () => {
+      const subject = spcMemberToken.mint(3_000, 'Attempt 1');
+      await expect(subject).to
+        .emit(token, 'Minted')
+        .withArgs(3_000, 'Attempt 1');
+    });
   });
 
   describe('burn', async () => {
-    it('requires that the supply is continuous');
-    it('requires that the zero address has enough funds');
-    it('removes tokens from the zero address');
-    it('does not impact total supply');
-    it('delegates to the history contract');
-    it('emits a Burnt event');
+    beforeEach(async () => {
+      history.burnt.reset();
+      await spcMemberToken.setHasFixedSupply(false);
+      await spcMemberToken.mint(100, 'A hundred mints');
+    });
+
+    it('requires SPC membership (anonymous)', async () => {
+      const subject = token.burn(5, 'Burn baby burn');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
+    });
+
+    it('requires SPC membership (member)', async () => {
+      const subject = token.connect(alice).burn(5, 'Burn baby burn');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
+    });
+
+    it('requires SPC membership (governor)', async () => {
+      const subject = governedToken.burn(5, 'Burn baby burn');
+      await expect(subject).to.have
+        .revertedWith('Missing SPC membership');
+    });
+
+    it('requires that the supply is continuous', async () => {
+      await spcMemberToken.setHasFixedSupply(true);
+      const subject = spcMemberToken.burn(5, 'Burn baby burn')
+      await expect(subject).to.have
+        .revertedWith('Burning not possible at this time');
+    });
+
+    it('requires that the zero address has enough funds', async () => {
+      const subject = spcMemberToken.burn(101, 'Burn baby burn')
+      await expect(subject).to.have
+        .revertedWith('Insuficient funds');
+    });
+
+    it('removes tokens from the zero address', async () => {
+      const subject = async () => spcMemberToken.burn(30, 'Burn baby burn')
+      await expect(subject).to
+        .changeTokenBalance(token, ZERO_ACCOUNT, -30)
+    });
+
+    it('does not impact total supply', async () => {
+      const totalSupplyBefore = await token.totalSupply();
+      await spcMemberToken.burn(100, 'Burnidy burn');
+      const subject = await token.totalSupply();
+      expect(subject).to.eq(totalSupplyBefore);
+    });
+
+    it('delegates to the history contract', async () => {
+      await spcMemberToken.burn(50, 'It is hot');
+      const args = history.burnt.getCall(0).args as any;
+      expect(args.amount).to.eq(50);
+      expect(args.ref).to.eq('It is hot');
+    });
+
+    it('emits a Burnt event', async () => {
+      const subject = spcMemberToken.burn(50, 'Feel the burn');
+      await expect(subject).to
+        .emit(token, 'Burnt')
+        .withArgs(50, 'Feel the burn');
+    });
   });
 
   /// Tranfer Credit management.
@@ -788,11 +853,43 @@ describe('FastToken', () => {
   /// Allowance querying.
 
   describe('paginateGivenAllowances', async () => {
-    it('NEEDS MORE TESTS');
+    beforeEach(async () => {
+      // Let alice give allowance to bob and john, let bob give allowance to john.
+      await token.connect(alice).approve(bob.address, 5);
+      await token.connect(alice).approve(john.address, 10);
+      await token.connect(bob).approve(john.address, 15);
+    });
+
+    it('returns the list of addresses to which the caller gave allowances to', async () => {
+      const [[a1, a2], /*cursor*/] = await token.paginateGivenAllowances(alice.address, 0, 5);
+      expect(a1).to.eq(bob.address);
+      expect(a2).to.eq(john.address);
+    });
+
+    it('does not list addresses from which the caller has received allowances', async () => {
+      const [allowances, /*cursor*/] = await token.paginateGivenAllowances(john.address, 0, 5);
+      expect(allowances).to.be.empty;
+    });
   });
 
   describe('paginateReceivedAllowances', async () => {
-    it('NEEDS MORE TESTS');
+    beforeEach(async () => {
+      // Let alice give allowance to bob and john, let bob give allowance to john.
+      await token.connect(alice).approve(bob.address, 5);
+      await token.connect(alice).approve(john.address, 10);
+      await token.connect(bob).approve(john.address, 15);
+    });
+
+    it('returns the list of addresses to which the caller gave allowances to', async () => {
+      const [[a1, a2], /*cursor*/] = await token.paginateReceivedAllowances(john.address, 0, 5);
+      expect(a1).to.eq(alice.address);
+      expect(a2).to.eq(bob.address);
+    });
+
+    it('does not list addresses to which the caller has given allowances', async () => {
+      const [allowances, /*cursor*/] = await token.paginateReceivedAllowances(alice.address, 0, 5);
+      expect(allowances).to.be.empty;
+    });
   });
 
   /// ERC1404 implementation.
@@ -846,11 +943,56 @@ describe('FastToken', () => {
     });
   });
 
-  describe('beforeRemovingMember', async () => {
-    it('cannot be called directly');
-    it('transfers the member tokens back to the zero address');
-    it('removes all given allowances');
-    it('removes all received allowances');
-    it('emits a Disapproval event as many times as it removed allowance');
+  describe.only('beforeRemovingMember', async () => {
+    beforeEach(async () => {
+      await spcMemberToken.mint(1_000, 'Give me the money');
+      history.transferProofCount.reset();
+    });
+
+    it('cannot be called directly', async () => {
+      const subject = token.beforeRemovingMember(alice.address);
+      await expect(subject).to.have
+        .revertedWith('Cannot be called directly');
+    });
+
+    describe('when successful', async () => {
+      beforeEach(async () => {
+        // Give alice some tokens, and make sure our access contract mock has Eth to pay for gas.
+        await Promise.all([
+          await spcMemberToken.addTransferCredits(10),
+          await ethers.provider.send("hardhat_setBalance", [access.address, toHexString(oneHundred)])
+        ]);
+        await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 10);
+      });
+
+      it('transfers the member tokens back to the zero address', async () => {
+        const subject = () => token.connect(access.wallet).beforeRemovingMember(alice.address);
+        await expect(subject).to
+          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [10, -10]);
+      });
+
+      it('emits a Transfer event when a transfer is performed', async () => {
+        const subject = token.connect(access.wallet).beforeRemovingMember(alice.address);
+        expect(subject).to
+          .emit(token, 'Transfer')
+          .withArgs(ZERO_ADDRESS, alice.address, 10);
+      });
+
+      it('removes all given allowances', async () => {
+        // Let alice give allowance to bob, and john give allowance to alice.
+        await Promise.all([
+          token.connect(alice).approve(bob.address, 50),
+          token.connect(john).approve(alice.address, 50)
+        ]);
+        // Do it!
+        await token.connect(access.wallet).beforeRemovingMember(alice.address);
+        // Check that allowances were removed.
+        expect(await token.allowance(alice.address, bob.address)).to.eq(0);
+        expect(await token.allowance(john.address, alice.address)).to.eq(0);
+      });
+
+      it('removes all received allowances');
+      it('emits a Disapproval event as many times as it removed allowance');
+    });
   })
 });
