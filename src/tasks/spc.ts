@@ -4,6 +4,7 @@ import { checkNetwork } from '../utils';
 import { StateManager } from '../StateManager';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Spc__factory, Spc, Exchange, Exchange__factory } from '../../typechain-types';
+import { Contract } from 'ethers';
 
 interface SpcDeployParams {
   readonly member: string;
@@ -20,24 +21,26 @@ task('spc-deploy', 'Deploys the main SPC contract')
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib' }
     else if (!stateManager.state.HelpersLib) { throw 'Missing HelpersLib' }
 
-    const addressSetLibAddr: string = stateManager.state.AddressSetLib;
-    const paginationLibAddr: string = stateManager.state.PaginationLib;
+    const addressSetLib = await hre.ethers.getContractAt('AddressSetLib', stateManager.state.AddressSetLib);
+    const paginationLib = await hre.ethers.getContractAt('PaginationLib', stateManager.state.PaginationLib);
+    const helpersLib = await hre.ethers.getContractAt('HelpersLib', stateManager.state.HelpersLib);
+
     const helpersLibAddr: string = stateManager.state.HelpersLib;
-    const spc = await deploySpc(hre, addressSetLibAddr, paginationLibAddr, helpersLibAddr, params.member);
+    const spc = await deploySpc(hre, addressSetLib, paginationLib, helpersLib, params.member);
     console.log('Deployed Spc', spc.address);
 
-    const exchange = await deployExchange(hre, spc);
+    const exchange = await deployExchange(hre, addressSetLib, paginationLib, spc);
     console.log('Deployed Exchange', exchange.address);
   });
 
 async function deploySpc(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
-  addressSetLibAddr: string,
-  paginationLibAddr: string,
-  helpersLibAddr: string,
+  addressSetLib: Contract,
+  paginationLib: Contract,
+  helpersLib: Contract,
   member: string): Promise<Spc> {
   // We deploy our SPC contract.
-  const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr, HelpersLib: helpersLibAddr };
+  const libraries = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
   const spcFactory = await ethers.getContractFactory('Spc', { libraries }) as Spc__factory;
   const spc = await upgrades.deployProxy(spcFactory, [member]) as Spc;
   // Provision the SPC with Eth.
@@ -49,9 +52,12 @@ async function deploySpc(
 
 async function deployExchange(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
+  addressSetLib: Contract,
+  paginationLib: Contract,
   spc: Spc
 ): Promise<Exchange> {
-  const exchangeFactory = await ethers.getContractFactory('Exchange') as Exchange__factory;
+  const libraries = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+  const exchangeFactory = await ethers.getContractFactory('Exchange', { libraries }) as Exchange__factory;
   return await upgrades.deployProxy(exchangeFactory, [spc.address]) as Exchange;
 }
 

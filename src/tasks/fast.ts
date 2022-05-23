@@ -1,11 +1,11 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { BigNumber } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../utils';
 import { StateManager } from '../StateManager';
 import { FastToken } from '../../typechain-types/contracts/FastToken';
-import { FastAccess, FastHistory, FastRegistry, FastRegistry__factory } from '../../typechain-types';
+import { FastAccess, FastHistory, FastRegistry, FastRegistry__factory, Spc } from '../../typechain-types';
 
 // Tasks.
 
@@ -37,9 +37,9 @@ task('fast-deploy', 'Deploys a FAST')
     if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib library' }
 
-    const addressSetLibAddr: string = stateManager.state.AddressSetLib;
-    const paginationLibAddr: string = stateManager.state.PaginationLib;
-    const helpersLibAddr: string = stateManager.state.HelpersLib;
+    const addressSetLib = await hre.ethers.getContractAt('AddressSetLib', stateManager.state.AddressSetLib);
+    const paginationLib = await hre.ethers.getContractAt('PaginationLib', stateManager.state.PaginationLib);
+    const helpersLib = await hre.ethers.getContractAt('HelpersLib', stateManager.state.HelpersLib);
 
     // Grab a handle on the deployed SPC contract.
     const spc = await hre.ethers.getContractAt('Spc', params.spc);
@@ -47,32 +47,38 @@ task('fast-deploy', 'Deploys a FAST')
     // Grab a signer to the SPC member.
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
 
+    // Check that symbol isn't taken.
+    const existingAddr = await spc.fastRegistryFromSymbol(params.symbol);
+    if (existingAddr != ZERO_ADDRESS) {
+      throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
+    }
+
     // First, deploy a registry contract.
-    const registry = await deployFastRegistry(hre, helpersLibAddr, params.spc);
-    const spcMemberRegistry = registry.connect(spcMember);
-    console.log('Deployed FastRegistry', registry.address);
+    const reg = await deployFastRegistry(hre, helpersLib, spc);
+    const spcMemberRegistry = reg.connect(spcMember);
+    console.log('Deployed FastRegistry', reg.address);
 
     // First, deploy an access contract, required for the FAST permissioning.
-    const access = await deployFastAccess(hre, addressSetLibAddr, paginationLibAddr, registry.address, params.governor);
+    const access = await deployFastAccess(hre, addressSetLib, paginationLib, reg, params.governor);
     console.log('Deployed FastAccess', access.address);
     // Tell our registry where our access contract is.
     await spcMemberRegistry.setAccessAddress(access.address);
 
     // We can now deploy a history contract.
-    const history = await deployFastHistory(hre, paginationLibAddr, registry.address);
+    const history = await deployFastHistory(hre, paginationLib, reg);
     console.log('Deployed FastHistory', history.address);
     // Tell our registry where our history contract is.
     await spcMemberRegistry.setHistoryAddress(history.address);
 
     // We can finally deploy our token contract.
-    const token = await deployFastToken(hre, addressSetLibAddr, paginationLibAddr, registry.address, params);
+    const token = await deployFastToken(hre, addressSetLib, paginationLib, reg, params);
     const spcMemberToken = token.connect(spcMember);
     console.log('Deployed FastToken', token.address);
     // Tell our registry where our token contract is.
     await spcMemberRegistry.setTokenAddress(token.address);
 
     // Register our newly created FAST registry into the SPC.
-    await spc.connect(spcMember).registerFastRegistry(registry.address);
+    await spc.connect(spcMember).registerFastRegistry(reg.address);
     // Keep the number of decimals handy...
     const decimals = await token.decimals();
 
@@ -184,50 +190,54 @@ task('fast-balance', 'Retrieves the balance of a given account')
 // Deploys a FAST Registry contract.
 async function deployFastRegistry(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
-  helpersLibAddr: string,
-  spcAddr: string): Promise<FastRegistry> {
-  const libraries = { HelpersLib: helpersLibAddr };
+  helpersLib: Contract,
+  spc: Spc
+): Promise<FastRegistry> {
+  const libraries = { HelpersLib: helpersLib.address };
   const regFactory = await ethers.getContractFactory('FastRegistry', { libraries });
-  return await upgrades.deployProxy(regFactory, [spcAddr]) as FastRegistry;
+  return await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
 };
 
 // Deploys a new FAST Access contract.
 async function deployFastAccess(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
-  addressSetLibAddr: string,
-  paginationLibAddr: string,
-  regAddr: string,
-  member: string): Promise<FastAccess> {
-  const libraries = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr }
+  addressSetLib: Contract,
+  paginationLib: Contract,
+  reg: FastRegistry,
+  member: string
+): Promise<FastAccess> {
+  const libraries = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address }
   const accessFactory = await ethers.getContractFactory('FastAccess', { libraries });
-  return await upgrades.deployProxy(accessFactory, [regAddr, member]) as FastAccess;
+  return await upgrades.deployProxy(accessFactory, [reg.address, member]) as FastAccess;
 }
 
 // Deploys a FAST History contract.
 async function deployFastHistory(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
-  paginationLibAddr: string,
-  registryAddress: string): Promise<FastHistory> {
-  const libraries = { PaginationLib: paginationLibAddr };
+  paginationLib: Contract,
+  reg: FastRegistry
+): Promise<FastHistory> {
+  const libraries = { PaginationLib: paginationLib.address };
   const historyFactory = await ethers.getContractFactory('FastHistory', { libraries });
-  return await upgrades.deployProxy(historyFactory, [registryAddress]) as FastHistory;
+  return await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
 }
 
 // Deploys a new FAST Token contract.
 async function deployFastToken(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
-  paginationLibAddr: string,
-  addressSetLibAddr: string,
-  accessAddress: string,
-  params: any): Promise<FastToken> {
+  paginationLib: Contract,
+  addressSetLib: Contract,
+  reg: FastRegistry,
+  params: any
+): Promise<FastToken> {
   const { name, symbol, decimals } = params;
   const { hasFixedSupply } = params;
   const hasFixedSupplyBool = hasFixedSupply === true || hasFixedSupply === "true";
 
   // Deploy the token contract.
-  const tokenLibs = { AddressSetLib: addressSetLibAddr, PaginationLib: paginationLibAddr };
+  const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
   const tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
-  return await upgrades.deployProxy(tokenFactory, [accessAddress, name, symbol, decimals, hasFixedSupplyBool]) as FastToken;
+  return await upgrades.deployProxy(tokenFactory, [reg.address, name, symbol, decimals, hasFixedSupplyBool]) as FastToken;
 }
 
 async function fastMint(token: FastToken, amount: number | BigNumber, ref: string) {

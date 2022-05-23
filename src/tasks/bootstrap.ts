@@ -33,7 +33,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     const {
       addressSetLib, paginationLib, helpersLib,
       spc, exchange,
-      registry, access, history, token,
+      reg, access, history, token,
       symbol, decimals, baseAmount
     } = await bootstrap(hre, params);
 
@@ -45,7 +45,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     console.log('Deployed SPC', spc.address);
     console.log('Deployed Exchange', exchange.address);
     console.log('==========');
-    console.log('Deployed FastRegistry', registry.address);
+    console.log('Deployed FastRegistry', reg.address);
     console.log('Deployed FastAccess', access.address);
     console.log('Deployed FastHistory', history.address);
     console.log('Deployed FastToken', token.address);
@@ -74,34 +74,34 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const member = signers[3];
 
   // Deploy the main SPC contract.
-  const spc = await deploySpc(hre, addressSetLib.address, paginationLib.address, helpersLib.address, spcMember.address);
+  const spc = await deploySpc(hre, addressSetLib, paginationLib, helpersLib, spcMember.address);
   // Deploy an exchange.
-  const exchange = await deployExchange(hre, spc);
+  const exchange = await deployExchange(hre, addressSetLib, paginationLib, spc);
 
   // First, deploy a registry contract.
-  const registry = await deployFastRegistry(hre, helpersLib.address, spc.address);
-  const spcMemberRegistry = registry.connect(spcMember);
+  const reg = await deployFastRegistry(hre, helpersLib, spc);
+  const spcMemberRegistry = reg.connect(spcMember);
 
   // First, deploy an access contract, required for the FAST permissioning.
-  const access = await deployFastAccess(hre, addressSetLib.address, paginationLib.address, registry.address, governor.address);
+  const access = await deployFastAccess(hre, addressSetLib, paginationLib, reg, governor.address);
   const governedAccess = access.connect(governor);
   // Tell our registry where our access contract is.
   await spcMemberRegistry.setAccessAddress(access.address);
 
   // We can now deploy a history contract.
-  const history = await deployFastHistory(hre, paginationLib.address, registry.address);
+  const history = await deployFastHistory(hre, paginationLib, reg);
   // Tell our registry where our history contract is.
   await spcMemberRegistry.setHistoryAddress(history.address);
 
   // We can finally deploy our token contract.
-  const token = await deployFastToken(hre, addressSetLib.address, paginationLib.address, registry.address, params);
+  const token = await deployFastToken(hre, addressSetLib, paginationLib, reg, params);
   const spcMemberToken = token.connect(spcMember);
   // Tell our registry where our token contract is.
   await spcMemberRegistry.setTokenAddress(token.address);
 
   // Add our FAST registry to the SPC.
   const spcMemberSpc = spc.connect(spcMember);
-  await spcMemberSpc.registerFastRegistry(registry.address);
+  await spcMemberSpc.registerFastRegistry(reg.address);
 
   // At this point, we can start minting a few tokens.
   const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, 1_000_000, 'Bootstrap initial mint');
@@ -115,7 +115,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   return {
     addressSetLib, paginationLib, helpersLib,
     spc, exchange,
-    registry, access, history, token,
+    reg, access, history, token,
     symbol, decimals, baseAmount
   };
 }

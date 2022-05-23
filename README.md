@@ -88,7 +88,7 @@ yarn hardhat \
     --name "Some Awesome FAST Stuff" \
     --symbol "SAF" \
     --decimals 18 \
-    --has-fixed-supply true \
+    --has-fixed-supply false \
     --mint 1000000 \
     --tx-credits 1000000
 ```
