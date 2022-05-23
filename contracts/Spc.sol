@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/ISpc.sol';
+import './interfaces/IExchange.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';
 import './lib/HelpersLib.sol';
@@ -29,6 +30,8 @@ contract Spc is Initializable, ISpc {
 
   /// Members.
 
+  // The pointer to our exchange contract.
+  IExchange public override exchange;
   // This is where we hold our members data.
   AddressSetLib.Data private memberSet;
   // This is where we keep our list of deployed fast FASTs.

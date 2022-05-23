@@ -56,6 +56,9 @@ contract FastToken is Initializable, IFastToken {
   // be provisioned by an SPC governor.
   uint256 public transferCredits;
 
+  // Whether or not external people can hold and transfer tokens on this FAST.
+  bool public isSemiPublic;
+
   // We have to track whether this token has continuous minting or fixed supply.
   bool public hasFixedSupply;
 
@@ -72,14 +75,15 @@ contract FastToken is Initializable, IFastToken {
                       string calldata _name,
                       string calldata _symbol,
                       uint256 _decimals,
-                      bool _hasFixedSupply)
+                      bool _hasFixedSupply,
+                      bool _isSemiPublic)
       external initializer {
     // Keep track of the SPC and Access contracts.
     reg = _reg;
     // Set up ERC20 related stuff.
     (name, symbol, decimals, totalSupply) = (_name, _symbol, _decimals, 0);
     // Initialize other internal stuff.
-    (transferCredits, hasFixedSupply) = (0, _hasFixedSupply);
+    (transferCredits, hasFixedSupply, isSemiPublic) = (0, _hasFixedSupply, _isSemiPublic);
   }
 
   function setHasFixedSupply(bool _hasFixedSupply)
@@ -174,14 +178,14 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function approve(address spender, uint256 amount)
-      senderMembership(msg.sender)
+      senderMembershipOrSemiPublic(msg.sender)
       external override returns(bool) {
     _approve(msg.sender, spender, amount);
     return true;
   }
 
   function disapprove(address spender)
-      senderMembership(msg.sender)
+      senderMembershipOrSemiPublic(msg.sender)
       external returns(bool) {
     _disapprove(msg.sender, spender);
     return true;
@@ -268,7 +272,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      senderMembership(from) recipientMembership(to) differentAddresses(from, to)
+      senderMembershipOrSemiPublic(from) recipientMembershipOrSemiPublic(to) differentAddresses(from, to)
       private returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
     require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
@@ -350,13 +354,22 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier senderMembership(address a) {
-    require(reg.access().isMember(a) || a == ZERO_ADDRESS, SENDER_NOT_MEMBER_MESSAGE);
+  modifier senderMembershipOrSemiPublic(address a) {
+    require(
+        reg.access().isMember(a) ||
+        (isSemiPublic && reg.spc().exchange().isMember(a)) ||
+          a == ZERO_ADDRESS,
+        SENDER_NOT_MEMBER_MESSAGE
+      );
     _;
   }
 
-  modifier recipientMembership(address a) {
-    require(reg.access().isMember(a) || a == ZERO_ADDRESS, RECIPIENT_NOT_MEMBER_MESSAGE);
+  modifier recipientMembershipOrSemiPublic(address a) {
+    require(
+        reg.access().isMember(a) ||
+        (isSemiPublic && reg.spc().exchange().isMember(a)) ||
+        a == ZERO_ADDRESS,
+      RECIPIENT_NOT_MEMBER_MESSAGE);
     _;
   }
 
