@@ -5,7 +5,9 @@ import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork, fromBaseUnit, toBaseUnit } from '../utils';
 import { StateManager } from '../StateManager';
 import { FastToken } from '../../typechain-types/contracts/FastToken';
-import { FastAccess, FastHistory, FastRegistry } from '../../typechain-types';
+import { FastAccess, FastHistory, FastRegistry, FastRegistry__factory } from '../../typechain-types';
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Tasks.
 
@@ -16,8 +18,8 @@ interface FastDeployParams {
   readonly symbol: string;
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
-  readonly mint: number;
   readonly txCredits: number;
+  readonly mint?: number;
 };
 
 task('fast-deploy', 'Deploys a FAST')
@@ -27,8 +29,8 @@ task('fast-deploy', 'Deploys a FAST')
   .addParam('symbol', 'The symbol for the new FAST', undefined, types.string)
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addParam('hasFixedSupply', 'The minting scheme for the new FAST', undefined, types.boolean)
-  .addParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
   .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
+  .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
   .setAction(async (params: FastDeployParams, hre) => {
     checkNetwork(hre);
 
@@ -74,32 +76,59 @@ task('fast-deploy', 'Deploys a FAST')
     // Register our newly created FAST registry into the SPC.
     await spc.connect(spcMember).registerFastRegistry(registry.address);
 
-    // At this point, we can start minting a few tokens.
-    const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, params.mint, 'Bootstrap initial mint');
-    // Also add transfer credits.
-    await fastAddTransferCredits(spcMemberToken, params.mint);
-    console.log(`Minted ${symbol} and provisioned transfer credits:`);
-    console.log(`  In base unit: =${baseAmount}`);
-    console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
+    // Add transfer credits.
+    spcMemberToken.addTransferCredits(params.txCredits);
+    console.log(`Added transfer credits`);
+
+    // At this point, we can start minting a few tokens if requested.
+    if (params.mint) {
+      const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, params.mint, 'Bootstrap initial mint');
+      // Also add transfer credits.
+      await fastAddTransferCredits(spcMemberToken, params.mint);
+      console.log(`Minted ${symbol}:`);
+      console.log(`  In base unit: =${baseAmount}`);
+      console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
+    }
   });
 
 interface FastMintParams {
-  readonly fast: string;
+  readonly spc: string;
+  readonly fastSymbol: string;
   readonly account: string;
   readonly amount: number;
   readonly ref: string;
 };
 
 task('fast-mint', 'Mints FASTs to a specified recipient')
-  .addPositionalParam('fast', 'The FAST Token address to operate on', undefined, types.string)
+  .addParam('spc', 'The address at which the main SPC is deployed', undefined, types.string)
+  .addParam('fastSymbol', 'The FAST Token symbol to operate on', undefined, types.string)
   .addParam('amount', 'The amount of tokens to mint', undefined, types.int)
   .addParam('ref', 'The reference to use for the minting operation', undefined, types.string)
   .setAction(async (params: FastMintParams, hre) => {
     checkNetwork(hre);
 
     const { ethers } = hre;
-    const fast = await ethers.getContractAt('FastToken', params.fast) as FastToken;
-    const { symbol, decimals, baseAmount } = await fastMint(fast, params.amount, params.ref);
+
+    // Grab a handle on the deployed SPC contract.
+    const spc = await hre.ethers.getContractAt('Spc', params.spc);
+    const [[spcMemberAddr],] = await spc.paginateMembers(0, 1);
+    // Grab a signer to the SPC member.
+    const spcMember = await hre.ethers.getSigner(spcMemberAddr);
+
+    // Grab a handle of the registry for the given FAST symbol.
+    const regAddr = await spc.fastRegistryFromSymbol(params.fastSymbol);
+    if (regAddr == ZERO_ADDRESS) {
+      throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`);
+    }
+    const reg = await hre.ethers.getContractAt('FastRegistry', regAddr);
+    // Grab a handle on the token contract.
+    const tokenAddr = await reg.token();
+    if (tokenAddr == ZERO_ADDRESS) {
+      throw (`A FAST registry was found at ${params.fastSymbol}, but it does not hold a FAST token address!`);
+    }
+    const token = await hre.ethers.getContractAt('FastToken', tokenAddr);
+
+    const { symbol, decimals, baseAmount } = await fastMint(token.connect(spcMember), params.amount, params.ref);
     console.log(`Minted ${symbol}:`);
     console.log(`  In base unit: =${baseAmount}`);
     console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);

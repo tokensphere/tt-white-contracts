@@ -244,6 +244,10 @@ describe('Spc', () => {
     });
   });
 
+  describe('fastRegistryFromSymbol', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
   describe('registerFastRegistry', async () => {
     let reg: FakeContract<FastRegistry>;
 

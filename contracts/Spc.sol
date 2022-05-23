@@ -109,6 +109,11 @@ contract Spc is Initializable, ISpc {
       return fastSymbols[symbol] == IFastRegistry(address(0));
     }
 
+  function fastRegistryFromSymbol(string calldata symbol)
+      external view returns(IFastRegistry) {
+    return fastSymbols[symbol];
+  }
+
   function registerFastRegistry(FastRegistry reg)
       membership(msg.sender)
       external {

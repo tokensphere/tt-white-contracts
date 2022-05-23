@@ -55,7 +55,11 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
 
     const stateManager = new StateManager();
-    stateManager.state = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    stateManager.state = {
+      AddressSetLib: addressSetLib.address,
+      PaginationLib: paginationLib.address,
+      HelpersLib: helpersLib.address
+    };
   });
 
 async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskParams) {

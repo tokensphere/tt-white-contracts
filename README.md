@@ -107,7 +107,8 @@ For example, to mint new tokens:
 ```shell
 yarn hardhat \
   fast-mint \
-    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
+    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
+    --fast-symbol 'SAF' \
     --network localhost \
     --amount 1000000 \
     --ref "Much tokens, very wow, such bling."
