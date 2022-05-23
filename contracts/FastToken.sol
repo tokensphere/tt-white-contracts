@@ -22,10 +22,12 @@ contract FastToken is Initializable, IFastToken {
   uint8 private constant INSUFICIENT_TRANSFER_CREDITS = 1;
   uint8 private constant SENDER_NOT_MEMBER = 2;
   uint8 private constant RECIPIENT_NOT_MEMBER = 3;
+  uint8 private constant SENDER_SAME_AS_RECIPIENT = 4;
   // Restriction messages.
   string private constant INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
   string private constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
   string private constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
+  string private constant SENDER_SAME_AS_RECIPIENT_MESSAGE = 'Identical sender and recipient';
 
   /// Events.
 
@@ -67,8 +69,8 @@ contract FastToken is Initializable, IFastToken {
   /// Public stuff.
 
   function initialize(FastRegistry _reg,
-                      string memory _name,
-                      string memory _symbol,
+                      string calldata _name,
+                      string calldata _symbol,
                       uint256 _decimals,
                       bool _hasFixedSupply)
       external initializer {
@@ -89,7 +91,7 @@ contract FastToken is Initializable, IFastToken {
 
   /// Minting methods.
 
-  function mint(uint256 amount, string memory ref)
+  function mint(uint256 amount, string calldata ref)
       spcMembership(msg.sender)
       external {
     // We want to make sure that either of these two is true:
@@ -108,7 +110,7 @@ contract FastToken is Initializable, IFastToken {
     emit Minted(amount, ref);
   }
 
-  function burn(uint256 amount, string memory ref)
+  function burn(uint256 amount, string calldata ref)
       spcMembership(msg.sender)
       external {
     require(!hasFixedSupply, 'Burning not possible at this time');
@@ -233,6 +235,8 @@ contract FastToken is Initializable, IFastToken {
       return SENDER_NOT_MEMBER;
     } else if (!reg.access().isMember(to)) {
       return RECIPIENT_NOT_MEMBER;
+    } else if (from == to) {
+      return SENDER_SAME_AS_RECIPIENT;
     }
     return 0;
   }
@@ -245,6 +249,8 @@ contract FastToken is Initializable, IFastToken {
       return SENDER_NOT_MEMBER_MESSAGE;
     } else if (restrictionCode == RECIPIENT_NOT_MEMBER) {
       return RECIPIENT_NOT_MEMBER_MESSAGE;
+    } else if (restrictionCode == SENDER_SAME_AS_RECIPIENT) {
+      return SENDER_SAME_AS_RECIPIENT_MESSAGE;
     }
     revert('Unknown restriction code');
   }
@@ -252,7 +258,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      senderMembership(from) recipientMembership(to)
+      senderMembership(from) recipientMembership(to) differentAddresses(from, to)
       private returns(bool) {
     require(balances[from] >= amount, 'Insuficient funds');
     require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
@@ -341,6 +347,11 @@ contract FastToken is Initializable, IFastToken {
 
   modifier recipientMembership(address a) {
     require(reg.access().isMember(a) || a == ZERO_ADDRESS, RECIPIENT_NOT_MEMBER_MESSAGE);
+    _;
+  }
+
+  modifier differentAddresses(address a, address b) {
+    require(a != b, SENDER_SAME_AS_RECIPIENT_MESSAGE);
     _;
   }
 

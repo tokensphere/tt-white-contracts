@@ -29,7 +29,7 @@ contract FastHistory is Initializable, IFastHistory {
 
   /// Minting history-keeping methods.
 
-  function minted(uint256 amount, string memory ref)
+  function minted(uint256 amount, string calldata ref)
       tokenContract(msg.sender)
       external override {
     // Keep track of the mint.
@@ -43,7 +43,7 @@ contract FastHistory is Initializable, IFastHistory {
     );
   }
 
-  function burnt(uint256 amount, string memory ref)
+  function burnt(uint256 amount, string calldata ref)
       tokenContract(msg.sender)
       external override {
     // Keep track of the unmint.
@@ -69,7 +69,7 @@ contract FastHistory is Initializable, IFastHistory {
 
   /// Transfer history-keeping methods.
 
-  function transfered(address spender, address from, address to, uint256 amount, string memory ref)
+  function transfered(address spender, address from, address to, uint256 amount, string calldata ref)
       tokenContract(msg.sender)
       external override {
     // Keep track of the transfer proof ID for the sender and for the recipient.

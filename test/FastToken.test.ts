@@ -472,7 +472,14 @@ describe('FastToken', () => {
         expect(args.ref).to.eq('Unspecified - via ERC20');
       });
 
-      it('decreases total supply when transferring to the zero address');
+      it('decreases total supply when transferring to the zero address', async () => {
+        // Keep total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await token.connect(alice).transfer(ZERO_ADDRESS, 100);
+        // Check that total supply decreased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
+      });
 
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(alice).transfer(bob.address, 98);
@@ -524,17 +531,6 @@ describe('FastToken', () => {
           .changeTokenBalances(token, [alice, bob], [-100, 100]);
       });
 
-      it('decreases total supply when transferring to the zero address');
-
-      it('emits a IERC20.Transfer event', async () => {
-        const subject = token.connect(alice).transferWithRef(bob.address, 98, 'Seven');
-        await expect(subject).to
-          .emit(token, 'Transfer')
-          .withArgs(alice.address, bob.address, 98);
-      });
-
-      // This is the only test that differs from the `transfer` specification.
-
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 12, 'Six')
         const args = history.transfered.getCall(0).args as any;
@@ -543,6 +539,22 @@ describe('FastToken', () => {
         expect(args.to).to.eq(bob.address);
         expect(args.amount).to.eq(12);
         expect(args.ref).to.eq('Six');
+      });
+
+      it('decreases total supply when transferring to the zero address', async () => {
+        // Keep total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await token.connect(alice).transferWithRef(ZERO_ADDRESS, 100, 'Six and a half?');
+        // Check that total supply decreased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
+      });
+
+      it('emits a IERC20.Transfer event', async () => {
+        const subject = token.connect(alice).transferWithRef(bob.address, 98, 'Seven');
+        await expect(subject).to
+          .emit(token, 'Transfer')
+          .withArgs(alice.address, bob.address, 98);
       });
     });
 
@@ -680,14 +692,21 @@ describe('FastToken', () => {
         expect(args.ref).to.eq('Unspecified - via ERC20');
       });
 
+      it('decreases total supply when transferring to the zero address', async () => {
+        // Keep total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await token.connect(john).transferFrom(bob.address, ZERO_ADDRESS, 100);
+        // Check that total supply decreased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
+      });
+
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(john).transferFrom(bob.address, alice.address, 98);
         await expect(subject).to
           .emit(token, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
-
-      it('decreases total supply when transferring to the zero address');
 
       // `transferFrom` specific!
 
@@ -704,6 +723,15 @@ describe('FastToken', () => {
         const subject = () => token.connect(anonymous).transferFrom(bob.address, alice.address, 100);
         await expect(subject).to
           .changeTokenBalances(token, [bob, alice], [-100, 100]);
+      });
+
+      it('increases total supply when transferring from the zero address', async () => {
+        // Keep track of total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
+        // Check that total supply increased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
       });
 
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
@@ -744,8 +772,6 @@ describe('FastToken', () => {
         const subject = await token.transferCredits();
         expect(subject).to.eq(creditsBefore);
       });
-
-      it('increases total supply when transferring from the zero address');
     });
 
     describe('transferFromWithRef', async () => {
@@ -803,7 +829,14 @@ describe('FastToken', () => {
         expect(args.ref).to.eq('Five');
       });
 
-      it('decreases total supply when transferring to the zero address');
+      it('decreases total supply when transferring to the zero address', async () => {
+        // Keep total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await token.connect(john).transferFromWithRef(bob.address, ZERO_ADDRESS, 100, 'Five and a half?');
+        // Check that total supply decreased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
+      });
 
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
@@ -829,22 +862,31 @@ describe('FastToken', () => {
           .changeTokenBalances(token, [bob, alice], [-100, 100]);
       });
 
+      it('increases total supply when transferring from the zero address', async () => {
+        // Keep track of total supply.
+        const supplyBefore = await token.totalSupply();
+        // Do it!
+        await governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Eight and a half?');
+        // Check that total supply increased.
+        expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
+      });
+
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
         const subject = spcMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Missing governorship');
       });
 
       it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Missing governorship');
       });
 
       it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith('Missing governorship');
       });
 
       it('allows governors to transfer from the zero address', async () => {
@@ -867,8 +909,6 @@ describe('FastToken', () => {
         const subject = await token.transferCredits();
         expect(subject).to.eq(creditsBefore);
       });
-
-      it('increases total supply when transferring from the zero address');
     });
   });
 
@@ -934,6 +974,11 @@ describe('FastToken', () => {
         expect(subject).to.eq(3);
       });
 
+      it('sender and recipient being identical', async () => {
+        const subject = await token.detectTransferRestriction(bob.address, bob.address, 1);
+        expect(subject).to.eq(4);
+      });
+
       it('returns zero when the transfer is possible', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
@@ -955,6 +1000,11 @@ describe('FastToken', () => {
       it('the lack of recipient membership', async () => {
         const subject = await token.messageForTransferRestriction(3);
         expect(subject).to.eq('Missing recipient membership');
+      });
+
+      it('sender and recipient being identical', async () => {
+        const subject = await token.messageForTransferRestriction(4);
+        expect(subject).to.eq('Identical sender and recipient');
       });
 
       it('errors when the restriction code is unknown', async () => {
