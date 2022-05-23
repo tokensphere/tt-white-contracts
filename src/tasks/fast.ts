@@ -32,8 +32,7 @@ task('fast-deploy', 'Deploys a FAST')
   .setAction(async (params: FastDeployParams, hre) => {
     checkNetwork(hre);
 
-    // Check current state.
-    const stateManager = new StateManager(31337);
+    const stateManager = new StateManager();
     // Check for libraries...
     if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib library' }

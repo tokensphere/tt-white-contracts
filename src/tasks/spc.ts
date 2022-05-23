@@ -14,7 +14,7 @@ task('spc-deploy', 'Deploys the main SPC contract')
   .setAction(async (params: SpcDeployParams, hre) => {
     checkNetwork(hre);
 
-    const stateManager = new StateManager(31337);
+    const stateManager = new StateManager();
     // Check for libraries...
     if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib' }
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib' }

@@ -444,13 +444,19 @@ describe('FastToken', () => {
       it('requires sender membership', async () => {
         const subject = token.transfer(bob.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing sender membership');
+          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
       });
 
       it('requires recipient membership', async () => {
         const subject = token.connect(alice).transfer(anonymous.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing recipient membership');
+          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      });
+
+      it('requires that the sender and recipient are different', async () => {
+        const subject = token.connect(bob).transfer(bob.address, 101);
+        await expect(subject).to.have
+          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
       });
 
       it('requires sufficient funds', async () => {
@@ -465,7 +471,7 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(alice).transfer(bob.address, 100);
-        await expect(subject).to.be.revertedWith('Insuficient transfer credits');
+        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -513,13 +519,19 @@ describe('FastToken', () => {
       it('requires sender membership', async () => {
         const subject = token.transferWithRef(bob.address, 100, 'One');
         await expect(subject).to.have
-          .revertedWith('Missing sender membership');
+          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
       });
 
       it('requires recipient membership', async () => {
         const subject = token.connect(alice).transferWithRef(anonymous.address, 100, 'Two');
         await expect(subject).to.have
-          .revertedWith('Missing recipient membership');
+          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      });
+
+      it('requires that the sender and recipient are different', async () => {
+        const subject = token.connect(bob).transferWithRef(bob.address, 101, 'No!');
+        await expect(subject).to.have
+          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
       });
 
       it('requires sufficient funds', async () => {
@@ -534,7 +546,7 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(alice).transferWithRef(bob.address, 100, 'Four');
-        await expect(subject).to.be.revertedWith('Insuficient transfer credits');
+        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -600,7 +612,7 @@ describe('FastToken', () => {
       it('requires that the sender is a member', async () => {
         const subject = token.approve(bob.address, 40);
         await expect(subject).to.have
-          .revertedWith('Missing sender membership');
+          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
       });
 
       it('adds an allowance with the correct parameters', async () => {
@@ -641,12 +653,34 @@ describe('FastToken', () => {
       });
     });
 
-    describe('disapprove', async () => {
-      it('requires that the sender is a member');
-      it('sets the allowance to zero');
+    describe.only('disapprove', async () => {
+      beforeEach(async () => {
+        // Let bob give john an allowance.
+        await token.connect(bob).approve(john.address, 15);
+      });
+
+      it('requires that the sender is a member', async () => {
+        const subject = token.disapprove(bob.address);
+        await expect(subject).to.have
+          .revertedWith(SENDER_NOT_MEMBER_MESSAGE)
+      });
+
+      it('sets the allowance to zero', async () => {
+        await token.connect(bob).disapprove(john.address);
+        const subject = await token.allowance(bob.address, john.address);
+        expect(subject).to.eq(0);
+      });
+
       it('removes the spender received allowance');
-      it('removes the sender given allowance');
-      it('emits a Disapproval event');
+
+      it('removes the original given allowance');
+
+      it('emits a Disapproval event', async () => {
+        const subject = token.connect(bob).disapprove(john.address);
+        await expect(subject).to
+          .emit(token, 'Disapproval')
+          .withArgs(bob.address, john.address);
+      });
     });
 
     describe('transferFrom', async () => {
@@ -670,7 +704,13 @@ describe('FastToken', () => {
       it('requires recipient membership', async () => {
         const subject = token.connect(john).transferFrom(bob.address, anonymous.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing recipient membership');
+          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      });
+
+      it('requires that the sender and recipient are different', async () => {
+        const subject = token.connect(john).transferFrom(bob.address, bob.address, 100)
+        await expect(subject).to.have
+          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
       });
 
       it('requires sufficient funds', async () => {
@@ -685,7 +725,7 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(john).transferFrom(bob.address, alice.address, 100);
-        await expect(subject).to.be.revertedWith('Insuficient transfer credits');
+        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -807,7 +847,13 @@ describe('FastToken', () => {
       it('requires recipient membership', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
         await expect(subject).to.have
-          .revertedWith('Missing recipient membership');
+          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      });
+
+      it('requires that the sender and recipient are different', async () => {
+        const subject = token.connect(john).transferFromWithRef(bob.address, bob.address, 100, 'No!')
+        await expect(subject).to.have
+          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
       });
 
       it('requires sufficient funds', async () => {
@@ -822,7 +868,7 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 100, 'Three');
-        await expect(subject).to.be.revertedWith('Insuficient transfer credits');
+        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -926,6 +972,10 @@ describe('FastToken', () => {
 
   /// Allowance querying.
 
+  describe('givenAllowanceCount', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
   describe('paginateAllowancesByOwner', async () => {
     beforeEach(async () => {
       // Let alice give allowance to bob and john, let bob give allowance to john.
@@ -944,6 +994,10 @@ describe('FastToken', () => {
       const [allowances, /*cursor*/] = await token.paginateAllowancesByOwner(john.address, 0, 5);
       expect(allowances).to.be.empty;
     });
+  });
+
+  describe('receivedAllowanceCount', async () => {
+    it('NEEDS MORE TESTS');
   });
 
   describe('paginateAllowancesBySpender', async () => {

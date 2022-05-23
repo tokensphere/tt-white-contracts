@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { env } from 'process';
 
 class StateManager {
   private readonly _networkId: number;
@@ -6,9 +7,12 @@ class StateManager {
 
   // Public stuff.
 
-  constructor(networkId: number) {
-    this._networkId = networkId;
-    this._state = JSON.parse(fs.readFileSync(this.stateFilename(), 'utf8'));;
+  constructor(networkId: number | undefined = undefined) {
+    this._networkId = networkId || parseInt(env.NETWORK_ID || '31337');
+    // Try and load the state file.
+    try { this._state = JSON.parse(fs.readFileSync(this.stateFilename(), 'utf8')); }
+    // No state file exists, or it's not formatted properly.
+    catch { this.state = {}; }
   }
 
   // State getter.

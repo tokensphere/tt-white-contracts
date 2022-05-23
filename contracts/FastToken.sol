@@ -215,9 +215,19 @@ contract FastToken is Initializable, IFastToken {
 
   /// Allowances query operations.
 
+  function givenAllowanceCount(address owner)
+      external view returns(uint256) {
+    return allowancesByOwner[owner].values.length;
+  }
+
   function paginateAllowancesByOwner(address owner, uint256 index, uint256 perPage)
       public view returns(address[] memory, uint256) {
     return PaginationLib.addresses(allowancesByOwner[owner].values, index, perPage);
+  }
+
+  function receivedAllowanceCount(address spender)
+      external view returns(uint256) {
+    return allowancesBySpender[spender].values.length;
   }
 
   function paginateAllowancesBySpender(address spender, uint256 index, uint256 perPage)

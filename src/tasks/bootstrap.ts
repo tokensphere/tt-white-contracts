@@ -54,7 +54,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
     console.log(`  In base unit: =${baseAmount}`);
     console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
 
-    const stateManager = new StateManager(31337);
+    const stateManager = new StateManager();
     stateManager.state = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
   });
 

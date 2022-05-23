@@ -15,7 +15,7 @@ task('lib-deploy', 'Deploys the AddressSetLib library')
   .setAction(async (params: LibDeployParams, hre) => {
     checkNetwork(hre);
 
-    const stateManager = new StateManager(31337);
+    const stateManager = new StateManager();
     // Check current state.
     if (stateManager.state[params.name]) { throw `Already deployed at ${stateManager.state[params.name]}` }
 
