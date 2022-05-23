@@ -35,12 +35,12 @@ contract Exchange is Initializable, IExchange {
   }
 
   function addMember(address payable /*member*/)
-      membership(msg.sender)
+      spcMembership(msg.sender)
       external override view {
   }
 
   function removeMember(address /*member*/)
-      membership(msg.sender)
+      spcMembership(msg.sender)
       external override view {
   }
 
@@ -48,6 +48,11 @@ contract Exchange is Initializable, IExchange {
 
   modifier membership(address /*a*/) {
     require(false, 'Missing Exchange membership');
+    _;
+  }
+
+  modifier spcMembership(address a) {
+    require(spc.isMember(a), 'Missing SPC membership');
     _;
   }
 }

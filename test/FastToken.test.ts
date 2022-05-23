@@ -6,7 +6,7 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
 import { toHexString } from '../src/utils';
-import { oneHundred, oneMilion } from './utils';
+import { oneMilion } from './utils';
 
 chai.use(smock.matchers);
 
@@ -15,6 +15,18 @@ const ZERO_ACCOUNT = { getAddress: () => ZERO_ADDRESS };
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
 const ERC20_TOKEN_DECIMALS = 18;
+
+// Restriction codes.
+const INSUFICIENT_TRANSFER_CREDITS = 1;
+const SENDER_NOT_MEMBER = 2;
+const RECIPIENT_NOT_MEMBER = 3;
+const SENDER_SAME_AS_RECIPIENT = 4;
+// Restriction messages.
+const INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
+const SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
+const RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
+const SENDER_SAME_AS_RECIPIENT_MESSAGE = 'Identical sender and recipient';
+
 
 describe('FastToken', () => {
   let
@@ -959,24 +971,25 @@ describe('FastToken', () => {
     describe('detectTransferRestriction has codes for', async () => {
       it('the lack of transfer credits', async () => {
         const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
-        expect(subject).to.eq(1);
+        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS);
       });
 
       it('the lack of sender membership', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(anonymous.address, alice.address, 1);
-        expect(subject).to.eq(2);
+        expect(subject).to.eq(SENDER_NOT_MEMBER);
       });
 
       it('the lack of recipient membership', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, anonymous.address, 1);
-        expect(subject).to.eq(3);
+        expect(subject).to.eq(RECIPIENT_NOT_MEMBER);
       });
 
       it('sender and recipient being identical', async () => {
+        await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, bob.address, 1);
-        expect(subject).to.eq(4);
+        expect(subject).to.eq(SENDER_SAME_AS_RECIPIENT);
       });
 
       it('returns zero when the transfer is possible', async () => {
@@ -988,27 +1001,27 @@ describe('FastToken', () => {
 
     describe('messageForTransferRestriction has a message for', async () => {
       it('the lack of transfer credits', async () => {
-        const subject = await token.messageForTransferRestriction(1);
-        expect(subject).to.eq('Insuficient transfer credits');
+        const subject = await token.messageForTransferRestriction(INSUFICIENT_TRANSFER_CREDITS);
+        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
       });
 
       it('the lack of sender membership', async () => {
-        const subject = await token.messageForTransferRestriction(2);
-        expect(subject).to.eq('Missing sender membership');
+        const subject = await token.messageForTransferRestriction(SENDER_NOT_MEMBER);
+        expect(subject).to.eq(SENDER_NOT_MEMBER_MESSAGE);
       });
 
       it('the lack of recipient membership', async () => {
-        const subject = await token.messageForTransferRestriction(3);
-        expect(subject).to.eq('Missing recipient membership');
+        const subject = await token.messageForTransferRestriction(RECIPIENT_NOT_MEMBER);
+        expect(subject).to.eq(RECIPIENT_NOT_MEMBER_MESSAGE);
       });
 
       it('sender and recipient being identical', async () => {
-        const subject = await token.messageForTransferRestriction(4);
-        expect(subject).to.eq('Identical sender and recipient');
+        const subject = await token.messageForTransferRestriction(SENDER_SAME_AS_RECIPIENT);
+        expect(subject).to.eq(SENDER_SAME_AS_RECIPIENT_MESSAGE);
       });
 
       it('errors when the restriction code is unknown', async () => {
-        const subject = token.messageForTransferRestriction(4);
+        const subject = token.messageForTransferRestriction(5);
         await expect(subject).to.have
           .revertedWith('Unknown restriction code');
       })
