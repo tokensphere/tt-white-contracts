@@ -2,12 +2,10 @@ import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BigNumber } from 'ethers';
 import '@openzeppelin/hardhat-upgrades';
-import { checkNetwork, fromBaseUnit, toBaseUnit } from '../utils';
+import { checkNetwork, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../utils';
 import { StateManager } from '../StateManager';
 import { FastToken } from '../../typechain-types/contracts/FastToken';
 import { FastAccess, FastHistory, FastRegistry, FastRegistry__factory } from '../../typechain-types';
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Tasks.
 
@@ -75,6 +73,8 @@ task('fast-deploy', 'Deploys a FAST')
 
     // Register our newly created FAST registry into the SPC.
     await spc.connect(spcMember).registerFastRegistry(registry.address);
+    // Keep the number of decimals handy...
+    const decimals = await token.decimals();
 
     // Add transfer credits.
     spcMemberToken.addTransferCredits(params.txCredits);
@@ -230,17 +230,17 @@ async function deployFastToken(
   return await upgrades.deployProxy(tokenFactory, [accessAddress, name, symbol, decimals, hasFixedSupplyBool]) as FastToken;
 }
 
-async function fastMint(fast: FastToken, amount: number | BigNumber, ref: string) {
-  const decimals = await fast.decimals();
-  const symbol = await fast.symbol();
+async function fastMint(token: FastToken, amount: number | BigNumber, ref: string) {
+  const decimals = await token.decimals();
+  const symbol = await token.symbol();
   const baseAmount = toBaseUnit(BigNumber.from(amount), decimals);
-  await fast.mint(baseAmount, ref);
+  await token.mint(baseAmount, ref);
   return { symbol, decimals, baseAmount };
 }
 
-async function fastAddTransferCredits(fast: FastToken, credits: number | BigNumber) {
-  const decimals = await fast.decimals();
-  await fast.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals));
+async function fastAddTransferCredits(token: FastToken, credits: number | BigNumber) {
+  const decimals = await token.decimals();
+  await token.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals));
 }
 
 export {

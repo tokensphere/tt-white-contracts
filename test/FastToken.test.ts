@@ -5,13 +5,11 @@ import { ethers, upgrades } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
-import { toHexString } from '../src/utils';
+import { toHexString, ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../src/utils';
 import { oneMilion } from './utils';
 
 chai.use(smock.matchers);
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const ZERO_ACCOUNT = { getAddress: () => ZERO_ADDRESS };
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
 const ERC20_TOKEN_DECIMALS = 18;
@@ -244,7 +242,7 @@ describe('FastToken', () => {
           spcMemberToken.mint(1_000_000, 'Attempt 2')
         ]);
         await expect(subject).to
-          .changeTokenBalance(token, ZERO_ACCOUNT, 2_000_000);
+          .changeTokenBalance(token, ZERO_ACCOUNT_MOCK, 2_000_000);
       });
     });
 
@@ -316,7 +314,7 @@ describe('FastToken', () => {
     it('removes tokens from the zero address', async () => {
       const subject = async () => spcMemberToken.burn(30, 'Burn baby burn')
       await expect(subject).to
-        .changeTokenBalance(token, ZERO_ACCOUNT, -30)
+        .changeTokenBalance(token, ZERO_ACCOUNT_MOCK, -30)
     });
 
     it('does not impact total supply', async () => {
@@ -807,14 +805,14 @@ describe('FastToken', () => {
       it('allows governors to transfer from the zero address', async () => {
         const subject = () => governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
+          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
 
       it('does not require transfer credits when drawing from the zero address', async () => {
         await spcMemberToken.drainTransferCredits();
         const subject = () => governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
+          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
 
       it('does not impact transfer credits when drawing from the zero address', async () => {
@@ -950,14 +948,14 @@ describe('FastToken', () => {
       it('allows governors to transfer from the zero address', async () => {
         const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
         await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
+          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
 
       it('does not require transfer credits when drawing from the zero address', async () => {
         await spcMemberToken.drainTransferCredits();
         const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Ten');
         await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [-100, 100]);
+          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
 
       it('does not impact transfer credits when drawing from the zero address', async () => {
@@ -1116,7 +1114,7 @@ describe('FastToken', () => {
       it('transfers the member tokens back to the zero address', async () => {
         const subject = () => token.connect(access.wallet).beforeRemovingMember(alice.address);
         await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT, alice], [500, -500]);
+          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [500, -500]);
       });
 
       it('delegates to the history contract', async () => {

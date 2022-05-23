@@ -1,6 +1,9 @@
 import { BigNumber } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
+
 function checkNetwork({ network }: HardhatRuntimeEnvironment, doThrow: boolean = true): boolean {
   if (network.name === 'hardhat') {
     console.warn(
@@ -59,4 +62,8 @@ function toHexString(amount: BigNumber) {
   return amount.toHexString().replace(/0x0+/, '0x');
 }
 
-export { checkNetwork, fromBaseUnit, toBaseUnit, toHexString }
+export {
+  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK,
+  checkNetwork,
+  fromBaseUnit, toBaseUnit, toHexString
+}
