@@ -32,7 +32,7 @@ contract Spc is Initializable, ISpc {
   // This is where we hold our members data.
   AddressSetLib.Data private memberSet;
   // This is where we keep our list of deployed fast FASTs.
-  address[] private fastRegistries;
+  IFastRegistry[] private fastRegistries;
   // We keep track of the FAST symbols that were already used.
   mapping(string => IFastRegistry) private fastSymbols;
 
@@ -104,11 +104,6 @@ contract Spc is Initializable, ISpc {
 
   /// FAST management related methods.
 
-  function checkSymbolAvailability(string calldata symbol)
-    external view returns(bool) {
-      return fastSymbols[symbol] == IFastRegistry(address(0));
-    }
-
   function fastRegistryFromSymbol(string calldata symbol)
       external view returns(IFastRegistry) {
     return fastSymbols[symbol];
@@ -121,7 +116,7 @@ contract Spc is Initializable, ISpc {
     require(fastSymbols[symbol] == IFastRegistry(address(0)), 'Symbol already taken');
 
     // Add the FAST Registry to our list.
-    fastRegistries.push(address(reg));
+    fastRegistries.push(reg);
     // Add the fast symbol to our list.
     fastSymbols[symbol] = reg;
 
@@ -138,8 +133,8 @@ contract Spc is Initializable, ISpc {
 
   function paginateFastRegistries(uint256 cursor, uint256 perPage)
       external view
-      returns(address[] memory, uint256) {
-    return PaginationLib.addresses(fastRegistries, cursor, perPage);
+      returns(IFastRegistry[] memory, uint256) {
+    return PaginationLib.fastRegistries(fastRegistries, cursor, perPage);
   }
 
   /// Modifiers.

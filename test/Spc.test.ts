@@ -221,31 +221,9 @@ describe('Spc', () => {
 
   /// FAST management stuff.
 
-  describe('checkSymbolAvailability', async () => {
-    it('returns true when the symbol is available', async () => {
-      const subject = await spc.checkSymbolAvailability('FST');
-      expect(subject).to.be.true;
-    });
-
-    it('returns false when the symbol is already in use', async () => {
-      // Set up a token mock.
-      const token = await smock.fake('FastToken');
-      // Make sure
-      token.symbol.returns('FST');
-      // Set up a mock registry.
-      const reg = await smock.fake('FastRegistry');
-      // Make sure that the registry can return the address of our tocken mock.
-      reg.token.returns(token.address);
-      // Register this FAST.
-      await spcMemberSpc.registerFastRegistry(reg.address)
-
-      const subject = await spc.checkSymbolAvailability('FST');
-      expect(subject).to.be.false;
-    });
-  });
-
   describe('fastRegistryFromSymbol', async () => {
-    it('NEEDS MORE TESTS');
+    it('returns the zero address when the FAST symbol is unknown');
+    it('returns the FAST registry address when the FAST symbol is registered');
   });
 
   describe('registerFastRegistry', async () => {
@@ -276,12 +254,12 @@ describe('Spc', () => {
     });
 
     it('adds the registry address to the list of registries', async () => {
-      // Note that this test is already covered by tests for `checkSymbolAvailability`.
+      // Note that this test is already covered by tests for `fastRegistryFromSymbol`.
       // It would add very little value to add anything to it.
     });
 
     it('keeps track of the symbol', async () => {
-      // Note that this test is already covered by tests for `checkSymbolAvailability`.
+      // Note that this test is already covered by tests for `fastRegistryFromSymbol`.
       // It would add very little value to add anything to it.
     });
 
@@ -355,9 +333,6 @@ describe('Spc', () => {
       reg.token.returns(token.address);
       // Register this FAST.
       await spcMemberSpc.registerFastRegistry(reg.address)
-
-      const subject = await spc.checkSymbolAvailability('FST');
-      expect(subject).to.be.false;
     });
 
     it('returns pages of registries', async () => {
