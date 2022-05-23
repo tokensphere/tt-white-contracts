@@ -48,7 +48,7 @@ task('fast-deploy', 'Deploys a FAST')
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
 
     // Check that symbol isn't taken.
-    const existingAddr = await spc.fastRegistryFromSymbol(params.symbol);
+    const existingAddr = await spc.fastRegistryBySymbol(params.symbol);
     if (existingAddr != ZERO_ADDRESS) {
       throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
     }
@@ -122,7 +122,7 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
 
     // Grab a handle of the registry for the given FAST symbol.
-    const regAddr = await spc.fastRegistryFromSymbol(params.fastSymbol);
+    const regAddr = await spc.fastRegistryBySymbol(params.fastSymbol);
     if (regAddr == ZERO_ADDRESS) {
       throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`);
     }

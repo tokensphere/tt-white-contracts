@@ -104,7 +104,7 @@ contract Spc is Initializable, ISpc {
 
   /// FAST management related methods.
 
-  function fastRegistryFromSymbol(string calldata symbol)
+  function fastRegistryBySymbol(string calldata symbol)
       external view returns(IFastRegistry) {
     return fastSymbols[symbol];
   }

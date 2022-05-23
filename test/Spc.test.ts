@@ -221,7 +221,7 @@ describe('Spc', () => {
 
   /// FAST management stuff.
 
-  describe('fastRegistryFromSymbol', async () => {
+  describe('fastRegistryBySymbol', async () => {
     it('returns the zero address when the FAST symbol is unknown');
     it('returns the FAST registry address when the FAST symbol is registered');
   });
@@ -254,12 +254,12 @@ describe('Spc', () => {
     });
 
     it('adds the registry address to the list of registries', async () => {
-      // Note that this test is already covered by tests for `fastRegistryFromSymbol`.
+      // Note that this test is already covered by tests for `fastRegistryBySymbol`.
       // It would add very little value to add anything to it.
     });
 
     it('keeps track of the symbol', async () => {
-      // Note that this test is already covered by tests for `fastRegistryFromSymbol`.
+      // Note that this test is already covered by tests for `fastRegistryBySymbol`.
       // It would add very little value to add anything to it.
     });
 
