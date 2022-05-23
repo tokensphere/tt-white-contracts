@@ -653,7 +653,7 @@ describe('FastToken', () => {
       });
     });
 
-    describe.only('disapprove', async () => {
+    describe('disapprove', async () => {
       beforeEach(async () => {
         // Let bob give john an allowance.
         await token.connect(bob).approve(john.address, 15);
