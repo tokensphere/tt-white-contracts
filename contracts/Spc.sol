@@ -4,10 +4,10 @@ pragma solidity ^0.8.4;
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/ISpc.sol';
 import './interfaces/IExchange.sol';
+import './interfaces/IFastRegistry.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';
 import './lib/HelpersLib.sol';
-import './FastRegistry.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract Spc is Initializable, ISpc {
@@ -23,7 +23,7 @@ contract Spc is Initializable, ISpc {
   /// Events.
 
   // Fast registry related events.
-  event FastRegistered(FastRegistry indexed reg);
+  event FastRegistered(IFastRegistry indexed reg);
   // Eth provisioning related events.
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
@@ -112,7 +112,7 @@ contract Spc is Initializable, ISpc {
     return fastSymbols[symbol];
   }
 
-  function registerFastRegistry(FastRegistry reg)
+  function registerFastRegistry(IFastRegistry reg)
       membership(msg.sender)
       external {
     string memory symbol = reg.token().symbol();

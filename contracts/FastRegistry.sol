@@ -36,7 +36,7 @@ contract FastRegistry is Initializable, IFastRegistry {
   /// Eth provisioning stuff.
 
   function provisionWithEth()
-      external payable {
+      external override payable {
     require(msg.value > 0, 'Missing attached ETH');
     emit EthReceived(msg.sender, msg.value);
   }

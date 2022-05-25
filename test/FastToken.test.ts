@@ -86,11 +86,10 @@ describe('FastToken', () => {
   });
 
   beforeEach(async () => {
-    const tokenParams = [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true];
+    const tokenParams = [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true, false];
     token = await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
     governedToken = token.connect(governor);
     spcMemberToken = token.connect(spcMember);
-    await reg.connect(spcMember).setTokenAddress(token.address);
   });
 
   /// Public stuff.

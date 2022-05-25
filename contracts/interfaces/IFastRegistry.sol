@@ -12,4 +12,5 @@ interface IFastRegistry {
   function token() external returns(IFastToken);
   function history() external returns(IFastHistory);
   function payUpTo(address payable a, uint256 amount) external;
+  function provisionWithEth() external payable;
 }

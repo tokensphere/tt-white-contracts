@@ -101,7 +101,10 @@ contract FastToken is Initializable, IFastToken {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    require(!hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0), 'Minting not possible at this time');
+    require(
+      !hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0),
+      'Minting not possible at this time'
+    );
 
     // Prepare the minted amount on the zero address.
     balances[ZERO_ADDRESS] += amount;

@@ -9,7 +9,12 @@ describe('Exchange', () => {
     exchange: Exchange;
 
   before(async () => {
-    exchangeFactory = await ethers.getContractFactory('Exchange');
+    // Deploy our libraries.
+    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+
+    const exchangeLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    exchangeFactory = await ethers.getContractFactory('Exchange', { libraries: exchangeLibs });
   });
 
   beforeEach(async () => {
