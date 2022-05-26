@@ -64,9 +64,9 @@ yarn hardhat \
     --network localhost
 ```
 
-## SPC Tasks (See `src/tasks/spc.ts`)
+## Top-Level Tasks (See `src/tasks/spc.ts`)
 
-You can then subsequently deploy the main SPC by running:
+You can then subsequently deploy the main SPC and Exchange by running:
 
 ```shell
 yarn hardhat \
@@ -75,6 +75,8 @@ yarn hardhat \
     --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
 
+Take note of the SPC and Exchange deployed addresses.
+
 ## FAST Token Tasks (See `src/tasks/fast.ts`)
 
 Then you can start deploying FAST:
@@ -82,13 +84,13 @@ Then you can start deploying FAST:
 ```shell
 yarn hardhat \
   fast-deploy \
-    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
     --network localhost \
     --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
     --name "Some Awesome FAST Stuff" \
     --symbol "SAF" \
     --decimals 18 \
     --has-fixed-supply false \
+    --is-semi-public true \
     --mint 1000000 \
     --tx-credits 1000000
 ```
@@ -106,12 +108,10 @@ For example, to mint new tokens:
 
 ```shell
 yarn hardhat \
-  fast-mint \
-    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
-    --fast-symbol 'SAF' \
-    --network localhost \
+  fast-mint SAF \
     --amount 1000000 \
-    --ref "Much tokens, very wow, such bling."
+    --ref "Much tokens, very wow, such bling." \
+    --network localhost
 ```
 
 At this point, it's important to add transfer credits to the token contract, so that transfers
@@ -119,29 +119,25 @@ can freely be executed.
 
 ```shell
 yarn hardhat \
-  fast-add-transfer-credits \
-    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
-    --network localhost \
-    --spc 0x5FC8d32690cc91D4c39d9d3abcBD16989F875707 \
-    --credits 5000000
+  fast-add-transfer-credits SAF \
+    --amount 5000000 \
+    --network localhost
 ```
 
 To obtain the balance of an account over a particular FAST:
 
 ```shell
 yarn hardhat \
-  fast-balance \
-    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
-    --network localhost \
-    --account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+  fast-balance SAF \
+    --account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
+    --network localhost
 ```
 
 If you would like to query the minted (unallocated) tokens, you can instead query address zero:
 
 ```shell
 yarn hardhat \
-  fast-balance \
-    0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0 \
+  fast-balance SAF \
     --network localhost \
     --account 0x0000000000000000000000000000000000000000
 ```

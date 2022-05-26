@@ -5,36 +5,39 @@ import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../utils';
 import { StateManager } from '../StateManager';
 import { FastToken } from '../../typechain-types/contracts/FastToken';
-import { FastAccess, FastHistory, FastRegistry, FastRegistry__factory, Spc } from '../../typechain-types';
+import { Spc, Exchange, FastRegistry, FastAccess, FastHistory } from '../../typechain-types';
 
 // Tasks.
 
 interface FastDeployParams {
-  readonly spc: string;
+  readonly exchange: string;
   readonly governor: string;
   readonly name: string;
   readonly symbol: string;
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
+  readonly isSemiPublic: boolean;
   readonly txCredits: number;
   readonly mint?: number;
 };
 
 task('fast-deploy', 'Deploys a FAST')
-  .addParam('spc', 'The address at which the main SPC is deployed', undefined, types.string)
   .addParam('governor', 'The address of the FAST governor', undefined, types.string)
   .addParam('name', 'The name for the new FAST', undefined, types.string)
   .addParam('symbol', 'The symbol for the new FAST', undefined, types.string)
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addParam('hasFixedSupply', 'The minting scheme for the new FAST', undefined, types.boolean)
+  .addParam('isSemiPublic', 'Whether or not this FAST should be semi-public', undefined, types.boolean)
   .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
   .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
   .setAction(async (params: FastDeployParams, hre) => {
     checkNetwork(hre);
 
     const stateManager = new StateManager();
-    // Check for libraries...
-    if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
+    // Check for contracts and libraries...
+    if (!stateManager.state.Spc) { throw 'Missing SPC contract'; }
+    else if (!stateManager.state.Exchange) { throw 'Missing Exchange contract'; }
+    else if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib library' }
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib library' }
 
     const addressSetLib = await hre.ethers.getContractAt('AddressSetLib', stateManager.state.AddressSetLib);
@@ -42,10 +45,11 @@ task('fast-deploy', 'Deploys a FAST')
     const helpersLib = await hre.ethers.getContractAt('HelpersLib', stateManager.state.HelpersLib);
 
     // Grab a handle on the deployed SPC contract.
-    const spc = await hre.ethers.getContractAt('Spc', params.spc);
+    const spc = await hre.ethers.getContractAt('Spc', stateManager.state.Spc);
     const [[spcMemberAddr],] = await spc.paginateMembers(0, 1);
-    // Grab a signer to the SPC member.
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
+    // Grab a handle on the deployed Exchange contract.
+    const exchange = await hre.ethers.getContractAt('Exchange', stateManager.state.Exchange);
 
     // Check that symbol isn't taken.
     const existingAddr = await spc.fastRegistryBySymbol(params.symbol);
@@ -54,7 +58,7 @@ task('fast-deploy', 'Deploys a FAST')
     }
 
     // First, deploy a registry contract.
-    const reg = await deployFastRegistry(hre, helpersLib, spc);
+    const reg = await deployFastRegistry(hre, helpersLib, spc, exchange);
     const spcMemberRegistry = reg.connect(spcMember);
     console.log('Deployed FastRegistry', reg.address);
 
@@ -79,8 +83,6 @@ task('fast-deploy', 'Deploys a FAST')
 
     // Register our newly created FAST registry into the SPC.
     await spc.connect(spcMember).registerFastRegistry(reg.address);
-    // Keep the number of decimals handy...
-    const decimals = await token.decimals();
 
     // Add transfer credits.
     spcMemberToken.addTransferCredits(params.txCredits);
@@ -98,7 +100,6 @@ task('fast-deploy', 'Deploys a FAST')
   });
 
 interface FastMintParams {
-  readonly spc: string;
   readonly fastSymbol: string;
   readonly account: string;
   readonly amount: number;
@@ -106,17 +107,18 @@ interface FastMintParams {
 };
 
 task('fast-mint', 'Mints FASTs to a specified recipient')
-  .addParam('spc', 'The address at which the main SPC is deployed', undefined, types.string)
-  .addParam('fastSymbol', 'The FAST Token symbol to operate on', undefined, types.string)
+  .addPositionalParam('fastSymbol', 'The FAST Token symbol to operate on', undefined, types.string)
   .addParam('amount', 'The amount of tokens to mint', undefined, types.int)
   .addParam('ref', 'The reference to use for the minting operation', undefined, types.string)
   .setAction(async (params: FastMintParams, hre) => {
     checkNetwork(hre);
 
-    const { ethers } = hre;
+    const stateManager = new StateManager();
+    // Check for contracts and libraries...
+    if (!stateManager.state.Spc) { throw 'Missing SPC contract'; }
 
     // Grab a handle on the deployed SPC contract.
-    const spc = await hre.ethers.getContractAt('Spc', params.spc);
+    const spc = await hre.ethers.getContractAt('Spc', stateManager.state.Spc);
     const [[spcMemberAddr],] = await spc.paginateMembers(0, 1);
     // Grab a signer to the SPC member.
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
@@ -141,45 +143,79 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
   });
 
 interface FastAddTransferCreditsParamms {
-  readonly spc: string;
-  readonly fast: string;
+  readonly fastSymbol: string;
   readonly credits: number;
 };
 
 task('fast-add-transfer-credits', 'Increases the transfer credits for a given FAST Token')
-  .addPositionalParam('fast', 'The FAST Token address to operate on', undefined, types.string)
-  .addParam('spc', 'The address at which the main SPC contract is deployed', undefined, types.string)
+  .addPositionalParam('fastSymbol', 'The FAST Token symbol to operate on', undefined, types.string)
   .addParam('credits', 'How many credits should be added', undefined, types.int)
   .setAction(async (params: FastAddTransferCreditsParamms, hre) => {
-    const { ethers } = hre;
+
+    const stateManager = new StateManager();
+    // Check for contracts and libraries...
+    if (!stateManager.state.Spc) { throw 'Missing SPC contract'; }
 
     // Grab a handle on the deployed SPC contract.
-    const spc = await hre.ethers.getContractAt('Spc', params.spc);
+    const spc = await hre.ethers.getContractAt('Spc', stateManager.state.Spc);
     const [[spcMemberAddr],] = await spc.paginateMembers(0, 1);
     // Grab a signer to the SPC member.
     const spcMember = await hre.ethers.getSigner(spcMemberAddr);
 
-    const fast = await ethers.getContractAt('FastToken', params.fast) as FastToken;
-    await fastAddTransferCredits(fast.connect(spcMember), params.credits);
+    // Grab a handle of the registry for the given FAST symbol.
+    const regAddr = await spc.fastRegistryBySymbol(params.fastSymbol);
+    if (regAddr == ZERO_ADDRESS) {
+      throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`);
+    }
+    const reg = await hre.ethers.getContractAt('FastRegistry', regAddr);
+    // Grab a handle on the token contract.
+    const tokenAddr = await reg.token();
+    if (tokenAddr == ZERO_ADDRESS) {
+      throw (`A FAST registry was found at ${params.fastSymbol}, but it does not hold a FAST token address!`);
+    }
+    const token = await hre.ethers.getContractAt('FastToken', tokenAddr);
+
+    await fastAddTransferCredits(token.connect(spcMember), params.credits);
   });
 
 interface FastBalanceParams {
-  readonly fast: string;
+  readonly fastSymbol: string;
   readonly account: string;
 };
 
 task('fast-balance', 'Retrieves the balance of a given account')
-  .addPositionalParam('fast', 'The FAST address to operate on', undefined, types.string)
+  .addPositionalParam('fastSymbol', 'The FAST symbol to operate on', undefined, types.string)
   .addParam('account', 'The account to retrieve the balance of', undefined, types.string)
   .setAction(async (params: FastBalanceParams, hre) => {
     checkNetwork(hre);
 
-    const { ethers } = hre;
-    const fast = await ethers.getContractAt('FastToken', params.fast);
+    const stateManager = new StateManager();
+    // Check for contracts and libraries...
+    if (!stateManager.state.Spc) { throw 'Missing SPC contract'; }
 
-    const decimals = await fast.decimals();
-    const symbol = await fast.symbol();
-    const baseBalance = await fast.balanceOf(params.account);
+    // Grab a handle on the deployed SPC contract.
+    const spc = await hre.ethers.getContractAt('Spc', stateManager.state.Spc);
+    const [[spcMemberAddr],] = await spc.paginateMembers(0, 1);
+    // Grab a signer to the SPC member.
+    const spcMember = await hre.ethers.getSigner(spcMemberAddr);
+
+    // Grab a handle of the registry for the given FAST symbol.
+    const regAddr = await spc.fastRegistryBySymbol(params.fastSymbol);
+    if (regAddr == ZERO_ADDRESS) {
+      throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`);
+    }
+    const reg = await hre.ethers.getContractAt('FastRegistry', regAddr);
+    // Grab a handle on the token contract.
+    const tokenAddr = await reg.token();
+    if (tokenAddr == ZERO_ADDRESS) {
+      throw (`A FAST registry was found at ${params.fastSymbol}, but it does not hold a FAST token address!`);
+    }
+    const token = await hre.ethers.getContractAt('FastToken', tokenAddr);
+
+    const decimals = await token.decimals();
+    const symbol = await token.symbol();
+    const baseBalance = await token.balanceOf(params.account);
+    console.log('Blah')
     console.log(`${symbol} balance of ${params.account}:`);
     console.log(`  In base unit: =${baseBalance}`);
     console.log(`    Human unit: ~${fromBaseUnit(baseBalance, decimals)} (${decimals} decimals truncated)`);
@@ -191,11 +227,12 @@ task('fast-balance', 'Retrieves the balance of a given account')
 async function deployFastRegistry(
   { ethers, upgrades }: HardhatRuntimeEnvironment,
   helpersLib: Contract,
-  spc: Spc
+  spc: Spc,
+  exchange: Exchange
 ): Promise<FastRegistry> {
   const libraries = { HelpersLib: helpersLib.address };
   const regFactory = await ethers.getContractFactory('FastRegistry', { libraries });
-  return await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
+  return await upgrades.deployProxy(regFactory, [spc.address, exchange.address]) as FastRegistry;
 };
 
 // Deploys a new FAST Access contract.
@@ -231,13 +268,14 @@ async function deployFastToken(
   params: any
 ): Promise<FastToken> {
   const { name, symbol, decimals } = params;
-  const { hasFixedSupply } = params;
+  const { hasFixedSupply, isSemiPublic } = params;
   const hasFixedSupplyBool = hasFixedSupply === true || hasFixedSupply === "true";
 
   // Deploy the token contract.
   const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
   const tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
-  return await upgrades.deployProxy(tokenFactory, [reg.address, name, symbol, decimals, hasFixedSupplyBool]) as FastToken;
+  const tokenParams = [reg.address, name, symbol, decimals, hasFixedSupplyBool, isSemiPublic];
+  return await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
 }
 
 async function fastMint(token: FastToken, amount: number | BigNumber, ref: string) {

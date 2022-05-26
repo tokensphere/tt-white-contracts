@@ -3,7 +3,7 @@ import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork } from '../utils';
 import { StateManager } from '../StateManager';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Spc__factory, Spc, Exchange, Exchange__factory } from '../../typechain-types';
+import { Spc__factory, Exchange__factory, Spc, Exchange } from '../../typechain-types';
 import { Contract } from 'ethers';
 
 interface SpcDeployParams {
@@ -17,7 +17,8 @@ task('spc-deploy', 'Deploys the main SPC contract')
 
     const stateManager = new StateManager();
     // Check for libraries...
-    if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib' }
+    if (stateManager.state.Spc) { throw 'Spc contract already deployed'; }
+    else if (!stateManager.state.AddressSetLib) { throw 'Missing AddressSetLib' }
     else if (!stateManager.state.PaginationLib) { throw 'Missing PaginationLib' }
     else if (!stateManager.state.HelpersLib) { throw 'Missing HelpersLib' }
 
@@ -25,11 +26,13 @@ task('spc-deploy', 'Deploys the main SPC contract')
     const paginationLib = await hre.ethers.getContractAt('PaginationLib', stateManager.state.PaginationLib);
     const helpersLib = await hre.ethers.getContractAt('HelpersLib', stateManager.state.HelpersLib);
 
-    const helpersLibAddr: string = stateManager.state.HelpersLib;
     const spc = await deploySpc(hre, addressSetLib, paginationLib, helpersLib, params.member);
+    stateManager.state = { ...stateManager.state, Spc: spc.address };
     console.log('Deployed Spc', spc.address);
 
+
     const exchange = await deployExchange(hre, addressSetLib, paginationLib, spc);
+    stateManager.state = { ...stateManager.state, Exchange: exchange.address };
     console.log('Deployed Exchange', exchange.address);
   });
 

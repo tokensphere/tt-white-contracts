@@ -15,6 +15,7 @@ contract Exchange is Initializable, IExchange {
 
   /// Members.
 
+  // Keep track of where the main SPC is.
   ISpc public spc;
 
   // This is where we hold our members data.
@@ -54,16 +55,13 @@ contract Exchange is Initializable, IExchange {
   function removeMember(address member)
       spcMembership(msg.sender)
       external override {
+    // Remove member.
+    memberSet.remove(member, false);
     // Emit!
     emit IHasMembers.MemberRemoved(member);
   }
 
   /// Modifiers.
-
-  modifier membership(address a) {
-    require(memberSet.contains(a), 'Missing Exchange membership');
-    _;
-  }
 
   modifier spcMembership(address a) {
     require(spc.isMember(a), 'Missing SPC membership');

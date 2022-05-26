@@ -24,13 +24,14 @@ contract FastRegistry is Initializable, IFastRegistry {
 
   // The registry holds pointers to various contracts of the ecosystem.
   ISpc public override spc;
+  IExchange public override exchange;
   IFastAccess public override access;
   IFastHistory public override history;
   IFastToken public override token;
 
-  function initialize(ISpc _spc)
+  function initialize(ISpc _spc, IExchange _exchange)
       external initializer {
-    spc = _spc;
+    (spc, exchange) = (_spc, exchange);
   }
 
   /// Eth provisioning stuff.

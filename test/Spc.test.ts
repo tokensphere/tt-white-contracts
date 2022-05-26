@@ -229,15 +229,12 @@ describe('Spc', () => {
   describe('registerFastRegistry', async () => {
     let reg: FakeContract<FastRegistry>;
 
-    beforeEach(async () => {
+    before(async () => {
       // Set up a token mock.
       const token = await smock.fake('FastToken');
-      // Make sure
       token.symbol.returns('FST');
-
       // Set up a mock registry.
       reg = await smock.fake('FastRegistry');
-      // Make sure that the registry can return the address of our tocken mock.
       reg.token.returns(token.address);
     });
 

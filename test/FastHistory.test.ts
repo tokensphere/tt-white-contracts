@@ -1,8 +1,10 @@
+import * as chai from 'chai';
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FastRegistry, FastHistory__factory, FastHistory, Spc } from '../typechain-types';
+chai.use(smock.matchers);
 
 describe('FastHistory', () => {
   let
@@ -14,10 +16,11 @@ describe('FastHistory', () => {
     bob: SignerWithAddress,
     john: SignerWithAddress,
     rob: SignerWithAddress;
-  let reg: FakeContract<FastRegistry>;
-  let historyFactory: FastHistory__factory;
-  let history: FastHistory;
-  let governedHistory: FastHistory;
+  let spc: FakeContract<Spc>,
+    reg: FakeContract<FastRegistry>,
+    historyFactory: FastHistory__factory,
+    history: FastHistory,
+    governedHistory: FastHistory;
 
   before(async () => {
     // Keep track of a few signers.
@@ -27,22 +30,25 @@ describe('FastHistory', () => {
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
 
     // Mock an SPC contract.
-    const spc: FakeContract<Spc> = await smock.fake('Spc');
-    // Make sure that the SPC contract returns membership flags for an address we control.
-    spc.isMember.returns(false);
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-
+    spc = await smock.fake('Spc');
     // Create a registry contract mock.
     reg = await smock.fake('FastRegistry');
-    // Register a few addresses here to simulate calls from known contracts addresses.
-    reg.access.returns(access.address);
-    reg.token.returns(token.address);
 
     const historyLibs = { PaginationLib: paginationLib.address };
     historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
   });
 
   beforeEach(async () => {
+    // Reset mocks.
+    spc.isMember.reset();
+
+    // Setup mocks.
+    spc.isMember.returns(false);
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    reg.access.returns(access.address);
+    reg.token.returns(token.address);
+
+    // Spin up our History contract.
     history = await upgrades.deployProxy(historyFactory, [reg.address]) as FastHistory;
     governedHistory = history.connect(governor);
   });

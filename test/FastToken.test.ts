@@ -4,10 +4,9 @@ import { BigNumber } from 'ethers';
 import { ethers, upgrades } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory } from '../typechain-types';
+import { FastRegistry, FastAccess, FastToken, FastToken__factory, FastHistory, Spc, Exchange } from '../typechain-types';
 import { toHexString, ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../src/utils';
 import { oneMilion } from './utils';
-
 chai.use(smock.matchers);
 
 const ERC20_TOKEN_NAME = 'Random FAST Token';
@@ -35,6 +34,8 @@ describe('FastToken', () => {
     john: SignerWithAddress,
     anonymous: SignerWithAddress;
   let
+    spc: FakeContract<Spc>,
+    exchange: FakeContract<Exchange>,
     reg: FakeContract<FastRegistry>,
     access: FakeContract<FastAccess>,
     history: FakeContract<FastHistory>,
@@ -50,42 +51,40 @@ describe('FastToken', () => {
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
 
+    // Create an SPC, Exchange, Registry, Access and History mocks.
+    spc = await smock.fake('Spc');
+    exchange = await smock.fake('Exchange');
     reg = await smock.fake('FastRegistry');
-
-    // Create an SPC mock.
-    const spc = await smock.fake('Spc');
-    // Configure SPC memberships with our SPC mock.
-    spc.isMember.returns(false);
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    // Make sure our registry mock keeps track of the SPC mock address.
-    reg.spc.returns(spc.address);
-
-    // Create an access contract mock.
     access = await smock.fake('FastAccess');
-    // Make sure the access mock can return the address of our registry.
-    access.reg.returns(reg.address);
-    // Configure governorship in our access mock.
-    access.isGovernor.returns(false);
-    access.isGovernor.whenCalledWith(governor.address).returns(true);
-    // Configure membbership into our access contract.
-    access.isMember.returns(false);
-    [alice, bob, john].forEach(
-      ({ address }) => access.isMember.whenCalledWith(address).returns(true)
-    );
-    // Make sure that our registry mock keeps track of the access mock address.
-    reg.access.returns(access.address);
-
-    // Create a history contract mock.
     history = await smock.fake('FastHistory');
-    // Make sure that our registry mock is tracking the history mock address.
+
+    // Stub a few things.
+    access.reg.returns(reg.address);
+    reg.spc.returns(spc.address);
+    reg.exchange.returns(exchange.address);
+    reg.access.returns(access.address);
     reg.history.returns(history.address);
 
-    // Finally, create our token factory.
+    // Create our token factory.
     const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
     tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
   });
 
   beforeEach(async () => {
+    // Reset mocks.
+    spc.isMember.reset();
+    access.isMember.reset();
+    access.isGovernor.reset();
+    history.burnt.reset();
+    history.transfered.reset();
+    // Setup mocks.
+    spc.isMember.returns(false);
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    access.isGovernor.returns(false);
+    access.isGovernor.whenCalledWith(governor.address).returns(true);
+    access.isMember.returns(false);
+    [alice, bob, john].forEach(({ address }) => access.isMember.whenCalledWith(address).returns(true));
+
     const tokenParams = [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true, false];
     token = await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
     governedToken = token.connect(governor);
@@ -168,6 +167,10 @@ describe('FastToken', () => {
 
   /// Other stuff.
 
+  describe('setIsSemiPublic', async () => {
+    it('NEEDS MORE TESTS');
+  });
+
   describe('setHasFixedSupply', async () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.setHasFixedSupply(true);
@@ -198,10 +201,6 @@ describe('FastToken', () => {
   });
 
   describe('mint', async () => {
-    beforeEach(async () => {
-      history.minted.reset();
-    });
-
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.mint(5_000, 'Attempt 1');
       await expect(subject).to.have
@@ -232,7 +231,6 @@ describe('FastToken', () => {
     describe('with continuous supply', async () => {
       beforeEach(async () => {
         await token.connect(spcMember).setHasFixedSupply(false);
-        history.minted.reset();
       });
 
       it('is allowed more than once', async () => {
@@ -247,9 +245,8 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      const args = history.minted.getCall(0).args as any;
-      expect(args.amount).to.eq(5_000);
-      expect(args.ref).to.eq('Attempt 1');
+      expect(history.minted).to.have.been
+        .calledOnceWith(5_000, 'Attempt 1');
     });
 
     it('adds the minted tokens to the zero address', async () => {
@@ -274,7 +271,6 @@ describe('FastToken', () => {
 
   describe('burn', async () => {
     beforeEach(async () => {
-      history.burnt.reset();
       await spcMemberToken.setHasFixedSupply(false);
       await spcMemberToken.mint(100, 'A hundred mints');
     });
@@ -325,9 +321,8 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.burn(50, 'It is hot');
-      const args = history.burnt.getCall(0).args as any;
-      expect(args.amount).to.eq(50);
-      expect(args.ref).to.eq('It is hot');
+      expect(history.burnt).to.have.been
+        .calledOnceWith(50, 'It is hot');
     });
 
     it('emits a Burnt event', async () => {
@@ -421,6 +416,10 @@ describe('FastToken', () => {
       await Promise.all([alice, bob].map(
         async ({ address }) => governedToken.transferFrom(ZERO_ADDRESS, address, 100)
       ));
+
+      // Reset watchers.
+      history.transfered.reset();
+      history.burnt.reset();
     });
 
     describe('balanceOf', async () => {
@@ -431,98 +430,115 @@ describe('FastToken', () => {
     });
 
     describe('transfer', async () => {
-      beforeEach(async () => {
-        // Reset our history mock.
-        history.transfered.reset();
-      });
-
       // `transfer` specific.
 
-      it('requires sender membership', async () => {
-        const subject = token.transfer(bob.address, 100);
-        await expect(subject).to.have
-          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
       });
 
-      it('requires recipient membership', async () => {
-        const subject = token.connect(alice).transfer(anonymous.address, 100);
-        await expect(subject).to.have
-          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)', async () => {
+          const subject = token.transfer(bob.address, 100);
+          await expect(subject).to.have
+            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires sender membership (Exchange member)');
+
+        it('requires recipient membership (anonymous)', async () => {
+          const subject = token.connect(alice).transfer(anonymous.address, 100);
+          await expect(subject).to.have
+            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires recipient membership (Exchange member)');
       });
 
-      it('requires that the sender and recipient are different', async () => {
-        const subject = token.connect(bob).transfer(bob.address, 101);
-        await expect(subject).to.have
-          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
-      });
+      [true, false].forEach(async (isSemiPublic) => {
+        describe(`when ${isSemiPublic ? 'semi-public' : 'private'}`, async () => {
+          beforeEach(async () => {
+            await spcMemberToken.setIsSemiPublic(isSemiPublic);
+          });
 
-      it('requires sufficient funds', async () => {
-        const subject = token.connect(bob).transfer(alice.address, 101);
-        await expect(subject).to.have
-          .revertedWith('Insuficient funds');
-      });
+          it('requires that the sender and recipient are different', async () => {
+            const subject = token.connect(bob).transfer(bob.address, 101);
+            await expect(subject).to.have
+              .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+          });
 
-      it('requires sufficient transfer credits', async () => {
-        // Drain all credits, and provision some more.
-        await spcMemberToken.drainTransferCredits();
-        await spcMemberToken.addTransferCredits(90);
-        // Do it!
-        const subject = token.connect(alice).transfer(bob.address, 100);
-        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
-      });
+          it('requires sufficient funds', async () => {
+            const subject = token.connect(bob).transfer(alice.address, 101);
+            await expect(subject).to.have
+              .revertedWith('Insuficient funds');
+          });
 
-      it('transfers from / to the given wallet address', async () => {
-        const subject = () => token.connect(alice).transfer(bob.address, 100);
-        await expect(subject).to
-          .changeTokenBalances(token, [alice, bob], [-100, 100]);
-      });
+          it('requires sufficient transfer credits', async () => {
+            // Drain all credits, and provision some more.
+            await spcMemberToken.drainTransferCredits();
+            await spcMemberToken.addTransferCredits(90);
+            // Do it!
+            const subject = token.connect(alice).transfer(bob.address, 100);
+            await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+          });
 
-      it('delegates to the history contract', async () => {
-        await token.connect(alice).transfer(bob.address, 12)
-        const args = history.transfered.getCall(0).args as any;
-        expect(args.spender).to.eq(alice.address);
-        expect(args.from).to.eq(alice.address);
-        expect(args.to).to.eq(bob.address);
-        expect(args.amount).to.eq(12);
-        expect(args.ref).to.eq('Unspecified - via ERC20');
-      });
+          it('transfers from / to the given wallet address', async () => {
+            const subject = () => token.connect(alice).transfer(bob.address, 100);
+            await expect(subject).to
+              .changeTokenBalances(token, [alice, bob], [-100, 100]);
+          });
 
-      it('decreases total supply when transferring to the zero address', async () => {
-        // Keep total supply.
-        const supplyBefore = await token.totalSupply();
-        // Do it!
-        await token.connect(alice).transfer(ZERO_ADDRESS, 100);
-        // Check that total supply decreased.
-        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
-      });
+          it('delegates to the history contract', async () => {
+            await token.connect(alice).transfer(bob.address, 12)
+            expect(history.transfered).to.have.been
+              .calledOnceWith(alice.address, alice.address, bob.address, 12, 'Unspecified - via ERC20');
+          });
 
-      it('emits a IERC20.Transfer event', async () => {
-        const subject = token.connect(alice).transfer(bob.address, 98);
-        await expect(subject).to
-          .emit(token, 'Transfer')
-          .withArgs(alice.address, bob.address, 98);
+          it('decreases total supply when transferring to the zero address', async () => {
+            // Keep total supply.
+            const supplyBefore = await token.totalSupply();
+            // Do it!
+            await token.connect(alice).transfer(ZERO_ADDRESS, 100);
+            // Check that total supply decreased.
+            expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
+          });
+
+          it('emits a IERC20.Transfer event', async () => {
+            const subject = token.connect(alice).transfer(bob.address, 98);
+            await expect(subject).to
+              .emit(token, 'Transfer')
+              .withArgs(alice.address, bob.address, 98);
+          });
+        });
       });
     });
 
     describe('transferWithRef', async () => {
-      beforeEach(async () => {
-        history.transfered.reset();
-      });
-
       // IMPORTANT:
       // All these tests have the exact same rules as for `transfer`, same
       // order, same everything **please**.
 
-      it('requires sender membership', async () => {
-        const subject = token.transferWithRef(bob.address, 100, 'One');
-        await expect(subject).to.have
-          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
       });
 
-      it('requires recipient membership', async () => {
-        const subject = token.connect(alice).transferWithRef(anonymous.address, 100, 'Two');
-        await expect(subject).to.have
-          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)', async () => {
+          const subject = token.transferWithRef(bob.address, 100, 'One');
+          await expect(subject).to.have
+            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires sender membership (Exchange member)');
+
+        it('requires recipient membership (anonymous)', async () => {
+          const subject = token.connect(alice).transferWithRef(anonymous.address, 100, 'Two');
+          await expect(subject).to.have
+            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires recipient membership (Exchange member)');
       });
 
       it('requires that the sender and recipient are different', async () => {
@@ -554,12 +570,8 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 12, 'Six')
-        const args = history.transfered.getCall(0).args as any;
-        expect(args.spender).to.eq(alice.address);
-        expect(args.from).to.eq(alice.address);
-        expect(args.to).to.eq(bob.address);
-        expect(args.amount).to.eq(12);
-        expect(args.ref).to.eq('Six');
+        expect(history.transfered).to.have.been
+          .calledOnceWith(alice.address, alice.address, bob.address, 12, 'Six');
       });
 
       it('decreases total supply when transferring to the zero address', async () => {
@@ -606,10 +618,16 @@ describe('FastToken', () => {
     });
 
     describe('approve', async () => {
-      it('requires that the sender is a member', async () => {
-        const subject = token.approve(bob.address, 40);
-        await expect(subject).to.have
-          .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
+      });
+
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)');
+        it('requires sender membership (Exchange member)');
+        it('requires recipient membership (anonymous)');
+        it('requires recipient membership (Exchange member)');
       });
 
       it('adds an allowance with the correct parameters', async () => {
@@ -656,10 +674,16 @@ describe('FastToken', () => {
         await token.connect(bob).approve(john.address, 15);
       });
 
-      it('requires that the sender is a member', async () => {
-        const subject = token.disapprove(bob.address);
-        await expect(subject).to.have
-          .revertedWith(SENDER_NOT_MEMBER_MESSAGE)
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
+      });
+
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)');
+        it('requires sender membership (Exchange member)');
+        it('requires recipient membership (anonymous)');
+        it('requires recipient membership (Exchange member)');
       });
 
       it('sets the allowance to zero', async () => {
@@ -669,7 +693,6 @@ describe('FastToken', () => {
       });
 
       it('removes the spender received allowance');
-
       it('removes the original given allowance');
 
       it('emits a Disapproval event', async () => {
@@ -682,8 +705,6 @@ describe('FastToken', () => {
 
     describe('transferFrom', async () => {
       beforeEach(async () => {
-        // Reset history calls.
-        history.transfered.reset();
         // Let bob give allowance to john.
         await token.connect(bob).approve(john.address, 150);
       });
@@ -692,16 +713,23 @@ describe('FastToken', () => {
       // All these tests have the exact same rules as for `transfer`, same
       // order, same everything **please**.
 
-      it('requires sender membership', async () => {
-        // NOTE: We could test that the contract reverts when the sender isn't a
-        // member, but given that you have to be a member to give allowance to
-        // someone in the first place, this test has very little value. 
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
       });
 
-      it('requires recipient membership', async () => {
-        const subject = token.connect(john).transferFrom(bob.address, anonymous.address, 100);
-        await expect(subject).to.have
-          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)');
+
+        it('requires sender membership (Exchange member)');
+
+        it('requires recipient membership (anonymous)', async () => {
+          const subject = token.connect(john).transferFrom(bob.address, anonymous.address, 100);
+          await expect(subject).to.have
+            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires recipient membership (Exchange member)');
       });
 
       it('requires that the sender and recipient are different', async () => {
@@ -733,12 +761,8 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFrom(bob.address, alice.address, 12)
-        const args = history.transfered.getCall(0).args as any;
-        expect(args.spender).to.eq(john.address);
-        expect(args.from).to.eq(bob.address);
-        expect(args.to).to.eq(alice.address);
-        expect(args.amount).to.eq(12);
-        expect(args.ref).to.eq('Unspecified - via ERC20');
+        expect(history.transfered).to.have.been
+          .calledOnceWith(john.address, bob.address, alice.address, 12, 'Unspecified - via ERC20');
       });
 
       it('decreases total supply when transferring to the zero address', async () => {
@@ -825,8 +849,6 @@ describe('FastToken', () => {
 
     describe('transferFromWithRef', async () => {
       beforeEach(async () => {
-        // Reset history calls.
-        history.transfered.reset();
         // Let bob give allowance to john.
         await token.connect(bob).approve(john.address, 150);
       });
@@ -835,16 +857,23 @@ describe('FastToken', () => {
       // All these tests have the exact same rules as for `transfer` and `transferFrom`, same
       // order, same everything **please**.
 
-      it('requires sender membership', async () => {
-        // NOTE: We could test that the contract reverts when the sender isn't a
-        // member, but given that you have to be a member to give allowance to
-        // someone in the first place, this test has very little value. 
+      describe('when semi-public', async () => {
+        it('requires sender membership or Exchange membership');
+        it('requires recipient membership or Exchange membership');
       });
 
-      it('requires recipient membership', async () => {
-        const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
-        await expect(subject).to.have
-          .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+      describe('when private', async () => {
+        it('requires sender membership (anonymous)');
+
+        it('requires sender membership (Exchange member)');
+
+        it('requires recipient membership (anonymous)', async () => {
+          const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
+          await expect(subject).to.have
+            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+        });
+
+        it('requires recipient membership (Exchange member)');
       });
 
       it('requires that the sender and recipient are different', async () => {
@@ -876,12 +905,8 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        const args = history.transfered.getCall(0).args as any;
-        expect(args.spender).to.eq(john.address);
-        expect(args.from).to.eq(bob.address);
-        expect(args.to).to.eq(alice.address);
-        expect(args.amount).to.eq(12);
-        expect(args.ref).to.eq('Five');
+        expect(history.transfered).to.have.been
+          .calledOnceWith(john.address, bob.address, alice.address, 12, 'Five');
       });
 
       it('decreases total supply when transferring to the zero address', async () => {
@@ -1118,12 +1143,8 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(access.wallet).beforeRemovingMember(alice.address);
-        const args = history.transfered.getCall(0).args as any;
-        expect(args.spender).to.eq(ZERO_ADDRESS);
-        expect(args.from).to.eq(alice.address);
-        expect(args.to).to.eq(ZERO_ADDRESS);
-        expect(args.amount).to.eq(500);
-        expect(args.ref).to.eq('Member removal');
+        expect(history.transfered).to.have.been
+          .calledOnceWith(ZERO_ADDRESS, alice.address, ZERO_ADDRESS, 500, 'Member removal');
       });
 
       it('emits a Transfer event when a transfer is performed', async () => {

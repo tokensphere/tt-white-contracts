@@ -86,6 +86,13 @@ contract FastToken is Initializable, IFastToken {
     (transferCredits, hasFixedSupply, isSemiPublic) = (0, _hasFixedSupply, _isSemiPublic);
   }
 
+  function setIsSemiPublic(bool _isSemiPublic)
+      spcMembership(msg.sender)
+      external returns(bool) {
+    isSemiPublic = _isSemiPublic;
+    return true;
+  }
+
   function setHasFixedSupply(bool _hasFixedSupply)
       spcMembership(msg.sender)
       external returns(bool) {
@@ -360,7 +367,7 @@ contract FastToken is Initializable, IFastToken {
   modifier senderMembershipOrSemiPublic(address a) {
     require(
         reg.access().isMember(a) ||
-        (isSemiPublic && reg.spc().exchange().isMember(a)) ||
+        (isSemiPublic && reg.exchange().isMember(a)) ||
           a == ZERO_ADDRESS,
         SENDER_NOT_MEMBER_MESSAGE
       );
@@ -370,7 +377,7 @@ contract FastToken is Initializable, IFastToken {
   modifier recipientMembershipOrSemiPublic(address a) {
     require(
         reg.access().isMember(a) ||
-        (isSemiPublic && reg.spc().exchange().isMember(a)) ||
+        (isSemiPublic && reg.exchange().isMember(a)) ||
         a == ZERO_ADDRESS,
       RECIPIENT_NOT_MEMBER_MESSAGE);
     _;

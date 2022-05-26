@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, FastRegistry__factory, FastRegistry } from '../typechain-types';
+import { Spc, FastRegistry__factory, FastRegistry, Exchange } from '../typechain-types';
 import { toHexString } from '../src/utils';
 import { negNinety, negOneHundred, negTwo, ninety, oneHundred, ten, two } from './utils';
 
@@ -14,10 +14,11 @@ describe('FastRegistry', () => {
     access: SignerWithAddress,
     history: SignerWithAddress,
     token: SignerWithAddress;
-  let spc: FakeContract<Spc>;
-  let regFactory: FastRegistry__factory;
-  let reg: FastRegistry;
-  let spcMemberReg: FastRegistry;
+  let spc: FakeContract<Spc>,
+    exchange: FakeContract<Exchange>,
+    regFactory: FastRegistry__factory,
+    reg: FastRegistry,
+    spcMemberReg: FastRegistry;
 
   before(async () => {
     // Keep track of a few signers.
@@ -25,9 +26,9 @@ describe('FastRegistry', () => {
     // Deploy the libraries.
     const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
 
+    // Create an SPC and Exchange mocks.
     spc = await smock.fake('Spc');
-    spc.isMember.returns(false);
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    exchange = await smock.fake('Exchange');
 
     // Cache our Registry factory.
     const regLibs = { HelpersLib: helpersLib.address };
@@ -35,7 +36,14 @@ describe('FastRegistry', () => {
   });
 
   beforeEach(async () => {
-    reg = await upgrades.deployProxy(regFactory, [spc.address]) as FastRegistry;
+    // Reset mocks.
+    spc.isMember.reset();
+
+    // Setup mocks.
+    spc.isMember.returns(false);
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+
+    reg = await upgrades.deployProxy(regFactory, [spc.address, exchange.address]) as FastRegistry;
     spcMemberReg = reg.connect(spcMember);
     // Register a few addresses in the registry.
     await Promise.all([

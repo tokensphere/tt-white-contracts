@@ -18,7 +18,8 @@ interface BootstrapTaskParams {
   readonly name: string;
   readonly symbol: string;
   readonly decimals: number;
-  readonly hasFixedSupply: number;
+  readonly hasFixedSupply: boolean;
+  readonly isSemiPublic: boolean;
 };
 
 task('bootstrap', 'Deploys everything needed to run the FAST network')
@@ -26,6 +27,7 @@ task('bootstrap', 'Deploys everything needed to run the FAST network')
   .addOptionalParam('symbol', 'The symbol for the new FAST', 'CVDS', types.string)
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addOptionalParam('hasFixedSupply', 'When set to `true`, minting will be disabled forever for this FAST', true, types.boolean)
+  .addParam('isSemiPublic', 'Whether or not this FAST should be semi-public', undefined, types.boolean)
   .setAction(async (params, hre) => {
     checkNetwork(hre);
 
@@ -79,7 +81,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const exchange = await deployExchange(hre, addressSetLib, paginationLib, spc);
 
   // First, deploy a registry contract.
-  const reg = await deployFastRegistry(hre, helpersLib, spc);
+  const reg = await deployFastRegistry(hre, helpersLib, spc, exchange);
   const spcMemberRegistry = reg.connect(spcMember);
 
   // First, deploy an access contract, required for the FAST permissioning.
