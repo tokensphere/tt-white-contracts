@@ -18,31 +18,37 @@ Note that for development systems, we use local signers (Eg `ethers.getSigners()
 Simply run this command:
 
 ```shell
-yarn hardhat \
-  bootstrap \
-    --network localhost \
-    --name "Some Awesome FAST Stuff" \
-    --symbol "SAF" \
-    --decimals 18 \
-    --has-fixed-supply true
+yarn hardhat bootstrap \
+              --network localhost \
+              --name "Some Awesome FAST Stuff" \
+              --symbol "SAF" \
+              --decimals 18 \
+              --has-fixed-supply true
 ```
 
 The `bootstrap` task will:
 
 - Deploy all needed libraries and overwrite the `.openzeppelin/state-31337.json` file to keep track of their addresses.
-- Deploy an SPC contract using `spcMember` as the main member. It will also provision the SPC contract with some ethers sent from the `deployer` signer.
-- Deploy a FAST set of contracts, register everything together. At this end of this step, the deployed `FastRegistry` should have been provisioned by the SPC contract with some Eth.
+- Deploy an SPC contract using `spcMember` as the main member. It will also provision the SPC contract with some ethers sent from the `deployer` signer. It will also get an Exchange contract deployed.
+- Deploy a FAST set of contracts, register everything together. At this end of this step, the deployed `FastRegistry` should have been provisioned by the SPC contract with some ETH.
 - Mint some tokens and provision some transfer credits.
-- Add the `member` address to the FAST members, and as a by-product of this `member` should be credited some extra Eth.
+- Add the `member` address to the FAST members, and as a by-product of this `member` should be credited some extra ETH.
 
 ## Account Tasks (See `src/tasks/accounts.ts`)
 
 To provision an account with ETH, you can run:
 
 ```shell
-yarn hardhat \
-  faucet 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 \
-  --network localhost
+yarn hardhat faucet 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 \
+              --network localhost
+```
+
+Or if you're in a hurry and you would like all available signers to obtain an outrageous amount
+of ETH, you can run:
+
+```shell
+yarn hardhat make-us-rich \
+              --network localhost
 ```
 
 ## Library Tasks (See `src/tasks/libraries.ts`)
@@ -50,18 +56,9 @@ yarn hardhat \
 To deploy the necessary libraries, you can run:
 
 ```shell
-yarn hardhat \
-  lib-deploy \
-    AddressSetLib \
-    --network localhost
-yarn hardhat \
-  lib-deploy \
-    PaginationLib \
-    --network localhost
-yarn hardhat \
-  lib-deploy \
-    HelpersLib \
-    --network localhost
+yarn hardhat lib-deploy AddressSetLib --network localhost
+yarn hardhat lib-deploy PaginationLib --network localhost
+yarn hardhat lib-deploy HelpersLib --network localhost
 ```
 
 ## Top-Level Tasks (See `src/tasks/spc.ts`)
@@ -69,10 +66,9 @@ yarn hardhat \
 You can then subsequently deploy the main SPC and Exchange by running:
 
 ```shell
-yarn hardhat \
-  spc-deploy \
-    --network localhost \
-    --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
+yarn hardhat spc-deploy \
+              --network localhost \
+              --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
 
 Take note of the SPC and Exchange deployed addresses.
@@ -82,17 +78,16 @@ Take note of the SPC and Exchange deployed addresses.
 Then you can start deploying FAST:
 
 ```shell
-yarn hardhat \
-  fast-deploy \
-    --network localhost \
-    --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
-    --name "Some Awesome FAST Stuff" \
-    --symbol "SAF" \
-    --decimals 18 \
-    --has-fixed-supply false \
-    --is-semi-public true \
-    --mint 1000000 \
-    --tx-credits 1000000
+yarn hardhat fast-deploy \
+              --network localhost \
+              --governor 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
+              --name "Some Awesome FAST Stuff" \
+              --symbol "SAF" \
+              --decimals 18 \
+              --has-fixed-supply false \
+              --is-semi-public true \
+              --mint 1000000 \
+              --tx-credits 1000000
 ```
 
 This task will execute a more complex orchestration. The contracts deployed during this phase are:
@@ -107,39 +102,35 @@ over a particular FAST.
 For example, to mint new tokens:
 
 ```shell
-yarn hardhat \
-  fast-mint SAF \
-    --amount 1000000 \
-    --ref "Much tokens, very wow, such bling." \
-    --network localhost
+yarn hardhat fast-mint SAF \
+              --network localhost \
+              --amount 1000000 \
+              --ref "Much tokens, very wow, such bling."
 ```
 
 At this point, it's important to add transfer credits to the token contract, so that transfers
 can freely be executed.
 
 ```shell
-yarn hardhat \
-  fast-add-transfer-credits SAF \
-    --amount 5000000 \
-    --network localhost
+yarn hardhat fast-add-transfer-credits SAF \
+              --network localhost \
+              --amount 5000000
 ```
 
 To obtain the balance of an account over a particular FAST:
 
 ```shell
-yarn hardhat \
-  fast-balance SAF \
-    --account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc \
-    --network localhost
+yarn hardhat fast-balance SAF \
+              --network localhost \
+              --account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
 ```
 
 If you would like to query the minted (unallocated) tokens, you can instead query address zero:
 
 ```shell
-yarn hardhat \
-  fast-balance SAF \
-    --network localhost \
-    --account 0x0000000000000000000000000000000000000000
+yarn hardhat fast-balance SAF \
+              --network localhost \
+              --account 0x0000000000000000000000000000000000000000
 ```
 
 ## FAST Access Tasks
