@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc, FastTokenFacet, SpcInitFacet } from '../../typechain';
-import { DEPLOYER_FACTORY_COMMON, toHexString } from '../../src/utils';
+import { DEPLOYER_FACTORY_COMMON, toHexString, ZERO_ADDRESS } from '../../src/utils';
 import {
   DUPLICATE_ENTRY,
   MISSING_ATTACHED_ETH,
@@ -258,8 +258,25 @@ describe('SpcTopFacet', () => {
   /// FAST management stuff.
 
   describe('fastBySymbol', async () => {
-    it('returns the zero address when the FAST symbol is unknown');
-    it('returns the FAST address when the FAST symbol is registered');
+    let fast: FakeContract<FastTokenFacet>;
+
+    beforeEach(async () => {
+      // Set up a token mock.
+      const fast = await smock.fake('FastTokenFacet');
+      fast.symbol.returns('FST');
+      // Register the FST token using the spcMember account.
+      await spcMemberSpc.registerFast(fast.address);
+    });
+
+    it('returns the zero address when the FAST symbol is unknown', async () => {
+      const subject = await spc.fastBySymbol('UKN');
+      expect(subject).to.eq(ZERO_ADDRESS);
+    });
+
+    it('returns the FAST address when the FAST symbol is registered', async () => {
+      const subject = await spc.fastBySymbol('FST');
+      expect(subject).to.eq(fast.address);
+    });
   });
 
   describe('registerFast', async () => {
