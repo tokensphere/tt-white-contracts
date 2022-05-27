@@ -185,14 +185,14 @@ contract FastToken is Initializable, IFastToken {
   }
 
   function approve(address spender, uint256 amount)
-      senderMembershipOrSemiPublic(msg.sender)
+      senderMembership(msg.sender)
       external override returns(bool) {
     _approve(msg.sender, spender, amount);
     return true;
   }
 
   function disapprove(address spender)
-      senderMembershipOrSemiPublic(msg.sender)
+      senderMembership(msg.sender)
       external {
     _disapprove(msg.sender, spender);
   }
@@ -280,7 +280,7 @@ contract FastToken is Initializable, IFastToken {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      senderMembershipOrSemiPublic(from) recipientMembershipOrSemiPublic(to) differentAddresses(from, to)
+      senderMembership(from) recipientMembership(to) differentAddresses(from, to)
       private {
     require(balances[from] >= amount, 'Insuficient funds');
     require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
@@ -360,7 +360,7 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier senderMembershipOrSemiPublic(address a) {
+  modifier senderMembership(address a) {
     require(
         reg.access().isMember(a) ||
         (isSemiPublic && reg.exchange().isMember(a)) ||
@@ -370,7 +370,7 @@ contract FastToken is Initializable, IFastToken {
     _;
   }
 
-  modifier recipientMembershipOrSemiPublic(address a) {
+  modifier recipientMembership(address a) {
     require(
         reg.access().isMember(a) ||
         (isSemiPublic && reg.exchange().isMember(a)) ||
