@@ -31,7 +31,7 @@ contract FastRegistry is Initializable, IFastRegistry {
 
   function initialize(ISpc _spc, IExchange _exchange)
       external initializer {
-    (spc, exchange) = (_spc, exchange);
+    (spc, exchange) = (_spc, _exchange);
   }
 
   /// Eth provisioning stuff.

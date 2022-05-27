@@ -88,16 +88,14 @@ contract FastToken is Initializable, IFastToken {
 
   function setIsSemiPublic(bool _isSemiPublic)
       spcMembership(msg.sender)
-      external returns(bool) {
+      external {
     isSemiPublic = _isSemiPublic;
-    return true;
   }
 
   function setHasFixedSupply(bool _hasFixedSupply)
       spcMembership(msg.sender)
-      external returns(bool) {
+      external {
     hasFixedSupply = _hasFixedSupply;
-    return true;
   }
 
   /// Minting methods.
@@ -145,18 +143,16 @@ contract FastToken is Initializable, IFastToken {
 
   function addTransferCredits(uint256 _amount)
       spcMembership(msg.sender)
-      external returns(bool) {
+      external {
     transferCredits += _amount;
     emit TransferCreditsAdded(msg.sender, _amount);
-    return true;
   }
 
   function drainTransferCredits()
       spcMembership(msg.sender)
-      external returns(bool) {
+      external {
     emit TransferCreditsDrained(msg.sender, transferCredits);
     transferCredits = 0;
-    return true;
   }
 
   /// ERC20 implementation and transfer related methods.
@@ -168,11 +164,12 @@ contract FastToken is Initializable, IFastToken {
 
   function transfer(address to, uint256 amount)
       public override returns(bool) {
-    return _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
+    _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
+    return true;
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
-      public returns(bool) {
+      public {
     return _transfer(msg.sender, msg.sender, to, amount, ref);
   }
 
@@ -196,18 +193,18 @@ contract FastToken is Initializable, IFastToken {
 
   function disapprove(address spender)
       senderMembershipOrSemiPublic(msg.sender)
-      external returns(bool) {
+      external {
     _disapprove(msg.sender, spender);
-    return true;
   }
 
   function transferFrom(address from, address to, uint256 amount)
       public override returns(bool) {
-    return transferFromWithRef(from, to, amount, 'Unspecified - via ERC20');
+    transferFromWithRef(from, to, amount, 'Unspecified - via ERC20');
+    return true;
   }
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      public returns(bool) {
+      public {
     // If the funds are coming from the zero address, we must be a governor.
     if (from == ZERO_ADDRESS) {
       require(reg.access().isGovernor(msg.sender), 'Missing governorship');
@@ -224,7 +221,7 @@ contract FastToken is Initializable, IFastToken {
       }
     }
 
-    return _transfer(msg.sender, from, to, amount, ref);
+    _transfer(msg.sender, from, to, amount, ref);
   }
 
   /// Allowances query operations.
@@ -253,6 +250,7 @@ contract FastToken is Initializable, IFastToken {
 
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
+    // TODO: Add semi-public cases.
     if (transferCredits < amount) {
       return INSUFICIENT_TRANSFER_CREDITS;
     } else if (!reg.access().isMember(from)) {
@@ -283,7 +281,7 @@ contract FastToken is Initializable, IFastToken {
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       senderMembershipOrSemiPublic(from) recipientMembershipOrSemiPublic(to) differentAddresses(from, to)
-      private returns(bool) {
+      private {
     require(balances[from] >= amount, 'Insuficient funds');
     require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
 
@@ -298,10 +296,8 @@ contract FastToken is Initializable, IFastToken {
 
     // Keep track of the transfer.
     reg.history().transfered(spender, from, to, amount, ref);
-
     // Emit!
     emit IERC20.Transfer(from, to, amount);
-    return true;
   }
 
   function _approve(address from, address spender, uint256 amount)

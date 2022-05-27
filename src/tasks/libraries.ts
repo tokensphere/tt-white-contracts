@@ -3,6 +3,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import '@openzeppelin/hardhat-upgrades';
 import { checkNetwork } from '../utils';
 import { StateManager } from '../StateManager';
+import { Contract } from 'ethers';
 
 // Tasks.
 
@@ -30,11 +31,10 @@ task('lib-deploy', 'Deploys the AddressSetLib library')
 
 // Reusable functions.
 
-async function deployLibrary(
+const deployLibrary = async (
   { ethers }: HardhatRuntimeEnvironment,
   name: string
-) {
-  return (await ethers.getContractFactory(name)).deploy();
-}
+): Promise<Contract> =>
+  (await ethers.getContractFactory(name)).deploy();
 
 export { deployLibrary };

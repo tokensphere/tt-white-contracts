@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/ISpc.sol';
+import './interfaces/IExchange.sol';
 import './interfaces/IFastRegistry.sol';
 import './lib/AddressSetLib.sol';
 import './lib/PaginationLib.sol';

@@ -148,7 +148,7 @@ contract FastAccess is Initializable, IFastAccess {
    * @dev Removes a member from the membership list.
    */
   function removeMember(address member)
-      governance(msg.sender)
+      governance(msg.sender) membership(member)
       external override {
     // Notify token contract.
     reg.token().beforeRemovingMember(member);
