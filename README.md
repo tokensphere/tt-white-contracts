@@ -23,7 +23,8 @@ yarn hardhat bootstrap \
               --name "Some Awesome FAST Stuff" \
               --symbol "SAF" \
               --decimals 18 \
-              --has-fixed-supply true
+              --has-fixed-supply true \
+              --is-semi-public true
 ```
 
 The `bootstrap` task will:
@@ -112,9 +113,8 @@ At this point, it's important to add transfer credits to the token contract, so 
 can freely be executed.
 
 ```shell
-yarn hardhat fast-add-transfer-credits SAF \
-              --network localhost \
-              --amount 5000000
+yarn hardhat fast-add-transfer-credits SAF 5000000 \
+              --network localhost
 ```
 
 To obtain the balance of an account over a particular FAST:

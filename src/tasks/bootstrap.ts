@@ -70,10 +70,7 @@ async function bootstrap(hre: HardhatRuntimeEnvironment, params: BootstrapTaskPa
   const paginationLib = await deployLibrary(hre, 'PaginationLib');
   const helpersLib = await deployLibrary(hre, 'HelpersLib');
 
-  const signers = await hre.ethers.getSigners();
-  const spcMember = signers[1];
-  const governor = signers[2];
-  const member = signers[3];
+  const [/*deployer*/, spcMember, governor, member] = await hre.ethers.getSigners();
 
   // Deploy the main SPC contract.
   const spc = await deploySpc(hre, addressSetLib, paginationLib, helpersLib, spcMember.address);

@@ -149,7 +149,7 @@ interface FastAddTransferCreditsParamms {
 
 task('fast-add-transfer-credits', 'Increases the transfer credits for a given FAST Token')
   .addPositionalParam('fastSymbol', 'The FAST Token symbol to operate on', undefined, types.string)
-  .addParam('credits', 'How many credits should be added', undefined, types.int)
+  .addPositionalParam('credits', 'How many credits should be added', undefined, types.int)
   .setAction(async (params: FastAddTransferCreditsParamms, hre) => {
 
     const stateManager = new StateManager();
@@ -268,14 +268,20 @@ async function deployFastToken(
   params: any
 ): Promise<FastToken> {
   const { name, symbol, decimals } = params;
-  const { hasFixedSupply, isSemiPublic } = params;
-  const hasFixedSupplyBool = hasFixedSupply === true || hasFixedSupply === "true";
+  const { hasFixedSupply: hasFixedSupplyInput, isSemiPublic } = params;
+  const hasFixedSupply = hasFixedSupplyInput === true || hasFixedSupplyInput === "true";
 
   // Deploy the token contract.
   const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
   const tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
-  const tokenParams = [reg.address, name, symbol, decimals, hasFixedSupplyBool, isSemiPublic];
-  return await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
+  return await upgrades.deployProxy(tokenFactory, [{
+    registry: reg.address,
+    name,
+    symbol,
+    decimals,
+    hasFixedSupply,
+    isSemiPublic
+  }]) as FastToken;
 }
 
 async function fastMint(token: FastToken, amount: number | BigNumber, ref: string) {
