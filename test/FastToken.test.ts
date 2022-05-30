@@ -28,6 +28,7 @@ const SENDER_SAME_AS_RECIPIENT_MESSAGE = 'Identical sender and recipient';
 describe('FastToken', () => {
   let
     spcMember: SignerWithAddress,
+    exchangeMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
@@ -46,7 +47,7 @@ describe('FastToken', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [/*deployer*/, spcMember, governor, alice, bob, john, anonymous] = await ethers.getSigners();
+    [/*deployer*/, spcMember, exchangeMember, governor, alice, bob, john, anonymous] = await ethers.getSigners();
     // Deploy the libraries.
     const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
     const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
@@ -57,6 +58,8 @@ describe('FastToken', () => {
     reg = await smock.fake('FastRegistry');
     access = await smock.fake('FastAccess');
     history = await smock.fake('FastHistory');
+
+    exchange.isMember.whenCalledWith(exchangeMember.address).returns(true)
 
     // Stub a few things.
     access.reg.returns(reg.address);
@@ -439,8 +442,19 @@ describe('FastToken', () => {
       // `transfer` specific.
 
       describe('when semi-public', async () => {
+        beforeEach(async () => {
+          spcMemberToken.setIsSemiPublic(true);
+        });
+
         it('requires sender membership or Exchange membership');
         it('requires recipient membership or Exchange membership');
+
+        it('allows exchange members to transact', async () => {
+          await governedToken.transferFrom(ZERO_ADDRESS, exchangeMember.address, 100);
+          const subject = () => token.connect(exchangeMember).transfer(bob.address, 100);
+          await expect(subject).to
+            .changeTokenBalances(token, [exchangeMember, bob], [-100, 100]);
+        });
       });
 
       describe('when private', async () => {
@@ -450,7 +464,11 @@ describe('FastToken', () => {
             .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
         });
 
-        it('requires sender membership (Exchange member)');
+        it('requires sender membership (Exchange member)', async () => {
+          const subject = token.transfer(bob.address, 100);
+          await expect(subject).to.have
+            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+        });
 
         it('requires recipient membership (anonymous)', async () => {
           const subject = token.connect(alice).transfer(anonymous.address, 100);
@@ -485,7 +503,8 @@ describe('FastToken', () => {
             await spcMemberToken.addTransferCredits(90);
             // Do it!
             const subject = token.connect(alice).transfer(bob.address, 100);
-            await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+            await expect(subject).to.have
+              .revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
           });
 
           it('transfers from / to the given wallet address', async () => {
@@ -525,8 +544,19 @@ describe('FastToken', () => {
       // order, same everything **please**.
 
       describe('when semi-public', async () => {
+        beforeEach(async () => {
+          spcMemberToken.setIsSemiPublic(true);
+        });
+
         it('requires sender membership or Exchange membership');
         it('requires recipient membership or Exchange membership');
+
+        it('allows exchange members to transact', async () => {
+          await governedToken.transferFrom(ZERO_ADDRESS, exchangeMember.address, 100);
+          const subject = () => token.connect(exchangeMember).transferWithRef(bob.address, 100, 'I am trader');
+          await expect(subject).to
+            .changeTokenBalances(token, [exchangeMember, bob], [-100, 100]);
+        });
       });
 
       describe('when private', async () => {
@@ -720,8 +750,13 @@ describe('FastToken', () => {
       // order, same everything **please**.
 
       describe('when semi-public', async () => {
+        beforeEach(async () => {
+          spcMemberToken.setIsSemiPublic(true);
+        });
+
         it('requires sender membership or Exchange membership');
         it('requires recipient membership or Exchange membership');
+        it('allows exchange members to transact');
       });
 
       describe('when private', async () => {
@@ -864,13 +899,17 @@ describe('FastToken', () => {
       // order, same everything **please**.
 
       describe('when semi-public', async () => {
+        beforeEach(async () => {
+          spcMemberToken.setIsSemiPublic(true);
+        });
+
         it('requires sender membership or Exchange membership');
         it('requires recipient membership or Exchange membership');
+        it('allows exchange members to transact');
       });
 
       describe('when private', async () => {
         it('requires sender membership (anonymous)');
-
         it('requires sender membership (Exchange member)');
 
         it('requires recipient membership (anonymous)', async () => {
