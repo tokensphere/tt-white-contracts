@@ -42,7 +42,7 @@ contract FastToken is Initializable, IFastToken {
   /// Members.
 
   // This is a pointer to our contracts registry.
-  FastRegistry public reg;
+  IFastRegistry public reg;
 
   // ERC20 related properties for this FAST Token.
   string public name;
@@ -71,24 +71,32 @@ contract FastToken is Initializable, IFastToken {
 
   /// Public stuff.
 
-  function initialize(FastRegistry _reg,
-                      string calldata _name,
-                      string calldata _symbol,
-                      uint256 _decimals,
-                      bool _hasFixedSupply,
-                      bool _isSemiPublic)
+  struct InitializerParams {
+    IFastRegistry registry;
+    string name;
+    string symbol;
+    uint256 decimals;
+    bool hasFixedSupply;
+    bool isSemiPublic;
+  }
+
+  function initialize(InitializerParams calldata params)
       external initializer {
     // Keep track of the SPC and Access contracts.
-    reg = _reg;
+    reg = params.registry;
     // Set up ERC20 related stuff.
-    (name, symbol, decimals, totalSupply) = (_name, _symbol, _decimals, 0);
+    (name, symbol, decimals) = (params.name, params.symbol, params.decimals);
+    totalSupply = 0;
     // Initialize other internal stuff.
-    (transferCredits, hasFixedSupply, isSemiPublic) = (0, _hasFixedSupply, _isSemiPublic);
+    (hasFixedSupply, isSemiPublic) = (params.hasFixedSupply, params.isSemiPublic);
+    transferCredits = 0;
   }
 
   function setIsSemiPublic(bool _isSemiPublic)
       spcMembership(msg.sender)
       external {
+    // Someone is trying to toggle back to private?... No can do!isSemiPublic
+    require(!isSemiPublic || isSemiPublic == _isSemiPublic, 'Operation is not supported');
     isSemiPublic = _isSemiPublic;
   }
 

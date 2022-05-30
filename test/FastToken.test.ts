@@ -85,8 +85,14 @@ describe('FastToken', () => {
     access.isMember.returns(false);
     [alice, bob, john].forEach(({ address }) => access.isMember.whenCalledWith(address).returns(true));
 
-    const tokenParams = [reg.address, ERC20_TOKEN_NAME, ERC20_TOKEN_SYMBOL, ERC20_TOKEN_DECIMALS, true, false];
-    token = await upgrades.deployProxy(tokenFactory, tokenParams) as FastToken;
+    token = await upgrades.deployProxy(tokenFactory, [{
+      registry: reg.address,
+      name: ERC20_TOKEN_NAME,
+      symbol: ERC20_TOKEN_SYMBOL,
+      decimals: ERC20_TOKEN_DECIMALS,
+      hasFixedSupply: true,
+      isSemiPublic: false
+    }]) as FastToken;
     governedToken = token.connect(governor);
     spcMemberToken = token.connect(spcMember);
   });

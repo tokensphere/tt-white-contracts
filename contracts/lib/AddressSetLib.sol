@@ -19,7 +19,7 @@ library AddressSetLib {
       external {
     bool exists = contains(d, key);
     if (noThrow && exists) { return; }
-    require(!exists, "Address already in set");
+    require(!exists, 'Address already in set');
     d.indices[key] = d.values.length;
     d.values.push(key);
   }
@@ -34,7 +34,7 @@ library AddressSetLib {
       external {
     bool exists = contains(d, key);
     if (noThrow && !exists) { return; }
-    require(exists, "Address does not exist in set");
+    require(exists, 'Address does not exist in set');
     uint256 lastIndex = d.values.length - 1;
     address keyToMove = d.values[lastIndex];
     uint256 idxToReplace = d.indices[key];
