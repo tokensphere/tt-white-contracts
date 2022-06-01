@@ -3,7 +3,7 @@
 This repository contains the Ethereum Smart Contracts that are used for our Tokenization as a Service (TSaaS) platform.
 This project uses Hardhat to allow for streamlined development and testing, as well as some helpful tasks (see `./src/tasks`).
 
-Most deploy tasks takes care of updating the `.openzeppelin/state-${NETWORK_ID}.json` file so that it is easier to track addresses of previously deployed contracts.
+Most deploy tasks takes care of updating the `deployments/${network}/...` files so that it is easier to track addresses of previously deployed contracts.
 
 ## Bootstrapping a Functional System Locally
 
@@ -29,7 +29,7 @@ yarn hardhat bootstrap \
 
 The `bootstrap` task will:
 
-- Deploy all needed libraries and overwrite the `.openzeppelin/state-31337.json` file to keep track of their addresses.
+- Deploy all needed libraries.
 - Deploy an SPC contract using `spcMember` as the main member. It will also provision the SPC contract with some ethers sent from the `deployer` signer. It will also get an Exchange contract deployed.
 - Deploy a FAST set of contracts, register everything together. At this end of this step, the deployed `FastRegistry` should have been provisioned by the SPC contract with some ETH.
 - Mint some tokens and provision some transfer credits.
@@ -57,9 +57,9 @@ yarn hardhat make-us-rich \
 To deploy the necessary libraries, you can run:
 
 ```shell
-yarn hardhat lib-deploy AddressSetLib --network localhost
-yarn hardhat lib-deploy PaginationLib --network localhost
-yarn hardhat lib-deploy HelpersLib --network localhost
+yarn hardhat lib-deploy LibAddressSet --network localhost
+yarn hardhat lib-deploy LibPaginate --network localhost
+yarn hardhat lib-deploy LibHelpers --network localhost
 ```
 
 ## Top-Level Tasks (See `src/tasks/spc.ts`)

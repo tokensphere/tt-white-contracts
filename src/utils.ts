@@ -1,20 +1,9 @@
-import { BigNumber } from 'ethers';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import 'dotenv/config';
+import { BigNumber, ethers } from 'ethers';
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
-
-function checkNetwork({ network }: HardhatRuntimeEnvironment, doThrow: boolean = true): boolean {
-  if (network.name === 'hardhat') {
-    console.warn(
-      'You are running the task with Hardhat network, which gets automatically created' +
-      ' and destroyed every time. Please use the Hardhat option `--network localhost`.'
-    );
-    if (doThrow) { throw 'Wrong network' }
-    else { return false; }
-  }
-  return true;
-}
+const DEPLOYMENT_SALT = '0xc9fa71d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d';
 
 function fromBaseUnit(amount: BigNumber, decimals: BigNumber): BigNumber {
   const ten = BigNumber.from(10);
@@ -62,8 +51,56 @@ function toHexString(amount: BigNumber) {
   return amount.toHexString().replace(/0x0+/, '0x');
 }
 
+// =================================================== //
+
+function nodeUrl(networkName: string): string {
+  if (networkName) {
+    const uri = process.env['ETH_NODE_URI_' + networkName.toUpperCase()];
+    if (uri && uri !== '') {
+      return uri;
+    }
+  }
+
+  let uri = process.env.ETH_NODE_URI;
+  if (uri) {
+    uri = uri.replace('{{networkName}}', networkName);
+  }
+  if (!uri || uri === '') {
+    if (networkName === 'localhost') {
+      return 'http://localhost:8545';
+    }
+    // throw new Error(`environment variable "ETH_NODE_URI" not configured `);
+    return '';
+  }
+  if (uri.indexOf('{{') >= 0) {
+    throw new Error(
+      `invalid uri or network not supported by node provider : ${uri}`
+    );
+  }
+  return uri;
+}
+
+function getMnemonic(networkName?: string): string {
+  if (networkName) {
+    const mnemonic = process.env['MNEMONIC_' + networkName.toUpperCase()];
+    if (mnemonic && mnemonic !== '') {
+      return mnemonic;
+    }
+  }
+
+  const mnemonic = process.env.MNEMONIC;
+  return (!mnemonic || mnemonic === '')
+    ? 'test test test test test test test test test test test junk'
+    : mnemonic;
+}
+
+function accounts(networkName?: string): { mnemonic: string } {
+  return { mnemonic: getMnemonic(networkName) };
+}
+
+
 export {
-  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK,
-  checkNetwork,
-  fromBaseUnit, toBaseUnit, toHexString
+  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYMENT_SALT,
+  fromBaseUnit, toBaseUnit, toHexString,
+  nodeUrl, getMnemonic, accounts
 }

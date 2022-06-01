@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-library HelpersLib {
+library LibHelpers {
   function upTo(address recipient, uint256 amount)
-      public view returns(uint256) {
+      internal view returns(uint256) {
     // If the recipient has more than what is ought to be paid, return.
     uint256 recipientBalance = recipient.balance;
     if (recipientBalance >= amount) { return 0; }

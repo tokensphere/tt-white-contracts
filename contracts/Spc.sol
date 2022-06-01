@@ -1,29 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import './interfaces/ISpc.sol';
-import './interfaces/IExchange.sol';
-import './interfaces/IFastRegistry.sol';
-import './lib/AddressSetLib.sol';
-import './lib/PaginationLib.sol';
-import './lib/HelpersLib.sol';
+import './lib/LibAddressSet.sol';
+import './lib/LibPaginate.sol';
+import './lib/LibHelpers.sol';
+import './FastDiamond/FastFacet.sol';
+import './FastDiamond/FastTokenFacet.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract Spc is Initializable, ISpc {
-  using AddressSetLib for AddressSetLib.Data;
+contract Spc is ISpc {
+  using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
 
   // This represents how much Eth we provision new SPC members with.
   uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
-  // This represents how much Eth new FAST registries are provisioned with.
+  // This represents how much Eth new FASTs are provisioned with.
   uint256 constant private FAST_ETH_PROVISION = 250 ether;
 
   /// Events.
 
-  // Fast registry related events.
-  event FastRegistered(IFastRegistry indexed reg);
+  // FAST related events.
+  event FastRegistered(address indexed fast);
   // Eth provisioning related events.
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
@@ -31,20 +30,17 @@ contract Spc is Initializable, ISpc {
   /// Members.
 
   // This is where we hold our members data.
-  AddressSetLib.Data private memberSet;
+  LibAddressSet.Data private memberSet;
   // This is where we keep our list of deployed fast FASTs.
-  IFastRegistry[] private fastRegistries;
+  address[] private fasts;
   // We keep track of the FAST symbols that were already used.
-  mapping(string => IFastRegistry) private fastSymbols;
+  mapping(string => address) private fastSymbols;
 
-  /// Designated nitializer - we do not want a constructor!
-
-  function initialize(address _member)
-      external initializer {
+  constructor (address _firstMember) {
     // Add member to our list.
-    memberSet.add(_member, false);
+    memberSet.add(_firstMember, false);
     // Emit!
-    emit IHasMembers.MemberAdded(_member);
+    emit IHasMembers.MemberAdded(_firstMember);
   }
 
   /// Eth provisioning stuff.
@@ -77,7 +73,7 @@ contract Spc is Initializable, ISpc {
 
   function paginateMembers(uint256 cursor, uint256 perPage)
       external override view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(memberSet.values, cursor, perPage);
+    return LibPaginate.addresses(memberSet.values, cursor, perPage);
   }
 
   function addMember(address payable member)
@@ -87,7 +83,7 @@ contract Spc is Initializable, ISpc {
     memberSet.add(member, false);
 
     // Provision the member with some Eth.
-    uint256 amount = HelpersLib.upTo(member, MEMBER_ETH_PROVISION);
+    uint256 amount = LibHelpers.upTo(member, MEMBER_ETH_PROVISION);
     if (amount != 0) { member.transfer(amount); }
 
     // Emit!
@@ -105,37 +101,37 @@ contract Spc is Initializable, ISpc {
 
   /// FAST management related methods.
 
-  function fastRegistryBySymbol(string calldata symbol)
-      external view returns(IFastRegistry) {
+  function fastBySymbol(string calldata symbol)
+      external view returns(address) {
     return fastSymbols[symbol];
   }
 
-  function registerFastRegistry(IFastRegistry reg)
+  function registerFast(address fast)
       membership(msg.sender)
       external {
-    string memory symbol = reg.token().symbol();
-    require(fastSymbols[symbol] == IFastRegistry(address(0)), 'Symbol already taken');
+    string memory symbol = FastTokenFacet(fast).symbol();
+    require(fastSymbols[symbol] == address(0), 'Symbol already taken');
 
     // Add the FAST Registry to our list.
-    fastRegistries.push(reg);
+    fasts.push(fast);
     // Add the fast symbol to our list.
-    fastSymbols[symbol] = reg;
+    fastSymbols[symbol] = fast;
 
     // Provision the new fast with Eth.
-    reg.provisionWithEth{ value: HelpersLib.upTo(address(reg), FAST_ETH_PROVISION) }();
+    FastFacet(fast).provisionWithEth{ value: LibHelpers.upTo(fast, FAST_ETH_PROVISION) }();
     // Emit!
-    emit FastRegistered(reg);
+    emit FastRegistered(fast);
   }
 
   function fastRegistryCount()
       external view returns(uint256) {
-    return fastRegistries.length;
+    return fasts.length;
   }
 
   function paginateFastRegistries(uint256 cursor, uint256 perPage)
       external view
-      returns(IFastRegistry[] memory, uint256) {
-    return PaginationLib.fastRegistries(fastRegistries, cursor, perPage);
+      returns(address[] memory, uint256) {
+    return LibPaginate.addresses(fasts, cursor, perPage);
   }
 
   /// Modifiers.

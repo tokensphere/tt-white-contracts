@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import './lib/AddressSetLib.sol';
-import './lib/PaginationLib.sol';
+import './lib/LibAddressSet.sol';
+import './lib/LibPaginate.sol';
 import './interfaces/IHasMembers.sol';
 import './interfaces/IExchange.sol';
 import './interfaces/ISpc.sol';
 
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract Exchange is Initializable, IExchange {
-  using AddressSetLib for AddressSetLib.Data;
+contract Exchange is IExchange {
+  using LibAddressSet for LibAddressSet.Data;
 
   /// Members.
 
@@ -19,11 +18,10 @@ contract Exchange is Initializable, IExchange {
   ISpc public spc;
 
   // This is where we hold our members data.
-  AddressSetLib.Data private memberSet;
+  LibAddressSet.Data private memberSet;
 
-  function initialize(ISpc _spc)
-      external initializer {
-    spc = _spc;
+  constructor(ISpc _spc) {
+    _spc = spc;
   }
 
   /// Membership management.
@@ -40,7 +38,7 @@ contract Exchange is Initializable, IExchange {
 
   function paginateMembers(uint256 cursor, uint256 perPage)
       external override view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(memberSet.values, cursor, perPage);
+    return LibPaginate.addresses(memberSet.values, cursor, perPage);
   }
 
   function addMember(address payable member)

@@ -10,3 +10,5 @@ abi/
 cache/
 artifacts/
 typechain/
+deployments/hardhat
+deployments/localhost

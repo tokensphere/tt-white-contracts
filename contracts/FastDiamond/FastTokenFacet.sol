@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import './lib/AddressSetLib.sol';
-import './lib/PaginationLib.sol';
-import './FastRegistry.sol';
-import './interfaces/IFastToken.sol';
-import './interfaces/IERC20.sol';
+import './lib/LibFast.sol';
+import './lib/LibFastToken.sol';
+import '../interfaces/IERC20.sol';
+import '../interfaces/IERC1404.sol';
+import '../interfaces/IFastAccess.sol';
+import '../lib/LibAddressSet.sol';
+import '../lib/LibPaginate.sol';
+import './FastHistoryFacet.sol';
 
-/// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract FastToken is Initializable, IFastToken {
-  using AddressSetLib for AddressSetLib.Data;
+contract FastTokenFacet is IERC20, IERC1404 {
+  using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
 
@@ -39,71 +40,31 @@ contract FastToken is Initializable, IFastToken {
 
   event Disapproval(address indexed owner, address indexed spender);
 
-  /// Members.
+  /// Public functions.
 
-  // This is a pointer to our contracts registry.
-  IFastRegistry public reg;
-
-  // ERC20 related properties for this FAST Token.
-  string public name;
-  string public override symbol;
-  uint256 public decimals;
-  uint256 public override totalSupply;
-
-  // Every time a transfer is executed, the credit decreases by the amount
-  // of said transfer.
-  // It becomes impossible to transact once it reaches zero, and must
-  // be provisioned by an SPC governor.
-  uint256 public transferCredits;
-
-  // Whether or not external people can hold and transfer tokens on this FAST.
-  bool public isSemiPublic;
-
-  // We have to track whether this token has continuous minting or fixed supply.
-  bool public hasFixedSupply;
-
-  // Our members balances are held here.
-  mapping(address => uint256) private balances;
-  // Allowances are stored here.
-  mapping(address => mapping(address => uint256)) private allowances;
-  mapping(address => AddressSetLib.Data) private allowancesByOwner;
-  mapping(address => AddressSetLib.Data) private allowancesBySpender;
-
-  /// Public stuff.
-
-  struct InitializerParams {
-    IFastRegistry registry;
-    string name;
-    string symbol;
-    uint256 decimals;
-    bool hasFixedSupply;
-    bool isSemiPublic;
+  function isSemiPublic()
+      external view returns(bool) {
+    return LibFastToken.data().isSemiPublic;
   }
 
-  function initialize(InitializerParams calldata params)
-      external initializer {
-    // Keep track of the SPC and Access contracts.
-    reg = params.registry;
-    // Set up ERC20 related stuff.
-    (name, symbol, decimals) = (params.name, params.symbol, params.decimals);
-    totalSupply = 0;
-    // Initialize other internal stuff.
-    (hasFixedSupply, isSemiPublic) = (params.hasFixedSupply, params.isSemiPublic);
-    transferCredits = 0;
-  }
-
-  function setIsSemiPublic(bool _isSemiPublic)
+  function setIsSemiPublic(bool flag)
       spcMembership(msg.sender)
       external {
+    LibFastToken.Data storage s = LibFastToken.data();
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
-    require(!isSemiPublic || isSemiPublic == _isSemiPublic, 'Operation is not supported');
-    isSemiPublic = _isSemiPublic;
+    require(!s.isSemiPublic || s.isSemiPublic == flag, 'Operation is not supported');
+    s.isSemiPublic = flag;
   }
 
-  function setHasFixedSupply(bool _hasFixedSupply)
+  function hasFixedSupply()
+      external view returns(bool) {
+    return LibFastToken.data().hasFixedSupply;
+  }
+
+  function setHasFixedSupply(bool flag)
       spcMembership(msg.sender)
       external {
-    hasFixedSupply = _hasFixedSupply;
+    LibFastToken.data().hasFixedSupply = flag;
   }
 
   /// Minting methods.
@@ -111,20 +72,20 @@ contract FastToken is Initializable, IFastToken {
   function mint(uint256 amount, string calldata ref)
       spcMembership(msg.sender)
       external {
+    LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
     require(
-      !hasFixedSupply || (totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0),
+      !s.hasFixedSupply || (s.totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0),
       'Minting not possible at this time'
     );
 
     // Prepare the minted amount on the zero address.
-    balances[ZERO_ADDRESS] += amount;
+    s.balances[ZERO_ADDRESS] += amount;
 
     // Keep track of the minting operation.
-    // Note that we're not emitting here, as the history contract will.
-    reg.history().minted(amount, ref);
+    FastHistoryFacet(address(this)).minted(amount, ref);
 
     // Emit!
     emit Minted(amount, ref);
@@ -133,15 +94,16 @@ contract FastToken is Initializable, IFastToken {
   function burn(uint256 amount, string calldata ref)
       spcMembership(msg.sender)
       external {
-    require(!hasFixedSupply, 'Burning not possible at this time');
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    require(!s.hasFixedSupply, 'Burning not possible at this time');
     require(balanceOf(ZERO_ADDRESS) >= amount, 'Insuficient funds');
 
     // Remove the minted amount from the zero address.
-    balances[ZERO_ADDRESS] -= amount;
+    s.balances[ZERO_ADDRESS] -= amount;
 
     // Keep track of the minting operation.
-    // Note that we're not emitting here, as the history contract will.
-    reg.history().burnt(amount, ref);
+    FastHistoryFacet(address(this)).burnt(amount, ref);
 
     // Emit!
     emit Burnt(amount, ref);
@@ -149,25 +111,51 @@ contract FastToken is Initializable, IFastToken {
 
   /// Tranfer Credit management.
 
+  function transferCredits()
+      external view returns(uint256) {
+    return LibFastToken.data().transferCredits;
+  }
+
   function addTransferCredits(uint256 _amount)
       spcMembership(msg.sender)
       external {
-    transferCredits += _amount;
+    LibFastToken.data().transferCredits += _amount;
     emit TransferCreditsAdded(msg.sender, _amount);
   }
 
   function drainTransferCredits()
       spcMembership(msg.sender)
       external {
-    emit TransferCreditsDrained(msg.sender, transferCredits);
-    transferCredits = 0;
+    LibFastToken.Data storage s = LibFastToken.data();
+    emit TransferCreditsDrained(msg.sender, s.transferCredits);
+    s.transferCredits = 0;
   }
 
   /// ERC20 implementation and transfer related methods.
 
+  function name()
+      external view returns(string memory) {
+    return LibFastToken.data().name;
+  }
+
+  function symbol()
+      external view returns(string memory) {
+    return LibFastToken.data().symbol;
+  }
+
+  function decimals()
+      external view returns(uint256) {
+    return LibFastToken.data().decimals;
+  }
+
+  function totalSupply()
+      external override view returns(uint256) {
+    return LibFastToken.data().totalSupply;
+  }
+
   function balanceOf(address owner)
       public view override returns(uint256) {
-    return balances[owner];
+    return LibFastToken.data().balances[owner];
   }
 
   function transfer(address to, uint256 amount)
@@ -183,12 +171,13 @@ contract FastToken is Initializable, IFastToken {
 
   function allowance(address owner, address spender)
       public view override returns(uint256) {
+    LibFastToken.Data storage s = LibFastToken.data();
     // If the allowance being queried is from the zero address and the spender
     // is a governor, we want to make sure that the spender has full rights over it.
-    if (owner == ZERO_ADDRESS && reg.access().isGovernor(spender)) {
-      return balances[ZERO_ADDRESS];
+    if (owner == ZERO_ADDRESS && IFastAccess(address(this)).isGovernor(spender)) {
+      return s.balances[ZERO_ADDRESS];
    } else {
-      return allowances[owner][spender];
+      return s.allowances[owner][spender];
     }
   }
 
@@ -213,19 +202,20 @@ contract FastToken is Initializable, IFastToken {
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public {
+    LibFastToken.Data storage s = LibFastToken.data();
     // If the funds are coming from the zero address, we must be a governor.
     if (from == ZERO_ADDRESS) {
-      require(reg.access().isGovernor(msg.sender), 'Missing governorship');
+      require(IFastAccess(address(this)).isGovernor(msg.sender), 'Missing governorship');
     } else {
       require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
 
       // Only decrease allowances if the sender of the funds isn't the zero address.
-      uint256 newAllowance = allowances[from][msg.sender] -= amount;
+      uint256 newAllowance = s.allowances[from][msg.sender] -= amount;
       // If the allowance reached zero, we want to remove that allowance from
       // the various other places where we keep track of them.
       if (newAllowance == 0) {
-        allowancesByOwner[from].remove(msg.sender, true);
-        allowancesBySpender[msg.sender].remove(from, true);
+        s.allowancesByOwner[from].remove(msg.sender, true);
+        s.allowancesBySpender[msg.sender].remove(from, true);
       }
     }
 
@@ -236,34 +226,43 @@ contract FastToken is Initializable, IFastToken {
 
   function givenAllowanceCount(address owner)
       external view returns(uint256) {
-    return allowancesByOwner[owner].values.length;
+    return LibFastToken.data().allowancesByOwner[owner].values.length;
   }
 
   function paginateAllowancesByOwner(address owner, uint256 index, uint256 perPage)
       public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(allowancesByOwner[owner].values, index, perPage);
+    return LibPaginate.addresses(
+      LibFastToken.data().allowancesByOwner[owner].values,
+      index,
+      perPage
+    );
   }
 
   function receivedAllowanceCount(address spender)
       external view returns(uint256) {
-    return allowancesBySpender[spender].values.length;
+    return LibFastToken.data().allowancesBySpender[spender].values.length;
   }
 
   function paginateAllowancesBySpender(address spender, uint256 index, uint256 perPage)
       public view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(allowancesBySpender[spender].values, index, perPage);
+    return LibPaginate.addresses(
+      LibFastToken.data().allowancesBySpender[spender].values,
+      index,
+      perPage
+    );
   }
 
   /// ERC1404 implementation.
 
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
+    LibFastToken.Data storage s = LibFastToken.data();
     // TODO: Add semi-public cases.
-    if (transferCredits < amount) {
+    if (s.transferCredits < amount) {
       return INSUFICIENT_TRANSFER_CREDITS;
-    } else if (!reg.access().isMember(from)) {
+    } else if (!IFastAccess(address(this)).isMember(from)) {
       return SENDER_NOT_MEMBER;
-    } else if (!reg.access().isMember(to)) {
+    } else if (!IFastAccess(address(this)).isMember(to)) {
       return RECIPIENT_NOT_MEMBER;
     } else if (from == to) {
       return SENDER_SAME_AS_RECIPIENT;
@@ -290,31 +289,36 @@ contract FastToken is Initializable, IFastToken {
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       senderMembership(from) recipientMembership(to) differentAddresses(from, to)
       private {
-    require(balances[from] >= amount, 'Insuficient funds');
-    require(from == ZERO_ADDRESS || transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    require(s.balances[from] >= amount, 'Insuficient funds');
+    require(from == ZERO_ADDRESS || s.transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
 
     // Keep track of the balances.
-    balances[from] -= amount;
-    balances[to] += amount;
+    s.balances[from] -= amount;
+    s.balances[to] += amount;
 
     // If the funds are going to the ZERO address, decrease total supply.
-    if (to == ZERO_ADDRESS) { totalSupply -= amount; }
+    if (to == ZERO_ADDRESS) { s.totalSupply -= amount; }
     // If the funds are moving from the zero address, increase total supply.
-    else if (from == ZERO_ADDRESS) { totalSupply += amount; }
+    else if (from == ZERO_ADDRESS) { s.totalSupply += amount; }
 
     // Keep track of the transfer.
-    reg.history().transfered(spender, from, to, amount, ref);
+    FastHistoryFacet(address(this)).transfered(spender, from, to, amount, ref);
+
     // Emit!
     emit IERC20.Transfer(from, to, amount);
   }
 
   function _approve(address from, address spender, uint256 amount)
       private {
+    LibFastToken.Data storage s = LibFastToken.data();
+
     // Store allowance...
-    allowances[from][spender] += amount;
+    s.allowances[from][spender] += amount;
     // Keep track of given and received allowances.
-    allowancesByOwner[from].add(spender, true);
-    allowancesBySpender[spender].add(from, true);
+    s.allowancesByOwner[from].add(spender, true);
+    s.allowancesBySpender[spender].add(from, true);
 
     // Emit!
     emit IERC20.Approval(from, spender, amount);
@@ -322,10 +326,12 @@ contract FastToken is Initializable, IFastToken {
 
   function _disapprove(address from, address spender)
       private {
+    LibFastToken.Data storage s = LibFastToken.data();
+
     // Remove allowance.
-    allowances[from][spender] = 0;
-    allowancesByOwner[from].remove(spender, false);
-    allowancesBySpender[spender].remove(from, false);
+    s.allowances[from][spender] = 0;
+    s.allowancesByOwner[from].remove(spender, false);
+    s.allowancesBySpender[spender].remove(from, false);
 
     // Emit!
     emit Disapproval(from, spender);
@@ -338,8 +344,9 @@ contract FastToken is Initializable, IFastToken {
   // - In the context of our private chain, gas is cheap.
   // - It can only be called by a governor.
   function beforeRemovingMember(address member)
-      accessContract(msg.sender)
-      external override {
+      external diamondInternal() {
+    LibFastToken.Data storage s = LibFastToken.data();
+
     // If there are token at member's address, move them back to the zero address.
     {
       uint256 balance = balanceOf(member);
@@ -350,50 +357,53 @@ contract FastToken is Initializable, IFastToken {
 
     // Remove all given allowances.
     {
-      address[] storage gaData = allowancesByOwner[member].values;
+      address[] storage gaData = s.allowancesByOwner[member].values;
       while (gaData.length > 0) { _disapprove(member, gaData[0]); }
     }
 
     // Remove all received allowances.
     {
-      address[] storage raData = allowancesBySpender[member].values;
+      address[] storage raData = s.allowancesBySpender[member].values;
       while (raData.length > 0) { _disapprove(raData[0], member); }
     }
   }
 
   // Modifiers.
 
+  modifier diamondInternal() {
+    require(msg.sender == address(this), 'Cannot be called directly');
+    _;
+  }
+
   modifier spcMembership(address a) {
-    require(reg.spc().isMember(a), 'Missing SPC membership');
+    require(LibFast.data().spc.isMember(a), 'Missing SPC membership');
     _;
   }
 
   modifier senderMembership(address a) {
+    LibFastToken.Data storage s = LibFastToken.data();
     require(
-        reg.access().isMember(a) ||
-        (isSemiPublic && reg.exchange().isMember(a)) ||
-          a == ZERO_ADDRESS,
-        SENDER_NOT_MEMBER_MESSAGE
+      IFastAccess(address(this)).isMember(a) ||
+        (s.isSemiPublic && LibFast.data().exchange.isMember(a)) ||
+        a == ZERO_ADDRESS,
+      SENDER_NOT_MEMBER_MESSAGE
       );
     _;
   }
 
   modifier recipientMembership(address a) {
+    LibFastToken.Data storage s = LibFastToken.data();
     require(
-        reg.access().isMember(a) ||
-        (isSemiPublic && reg.exchange().isMember(a)) ||
+      IFastAccess(address(this)).isMember(a) ||
+        (s.isSemiPublic && LibFast.data().spc.isMember(a)) ||
         a == ZERO_ADDRESS,
-      RECIPIENT_NOT_MEMBER_MESSAGE);
+      RECIPIENT_NOT_MEMBER_MESSAGE
+    );
     _;
   }
 
   modifier differentAddresses(address a, address b) {
     require(a != b, SENDER_SAME_AS_RECIPIENT_MESSAGE);
-    _;
-  }
-
-  modifier accessContract(address a) {
-    require(a == address(reg.access()), 'Cannot be called directly');
     _;
   }
 }

@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 import './ISpc.sol';
 import './IHasMembers.sol';
 import './IHasGovernors.sol';
-import './IFastRegistry.sol';
 
 /**
  * @dev Interface of the FAST Access standard.

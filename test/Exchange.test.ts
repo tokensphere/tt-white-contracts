@@ -24,13 +24,13 @@ describe('Exchange', () => {
     [/*deployer*/, spcMember, alice, bob, rob, john] = await ethers.getSigners();
 
     // Deploy our libraries.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
 
     // Create an SPC mock.
     spc = await smock.fake('Spc');
 
-    const exchangeLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const exchangeLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address };
     exchangeFactory = await ethers.getContractFactory('Exchange', { libraries: exchangeLibs });
   });
 

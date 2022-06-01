@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import './interfaces/IFastAccess.sol';
-import './FastRegistry.sol';
-import './lib/AddressSetLib.sol';
-import './lib/PaginationLib.sol';
+import './lib/LibFast.sol';
+import './lib/LibFastAccess.sol';
+import '../interfaces/IHasMembers.sol';
+import '../interfaces/IHasGovernors.sol';
+import '../lib/LibAddressSet.sol';
+import '../lib/LibPaginate.sol';
+import './FastTokenFacet.sol';
 
 
-/// @custom:oz-upgrades-unsafe-allow external-library-linking
 /**
 * @dev The FAST Access Smart Contract is the source of truth when it comes to
 * permissioning and ACLs within a given FAST network.
 */
-/// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract FastAccess is Initializable, IFastAccess {
-  using AddressSetLib for AddressSetLib.Data;
+contract FastAccessFacet is IHasMembers, IHasGovernors {
+  using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
 
@@ -24,34 +24,6 @@ contract FastAccess is Initializable, IFastAccess {
   // This represents how much Eth we provision new members with.
   uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
 
-  /// Members.
-
-  /// @dev This is where the parent SPC is deployed.
-  FastRegistry public reg;
-
-  /// @dev We hold list of governors in here.
-  AddressSetLib.Data private governorSet;
-  /// @dev We keep the list of members in here.
-  AddressSetLib.Data private memberSet;
-
-  /// Public stuff.
-
-  /**
-  * @dev Designated initializer - replaces the constructor as we are
-  * using the proxy pattern allowing for logic upgrades.
-  */
-  function initialize(FastRegistry pReg, address governor)
-      external initializer {
-    // Keep track of the registry.
-    reg = pReg;
-    // Add the governor both as a governor and as a member.
-    memberSet.add(governor, false);
-    governorSet.add(governor, false);
-    // Emit!
-    emit IHasGovernors.GovernorAdded(governor);
-    emit IHasMembers.MemberAdded(governor);
-  }
-
   /// Governorship related stuff.
 
   /**
@@ -59,7 +31,7 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function isGovernor(address a)
       external view override returns(bool) {
-    return governorSet.contains(a);
+    return LibFastAccess.data().governorSet.contains(a);
   }
 
   /**
@@ -67,7 +39,7 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function governorCount()
       external override view returns(uint256) {
-    return governorSet.values.length;
+    return LibFastAccess.data().governorSet.values.length;
   }
 
   /**
@@ -75,7 +47,11 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function paginateGovernors(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(governorSet.values, index, perPage);
+    return LibPaginate.addresses(LibFastAccess.
+      data().governorSet.values,
+      index,
+      perPage
+    );
   }
 
   /**
@@ -85,9 +61,9 @@ contract FastAccess is Initializable, IFastAccess {
       spcMembership(msg.sender)
       external override {
     // Add governor to list.
-    governorSet.add(a, false);
-    // Let the registry provision the new governor with Eth if possible.
-    reg.payUpTo(a, GOVERNOR_ETH_PROVISION);
+    LibFastAccess.data().governorSet.add(a, false);
+    // Provision the new governor with Eth if possible.
+    LibFast.payUpTo(a, GOVERNOR_ETH_PROVISION);
     // Emit!
     emit IHasGovernors.GovernorAdded(a);
   }
@@ -99,7 +75,7 @@ contract FastAccess is Initializable, IFastAccess {
       spcMembership(msg.sender)
       external override {
     // Remove governor.
-    governorSet.remove(a, false);
+    LibFastAccess.data().governorSet.remove(a, false);
     // Emit!
     emit IHasGovernors.GovernorRemoved(a);
   }
@@ -111,7 +87,7 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function isMember(address a)
       external override view returns(bool) {
-    return memberSet.contains(a);
+    return LibFastAccess.data().memberSet.contains(a);
   }
 
   /**
@@ -119,7 +95,7 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function memberCount()
       external override view returns(uint256) {
-    return memberSet.values.length;
+    return LibFastAccess.data().memberSet.values.length;
   }
 
   /**
@@ -127,7 +103,11 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function paginateMembers(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
-    return PaginationLib.addresses(memberSet.values, index, perPage);
+    return LibPaginate.addresses(
+      LibFastAccess.data().memberSet.values,
+      index,
+      perPage
+    );
   }
 
   /**
@@ -137,9 +117,9 @@ contract FastAccess is Initializable, IFastAccess {
       governance(msg.sender)
       external override {
     // Add the member.
-    memberSet.add(member, false);
+    LibFastAccess.data().memberSet.add(member, false);
     // Let the registry provision the new member with Eth if possible.
-    reg.payUpTo(member, MEMBER_ETH_PROVISION);
+    LibFast.payUpTo(member, MEMBER_ETH_PROVISION);
     // Emit!
     emit IHasMembers.MemberAdded(member);
   }
@@ -151,9 +131,9 @@ contract FastAccess is Initializable, IFastAccess {
       governance(msg.sender)
       external override {
     // Notify token contract.
-    reg.token().beforeRemovingMember(member);
+    FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Remove member.
-    memberSet.remove(member, false);
+    LibFastAccess.data().memberSet.remove(member, false);
     // Emit!
     emit IHasMembers.MemberRemoved(member);
   }
@@ -165,27 +145,33 @@ contract FastAccess is Initializable, IFastAccess {
    */
   function flags(address a)
       external view returns(IFastAccess.Flags memory) {
+    LibFastAccess.Data storage s = LibFastAccess.data();
     return
       IFastAccess.Flags({
-        isGovernor: governorSet.contains(a),
-        isMember: memberSet.contains(a)
+        isGovernor: s.governorSet.contains(a),
+        isMember: s.memberSet.contains(a)
       });
   }
 
   // Modifiers.
 
+  modifier diamondInternal() {
+    require(msg.sender == address(this), 'Cannot be called directly');
+    _;
+  }
+
   modifier spcMembership(address a) {
-    require(reg.spc().isMember(a), 'Missing SPC membership');
+    require(LibFast.data().spc.isMember(a), 'Missing SPC membership');
     _;
   }
 
   modifier governance(address a) {
-    require(governorSet.contains(a), 'Missing governorship');
+    require(LibFastAccess.data().governorSet.contains(a), 'Missing governorship');
     _;
   }
 
   modifier membership(address a) {
-    require(memberSet.contains(a), 'Missing membership');
+    require(LibFastAccess.data().memberSet.contains(a), 'Missing membership');
     _;
   }
 }

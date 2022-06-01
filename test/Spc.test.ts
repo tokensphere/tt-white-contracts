@@ -23,11 +23,11 @@ describe('Spc', () => {
     // Keep track of a few signers.
     [deployer, spcMember, bob, alice] = await ethers.getSigners();
     // Deploy our libraries.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
-    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
+    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('LibHelpers')).deploy();
     // We can now cache a ready-to-use SPC factory.
-    const spcLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address, HelpersLib: helpersLib.address };
+    const spcLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address, LibHelpers: helpersLib.address };
     spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
   });
 

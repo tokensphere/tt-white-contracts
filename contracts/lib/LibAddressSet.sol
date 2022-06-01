@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 
-library AddressSetLib {
+library LibAddressSet {
   /// @dev Represents a list of addresses.
   struct Data {
     mapping(address => uint256) indices;
@@ -16,7 +16,7 @@ library AddressSetLib {
    * @param key is the address to be added.
    */
   function add(Data storage d, address key, bool noThrow)
-      external {
+      internal {
     bool exists = contains(d, key);
     if (noThrow && exists) { return; }
     require(!exists, 'Address already in set');
@@ -31,7 +31,7 @@ library AddressSetLib {
    * @param key is the address to be removed.
    */
   function remove(Data storage d, address key, bool noThrow)
-      external {
+      internal {
     bool exists = contains(d, key);
     if (noThrow && !exists) { return; }
     require(exists, 'Address does not exist in set');
@@ -51,7 +51,7 @@ library AddressSetLib {
    * @return a boolean.
    */
   function contains(Data storage d, address key)
-      public view returns(bool) {
+      internal view returns(bool) {
     return d.values.length == 0
       ? false
       : d.values[d.indices[key]] == key;

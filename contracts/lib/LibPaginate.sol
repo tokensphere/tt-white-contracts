@@ -4,9 +4,9 @@ pragma solidity ^0.8.4;
 import '../interfaces/IFastHistory.sol';
 import '../interfaces/IFastRegistry.sol';
 
-library PaginationLib {
-  function addresses(address[] calldata collection, uint256 cursor, uint256 perPage)
-    external pure returns(address[] memory, uint256) {
+library LibPaginate {
+  function addresses(address[] storage collection, uint256 cursor, uint256 perPage)
+    internal view returns(address[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
       address[] memory values = new address[](length);
@@ -16,8 +16,8 @@ library PaginationLib {
       return (values, cursor + length);
   }
 
-  function fastRegistries(IFastRegistry[] calldata collection, uint256 cursor, uint256 perPage)
-    external pure returns(IFastRegistry[] memory, uint256) {
+  function fastRegistries(IFastRegistry[] storage collection, uint256 cursor, uint256 perPage)
+    internal view returns(IFastRegistry[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
       IFastRegistry[] memory values = new IFastRegistry[](length);
@@ -27,8 +27,8 @@ library PaginationLib {
       return (values, cursor + length);
   }
 
-  function uint256s(uint256[] calldata collection, uint256 cursor, uint256 perPage)
-    external pure returns(uint256[] memory, uint256) {
+  function uint256s(uint256[] storage collection, uint256 cursor, uint256 perPage)
+    internal view returns(uint256[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
       uint256[] memory values = new uint256[](length);
@@ -38,8 +38,8 @@ library PaginationLib {
       return (values, cursor + length);
   }
 
-  function supplyProofs(IFastHistory.SupplyProof[] calldata collection, uint256 cursor, uint256 perPage)
-    external pure returns(IFastHistory.SupplyProof[] memory, uint256) {
+  function supplyProofs(IFastHistory.SupplyProof[] storage collection, uint256 cursor, uint256 perPage)
+    internal view returns(IFastHistory.SupplyProof[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
       IFastHistory.SupplyProof[] memory values = new IFastHistory.SupplyProof[](length);
@@ -49,8 +49,8 @@ library PaginationLib {
       return (values, cursor + length);
   }
 
-  function transferProofs(IFastHistory.TransferProof[] calldata collection, uint256 cursor, uint256 perPage)
-    external pure returns(IFastHistory.TransferProof[] memory, uint256) {
+  function transferProofs(IFastHistory.TransferProof[] storage collection, uint256 cursor, uint256 perPage)
+    internal view returns(IFastHistory.TransferProof[] memory, uint256) {
       uint256 count = collection.length;
       uint256 length = (perPage > count - cursor) ? count - cursor : perPage;
       IFastHistory.TransferProof[] memory values = new IFastHistory.TransferProof[](length);

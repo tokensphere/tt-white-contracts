@@ -49,8 +49,8 @@ describe('FastToken', () => {
     // Keep track of a few signers.
     [/*deployer*/, spcMember, exchangeMember, governor, alice, bob, john, anonymous] = await ethers.getSigners();
     // Deploy the libraries.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
 
     // Create an SPC, Exchange, Registry, Access and History mocks.
     spc = await smock.fake('Spc');
@@ -69,7 +69,7 @@ describe('FastToken', () => {
     reg.history.returns(history.address);
 
     // Create our token factory.
-    const tokenLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const tokenLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address };
     tokenFactory = await ethers.getContractFactory('FastToken', { libraries: tokenLibs });
   });
 

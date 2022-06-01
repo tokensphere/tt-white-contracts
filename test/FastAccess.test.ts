@@ -28,8 +28,8 @@ describe('FastAccess', () => {
     [/*deployer*/, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
 
     // Deploy the libraries we need.
-    const addressSetLib = await (await ethers.getContractFactory('AddressSetLib')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
 
     // Mock an SPC, Token and Registry contracts.
     spc = await smock.fake('Spc');
@@ -41,7 +41,7 @@ describe('FastAccess', () => {
     reg.token.returns(token.address);
 
     // Finally create and cache our access factory.
-    const accessLibs = { AddressSetLib: addressSetLib.address, PaginationLib: paginationLib.address };
+    const accessLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address };
     accessFactory = await ethers.getContractFactory('FastAccess', { libraries: accessLibs });
   });
 

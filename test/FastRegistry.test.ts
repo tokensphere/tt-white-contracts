@@ -24,14 +24,14 @@ describe('FastRegistry', () => {
     // Keep track of a few signers.
     [deployer, access, history, token, spcMember, alice] = await ethers.getSigners();
     // Deploy the libraries.
-    const helpersLib = await (await ethers.getContractFactory('HelpersLib')).deploy();
+    const helpersLib = await (await ethers.getContractFactory('LibHelpers')).deploy();
 
     // Create an SPC and Exchange mocks.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
 
     // Cache our Registry factory.
-    const regLibs = { HelpersLib: helpersLib.address };
+    const regLibs = { LibHelpers: helpersLib.address };
     regFactory = await ethers.getContractFactory('FastRegistry', { libraries: regLibs });
   });
 

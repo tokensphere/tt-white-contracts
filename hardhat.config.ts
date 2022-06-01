@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
+import '@typechain/hardhat';
 import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
-import '@typechain/hardhat';
-// import '@nomiclabs/hardhat-ethers';
-// import '@nomiclabs/hardhat-waffle';
+import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
@@ -13,11 +12,10 @@ import 'hardhat-gas-reporter';
 dotenv.config();
 
 // Import all of our tasks here!
-import './src/tasks/accounts';
-import './src/tasks/libraries';
-import './src/tasks/spc';
-import './src/tasks/fast';
-import './src/tasks/bootstrap';
+import './tasks/accounts';
+import './tasks/spc';
+import './tasks/fast';
+import './tasks/bootstrap';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -29,6 +27,10 @@ const config: HardhatUserConfig = {
         }
       }
     }
+  },
+  diamondAbi: {
+    name: 'FastDiamond',
+    include: ['FastTokenFacet', 'FastInitFacet']
   },
   networks: {
     hardhat: {
@@ -47,9 +49,13 @@ const config: HardhatUserConfig = {
       hardhat: 0,
       localhost: 0
     },
-    spcOwner: {
+    spcMember: {
       hardhat: 1,
       localhost: 1
+    },
+    fastGovernor: {
+      hardhat: 2,
+      localhost: 2
     }
   },
   typechain: {

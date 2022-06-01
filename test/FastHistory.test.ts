@@ -27,14 +27,14 @@ describe('FastHistory', () => {
     [/*deployer*/, spcMember, governor, access, token, alice, bob, john, rob] = await ethers.getSigners();
 
     // Deploy the libraries we need.
-    const paginationLib = await (await ethers.getContractFactory('PaginationLib')).deploy();
+    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
 
     // Mock an SPC contract.
     spc = await smock.fake('Spc');
     // Create a registry contract mock.
     reg = await smock.fake('FastRegistry');
 
-    const historyLibs = { PaginationLib: paginationLib.address };
+    const historyLibs = { LibPaginate: paginationLib.address };
     historyFactory = await ethers.getContractFactory('FastHistory', { libraries: historyLibs });
   });
 
