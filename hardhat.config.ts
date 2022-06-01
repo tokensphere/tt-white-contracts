@@ -1,11 +1,13 @@
+import 'dotenv/config';
 import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
-import '@openzeppelin/hardhat-upgrades';
+import 'hardhat-deploy';
+import 'hardhat-deploy-ethers';
 import '@typechain/hardhat';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
-import 'hardhat-gas-reporter';
+// import '@nomiclabs/hardhat-ethers';
+// import '@nomiclabs/hardhat-waffle';
 import 'solidity-coverage';
+import 'hardhat-gas-reporter';
 
 // Loads `.env` file into `process.env`.
 dotenv.config();
@@ -29,10 +31,30 @@ const config: HardhatUserConfig = {
     }
   },
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || '',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    hardhat: {
+      live: false,
+      saveDeployments: true,
+      tags: ['test', 'local']
     },
+    localhost: {
+      live: false,
+      saveDeployments: true,
+      tags: ['local'],
+    }
+  },
+  namedAccounts: {
+    deployer: {
+      hardhat: 0,
+      localhost: 0
+    },
+    spcOwner: {
+      hardhat: 1,
+      localhost: 1
+    }
+  },
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5',
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

@@ -3,14 +3,10 @@ node_modules
 .env
 coverage
 coverage.json
-typechain
 .vscode/
 
 # Hardhat files.
 abi/
 cache/
 artifacts/
-typechain-types/
-
-# Openzeppelin stuff.
-.openzeppelin/*-31337.json
+typechain/
