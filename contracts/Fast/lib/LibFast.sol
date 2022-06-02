@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../../interfaces/ISpc.sol';
-import '../../interfaces/IExchange.sol';
+import '../../Spc.sol';
+import '../../Exchange.sol';
 import '../../lib/LibHelpers.sol';
 
 
 library LibFast {
   struct Data {
-    ISpc spc;
-    IExchange exchange;
+    Spc spc;
+    Exchange exchange;
   }
 
   function data()

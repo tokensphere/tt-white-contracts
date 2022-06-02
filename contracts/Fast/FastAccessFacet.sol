@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import './lib/LibFast.sol';
-import './lib/LibFastAccess.sol';
+import './lib/index.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
@@ -16,6 +15,17 @@ import './FastTokenFacet.sol';
 */
 contract FastAccessFacet is IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
+  /// Structs.
+
+  /**
+   * @dev This structure isn't used anywhere in storage. Instead, it
+   * allows various methods of the contract to return all the flags
+   * associated with a given address in one go.
+   */
+  struct Flags {
+    bool isGovernor;
+    bool isMember;
+  }
 
   /// Constants.
 
@@ -144,10 +154,10 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
    * @dev Retrieves flags for a given address.
    */
   function flags(address a)
-      external view returns(IFastAccess.Flags memory) {
+      external view returns(Flags memory) {
     LibFastAccess.Data storage s = LibFastAccess.data();
     return
-      IFastAccess.Flags({
+      Flags({
         isGovernor: s.governorSet.contains(a),
         isMember: s.memberSet.contains(a)
       });

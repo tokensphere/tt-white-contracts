@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import './interfaces/ISpc.sol';
 import './lib/LibAddressSet.sol';
 import './lib/LibPaginate.sol';
 import './lib/LibHelpers.sol';
+import './interfaces/IHasMembers.sol';
 import './Fast/FastFacet.sol';
 import './Fast/FastTokenFacet.sol';
 
-/// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract Spc is ISpc {
+
+contract Spc is IHasMembers {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.

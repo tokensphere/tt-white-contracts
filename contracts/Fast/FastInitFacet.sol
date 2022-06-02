@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../interfaces/ISpc.sol';
-import '../interfaces/IExchange.sol';
+import '../Spc.sol';
+import '../Exchange.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
-import './lib/LibFast.sol';
-import './lib/LibFastAccess.sol';
-import './lib/LibFastToken.sol';
+import './lib/index.sol';
 
 contract FastInitFacet {
   using LibAddressSet for LibAddressSet.Data;
@@ -17,8 +15,8 @@ contract FastInitFacet {
 
   struct InitializerParams {
     // Fast stuff.
-    ISpc spc;
-    IExchange exchange;
+    Spc spc;
+    Exchange exchange;
     // Access stuff.
     address governor;
     // Token stuff.

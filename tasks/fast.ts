@@ -129,7 +129,7 @@ task('fast-add-transfer-credits', 'Increases the transfer credits for a given FA
     const spcMemberSigner = await ethers.getSigner(spcMember);
 
     // Grab a handle to the deployed fast.
-    const fast = await fastTokenBySymbol(hre, params.fastSymbol);
+    const fast = await fastBySymbol(hre, params.fastSymbol);
     if (!fast) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
     const spcMemberFast = fast.connect(spcMemberSigner);
 
@@ -146,7 +146,7 @@ task('fast-balance', 'Retrieves the balance of a given account')
   .addParam('account', 'The account to retrieve the balance of', undefined, types.string)
   .setAction(async (params: FastBalanceParams, hre) => {
     // Grab a handle to the deployed fast.
-    const fast = await fastTokenBySymbol(hre, params.fastSymbol);
+    const fast = await fastBySymbol(hre, params.fastSymbol);
     if (!fast) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
 
     const [decimals, symbol, baseBalance] = await Promise.all([

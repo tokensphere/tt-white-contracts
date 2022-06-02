@@ -4,23 +4,21 @@ pragma solidity ^0.8.4;
 import './lib/LibAddressSet.sol';
 import './lib/LibPaginate.sol';
 import './interfaces/IHasMembers.sol';
-import './interfaces/IExchange.sol';
-import './interfaces/ISpc.sol';
+import './Spc.sol';
 
 
-/// @custom:oz-upgrades-unsafe-allow external-library-linking
-contract Exchange is IExchange {
+contract Exchange is IHasMembers {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Members.
 
   // Keep track of where the main SPC is.
-  ISpc public spc;
+  Spc public spc;
 
   // This is where we hold our members data.
   LibAddressSet.Data private memberSet;
 
-  constructor(ISpc _spc) {
+  constructor(Spc _spc) {
     _spc = spc;
   }
 

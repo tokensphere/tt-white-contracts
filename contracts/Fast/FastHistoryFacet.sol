@@ -12,8 +12,8 @@ contract FastHistoryFacet {
       external diamondInternal() {
     // Keep track of the mint.
     LibFastHistory.data().supplyProofs.push(
-      IFastHistory.SupplyProof({
-        op: IFastHistory.SupplyOp.Mint,
+      LibFastHistory.SupplyProof({
+        op: LibFastHistory.SupplyOp.Mint,
         amount: amount,
         blockNumber: block.number,
         ref: ref
@@ -25,8 +25,8 @@ contract FastHistoryFacet {
       external diamondInternal() {
     // Keep track of the unmint.
     LibFastHistory.data().supplyProofs.push(
-      IFastHistory.SupplyProof({
-        op: IFastHistory.SupplyOp.Burn,
+      LibFastHistory.SupplyProof({
+        op: LibFastHistory.SupplyOp.Burn,
         amount: amount,
         blockNumber: block.number,
         ref: ref
@@ -40,7 +40,7 @@ contract FastHistoryFacet {
   }
 
   function paginateSupplyProofs(uint256 cursor, uint256 perPage)
-      external view returns(IFastHistory.SupplyProof[] memory, uint256) {
+      external view returns(LibFastHistory.SupplyProof[] memory, uint256) {
     return LibPaginate.supplyProofs(LibFastHistory.data().supplyProofs, cursor, perPage);
   }
 
@@ -54,7 +54,7 @@ contract FastHistoryFacet {
     s.transferProofInvolvements[to].push(s.transferProofs.length);
     // Keep track of the transfer proof globally.
     s.transferProofs.push(
-      IFastHistory.TransferProof({
+      LibFastHistory.TransferProof({
         spender: spender,
         from: from,
         to: to,
@@ -71,7 +71,7 @@ contract FastHistoryFacet {
   }
 
   function paginateTransferProofs(uint256 cursor, uint256 perPage)
-      external view returns(IFastHistory.TransferProof[] memory, uint256) {
+      external view returns(LibFastHistory.TransferProof[] memory, uint256) {
     return LibPaginate.transferProofs(
       LibFastHistory.data().transferProofs,
       cursor,

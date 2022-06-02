@@ -1,22 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../interfaces/IERC20.sol';
-import '../interfaces/IERC1404.sol';
-import '../interfaces/ISpc.sol';
-import '../interfaces/IExchange.sol';
-import '../interfaces/IHasMembers.sol';
-import '../interfaces/IHasGovernors.sol';
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
 import './lib/LibFast.sol';
-import './lib/LibFast.sol';
-import './lib/LibFastAccess.sol';
-import './lib/LibFastToken.sol';
 
 contract FastFacet {
-  using LibAddressSet for LibAddressSet.Data;
-
   /// Events.
 
   // Eth provisioning related events.

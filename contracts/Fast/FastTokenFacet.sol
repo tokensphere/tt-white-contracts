@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import './lib/LibFast.sol';
-import './lib/LibFastToken.sol';
-import '../interfaces/IERC20.sol';
-import '../interfaces/IERC1404.sol';
-import '../interfaces/IFastAccess.sol';
+import '../vendor/IERC20.sol';
+import '../vendor/IERC1404.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
+import './lib/index.sol';
+import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
 
 contract FastTokenFacet is IERC20, IERC1404 {
@@ -174,7 +173,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the allowance being queried is from the zero address and the spender
     // is a governor, we want to make sure that the spender has full rights over it.
-    if (owner == ZERO_ADDRESS && IFastAccess(address(this)).isGovernor(spender)) {
+    if (owner == ZERO_ADDRESS && FastAccessFacet(address(this)).isGovernor(spender)) {
       return s.balances[ZERO_ADDRESS];
    } else {
       return s.allowances[owner][spender];
@@ -205,7 +204,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the funds are coming from the zero address, we must be a governor.
     if (from == ZERO_ADDRESS) {
-      require(IFastAccess(address(this)).isGovernor(msg.sender), 'Missing governorship');
+      require(FastAccessFacet(address(this)).isGovernor(msg.sender), 'Missing governorship');
     } else {
       require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
 
@@ -260,9 +259,9 @@ contract FastTokenFacet is IERC20, IERC1404 {
     // TODO: Add semi-public cases.
     if (s.transferCredits < amount) {
       return INSUFICIENT_TRANSFER_CREDITS;
-    } else if (!IFastAccess(address(this)).isMember(from)) {
+    } else if (!FastAccessFacet(address(this)).isMember(from)) {
       return SENDER_NOT_MEMBER;
-    } else if (!IFastAccess(address(this)).isMember(to)) {
+    } else if (!FastAccessFacet(address(this)).isMember(to)) {
       return RECIPIENT_NOT_MEMBER;
     } else if (from == to) {
       return SENDER_SAME_AS_RECIPIENT;
@@ -383,7 +382,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
   modifier senderMembership(address a) {
     LibFastToken.Data storage s = LibFastToken.data();
     require(
-      IFastAccess(address(this)).isMember(a) ||
+      FastAccessFacet(address(this)).isMember(a) ||
         (s.isSemiPublic && LibFast.data().exchange.isMember(a)) ||
         a == ZERO_ADDRESS,
       SENDER_NOT_MEMBER_MESSAGE
@@ -394,7 +393,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
   modifier recipientMembership(address a) {
     LibFastToken.Data storage s = LibFastToken.data();
     require(
-      IFastAccess(address(this)).isMember(a) ||
+      FastAccessFacet(address(this)).isMember(a) ||
         (s.isSemiPublic && LibFast.data().spc.isMember(a)) ||
         a == ZERO_ADDRESS,
       RECIPIENT_NOT_MEMBER_MESSAGE
