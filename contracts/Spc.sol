@@ -5,8 +5,8 @@ import './interfaces/ISpc.sol';
 import './lib/LibAddressSet.sol';
 import './lib/LibPaginate.sol';
 import './lib/LibHelpers.sol';
-import './FastDiamond/FastFacet.sol';
-import './FastDiamond/FastTokenFacet.sol';
+import './Fast/FastFacet.sol';
+import './Fast/FastTokenFacet.sol';
 
 /// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract Spc is ISpc {

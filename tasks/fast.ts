@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BigNumber } from 'ethers';
 import { fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 import { DEPLOYMENT_SALT } from '../src/utils';
-import { FastTokenFacet, Spc } from '../typechain';
+import { Fast, FastTokenFacet, Spc } from '../typechain';
 
 // Tasks.
 
@@ -27,7 +27,7 @@ task('fast-deploy', 'Deploys a FAST')
   .addParam('isSemiPublic', 'Whether or not this FAST should be semi-public', undefined, types.boolean)
   .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
   .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
-  .setAction(async (params: FastDeployParams, hre) => {
+  .setAction(async (params: FastDeployParams, hre: HardhatRuntimeEnvironment) => {
     const { ethers, deployments, getNamedAccounts } = hre;
     const { diamond } = deployments;
     const { deployer, spcMember } = await getNamedAccounts();
@@ -44,7 +44,8 @@ task('fast-deploy', 'Deploys a FAST')
       throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
     }
 
-    const { address: fastAddr } = await diamond.deploy(`FastDiamond_${params.symbol}`, {
+    const diamondName = `Fast_${params.symbol}`;
+    const { address: fastAddr } = await diamond.deploy(diamondName, {
       from: deployer,
       owner: spcMember,
       deterministicSalt: DEPLOYMENT_SALT,
@@ -63,25 +64,26 @@ task('fast-deploy', 'Deploys a FAST')
       },
       log: true
     });
-
     // Register the new FAST with the SPC.
     await spc.connect(spcMemberSigner).registerFast(fastAddr)
 
     // Grab a handle to the diamond's token facet.
-    const token = await ethers.getContractAt('FastDiamond', fastAddr) as FastTokenFacet;
-    const spcMemberToken = token.connect(spcMemberSigner);
+    const fast = await ethers.getContractAt('Fast', fastAddr) as Fast;
+    const spcMemberFast = fast.connect(spcMemberSigner);
+
+    console.log(`Deployed and registered ${diamondName}`, fastAddr);
 
     // At this point, we can start minting a few tokens if requested.
     if (params.mint) {
-      const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, params.mint, 'Bootstrap initial mint');
+      const { symbol, decimals, baseAmount } = await fastMint(spcMemberFast, params.mint, 'Initial Mint');
       // Also add transfer credits.
-      await fastAddTransferCredits(spcMemberToken, params.mint);
+      await fastAddTransferCredits(spcMemberFast, params.mint);
       console.log(`Minted ${symbol}: `);
       console.log(`  In base unit: =${baseAmount}`);
       console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)}(${decimals} decimals truncated)`);
     } else {
       // Add transfer credits.
-      spcMemberToken.addTransferCredits(params.txCredits);
+      spcMemberFast.addTransferCredits(params.txCredits);
       console.log(`Added transfer credits`);
     }
   });
@@ -103,11 +105,11 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
     const spcMemberSigner = await ethers.getSigner(spcMember);
 
     // Grab a handle to the token facet of the deployed fast.
-    const token = await fastTokenBySymbol(hre, params.fastSymbol);
-    if (!token) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
-    const spcMemberToken = token.connect(spcMemberSigner);
+    const fast = await fastBySymbol(hre, params.fastSymbol);
+    if (!fast) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
+    const spcMemberFast = fast.connect(spcMemberSigner);
 
-    const { symbol, decimals, baseAmount } = await fastMint(spcMemberToken, params.amount, params.ref);
+    const { symbol, decimals, baseAmount } = await fastMint(spcMemberFast, params.amount, params.ref);
     console.log(`Minted ${symbol}: `);
     console.log(`  In base unit: = ${baseAmount} `);
     console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
@@ -126,12 +128,12 @@ task('fast-add-transfer-credits', 'Increases the transfer credits for a given FA
     const { spcMember } = await getNamedAccounts();
     const spcMemberSigner = await ethers.getSigner(spcMember);
 
-    // Grab a handle to the token facet of the deployed fast.
-    const token = await fastTokenBySymbol(hre, params.fastSymbol);
-    if (!token) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
-    const spcMemberToken = token.connect(spcMemberSigner);
+    // Grab a handle to the deployed fast.
+    const fast = await fastTokenBySymbol(hre, params.fastSymbol);
+    if (!fast) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
+    const spcMemberFast = fast.connect(spcMemberSigner);
 
-    await fastAddTransferCredits(spcMemberToken, params.credits);
+    await fastAddTransferCredits(spcMemberFast, params.credits);
   });
 
 interface FastBalanceParams {
@@ -143,14 +145,12 @@ task('fast-balance', 'Retrieves the balance of a given account')
   .addPositionalParam('fastSymbol', 'The FAST symbol to operate on', undefined, types.string)
   .addParam('account', 'The account to retrieve the balance of', undefined, types.string)
   .setAction(async (params: FastBalanceParams, hre) => {
-    // Grab a handle to the token facet of the deployed fast.
-    const token = await fastTokenBySymbol(hre, params.fastSymbol);
-    if (!token) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
+    // Grab a handle to the deployed fast.
+    const fast = await fastTokenBySymbol(hre, params.fastSymbol);
+    if (!fast) { throw (`No FAST registry can be found for symbol ${params.fastSymbol}!`); }
 
     const [decimals, symbol, baseBalance] = await Promise.all([
-      token.decimals(),
-      token.symbol(),
-      token.balanceOf(params.account)
+      fast.decimals(), fast.symbol(), fast.balanceOf(params.account)
     ]);
     console.log('Blah')
     console.log(`${symbol} balance of ${params.account}: `);
@@ -158,32 +158,31 @@ task('fast-balance', 'Retrieves the balance of a given account')
     console.log(`    Human unit: ~${fromBaseUnit(baseBalance, decimals)} (${decimals} decimals truncated)`);
   });
 
-async function fastTokenBySymbol(hre: HardhatRuntimeEnvironment, symbol: string) {
+async function fastBySymbol(hre: HardhatRuntimeEnvironment, symbol: string) {
   const { deployments } = hre;
 
   // Grab a handle on the deployed SPC contract.
   const spcAddr = await (await deployments.get('Spc')).address;
   const spc = await hre.ethers.getContractAt('Spc', spcAddr);
 
-  // Grab a handle to the token facet of the deployed fast.
+  // Grab a handle to the deployed fast.
   const fastAddr = await spc.fastBySymbol(symbol);
   if (fastAddr == ZERO_ADDRESS) {
     return undefined;
   }
-  return await hre.ethers.getContractAt('FastTokenFacet', fastAddr) as FastTokenFacet;
+  return await hre.ethers.getContractAt('Fast', fastAddr) as Fast;
 };
 
-async function fastMint(token: FastTokenFacet, amount: number | BigNumber, ref: string) {
-  const decimals = await token.decimals();
-  const symbol = await token.symbol();
+async function fastMint(fast: Fast, amount: number | BigNumber, ref: string) {
+  const [decimals, symbol] = await Promise.all([fast.decimals(), fast.symbol()]);
   const baseAmount = toBaseUnit(BigNumber.from(amount), decimals);
-  await token.mint(baseAmount, ref);
+  await fast.mint(baseAmount, ref);
   return { symbol, decimals, baseAmount };
 }
 
-async function fastAddTransferCredits(token: FastTokenFacet, credits: number | BigNumber) {
-  const decimals = await token.decimals();
-  await token.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals));
+async function fastAddTransferCredits(fast: Fast, credits: number | BigNumber) {
+  const decimals = await fast.decimals();
+  await fast.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals));
 }
 
 export { fastMint, fastAddTransferCredits };

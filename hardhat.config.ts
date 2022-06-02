@@ -29,8 +29,8 @@ const config: HardhatUserConfig = {
     }
   },
   diamondAbi: {
-    name: 'FastDiamond',
-    include: ['FastTokenFacet', 'FastInitFacet']
+    name: 'Fast',
+    include: ['FastInitFacet', 'FastFacet', 'FastAccessFacet', 'FastTokenFacet', 'FastHistoryFacet']
   },
   networks: {
     hardhat: {

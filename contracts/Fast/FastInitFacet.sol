@@ -29,6 +29,7 @@ contract FastInitFacet {
     bool isSemiPublic;
   }
 
+  // TODO: WE NEED TO PROTECT THIS!!! See https://github.com/wighawag/hardhat-deploy/issues/327.
   function initialize(InitializerParams calldata params)
       external {
     // Initialize top-level storage.

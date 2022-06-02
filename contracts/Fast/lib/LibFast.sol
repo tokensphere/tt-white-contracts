@@ -14,7 +14,7 @@ library LibFast {
 
   function data()
       internal pure returns(Data storage s) {
-    bytes32 pos = keccak256("FastDiamond.storage.Fast");
+    bytes32 pos = keccak256("Fast.storage.Fast");
     assembly {s.slot := pos}
   }
 
