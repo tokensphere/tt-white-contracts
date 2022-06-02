@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../vendor/IERC20.sol';
-import '../vendor/IERC1404.sol';
+import '../interfaces/IERC20.sol';
+import '../interfaces/IERC1404.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/index.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
+import './interfaces/AFastFacet.sol';
 
-contract FastTokenFacet is IERC20, IERC1404 {
+
+contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
@@ -47,8 +49,8 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function setIsSemiPublic(bool flag)
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
     require(!s.isSemiPublic || s.isSemiPublic == flag, 'Operation is not supported');
@@ -61,23 +63,23 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function setHasFixedSupply(bool flag)
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.data().hasFixedSupply = flag;
   }
 
   /// Minting methods.
 
   function mint(uint256 amount, string calldata ref)
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
     require(
       !s.hasFixedSupply || (s.totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0),
-      'Minting not possible at this time'
+      'Minting not possible'
     );
 
     // Prepare the minted amount on the zero address.
@@ -91,11 +93,11 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function burn(uint256 amount, string calldata ref)
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    require(!s.hasFixedSupply, 'Burning not possible at this time');
+    require(!s.hasFixedSupply, 'Burning not possible');
     require(balanceOf(ZERO_ADDRESS) >= amount, 'Insuficient funds');
 
     // Remove the minted amount from the zero address.
@@ -116,15 +118,15 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function addTransferCredits(uint256 _amount)
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.data().transferCredits += _amount;
     emit TransferCreditsAdded(msg.sender, _amount);
   }
 
   function drainTransferCredits()
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
     emit TransferCreditsDrained(msg.sender, s.transferCredits);
     s.transferCredits = 0;
@@ -181,15 +183,16 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function approve(address spender, uint256 amount)
+      external override
       senderMembership(msg.sender)
-      external override returns(bool) {
+      returns(bool) {
     _approve(msg.sender, spender, amount);
     return true;
   }
 
   function disapprove(address spender)
-      senderMembership(msg.sender)
-      external {
+      external
+      senderMembership(msg.sender) {
     _disapprove(msg.sender, spender);
   }
 
@@ -270,7 +273,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
   }
 
   function messageForTransferRestriction(uint8 restrictionCode)
-      pure external override returns(string memory) {
+      external override pure returns(string memory) {
     if (restrictionCode == INSUFICIENT_TRANSFER_CREDITS) {
       return INSUFICIENT_TRANSFER_CREDITS_MESSAGE;
     } else if (restrictionCode == SENDER_NOT_MEMBER) {
@@ -286,8 +289,8 @@ contract FastTokenFacet is IERC20, IERC1404 {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      senderMembership(from) recipientMembership(to) differentAddresses(from, to)
-      private {
+      private
+      senderMembership(from) recipientMembership(to) differentAddresses(from, to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(s.balances[from] >= amount, 'Insuficient funds');
@@ -369,16 +372,6 @@ contract FastTokenFacet is IERC20, IERC1404 {
 
   // Modifiers.
 
-  modifier diamondInternal() {
-    require(msg.sender == address(this), 'Cannot be called directly');
-    _;
-  }
-
-  modifier spcMembership(address a) {
-    require(LibFast.data().spc.isMember(a), 'Missing SPC membership');
-    _;
-  }
-
   modifier senderMembership(address a) {
     LibFastToken.Data storage s = LibFastToken.data();
     require(
@@ -394,7 +387,7 @@ contract FastTokenFacet is IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     require(
       FastAccessFacet(address(this)).isMember(a) ||
-        (s.isSemiPublic && LibFast.data().spc.isMember(a)) ||
+        (s.isSemiPublic && LibFast.data().exchange.isMember(a)) ||
         a == ZERO_ADDRESS,
       RECIPIENT_NOT_MEMBER_MESSAGE
     );

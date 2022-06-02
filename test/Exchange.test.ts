@@ -1,9 +1,11 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { ethers, upgrades } from 'hardhat';
+import { solidity } from 'ethereum-waffle';
+import { ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Exchange__factory, Spc, Exchange } from '../typechain-types';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { Exchange__factory, Spc, Exchange } from '../typechain';
+import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
+chai.use(solidity);
 chai.use(smock.matchers);
 
 describe('Exchange', () => {
@@ -23,15 +25,9 @@ describe('Exchange', () => {
     // Keep track of a few signers.
     [/*deployer*/, spcMember, alice, bob, rob, john] = await ethers.getSigners();
 
-    // Deploy our libraries.
-    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
-
     // Create an SPC mock.
     spc = await smock.fake('Spc');
-
-    const exchangeLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address };
-    exchangeFactory = await ethers.getContractFactory('Exchange', { libraries: exchangeLibs });
+    exchangeFactory = await ethers.getContractFactory('Exchange');
   });
 
   beforeEach(async () => {
@@ -42,7 +38,7 @@ describe('Exchange', () => {
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
 
     // Spin up an Exchange contract.
-    exchange = await upgrades.deployProxy(exchangeFactory, [spc.address]) as Exchange;
+    exchange = await exchangeFactory.deploy(spc.address);
     spcMemberExchange = exchange.connect(spcMember);
   });
 
@@ -54,14 +50,14 @@ describe('Exchange', () => {
     describe('addMember', async () => {
       it('requires governance (anonymous)', async () => {
         const subject = exchange.addMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires that the address is not a member yet', async () => {
         await spcMemberExchange.addMember(alice.address)
         const subject = spcMemberExchange.addMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address already in set');
       });
 
@@ -73,7 +69,7 @@ describe('Exchange', () => {
 
       it('delegates to the SPC for permissioning', async () => {
         await spcMemberExchange.addMember(alice.address);
-        expect(spc.isMember).to.have.been
+        expect(spc.isMember).to.be
           .calledOnceWith(spcMember.address);
       });
 
@@ -93,13 +89,13 @@ describe('Exchange', () => {
 
       it('requires governance (anonymous)', async () => {
         const subject = exchange.removeMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires that the address is an existing member', async () => {
         const subject = spcMemberExchange.removeMember(bob.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address does not exist in set');
       });
 
@@ -168,12 +164,13 @@ describe('Exchange', () => {
       it('returns the governors in the order they were added', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [values,] = await exchange.paginateMembers(0, 5);
-        expect(values).to.have.ordered.members([
-          alice.address,
-          bob.address,
-          rob.address,
-          john.address
-        ]);
+        expect(values).to.be
+          .ordered.members([
+            alice.address,
+            bob.address,
+            rob.address,
+            john.address
+          ]);
       });
     });
   });

@@ -19,7 +19,7 @@ contract Exchange is IHasMembers {
   LibAddressSet.Data private memberSet;
 
   constructor(Spc _spc) {
-    _spc = spc;
+    spc = _spc;
   }
 
   /// Membership management.

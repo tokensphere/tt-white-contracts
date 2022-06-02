@@ -2,8 +2,9 @@
 pragma solidity ^0.8.4;
 
 import './lib/LibFast.sol';
+import './interfaces/AFastFacet.sol';
 
-contract FastFacet {
+contract FastFacet is AFastFacet {
   /// Events.
 
   // Eth provisioning related events.
@@ -19,22 +20,10 @@ contract FastFacet {
   }
 
   function drainEth()
-      spcMembership(msg.sender)
-      external {
+      external
+      spcMembership(msg.sender) {
     uint256 amount = address(this).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
-  }
-
-  /// Modifiers.
-
-  modifier diamondInternal() {
-    require(msg.sender == address(this), 'Cannot be called directly');
-    _;
-  }
-
-  modifier spcMembership(address a) {
-    require(LibFast.data().spc.isMember(a), 'Missing governorship');
-    _;
   }
 }

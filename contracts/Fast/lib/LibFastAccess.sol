@@ -14,7 +14,7 @@ library LibFastAccess {
 
   function data()
       internal pure returns(Data storage s) {
-    bytes32 pos = keccak256("Fast.storage.FastAccess");
+    bytes32 pos = keccak256('Fast.storage.FastAccess');
     assembly {s.slot := pos}
   }
 }

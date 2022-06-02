@@ -52,8 +52,8 @@ contract Spc is IHasMembers {
   }
 
   function drainEth()
-      membership(msg.sender)
-      external {
+      external
+      membership(msg.sender) {
     uint256 amount = address(this).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
@@ -77,8 +77,8 @@ contract Spc is IHasMembers {
   }
 
   function addMember(address payable member)
-      membership(msg.sender)
-      external override {
+      external override
+      membership(msg.sender) {
     // Add the member to our list.
     memberSet.add(member, false);
 
@@ -91,8 +91,8 @@ contract Spc is IHasMembers {
   }
 
   function removeMember(address member)
-      membership(msg.sender)
-      external override {
+      external override
+      membership(msg.sender) {
     // Remove the member from the set.
     memberSet.remove(member, false);
     // Emit!
@@ -107,12 +107,12 @@ contract Spc is IHasMembers {
   }
 
   function registerFast(address fast)
-      membership(msg.sender)
-      external {
+      external
+      membership(msg.sender) {
     string memory symbol = FastTokenFacet(fast).symbol();
     require(fastSymbols[symbol] == address(0), 'Symbol already taken');
 
-    // Add the FAST Registry to our list.
+    // Add the FAST to our list.
     fasts.push(fast);
     // Add the fast symbol to our list.
     fastSymbols[symbol] = fast;
@@ -123,12 +123,12 @@ contract Spc is IHasMembers {
     emit FastRegistered(fast);
   }
 
-  function fastRegistryCount()
+  function fastCount()
       external view returns(uint256) {
     return fasts.length;
   }
 
-  function paginateFastRegistries(uint256 cursor, uint256 perPage)
+  function paginateFasts(uint256 cursor, uint256 perPage)
       external view
       returns(address[] memory, uint256) {
     return LibPaginate.addresses(fasts, cursor, perPage);

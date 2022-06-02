@@ -30,7 +30,17 @@ const config: HardhatUserConfig = {
   },
   diamondAbi: {
     name: 'Fast',
-    include: ['FastInitFacet', 'FastFacet', 'FastAccessFacet', 'FastTokenFacet', 'FastHistoryFacet']
+    include: [
+      'IERC173',
+      'IERC165',
+      'IDiamondCut',
+      'IDiamondLoupe',
+      'FastFacet',
+      'FastInitFacet',
+      'FastAccessFacet',
+      'FastTokenFacet',
+      'FastHistoryFacet'
+    ]
   },
   networks: {
     hardhat: {

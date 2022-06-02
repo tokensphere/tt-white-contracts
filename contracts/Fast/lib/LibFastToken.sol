@@ -30,7 +30,7 @@ library LibFastToken {
 
   function data()
       internal pure returns(Data storage s) {
-    bytes32 pos = keccak256("Fast.storage.FastToken");
+    bytes32 pos = keccak256('Fast.storage.FastToken');
     assembly {s.slot := pos}
   }
 }

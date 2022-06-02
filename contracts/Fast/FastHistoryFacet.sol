@@ -3,9 +3,10 @@ pragma solidity ^0.8.4;
 
 import './lib/LibFastHistory.sol';
 import '../lib/LibPaginate.sol';
+import './interfaces/AFastFacet.sol';
 
 
-contract FastHistoryFacet {
+contract FastHistoryFacet is AFastFacet {
   /// Minting history-keeping methods.
 
   function minted(uint256 amount, string calldata ref)
@@ -72,26 +73,28 @@ contract FastHistoryFacet {
 
   function paginateTransferProofs(uint256 cursor, uint256 perPage)
       external view returns(LibFastHistory.TransferProof[] memory, uint256) {
-    return LibPaginate.transferProofs(
-      LibFastHistory.data().transferProofs,
-      cursor,
-      perPage
-    );
+    return LibPaginate.transferProofs(LibFastHistory.data().transferProofs, cursor, perPage);
+  }
+
+  function transferProofByInvolveeCount(address involvee)
+      external view returns(uint256) {
+    return LibFastHistory.data().transferProofInvolvements[involvee].length;
+  }
+
+  function paginateTransferProofIndicesByInvolvee(address involvee, uint256 cursor, uint256 perPage)
+      public view returns(uint256[] memory, uint256) {
+    return LibPaginate.uint256s(LibFastHistory.data().transferProofInvolvements[involvee], cursor, perPage);
   }
 
   function paginateTransferProofsByInvolvee(address involvee, uint256 cursor, uint256 perPage)
-      external view returns(uint256[] memory, uint256) {
-    return LibPaginate.uint256s(
-      LibFastHistory.data().transferProofInvolvements[involvee],
-      cursor,
-      perPage
-    );
-  }
-
-  /// Modifiers.
-
-  modifier diamondInternal() {
-    require(msg.sender == address(this), 'Cannot be called directly');
-    _;
+      public view returns(LibFastHistory.TransferProof[] memory, uint256) {
+    LibFastHistory.Data storage s = LibFastHistory.data();
+    uint256[] storage collection  = s.transferProofInvolvements[involvee];
+    uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;
+    LibFastHistory.TransferProof[] memory values = new LibFastHistory.TransferProof[](length);
+    for (uint256 i = 0; i < length; i++) {
+      values[i] = s.transferProofs[collection[cursor + i]];
+    }
+    return (values, cursor + length);
   }
 }

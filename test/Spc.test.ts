@@ -1,13 +1,17 @@
+import * as chai from 'chai';
 import { expect } from 'chai';
-import { ethers, upgrades } from 'hardhat';
+import { solidity } from 'ethereum-waffle';
+import { ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Spc__factory, Spc, FastRegistry } from '../typechain-types';
+import { Spc__factory, Spc, FastTokenFacet } from '../typechain';
 import { toHexString } from '../src/utils';
 import {
   negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty,
   nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty
 } from './utils';
+import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
+chai.use(solidity);
+chai.use(smock.matchers);
 
 describe('Spc', () => {
   let
@@ -22,17 +26,12 @@ describe('Spc', () => {
   before(async () => {
     // Keep track of a few signers.
     [deployer, spcMember, bob, alice] = await ethers.getSigners();
-    // Deploy our libraries.
-    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
-    const helpersLib = await (await ethers.getContractFactory('LibHelpers')).deploy();
     // We can now cache a ready-to-use SPC factory.
-    const spcLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address, LibHelpers: helpersLib.address };
-    spcFactory = await ethers.getContractFactory('Spc', { libraries: spcLibs });
+    spcFactory = await ethers.getContractFactory('Spc');
   });
 
   beforeEach(async () => {
-    spc = await upgrades.deployProxy(spcFactory, [spcMember.address]) as Spc;
+    spc = await spcFactory.deploy(spcMember.address);
     spcMemberSpc = spc.connect(spcMember);
     // Provision the SPC with a load of eth.
     await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneMilion)]);
@@ -48,10 +47,9 @@ describe('Spc', () => {
       // Since we cannot get the transaction of a proxy-deployed contract
       // via `upgrades.deployProxy`, we will deploy it manually and call its
       // initializer.
-      const contract = await spcFactory.deploy();
-      const subject = contract.initialize(spcMember.address);
-      await expect(subject).to
-        .emit(contract, 'MemberAdded')
+      const subject = await spcFactory.deploy(spcMember.address);
+      await expect(subject.deployTransaction).to
+        .emit(subject, 'MemberAdded')
         .withArgs(spcMember.address);
     });
   });
@@ -221,121 +219,110 @@ describe('Spc', () => {
 
   /// FAST management stuff.
 
-  describe('fastRegistryBySymbol', async () => {
+  describe('fastBySymbol', async () => {
     it('returns the zero address when the FAST symbol is unknown');
-    it('returns the FAST registry address when the FAST symbol is registered');
+    it('returns the FAST address when the FAST symbol is registered');
   });
 
-  describe('registerFastRegistry', async () => {
-    let reg: FakeContract<FastRegistry>;
+  describe('registerFast', async () => {
+    let fast: FakeContract<FastTokenFacet>;
 
     before(async () => {
       // Set up a token mock.
-      const token = await smock.fake('FastToken');
-      token.symbol.returns('FST');
-      // Set up a mock registry.
-      reg = await smock.fake('FastRegistry');
-      reg.token.returns(token.address);
+      fast = await smock.fake('FastTokenFacet');
+      fast.symbol.returns('FST');
     });
 
     it('requires SPC membership', async () => {
-      const subject = spc.registerFastRegistry(reg.address);
+      const subject = spc.registerFast(fast.address);
       await expect(subject).to.have
         .revertedWith('Missing SPC membership');
     });
 
     it('forbids adding two FASTS with the same symbol', async () => {
-      await spcMemberSpc.registerFastRegistry(reg.address);
-      const subject = spcMemberSpc.registerFastRegistry(reg.address)
+      await spcMemberSpc.registerFast(fast.address);
+      const subject = spcMemberSpc.registerFast(fast.address)
       await expect(subject).to.be.revertedWith('Symbol already taken');
     });
 
     it('adds the registry address to the list of registries', async () => {
-      // Note that this test is already covered by tests for `fastRegistryBySymbol`.
+      // Note that this test is already covered by tests for `fastBySymbol`.
       // It would add very little value to add anything to it.
     });
 
     it('keeps track of the symbol', async () => {
-      // Note that this test is already covered by tests for `fastRegistryBySymbol`.
+      // Note that this test is already covered by tests for `fastBySymbol`.
       // It would add very little value to add anything to it.
     });
 
-    it('provisions the registry with 250 Eth', async () => {
-      await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
+    it('provisions the FAST with 250 Eth', async () => {
+      await ethers.provider.send("hardhat_setBalance", [fast.address, '0x0']);
       // Do it!
-      const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
+      const subject = async () => await spcMemberSpc.registerFast(fast.address);
       // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, reg], [negTwoHundredFifty, twoHundredFifty]);
+      await expect(subject).to.changeEtherBalances([spc, fast], [negTwoHundredFifty, twoHundredFifty]);
     });
 
-    it('only tops-up the registry if it already has Eth', async () => {
+    it('only tops-up the FAST if it already has Eth', async () => {
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneMilion)]);
-      await ethers.provider.send("hardhat_setBalance", [reg.address, toHexString(ten)]);
+      await ethers.provider.send("hardhat_setBalance", [fast.address, toHexString(ten)]);
       // Do it!
-      const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
+      const subject = async () => await spcMemberSpc.registerFast(fast.address);
       // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, reg], [negTwoHundredFourty, twoHundredFourty]);
+      await expect(subject).to.changeEtherBalances([spc, fast], [negTwoHundredFourty, twoHundredFourty]);
     });
 
-    it('only provisions the registry up to the available balance', async () => {
+    it('only provisions the FAST up to the available balance', async () => {
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
-      await ethers.provider.send("hardhat_setBalance", [reg.address, '0x0']);
+      await ethers.provider.send("hardhat_setBalance", [fast.address, '0x0']);
       // Do it!
-      const subject = async () => await spcMemberSpc.registerFastRegistry(reg.address);
+      const subject = async () => await spcMemberSpc.registerFast(fast.address);
       // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, reg], [negTwo, two]);
+      await expect(subject).to.changeEtherBalances([spc, fast], [negTwo, two]);
     });
 
     it('emits a FastRegistered event', async () => {
-      const subject = spcMemberSpc.registerFastRegistry(reg.address);
+      const subject = spcMemberSpc.registerFast(fast.address);
       await expect(subject).to
         .emit(spc, 'FastRegistered')
-        .withArgs(reg.address);
+        .withArgs(fast.address);
     });
   });
 
-  describe('fastRegistryCount', async () => {
-    it('returns the registry count', async () => {
+  describe('fastCount', async () => {
+    it('returns the FAST count', async () => {
       // Register a few token mocks.
       const fixture = ['FS1', 'FS2'];
       await Promise.all(
         fixture.map(async (symbol) => {
-          // Set up a mock registry.
-          const [reg, token] = await Promise.all(
-            ['FastRegistry', 'FastToken'].map(async (c) => await smock.fake(c))
-          );
+          // Set up a couple mocks.
+          const fast = await smock.fake('FastTokenFacet');
           // Stub a few things.
-          token.symbol.returns(symbol);
-          reg.token.returns(token.address);
+          fast.symbol.returns(symbol);
           // Register that new fast.
-          return spcMemberSpc.registerFastRegistry(reg.address);
+          return spcMemberSpc.registerFast(fast.address);
         })
       );
-      const subject = await spc.fastRegistryCount();
+      const subject = await spc.fastCount();
       expect(subject).to.eq(fixture.length);
     });
   });
 
-  describe('paginateFastRegistries', async () => {
-    let reg: FakeContract<FastRegistry>;
+  describe('paginateFasts', async () => {
+    let fast: FakeContract<FastTokenFacet>;
 
     beforeEach(async () => {
       // Set up a token mock.
-      const token = await smock.fake('FastToken');
-      // Make sure
-      token.symbol.returns('FST');
-      // Set up a mock registry.
-      reg = await smock.fake('FastRegistry');
-      // Make sure that the registry can return the address of our tocken mock.
-      reg.token.returns(token.address);
+      fast = await smock.fake('FastTokenFacet');
+      fast.symbol.returns('FST');
       // Register this FAST.
-      await spcMemberSpc.registerFastRegistry(reg.address)
+      await spcMemberSpc.registerFast(fast.address)
     });
 
-    it('returns pages of registries', async () => {
+    it('returns pages of FASTs', async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-      const [[g1],] = await spc.paginateFastRegistries(0, 10);
-      expect(g1).to.eq(reg.address);
+      const [[g1],] = await spc.paginateFasts(0, 10);
+      expect(g1).to.eq(fast.address);
     });
   });
 });

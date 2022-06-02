@@ -1,14 +1,61 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { ethers, upgrades } from 'hardhat';
+import { solidity } from 'ethereum-waffle';
+import { BigNumber } from 'ethers';
+import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { Spc, FastAccess__factory, FastAccess, FastRegistry, FastToken } from '../typechain-types';
-import { one, ten } from './utils';
+import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
+import { negOne, one, oneMilion } from './utils';
+import { DEPLOYMENT_SALT, toHexString } from '../src/utils';
+import { Spc, Exchange, Fast, FastFacet, FastInitFacet, FastTokenFacet, FastAccessFacet } from '../typechain';
+chai.use(solidity);
 chai.use(smock.matchers);
 
-describe('FastAccess', () => {
+interface FastFixtureOpts {
+  // Ops variables.
+  deployer: string;
+  spcMember: string;
+  governor: string;
+  spc: string;
+  exchange: string;
+  // Config.
+  name: string;
+  symbol: string;
+  decimals: BigNumber;
+  hasFixedSupply: boolean;
+  isSemiPublic: boolean;
+}
+
+const FAST_FACETS = ['FastFacet', 'FastAccessFacet', 'FastTokenFacet'];
+
+const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
+  const opts = uOpts as FastFixtureOpts;
+  // Deploy the fast.
+  const fastDeploy = await deployments.diamond.deploy('Fast', {
+    from: opts.deployer,
+    owner: opts.deployer,
+    facets: [...FAST_FACETS, 'FastInitFacet'],
+    deterministicSalt: DEPLOYMENT_SALT
+  });
+
+  // Call the initialization facet.
+  const init = await ethers.getContractAt('FastInitFacet', fastDeploy.address) as FastInitFacet;
+  await init.initialize(opts);
+
+  // Remove the initialization facet.
+  await deployments.diamond.deploy('Fast', {
+    from: opts.deployer,
+    owner: opts.deployer,
+    facets: FAST_FACETS,
+    deterministicSalt: DEPLOYMENT_SALT
+  });
+
+  return fastDeploy;
+});
+
+describe('FastAccessFacet', () => {
   let
+    deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
@@ -16,90 +63,53 @@ describe('FastAccess', () => {
     rob: SignerWithAddress,
     john: SignerWithAddress;
   let spc: FakeContract<Spc>,
-    reg: FakeContract<FastRegistry>,
-    token: FakeContract<FastToken>,
-    accessFactory: FastAccess__factory,
-    access: FastAccess,
-    governedAccess: FastAccess,
-    spcMemberAccess: FastAccess;
+    exchange: FakeContract<Exchange>,
+    fastFacetMock: FakeContract<FastFacet>,
+    fastTokenFacetMock: FakeContract<FastTokenFacet>,
+    access: FastAccessFacet,
+    governedAccess: FastAccessFacet,
+    spcMemberAccess: FastAccessFacet;
+
 
   before(async () => {
     // Keep track of a few signers.
-    [/*deployer*/, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
-
-    // Deploy the libraries we need.
-    const addressSetLib = await (await ethers.getContractFactory('LibAddressSet')).deploy();
-    const paginationLib = await (await ethers.getContractFactory('LibPaginate')).deploy();
-
-    // Mock an SPC, Token and Registry contracts.
+    [deployer, spcMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    // Mock an SPC and a FAST.
     spc = await smock.fake('Spc');
-    token = await smock.fake('FastToken');
-    reg = await smock.fake('FastRegistry');
-
-    // Set up our mocks.
-    reg.spc.returns(spc.address);
-    reg.token.returns(token.address);
-
-    // Finally create and cache our access factory.
-    const accessLibs = { LibAddressSet: addressSetLib.address, LibPaginate: paginationLib.address };
-    accessFactory = await ethers.getContractFactory('FastAccess', { libraries: accessLibs });
+    exchange = await smock.fake('Exchange');
   });
 
   beforeEach(async () => {
-    // Reset mocks.
-    reg.payUpTo.reset();
-    spc.isMember.reset();
-    token.beforeRemovingMember.reset();
-    // Setup mocks.
     spc.isMember.returns(false);
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
 
-    // Spin up our Access contract.
-    access = await upgrades.deployProxy(accessFactory, [reg.address, governor.address]) as FastAccess;
+    const { address: fastAddr } = await fastDeployFixture({
+      deployer: deployer.address,
+      spcMember: spcMember.address,
+      governor: governor.address,
+      spc: spc.address,
+      exchange: exchange.address,
+      name: 'Better, Stronger, FASTer',
+      symbol: 'BSF',
+      decimals: 18,
+      hasFixedSupply: true,
+      isSemiPublic: true
+    });
+    const fast = await ethers.getContractAt('Fast', fastAddr) as Fast;
+
+    // TODO: Once smock fixes their stuff. replace facets by fakes.
+    // Get our facet addresses.
+    const facetAddrs = await fast.facetAddresses()
+    // Replace the fast facet by a fake.
+    const fastFacetAddr = facetAddrs[facetAddrs.length - 1];
+    fastFacetMock = await smock.fake('FastFacet', { address: fastFacetAddr });
+    // Replace the token facet by a fake.
+    const tokenFacetAddr = facetAddrs[facetAddrs.length - 3];
+    fastTokenFacetMock = await smock.fake('FastTokenFacet', { address: tokenFacetAddr });
+
+    access = fast as FastAccessFacet;
     governedAccess = access.connect(governor);
     spcMemberAccess = access.connect(spcMember);
-  });
-
-  /// Public stuff.
-
-  describe('initialize', async () => {
-    it('keeps track of the Registry address', async () => {
-      const subject = await access.reg();
-      expect(subject).to.eq(reg.address);
-    });
-
-    it('adds the governor parameter as a member', async () => {
-      const subject = await access.isMember(governor.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('adds the governor parameter as a governor', async () => {
-      const subject = await access.isGovernor(governor.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('emits a GovernorAdded and a MemberAdded event', async () => {
-      // Since we cannot get the transaction of a proxy-deployed contract
-      // via `upgrades.deployProxy`, we will deploy it manually and call its
-      // initializer.
-      const contract = await accessFactory.deploy();
-      const subject = contract.initialize(reg.address, governor.address);
-      await expect(subject).to
-        .emit(contract, 'GovernorAdded')
-        .withArgs(governor.address);
-      await expect(subject).to
-        .emit(contract, 'MemberAdded')
-        .withArgs(governor.address);
-    });
-  });
-
-  /// Public member getters.
-
-  describe('reg', async () => {
-    it('returns the registry address', async () => {
-      const subject = await access.reg();
-      expect(subject).to.eq(reg.address);
-    });
   });
 
   /// Governorship related stuff.
@@ -109,20 +119,20 @@ describe('FastAccess', () => {
       it('requires SPC membership (anonymous)', async () => {
         const subject = access.addGovernor(alice.address);
         // Check that the registry
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires SPC membership (governor)', async () => {
-        const subject = governedAccess.addGovernor(alice.address);
-        await expect(subject).to.have
+        const subject = access.addGovernor(alice.address);
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires that the address is not a governor yet', async () => {
         await spcMemberAccess.addGovernor(alice.address)
         const subject = spcMemberAccess.addGovernor(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address already in set');
       });
 
@@ -134,8 +144,9 @@ describe('FastAccess', () => {
 
       it('delegates provisioning Eth to the governor using the registry', async () => {
         await spcMemberAccess.addGovernor(alice.address);
-        expect(reg.payUpTo).to.have.been
-          .calledOnceWith(alice.address, ten);
+        // TODO: Will only work once `smock` fixes their injection thingy.
+        // expect(fastFacetMock.provisionWithEth).to.be
+        //   .calledOnceWith(alice.address);
       });
 
       it('emits a GovernorAdded event', async () => {
@@ -154,19 +165,19 @@ describe('FastAccess', () => {
 
       it('requires SPC membership (anonymous)', async () => {
         const subject = access.removeGovernor(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires SPC membership (governor)', async () => {
         const subject = governedAccess.removeGovernor(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing SPC membership');
       });
 
       it('requires that the address is an existing governor', async () => {
         const subject = spcMemberAccess.removeGovernor(bob.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address does not exist in set');
       });
 
@@ -235,13 +246,14 @@ describe('FastAccess', () => {
       it('returns the governors in the order they were added', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [values,] = await access.paginateGovernors(0, 5);
-        expect(values).to.have.ordered.members([
-          governor.address,
-          alice.address,
-          bob.address,
-          rob.address,
-          john.address,
-        ]);
+        expect(values).to.be
+          .ordered.members([
+            governor.address,
+            alice.address,
+            bob.address,
+            rob.address,
+            john.address,
+          ]);
       });
     });
   });
@@ -252,20 +264,20 @@ describe('FastAccess', () => {
     describe('addMember', async () => {
       it('requires governance (anonymous)', async () => {
         const subject = access.addMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing governorship');
       });
 
       it('requires governance (SPC governor)', async () => {
         const subject = spcMemberAccess.addMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing governorship');
       });
 
       it('requires that the address is not a member yet', async () => {
         await governedAccess.addMember(alice.address)
         const subject = governedAccess.addMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address already in set');
       });
 
@@ -276,9 +288,14 @@ describe('FastAccess', () => {
       });
 
       it('delegates provisioning Eth to the governor using the registry', async () => {
-        await governedAccess.addMember(alice.address);
-        expect(reg.payUpTo).to.have.been
-          .calledOnceWith(alice.address, one);
+        // Add eth to the FAST contract.
+        await ethers.provider.send("hardhat_setBalance", [access.address, toHexString(oneMilion)]);
+        // Make sure alice doesn't have eth.
+        await ethers.provider.send("hardhat_setBalance", [alice.address, '0x0']);
+        const subject = async () => await governedAccess.addMember(alice.address);
+        // Since we use the diamond pattern, we can't mock anymore :(
+        // So... We test cross-facet functionality.
+        await expect(subject).to.changeEtherBalances([access, alice], [negOne, one]);
       });
 
       it('emits a MemberAdded event', async () => {
@@ -297,19 +314,19 @@ describe('FastAccess', () => {
 
       it('requires governance (anonymous)', async () => {
         const subject = access.removeMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing governorship');
       });
 
       it('requires governance (SPC governor)', async () => {
         const subject = spcMemberAccess.removeMember(alice.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Missing governorship');
       });
 
       it('requires that the address is an existing member', async () => {
         const subject = governedAccess.removeMember(bob.address);
-        await expect(subject).to.have
+        await expect(subject).to.be
           .revertedWith('Address does not exist in set');
       });
 
@@ -321,8 +338,9 @@ describe('FastAccess', () => {
 
       it('delegates to the token contract', async () => {
         await governedAccess.removeMember(alice.address);
-        expect(token.beforeRemovingMember).to.have.been
-          .calledOnceWith(alice.address);
+        // TODO: Will only work once `smock` fixes their injection thingy.
+        // expect(fastTokenFacetMock.beforeRemovingMember).to.be
+        //   .calledOnceWith(alice.address);
       });
 
       it('emits a MemberRemoved event', async () => {
@@ -384,13 +402,14 @@ describe('FastAccess', () => {
       it('returns the governors in the order they were added', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [values,] = await access.paginateMembers(0, 5);
-        expect(values).to.have.ordered.members([
-          governor.address,
-          alice.address,
-          bob.address,
-          rob.address,
-          john.address
-        ]);
+        expect(values).to.be
+          .ordered.members([
+            governor.address,
+            alice.address,
+            bob.address,
+            rob.address,
+            john.address
+          ]);
       });
     });
   });

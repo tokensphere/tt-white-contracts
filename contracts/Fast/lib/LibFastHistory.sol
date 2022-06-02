@@ -42,7 +42,7 @@ library LibFastHistory {
 
   function data()
       internal pure returns(Data storage s) {
-    bytes32 pos = keccak256("Fast.storage.FastHistory");
+    bytes32 pos = keccak256('Fast.storage.FastHistory');
     assembly {s.slot := pos}
   }
 }

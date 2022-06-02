@@ -11,7 +11,7 @@ interface SpcDeployParams {
 task('spc-deploy', 'Deploys the main SPC contract')
   .addPositionalParam('deployer', 'Who is deploying')
   .addParam('member', 'The SPC member address', undefined, types.string)
-  .setAction(async ({ deployer, member }: SpcDeployParams, hre) => {
+  .setAction(async ({ member }: SpcDeployParams, hre) => {
     await deploySpc(hre, member);
     await deployExchange(hre);
   });

@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 
 export const one = ethers.utils.parseEther('1.0');
+export const negOne = one.mul(-1);
 export const two = ethers.utils.parseEther('2.0');
 export const negTwo = two.mul(-1);
 export const ten = ethers.utils.parseEther('10.0');

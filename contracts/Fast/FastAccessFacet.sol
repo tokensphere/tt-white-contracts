@@ -7,13 +7,14 @@ import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './FastTokenFacet.sol';
+import './interfaces/AFastFacet.sol';
 
 
 /**
 * @dev The FAST Access Smart Contract is the source of truth when it comes to
 * permissioning and ACLs within a given FAST network.
 */
-contract FastAccessFacet is IHasMembers, IHasGovernors {
+contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
   /// Structs.
 
@@ -68,8 +69,8 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
    * @dev Adds a governor to the governorship list.
    */
   function addGovernor(address payable a)
-      spcMembership(msg.sender)
-      external override {
+      external override
+      spcMembership(msg.sender) {
     // Add governor to list.
     LibFastAccess.data().governorSet.add(a, false);
     // Provision the new governor with Eth if possible.
@@ -82,8 +83,8 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
    * @dev Removes a governor from the governorship list.
    */
   function removeGovernor(address a)
-      spcMembership(msg.sender)
-      external override {
+      external override
+      spcMembership(msg.sender) {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(a, false);
     // Emit!
@@ -124,8 +125,8 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
    * @dev Adds a member to the membership list.
    */
   function addMember(address payable member)
-      governance(msg.sender)
-      external override {
+      external override 
+      governance(msg.sender) {
     // Add the member.
     LibFastAccess.data().memberSet.add(member, false);
     // Let the registry provision the new member with Eth if possible.
@@ -138,8 +139,8 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
    * @dev Removes a member from the membership list.
    */
   function removeMember(address member)
-      governance(msg.sender)
-      external override {
+      external override 
+      governance(msg.sender) {
     // Notify token contract.
     FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Remove member.
@@ -161,27 +162,5 @@ contract FastAccessFacet is IHasMembers, IHasGovernors {
         isGovernor: s.governorSet.contains(a),
         isMember: s.memberSet.contains(a)
       });
-  }
-
-  // Modifiers.
-
-  modifier diamondInternal() {
-    require(msg.sender == address(this), 'Cannot be called directly');
-    _;
-  }
-
-  modifier spcMembership(address a) {
-    require(LibFast.data().spc.isMember(a), 'Missing SPC membership');
-    _;
-  }
-
-  modifier governance(address a) {
-    require(LibFastAccess.data().governorSet.contains(a), 'Missing governorship');
-    _;
-  }
-
-  modifier membership(address a) {
-    require(LibFastAccess.data().memberSet.contains(a), 'Missing membership');
-    _;
   }
 }
