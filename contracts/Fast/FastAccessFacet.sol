@@ -76,7 +76,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Provision the new governor with Eth if possible.
     LibFast.payUpTo(a, GOVERNOR_ETH_PROVISION);
     // Emit!
-    emit IHasGovernors.GovernorAdded(a);
+    emit LibFastAccess.GovernorAdded(a);
   }
 
   /**
@@ -88,7 +88,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(a, false);
     // Emit!
-    emit IHasGovernors.GovernorRemoved(a);
+    emit LibFastAccess.GovernorRemoved(a);
   }
 
   /// Membership related stuff.
@@ -142,7 +142,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       external override 
       governance(msg.sender) {
     // Notify token contract.
-    FastTokenFacet(address(this)).beforeRemovingMember(member);
+    FastTokenFacet(thisAddress()).beforeRemovingMember(member);
     // Remove member.
     LibFastAccess.data().memberSet.remove(member, false);
     // Emit!

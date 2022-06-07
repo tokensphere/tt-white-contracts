@@ -254,7 +254,7 @@ describe('FastToken', () => {
         await spcMemberToken.mint(1_000_000, 'Attempt 1');
         const subject = spcMemberToken.mint(1_000_000, 'Attempt 2');
         await expect(subject).to.have
-          .revertedWith('Minting not possible at this time');
+          .revertedWith('Minting not possible');
       });
     });
 
@@ -328,7 +328,7 @@ describe('FastToken', () => {
       await spcMemberToken.setHasFixedSupply(true);
       const subject = spcMemberToken.burn(5, 'Burn baby burn')
       await expect(subject).to.have
-        .revertedWith('Burning not possible at this time');
+        .revertedWith('Burning not possible');
     });
 
     it('requires that the zero address has enough funds', async () => {

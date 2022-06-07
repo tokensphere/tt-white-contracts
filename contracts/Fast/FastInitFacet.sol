@@ -51,9 +51,9 @@ contract FastInitFacet is AFastFacet {
     // Add the governor both as a governor and as a member.
     accessData.memberSet.add(params.governor, false);
     accessData.governorSet.add(params.governor, false);
-    // TODO: Emit!
-    // emit IHasGovernors.GovernorAdded(params.governor);
-    // emit IHasMembers.MemberAdded(params.governor);
+    // Emit!
+    emit LibFastAccess.GovernorAdded(params.governor);
+    emit LibFastAccess.MemberAdded(params.governor);
 
     // Initialize token storage.
     LibFastToken.Data storage tokenData = LibFastToken.data();

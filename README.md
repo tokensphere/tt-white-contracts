@@ -52,16 +52,6 @@ yarn hardhat make-us-rich \
               --network localhost
 ```
 
-## Library Tasks (See `src/tasks/libraries.ts`)
-
-To deploy the necessary libraries, you can run:
-
-```shell
-yarn hardhat lib-deploy LibAddressSet --network localhost
-yarn hardhat lib-deploy LibPaginate --network localhost
-yarn hardhat lib-deploy LibHelpers --network localhost
-```
-
 ## Top-Level Tasks (See `src/tasks/spc.ts`)
 
 You can then subsequently deploy the main SPC and Exchange by running:

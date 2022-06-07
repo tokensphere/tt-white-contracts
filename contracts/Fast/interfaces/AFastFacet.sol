@@ -4,8 +4,6 @@ pragma solidity ^0.8.4;
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IERC173.sol';
 import '../lib/index.sol';
-import '../lib/LibFast.sol';
-import '../lib/LibFastAccess.sol';
 
 
 /**
@@ -32,7 +30,7 @@ abstract contract AFastFacet {
 
   /// @dev Ensures that a method can only be called by the owner of this diamond.
   modifier diamondOwner() {
-    require(msg.sender == IERC173(address(this)).owner(), 'Requires ownership');
+    require(msg.sender == IERC173(thisAddress()).owner(), 'Requires ownership');
     _;
   }
 

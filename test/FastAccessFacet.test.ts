@@ -99,7 +99,7 @@ describe('FastAccessFacet', () => {
 
     // TODO: Once smock fixes their stuff. replace facets by fakes.
     // Get our facet addresses.
-    const facetAddrs = await fast.facetAddresses()
+    const facetAddrs = await fast.facetAddresses();
     // Replace the fast facet by a fake.
     const fastFacetAddr = facetAddrs[facetAddrs.length - 1];
     fastFacetMock = await smock.fake('FastFacet', { address: fastFacetAddr });

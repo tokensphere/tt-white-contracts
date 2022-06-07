@@ -173,7 +173,7 @@ async function deployFast(hre: HardhatRuntimeEnvironment, params: FastDeployPara
   });
 
   // Perform a diamond cut to subtract the initialization facet.
-  const result = await diamond.deploy(diamondName, {
+  await diamond.deploy(diamondName, {
     from: deployer,
     owner: deployer,
     deterministicSalt: DEPLOYMENT_SALT,
@@ -182,7 +182,7 @@ async function deployFast(hre: HardhatRuntimeEnvironment, params: FastDeployPara
   });
 
   // Register the new FAST with the SPC.
-  await spc.connect(spcMemberSigner).registerFast(fastAddr)
+  await spc.connect(spcMemberSigner).registerFast(fastAddr);
   return { fast, diamondName };
 }
 
