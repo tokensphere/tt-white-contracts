@@ -118,11 +118,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     return LibFastToken.data().transferCredits;
   }
 
-  function addTransferCredits(uint256 _amount)
+  function addTransferCredits(uint256 amount)
       external
       spcMembership(msg.sender) {
-    LibFastToken.data().transferCredits += _amount;
-    emit TransferCreditsAdded(msg.sender, _amount);
+    LibFastToken.data().transferCredits += amount;
+    emit TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()

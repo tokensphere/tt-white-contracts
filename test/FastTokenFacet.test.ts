@@ -275,7 +275,7 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      // TODO.
+      // TODO: When smock fixes their stuff, replace some facets by fakes.
       //   expect(history.minted).to.have.been
       //     .calledOnceWith(5_000, 'Attempt 1');
     });
@@ -352,7 +352,7 @@ describe('FastToken', () => {
 
     it('delegates to the history contract', async () => {
       await spcMemberToken.burn(50, 'It is hot');
-      // TODO.
+      // TODO: When smock fixes their stuff, replace some facets by fakes.
       // expect(history.burnt).to.have.been
       //   .calledOnceWith(50, 'It is hot');
     });
@@ -534,7 +534,7 @@ describe('FastToken', () => {
 
           it('delegates to the history contract', async () => {
             await token.connect(alice).transfer(bob.address, 12)
-            // TODO.
+            // TODO: When smock fixes their stuff, replace some facets by fakes.
             // expect(history.transfered).to.have.been
             //   .calledOnceWith(alice.address, alice.address, bob.address, 12, 'Unspecified - via ERC20');
           });
@@ -626,7 +626,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(alice).transferWithRef(bob.address, 12, 'Six')
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // expect(history.transfered).to.have.been
         //   .calledOnceWith(alice.address, alice.address, bob.address, 12, 'Six');
       });
@@ -823,7 +823,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFrom(bob.address, alice.address, 12)
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // expect(history.transfered).to.have.been
         //   .calledOnceWith(john.address, bob.address, alice.address, 12, 'Unspecified - via ERC20');
       });
@@ -972,7 +972,7 @@ describe('FastToken', () => {
 
       it('delegates to the history contract', async () => {
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // expect(history.transfered).to.have.been
         //   .calledOnceWith(john.address, bob.address, alice.address, 12, 'Five');
       });
@@ -1185,8 +1185,8 @@ describe('FastToken', () => {
 
     describe('when successful', async () => {
       before(async () => {
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // Make sure our access contract can pay for its gas fees.
-        // TODO.
         // await ethers.provider.send("hardhat_setBalance", [access.address, toHexString(oneMilion)])
       });
 
@@ -1203,21 +1203,21 @@ describe('FastToken', () => {
       });
 
       it('transfers the member tokens back to the zero address', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // const subject = () => token.connect(access.wallet).beforeRemovingMember(alice.address);
         // await expect(subject).to
         //   .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [500, -500]);
       });
 
       it('delegates to the history contract', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // await token.connect(access.wallet).beforeRemovingMember(alice.address);
         // expect(history.transfered).to.have.been
         //   .calledOnceWith(ZERO_ADDRESS, alice.address, ZERO_ADDRESS, 500, 'Member removal');
       });
 
       it('emits a Transfer event when a transfer is performed', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // const subject = token.connect(access.wallet).beforeRemovingMember(alice.address);
         // await expect(subject).to
         //   .emit(token, 'Transfer')
@@ -1225,14 +1225,14 @@ describe('FastToken', () => {
       });
 
       it('sets allowances to / from the removed members to zero', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // await token.connect(access.wallet).beforeRemovingMember(alice.address);
         // expect(await token.allowance(alice.address, bob.address)).to.eq(0);
         // expect(await token.allowance(john.address, alice.address)).to.eq(0);
       });
 
       it('removes given and received allowances', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // await token.connect(access.wallet).beforeRemovingMember(alice.address);
         // // Check that allowances received by the members are gone.
         // const [ra, /*cursor*/] = await token.paginateAllowancesBySpender(bob.address, 0, 5);
@@ -1243,7 +1243,7 @@ describe('FastToken', () => {
       });
 
       it('emits a Disapproval event as many times as it removed allowance', async () => {
-        // TODO.
+        // TODO: When smock fixes their stuff, replace some facets by fakes.
         // const subject = token.connect(access.wallet).beforeRemovingMember(alice.address);
         // await expect(subject).to
         //   .emit(token, 'Disapproval')
