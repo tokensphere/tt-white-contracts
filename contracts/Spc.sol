@@ -5,6 +5,7 @@ import './lib/LibAddressSet.sol';
 import './lib/LibPaginate.sol';
 import './lib/LibHelpers.sol';
 import './interfaces/IHasMembers.sol';
+import './Fast/lib/LibFast.sol';
 import './Fast/FastFacet.sol';
 import './Fast/FastTokenFacet.sol';
 
@@ -68,7 +69,7 @@ contract Spc is IHasMembers {
    */
   function provisionWithEth()
       external payable {
-    require(msg.value > 0, 'Missing attached ETH');
+    require(msg.value > 0, LibFast.MISSING_ATTACHED_ETH);
     emit EthReceived(msg.sender, msg.value);
   }
 
@@ -167,7 +168,7 @@ contract Spc is IHasMembers {
       external
       membership(msg.sender) {
     string memory symbol = FastTokenFacet(_fast).symbol();
-    require(fastSymbols[symbol] == address(0), 'Symbol already taken');
+    require(fastSymbols[symbol] == address(0), LibFast.DUPLICATE_ENTRY);
 
     // Add the FAST to our list.
     fasts.push(_fast);
@@ -207,7 +208,7 @@ contract Spc is IHasMembers {
    *  @param _candidate is the address to be checked.
    */
   modifier membership(address _candidate) {
-    require(memberSet.contains(_candidate), 'Missing SPC membership');
+    require(memberSet.contains(_candidate), LibFast.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 }

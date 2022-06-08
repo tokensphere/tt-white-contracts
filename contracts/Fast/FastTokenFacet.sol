@@ -26,13 +26,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   uint8 private constant SENDER_NOT_MEMBER = 2;
   uint8 private constant RECIPIENT_NOT_MEMBER = 3;
   uint8 private constant SENDER_SAME_AS_RECIPIENT = 4;
-  // Restriction messages.
-  string private constant INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
-  string private constant SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
-  string private constant RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
-  string private constant SENDER_SAME_AS_RECIPIENT_MESSAGE = 'Identical sender and recipient';
 
-  /// Events.
+  // Events.
 
   event Minted(uint256 indexed amount, string indexed ref);
   event Burnt(uint256 indexed amount, string indexed ref);
@@ -42,7 +37,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   event Disapproval(address indexed owner, address indexed spender);
 
-  /// Public functions.
+  // Public functions.
 
   function isSemiPublic()
       external view returns(bool) {
@@ -54,7 +49,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
-    require(!s.isSemiPublic || s.isSemiPublic == flag, 'Operation is not supported');
+    require(!s.isSemiPublic || s.isSemiPublic == flag, LibFast.UNSUPPORTED_OPERATION);
     s.isSemiPublic = flag;
   }
 
@@ -98,8 +93,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       spcMembership(msg.sender) {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    require(!s.hasFixedSupply, 'Burning not possible');
-    require(balanceOf(ZERO_ADDRESS) >= amount, 'Insuficient funds');
+    require(!s.hasFixedSupply, LibFast.REQUIRES_CONTINUOUS_SUPPLY);
+    require(balanceOf(ZERO_ADDRESS) >= amount, LibFast.INSUFICIENT_FUNDS);
 
     // Remove the minted amount from the zero address.
     s.balances[ZERO_ADDRESS] -= amount;
@@ -185,7 +180,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function approve(address spender, uint256 amount)
       external override
-      senderMembership(msg.sender)
+      membership(msg.sender)
       returns(bool) {
     _approve(msg.sender, spender, amount);
     return true;
@@ -193,7 +188,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function disapprove(address spender)
       external
-      senderMembership(msg.sender) {
+      membership(msg.sender) {
     _disapprove(msg.sender, spender);
   }
 
@@ -208,9 +203,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the funds are coming from the zero address, we must be a governor.
     if (from == ZERO_ADDRESS) {
-      require(FastAccessFacet(thisAddress()).isGovernor(msg.sender), 'Missing governorship');
+      require(FastAccessFacet(thisAddress()).isGovernor(msg.sender), LibFast.REQUIRES_FAST_GOVERNORSHIP);
     } else {
-      require(allowance(from, msg.sender) >= amount, 'Insuficient allowance');
+      require(allowance(from, msg.sender) >= amount, LibFast.INSUFICIENT_ALLOWANCE);
 
       // Only decrease allowances if the sender of the funds isn't the zero address.
       uint256 newAllowance = s.allowances[from][msg.sender] -= amount;
@@ -276,26 +271,24 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function messageForTransferRestriction(uint8 restrictionCode)
       external override pure returns(string memory) {
     if (restrictionCode == INSUFICIENT_TRANSFER_CREDITS) {
-      return INSUFICIENT_TRANSFER_CREDITS_MESSAGE;
-    } else if (restrictionCode == SENDER_NOT_MEMBER) {
-      return SENDER_NOT_MEMBER_MESSAGE;
-    } else if (restrictionCode == RECIPIENT_NOT_MEMBER) {
-      return RECIPIENT_NOT_MEMBER_MESSAGE;
+      return LibFast.INSUFICIENT_TRANSFER_CREDITS;
+    } else if (restrictionCode == SENDER_NOT_MEMBER || restrictionCode == RECIPIENT_NOT_MEMBER) {
+      return LibFast.REQUIRES_MEMBERSHIP;
     } else if (restrictionCode == SENDER_SAME_AS_RECIPIENT) {
-      return SENDER_SAME_AS_RECIPIENT_MESSAGE;
+      return LibFast.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT;
     }
-    revert('Unknown restriction code');
+    revert(LibFast.UNKNOWN_RESTRICTION_CODE);
   }
 
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       private
-      senderMembership(from) recipientMembership(to) differentAddresses(from, to) {
+      membership(from) membership(to) differentAddresses(from, to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    require(s.balances[from] >= amount, 'Insuficient funds');
-    require(from == ZERO_ADDRESS || s.transferCredits >= amount, INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+    require(s.balances[from] >= amount, LibFast.INSUFICIENT_FUNDS);
+    require(from == ZERO_ADDRESS || s.transferCredits >= amount, LibFast.INSUFICIENT_TRANSFER_CREDITS);
 
     // Keep track of the balances.
     s.balances[from] -= amount;
@@ -373,30 +366,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Modifiers.
 
-  modifier senderMembership(address a) {
-    LibFastToken.Data storage s = LibFastToken.data();
-    require(
-      FastAccessFacet(thisAddress()).isMember(a) ||
-        (s.isSemiPublic && LibFast.data().exchange.isMember(a)) ||
-        a == ZERO_ADDRESS,
-      SENDER_NOT_MEMBER_MESSAGE
-      );
-    _;
-  }
-
-  modifier recipientMembership(address a) {
-    LibFastToken.Data storage s = LibFastToken.data();
-    require(
-      FastAccessFacet(thisAddress()).isMember(a) ||
-        (s.isSemiPublic && LibFast.data().exchange.isMember(a)) ||
-        a == ZERO_ADDRESS,
-      RECIPIENT_NOT_MEMBER_MESSAGE
-    );
-    _;
-  }
-
   modifier differentAddresses(address a, address b) {
-    require(a != b, SENDER_SAME_AS_RECIPIENT_MESSAGE);
+    require(a != b, LibFast.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
     _;
   }
 }

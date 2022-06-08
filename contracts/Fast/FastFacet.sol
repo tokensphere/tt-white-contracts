@@ -15,7 +15,7 @@ contract FastFacet is AFastFacet {
 
   function provisionWithEth()
       external payable {
-    require(msg.value > 0, 'Missing attached ETH');
+    require(msg.value > 0, LibFast.MISSING_ATTACHED_ETH);
     emit EthReceived(msg.sender, msg.value);
   }
 

@@ -24,31 +24,31 @@ abstract contract AFastFacet {
 
   /// @dev Ensures that a method can only be called by another facet of the same diamond.
   modifier diamondInternal() {
-    require(msg.sender == thisAddress(), 'Cannot be called directly');
+    require(msg.sender == thisAddress(), LibFast.REQUIRES_DIAMOND_CALLER);
     _;
   }
 
   /// @dev Ensures that a method can only be called by the owner of this diamond.
   modifier diamondOwner() {
-    require(msg.sender == IERC173(thisAddress()).owner(), 'Requires ownership');
+    require(msg.sender == IERC173(thisAddress()).owner(), LibFast.REQUIRES_MEMBERSHIP);
     _;
   }
 
   /// @dev Ensures that the given address is a member of the overarching SPC contract.
   modifier spcMembership(address a) {
-    require(LibFast.data().spc.isMember(a), 'Missing SPC membership');
+    require(LibFast.data().spc.isMember(a), LibFast.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 
   /// @dev Ensures that the given address is a governor of the current FAST.
   modifier governance(address a) {
-    require(LibFastAccess.data().governorSet.contains(a), 'Missing governorship');
+    require(LibFastAccess.data().governorSet.contains(a), LibFast.REQUIRES_FAST_GOVERNORSHIP);
     _;
   }
 
   /// @dev Ensures that the given address is a member of the current FAST.
   modifier membership(address a) {
-    require(LibFastAccess.data().memberSet.contains(a), 'Missing membership');
+    require(LibFastAccess.data().memberSet.contains(a), LibFast.REQUIRES_FAST_MEMBERSHIP);
     _;
   }
 }

@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import './lib/LibAddressSet.sol';
 import './lib/LibPaginate.sol';
 import './interfaces/IHasMembers.sol';
+import './Fast/lib/LibFast.sol';
 import './Spc.sol';
 
 
@@ -95,7 +96,7 @@ contract Exchange is IHasMembers {
    *  @param _candidate is the address to be checked.
    */
   modifier spcMembership(address _candidate) {
-    require(spc.isMember(_candidate), 'Missing SPC membership');
+    require(spc.isMember(_candidate), LibFast.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 }
