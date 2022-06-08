@@ -30,7 +30,7 @@ abstract contract AFastFacet {
 
   /// @dev Ensures that a method can only be called by the owner of this diamond.
   modifier diamondOwner() {
-    require(msg.sender == IERC173(thisAddress()).owner(), LibFast.REQUIRES_MEMBERSHIP);
+    require(msg.sender == IERC173(thisAddress()).owner(), LibFast.REQUIRES_DIAMOND_OWNERSHIP);
     _;
   }
 

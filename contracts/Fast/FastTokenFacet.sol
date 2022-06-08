@@ -22,10 +22,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   address constant private ZERO_ADDRESS = address(0);
 
   // Restriction codes.
-  uint8 private constant INSUFICIENT_TRANSFER_CREDITS = 1;
-  uint8 private constant SENDER_NOT_MEMBER = 2;
-  uint8 private constant RECIPIENT_NOT_MEMBER = 3;
-  uint8 private constant SENDER_SAME_AS_RECIPIENT = 4;
+  uint8 private constant INSUFICIENT_TRANSFER_CREDITS_CODE = 1;
+  uint8 private constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;
+  uint8 private constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;
 
   // Events.
 
@@ -75,7 +74,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // - The token has fixed supply but has no tokens yet (First and only mint).
     require(
       !s.hasFixedSupply || (s.totalSupply == 0 && balanceOf(ZERO_ADDRESS) == 0),
-      'Minting not possible'
+      LibFast.REQUIRES_CONTINUOUS_SUPPLY
     );
 
     // Prepare the minted amount on the zero address.
@@ -257,24 +256,24 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     // TODO: Add semi-public cases.
     if (s.transferCredits < amount) {
-      return INSUFICIENT_TRANSFER_CREDITS;
+      return INSUFICIENT_TRANSFER_CREDITS_CODE;
     } else if (!FastAccessFacet(thisAddress()).isMember(from)) {
-      return SENDER_NOT_MEMBER;
+      return REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (!FastAccessFacet(thisAddress()).isMember(to)) {
-      return RECIPIENT_NOT_MEMBER;
+      return REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (from == to) {
-      return SENDER_SAME_AS_RECIPIENT;
+      return REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
     }
     return 0;
   }
 
   function messageForTransferRestriction(uint8 restrictionCode)
       external override pure returns(string memory) {
-    if (restrictionCode == INSUFICIENT_TRANSFER_CREDITS) {
+    if (restrictionCode == INSUFICIENT_TRANSFER_CREDITS_CODE) {
       return LibFast.INSUFICIENT_TRANSFER_CREDITS;
-    } else if (restrictionCode == SENDER_NOT_MEMBER || restrictionCode == RECIPIENT_NOT_MEMBER) {
-      return LibFast.REQUIRES_MEMBERSHIP;
-    } else if (restrictionCode == SENDER_SAME_AS_RECIPIENT) {
+    } else if (restrictionCode == REQUIRES_FAST_MEMBERSHIP_CODE) {
+      return LibFast.REQUIRES_FAST_MEMBERSHIP;
+    } else if (restrictionCode == REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
       return LibFast.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT;
     }
     revert(LibFast.UNKNOWN_RESTRICTION_CODE);

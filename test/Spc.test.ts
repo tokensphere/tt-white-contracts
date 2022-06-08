@@ -6,8 +6,10 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc__factory, Spc, FastTokenFacet } from '../typechain';
 import { toHexString } from '../src/utils';
 import {
+  DUPLICATE_ENTRY,
+  MISSING_ATTACHED_ETH,
   negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredFourty,
-  nine, ninety, one, oneHundred, oneMilion, ten, two, twoHundredFifty, twoHundredFourty
+  nine, ninety, one, oneHundred, oneMilion, REQUIRES_SPC_MEMBERSHIP, ten, two, twoHundredFifty, twoHundredFourty
 } from './utils';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 chai.use(solidity);
@@ -59,7 +61,8 @@ describe('Spc', () => {
   describe('provisionWithEth', async () => {
     it('reverts when no Eth is attached', async () => {
       const subject = spc.provisionWithEth();
-      await expect(subject).to.be.revertedWith('Missing attached ETH');
+      await expect(subject).to.be
+        .revertedWith(MISSING_ATTACHED_ETH);
     });
 
     it('is payable and keeps the attached Eth', async () => {
@@ -71,7 +74,8 @@ describe('Spc', () => {
   describe('drainEth', async () => {
     it('requires SPC membership', async () => {
       const subject = spc.drainEth();
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('transfers all the locked Eth to the caller', async () => {
@@ -141,7 +145,8 @@ describe('Spc', () => {
   describe('addMember', async () => {
     it('requires that the sender is a member', async () => {
       const subject = spc.addMember(alice.address);
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('adds the member to the list', async () => {
@@ -152,7 +157,8 @@ describe('Spc', () => {
 
     it('does not add the same member twice', async () => {
       const subject = spcMemberSpc.addMember(spcMember.address);
-      await expect(subject).to.be.revertedWith('Address already in set');
+      await expect(subject).to.be
+        .revertedWith('Address already in set');
     });
 
     it('provisions the member with 10 Eth', async () => {
@@ -195,7 +201,8 @@ describe('Spc', () => {
 
     it('requires that the sender is a member', async () => {
       const subject = spc.removeMember(bob.address);
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('removes the member from the list', async () => {
@@ -206,7 +213,8 @@ describe('Spc', () => {
 
     it('reverts if the member is not in the list', async () => {
       const subject = spcMemberSpc.removeMember(alice.address);
-      await expect(subject).to.be.revertedWith('Address does not exist in set');
+      await expect(subject).to.be
+        .revertedWith('Address does not exist in set');
     });
 
     it('emits a MemberRemoved event', async () => {
@@ -236,13 +244,14 @@ describe('Spc', () => {
     it('requires SPC membership', async () => {
       const subject = spc.registerFast(fast.address);
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('forbids adding two FASTS with the same symbol', async () => {
       await spcMemberSpc.registerFast(fast.address);
       const subject = spcMemberSpc.registerFast(fast.address)
-      await expect(subject).to.be.revertedWith('Symbol already taken');
+      await expect(subject).to.be
+        .revertedWith(DUPLICATE_ENTRY);
     });
 
     it('adds the registry address to the list of registries', async () => {

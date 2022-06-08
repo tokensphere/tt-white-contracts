@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { negOne, one, oneMilion } from './utils';
+import { negOne, one, oneMilion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP } from './utils';
 import { DEPLOYMENT_SALT, toHexString } from '../src/utils';
 import { Spc, Exchange, Fast, FastFacet, FastInitFacet, FastTokenFacet, FastAccessFacet } from '../typechain';
 chai.use(solidity);
@@ -120,13 +120,13 @@ describe('FastAccessFacet', () => {
         const subject = access.addGovernor(alice.address);
         // Check that the registry
         await expect(subject).to.be
-          .revertedWith('Missing SPC membership');
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires SPC membership (governor)', async () => {
         const subject = access.addGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing SPC membership');
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires that the address is not a governor yet', async () => {
@@ -166,13 +166,13 @@ describe('FastAccessFacet', () => {
       it('requires SPC membership (anonymous)', async () => {
         const subject = access.removeGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing SPC membership');
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires SPC membership (governor)', async () => {
         const subject = governedAccess.removeGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing SPC membership');
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires that the address is an existing governor', async () => {
@@ -265,13 +265,13 @@ describe('FastAccessFacet', () => {
       it('requires governance (anonymous)', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires governance (SPC governor)', async () => {
         const subject = spcMemberAccess.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires that the address is not a member yet', async () => {
@@ -315,13 +315,13 @@ describe('FastAccessFacet', () => {
       it('requires governance (anonymous)', async () => {
         const subject = access.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires governance (SPC governor)', async () => {
         const subject = spcMemberAccess.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires that the address is an existing member', async () => {

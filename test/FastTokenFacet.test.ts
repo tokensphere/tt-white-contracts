@@ -7,23 +7,26 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc, Exchange, Fast, FastTokenFacet, FastInitFacet } from '../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYMENT_SALT } from '../src/utils';
+import {
+  INSUFICIENT_FUNDS,
+  INSUFICIENT_TRANSFER_CREDITS,
+  INSUFICIENT_TRANSFER_CREDITS_CODE,
+  REQUIRES_CONTINUOUS_SUPPLY,
+  REQUIRES_DIAMOND_CALLER,
+  REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT,
+  REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE,
+  REQUIRES_FAST_MEMBERSHIP,
+  REQUIRES_FAST_MEMBERSHIP_CODE,
+  REQUIRES_SPC_MEMBERSHIP,
+  UNKNOWN_RESTRICTION_CODE
+} from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
+// ERC20 parameters to deploy our fixtures.
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
 const ERC20_TOKEN_DECIMALS = 18;
-
-// Restriction codes.
-const INSUFICIENT_TRANSFER_CREDITS = 1;
-const SENDER_NOT_MEMBER = 2;
-const RECIPIENT_NOT_MEMBER = 3;
-const SENDER_SAME_AS_RECIPIENT = 4;
-// Restriction messages.
-const INSUFICIENT_TRANSFER_CREDITS_MESSAGE = 'Insuficient transfer credits';
-const SENDER_NOT_MEMBER_MESSAGE = 'Missing sender membership';
-const RECIPIENT_NOT_MEMBER_MESSAGE = 'Missing recipient membership';
-const SENDER_SAME_AS_RECIPIENT_MESSAGE = 'Identical sender and recipient';
 
 interface FastFixtureOpts {
   // Ops variables.
@@ -204,17 +207,20 @@ describe('FastToken', () => {
   describe('setHasFixedSupply', async () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.setHasFixedSupply(true);
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).setHasFixedSupply(true);
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedToken.setHasFixedSupply(true);
-      await expect(subject).to.be.revertedWith('Missing SPC membership');
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('toggles the status flag', async () => {
@@ -234,19 +240,19 @@ describe('FastToken', () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedToken.mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     describe('with fixed supply', async () => {
@@ -254,7 +260,7 @@ describe('FastToken', () => {
         await spcMemberToken.mint(1_000_000, 'Attempt 1');
         const subject = spcMemberToken.mint(1_000_000, 'Attempt 2');
         await expect(subject).to.have
-          .revertedWith('Minting not possible');
+          .revertedWith(REQUIRES_CONTINUOUS_SUPPLY);
       });
     });
 
@@ -309,32 +315,32 @@ describe('FastToken', () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedToken.burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires that the supply is continuous', async () => {
       await spcMemberToken.setHasFixedSupply(true);
       const subject = spcMemberToken.burn(5, 'Burn baby burn')
       await expect(subject).to.have
-        .revertedWith('Burning not possible');
+        .revertedWith(REQUIRES_CONTINUOUS_SUPPLY);
     });
 
     it('requires that the zero address has enough funds', async () => {
       const subject = spcMemberToken.burn(101, 'Burn baby burn')
       await expect(subject).to.have
-        .revertedWith('Insuficient funds');
+        .revertedWith(INSUFICIENT_FUNDS);
     });
 
     it('removes tokens from the zero address', async () => {
@@ -371,19 +377,19 @@ describe('FastToken', () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedToken.addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('accumulates the credits to the existing transfer credits', async () => {
@@ -405,19 +411,19 @@ describe('FastToken', () => {
     it('requires SPC membership (anonymous)', async () => {
       const subject = token.drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (member)', async () => {
       const subject = token.connect(alice).drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('requires SPC membership (governor)', async () => {
       const subject = governedToken.drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith('Missing SPC membership');
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('sets the credit amount to zero', async () => {
@@ -480,19 +486,19 @@ describe('FastToken', () => {
         it('requires sender membership (anonymous)', async () => {
           const subject = token.transfer(bob.address, 100);
           await expect(subject).to.have
-            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires sender membership (Exchange member)', async () => {
           const subject = token.transfer(bob.address, 100);
           await expect(subject).to.have
-            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires recipient membership (anonymous)', async () => {
           const subject = token.connect(alice).transfer(anonymous.address, 100);
           await expect(subject).to.have
-            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires recipient membership (Exchange member)');
@@ -507,13 +513,13 @@ describe('FastToken', () => {
           it('requires that the sender and recipient are different', async () => {
             const subject = token.connect(bob).transfer(bob.address, 101);
             await expect(subject).to.have
-              .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+              .revertedWith(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
           });
 
           it('requires sufficient funds', async () => {
             const subject = token.connect(bob).transfer(alice.address, 101);
             await expect(subject).to.have
-              .revertedWith('Insuficient funds');
+              .revertedWith(INSUFICIENT_FUNDS);
           });
 
           it('requires sufficient transfer credits', async () => {
@@ -523,7 +529,7 @@ describe('FastToken', () => {
             // Do it!
             const subject = token.connect(alice).transfer(bob.address, 100);
             await expect(subject).to.have
-              .revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+              .revertedWith(INSUFICIENT_TRANSFER_CREDITS);
           });
 
           it('transfers from / to the given wallet address', async () => {
@@ -583,7 +589,7 @@ describe('FastToken', () => {
         it('requires sender membership (anonymous)', async () => {
           const subject = token.transferWithRef(bob.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(SENDER_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires sender membership (Exchange member)');
@@ -591,7 +597,7 @@ describe('FastToken', () => {
         it('requires recipient membership (anonymous)', async () => {
           const subject = token.connect(alice).transferWithRef(anonymous.address, 100, 'Two');
           await expect(subject).to.have
-            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires recipient membership (Exchange member)');
@@ -600,13 +606,13 @@ describe('FastToken', () => {
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(bob).transferWithRef(bob.address, 101, 'No!');
         await expect(subject).to.have
-          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+          .revertedWith(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
       });
 
       it('requires sufficient funds', async () => {
         const subject = token.connect(bob).transferWithRef(alice.address, 101, 'Three');
         await expect(subject).to.have
-          .revertedWith('Insuficient funds');
+          .revertedWith(INSUFICIENT_FUNDS);
       });
 
       it('requires sufficient transfer credits', async () => {
@@ -615,7 +621,8 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(alice).transferWithRef(bob.address, 100, 'Four');
-        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+        await expect(subject).to.be
+          .revertedWith(INSUFICIENT_TRANSFER_CREDITS);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -788,7 +795,7 @@ describe('FastToken', () => {
         it('requires recipient membership (anonymous)', async () => {
           const subject = token.connect(john).transferFrom(bob.address, anonymous.address, 100);
           await expect(subject).to.have
-            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires recipient membership (Exchange member)');
@@ -797,13 +804,13 @@ describe('FastToken', () => {
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(john).transferFrom(bob.address, bob.address, 100)
         await expect(subject).to.have
-          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+          .revertedWith(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
       });
 
       it('requires sufficient funds', async () => {
         const subject = token.connect(john).transferFrom(bob.address, alice.address, 101);
         await expect(subject).to.have
-          .revertedWith('Insuficient funds');
+          .revertedWith(INSUFICIENT_FUNDS);
       });
 
       it('requires sufficient transfer credits', async () => {
@@ -812,7 +819,8 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(john).transferFrom(bob.address, alice.address, 100);
-        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+        await expect(subject).to.be
+          .revertedWith(INSUFICIENT_TRANSFER_CREDITS);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -937,7 +945,7 @@ describe('FastToken', () => {
         it('requires recipient membership (anonymous)', async () => {
           const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(RECIPIENT_NOT_MEMBER_MESSAGE);
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
         it('requires recipient membership (Exchange member)');
@@ -946,13 +954,13 @@ describe('FastToken', () => {
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, bob.address, 100, 'No!')
         await expect(subject).to.have
-          .revertedWith(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+          .revertedWith(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
       });
 
       it('requires sufficient funds', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 101, 'Two');
         await expect(subject).to.have
-          .revertedWith('Insuficient funds');
+          .revertedWith(INSUFICIENT_FUNDS);
       });
 
       it('requires sufficient transfer credits', async () => {
@@ -961,7 +969,8 @@ describe('FastToken', () => {
         await spcMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 100, 'Three');
-        await expect(subject).to.be.revertedWith(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+        await expect(subject).to.be
+          .revertedWith(INSUFICIENT_TRANSFER_CREDITS);
       });
 
       it('transfers from / to the given wallet address', async () => {
@@ -1115,25 +1124,25 @@ describe('FastToken', () => {
     describe('detectTransferRestriction has codes for', async () => {
       it('the lack of transfer credits', async () => {
         const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
-        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS);
+        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS_CODE);
       });
 
       it('the lack of sender membership', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(anonymous.address, alice.address, 1);
-        expect(subject).to.eq(SENDER_NOT_MEMBER);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
       });
 
       it('the lack of recipient membership', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, anonymous.address, 1);
-        expect(subject).to.eq(RECIPIENT_NOT_MEMBER);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
       });
 
       it('sender and recipient being identical', async () => {
         await spcMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, bob.address, 1);
-        expect(subject).to.eq(SENDER_SAME_AS_RECIPIENT);
+        expect(subject).to.eq(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE);
       });
 
       it('returns zero when the transfer is possible', async () => {
@@ -1145,29 +1154,29 @@ describe('FastToken', () => {
 
     describe('messageForTransferRestriction has a message for', async () => {
       it('the lack of transfer credits', async () => {
-        const subject = await token.messageForTransferRestriction(INSUFICIENT_TRANSFER_CREDITS);
-        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS_MESSAGE);
+        const subject = await token.messageForTransferRestriction(INSUFICIENT_TRANSFER_CREDITS_CODE);
+        expect(subject).to.eq(INSUFICIENT_TRANSFER_CREDITS);
       });
 
       it('the lack of sender membership', async () => {
-        const subject = await token.messageForTransferRestriction(SENDER_NOT_MEMBER);
-        expect(subject).to.eq(SENDER_NOT_MEMBER_MESSAGE);
+        const subject = await token.messageForTransferRestriction(REQUIRES_FAST_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP);
       });
 
       it('the lack of recipient membership', async () => {
-        const subject = await token.messageForTransferRestriction(RECIPIENT_NOT_MEMBER);
-        expect(subject).to.eq(RECIPIENT_NOT_MEMBER_MESSAGE);
+        const subject = await token.messageForTransferRestriction(REQUIRES_FAST_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP);
       });
 
       it('sender and recipient being identical', async () => {
-        const subject = await token.messageForTransferRestriction(SENDER_SAME_AS_RECIPIENT);
-        expect(subject).to.eq(SENDER_SAME_AS_RECIPIENT_MESSAGE);
+        const subject = await token.messageForTransferRestriction(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE);
+        expect(subject).to.eq(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
       });
 
       it('errors when the restriction code is unknown', async () => {
         const subject = token.messageForTransferRestriction(5);
         await expect(subject).to.have
-          .revertedWith('Unknown restriction code');
+          .revertedWith(UNKNOWN_RESTRICTION_CODE);
       })
     });
   });
@@ -1180,7 +1189,7 @@ describe('FastToken', () => {
     it('cannot be called directly', async () => {
       const subject = token.beforeRemovingMember(alice.address);
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     describe('when successful', async () => {

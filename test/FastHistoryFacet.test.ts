@@ -7,6 +7,7 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { DEPLOYMENT_SALT } from '../src/utils';
 import { Spc, Exchange, Fast, FastHistoryFacet, FastInitFacet } from '../typechain';
+import { REQUIRES_DIAMOND_CALLER } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -100,13 +101,13 @@ describe('FastHistory', () => {
     it('requires that the caller is the diamond (anonymous)', async () => {
       const subject = history.burnt(1, 'One');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('requires that the caller is the diamond (governor)', async () => {
       const subject = governedHistory.burnt(2, 'Two');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('adds an entry to the supply proof list', async () => {
@@ -123,13 +124,13 @@ describe('FastHistory', () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.minted(1, 'One');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.minted(2, 'Two');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('adds an entry to the supply proof list', async () => {
@@ -197,13 +198,13 @@ describe('FastHistory', () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.transfered(alice.address, bob.address, john.address, 100, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.transfered(alice.address, bob.address, john.address, 100, 'Attempt 2');
       await expect(subject).to.have
-        .revertedWith('Cannot be called directly');
+        .revertedWith(REQUIRES_DIAMOND_CALLER);
     });
 
     it('adds an entry to the transfer proof list', async () => {
