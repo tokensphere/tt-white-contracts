@@ -3,11 +3,13 @@
 This repository contains the Ethereum Smart Contracts that are used for our Tokenization as a Service (TSaaS) platform.
 This project uses Hardhat to allow for streamlined development and testing, as well as some helpful tasks (see `./src/tasks`).
 
-Most deploy tasks takes care of updating the `deployments/${network}/...` files so that it is easier to track addresses of previously deployed contracts.
+Note that contracts deployed using migration scripts (See `deploy/`) and tasks (See `tasks/fast.ts` for example) are using deterministic salts.
+This means that regardless of the network you're using (local, staging, production etc), the address of the deployed contracts should remain the same.
 
 ## Bootstrapping a Functional System Locally
 
-Note that for development systems, we use local signers (Eg `ethers.getSigners()`). In the following paragraphs, you can assume that:
+For development systems, we use local signers (Eg `ethers.getSigners()`). In the following paragraphs, you can assume that:
+
 - `zero_address` is `0x0000000000000000000000000000000000000000`.
 - `deployer` is the very first signer from the signers list.
 - `spcMember` is the second signer from the signers list.
@@ -15,25 +17,9 @@ Note that for development systems, we use local signers (Eg `ethers.getSigners()
 - `member` is the fourth signer from the signers list.
 - `random` is a random - non-signer at address `0xF7e5800E52318834E8689c37dCCCD2230427a905`.
 
-Simply run this command:
+When starting a local development node (`yarn hardhat node`), you'll notice that both the SPC and Exchange contracts are being deployed automatically.
 
-```shell
-yarn hardhat bootstrap \
-              --network localhost \
-              --name "Some Awesome FAST Stuff" \
-              --symbol "SAF" \
-              --decimals 18 \
-              --has-fixed-supply true \
-              --is-semi-public true
-```
-
-The `bootstrap` task will:
-
-- Deploy all needed libraries.
-- Deploy an SPC contract using `spcMember` as the main member. It will also provision the SPC contract with some ethers sent from the `deployer` signer. It will also get an Exchange contract deployed.
-- Deploy a FAST set of contracts, register everything together. At this end of this step, the deployed `FastRegistry` should have been provisioned by the SPC contract with some ETH.
-- Mint some tokens and provision some transfer credits.
-- Add the `member` address to the FAST members, and as a by-product of this `member` should be credited some extra ETH.
+You then probably might want to jump directly to the `fast-deploy` task of this document to get started.
 
 ## Account Tasks (See `src/tasks/accounts.ts`)
 
@@ -62,7 +48,8 @@ yarn hardhat spc-deploy \
               --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
 
-Take note of the SPC and Exchange deployed addresses.
+> Note that you won't need to run this particular task if you're using a local development node,
+> as the migration scripts in `deploy/` are ran automatically upon starting it.
 
 ## FAST Token Tasks (See `src/tasks/fast.ts`)
 
@@ -81,13 +68,10 @@ yarn hardhat fast-deploy \
               --tx-credits 1000000
 ```
 
-This task will execute a more complex orchestration. The contracts deployed during this phase are:
-- `FastRegistry`: which keeps track of all other contracts for a given fast.
-- `FastAccess`: which keeps track of the FAST's ACLs.
-- `FastHistory`: a dedicated transfer / minting history keeper.
-- `FastToken`: the FAST's ERC20 token itself.
+This task automatically deploys a full FAST diamond including its initialization facet. It then calls the
+`FastInitFacet.initialize/0` function, and lastly performs a diamond cut to remove the initialization facet.
 
-Once at least one FAST is deployed, take note of its address. There are more tasks that you can run
+Once at least one FAST is deployed, take note of its symbol. There are more tasks that you can run
 over a particular FAST.
 
 For example, to mint new tokens:
@@ -99,8 +83,7 @@ yarn hardhat fast-mint SAF \
               --ref "Much tokens, very wow, such bling."
 ```
 
-At this point, it's important to add transfer credits to the token contract, so that transfers
-can freely be executed.
+At this point, it's important to add transfer credits to the FAST, so that transfers can freely be executed.
 
 ```shell
 yarn hardhat fast-add-transfer-credits SAF 5000000 \
@@ -122,10 +105,6 @@ yarn hardhat fast-balance SAF \
               --network localhost \
               --account 0x0000000000000000000000000000000000000000
 ```
-
-## FAST Access Tasks
-
-## FAST History Tasks
 
 ## Hardhat Cheat-Sheet
 
