@@ -17,10 +17,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /// Constants.
 
-  // We use the 0x0 address for all minting operations. A constant
-  // to it will always come in handy.
-  address constant private ZERO_ADDRESS = address(0);
-
   // Restriction codes.
   uint8 private constant INSUFICIENT_TRANSFER_CREDITS_CODE = 1;
   uint8 private constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;
@@ -283,7 +279,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       private
-      membership(from) membership(to) differentAddresses(from, to) {
+      membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(s.balances[from] >= amount, LibFast.INSUFICIENT_FUNDS);

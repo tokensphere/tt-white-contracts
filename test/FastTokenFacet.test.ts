@@ -8,6 +8,7 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc, Exchange, Fast, FastTokenFacet, FastInitFacet } from '../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYMENT_SALT } from '../src/utils';
 import {
+  INSUFICIENT_ALLOWANCE,
   INSUFICIENT_FUNDS,
   INSUFICIENT_TRANSFER_CREDITS,
   INSUFICIENT_TRANSFER_CREDITS_CODE,
@@ -15,6 +16,7 @@ import {
   REQUIRES_DIAMOND_CALLER,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE,
+  REQUIRES_FAST_GOVERNORSHIP,
   REQUIRES_FAST_MEMBERSHIP,
   REQUIRES_FAST_MEMBERSHIP_CODE,
   REQUIRES_SPC_MEMBERSHIP,
@@ -856,7 +858,7 @@ describe('FastTokenFacet', () => {
       it('requires that there is enough allowance', async () => {
         const subject = token.connect(bob).transferFrom(alice.address, john.address, 100);
         await expect(subject).to.have
-          .revertedWith('Insuficient allowance');
+          .revertedWith(INSUFICIENT_ALLOWANCE);
       });
 
       it('allows non-members to transact on behalf of members', async () => {
@@ -880,19 +882,19 @@ describe('FastTokenFacet', () => {
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
         const subject = spcMemberToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP)
       });
 
       it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP)
       });
 
       it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFrom(ZERO_ADDRESS, alice.address, 100);
         await expect(subject).to.have
-          .revertedWith('Missing governorship')
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP)
       });
 
       it('allows governors to transfer from the zero address', async () => {
@@ -1006,7 +1008,7 @@ describe('FastTokenFacet', () => {
       it('requires that there is enough allowance', async () => {
         const subject = token.connect(bob).transferFromWithRef(alice.address, john.address, 100, 'Seven');
         await expect(subject).to.have
-          .revertedWith('Insuficient allowance');
+          .revertedWith(INSUFICIENT_ALLOWANCE);
       });
 
       it('allows non-members to transact on behalf of members', async () => {
@@ -1030,19 +1032,19 @@ describe('FastTokenFacet', () => {
       it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
         const subject = spcMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
-          .revertedWith('Missing governorship');
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
       it('allows governors to transfer from the zero address', async () => {

@@ -13,6 +13,10 @@ import '../lib/index.sol';
 abstract contract AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
+  // We use the 0x0 address for all minting operations. A constant
+  // to it will always come in handy.
+  address constant internal ZERO_ADDRESS = address(0);
+
   /// Shared methods.
 
   function thisAddress()
@@ -49,6 +53,17 @@ abstract contract AFastFacet {
   /// @dev Ensures that the given address is a member of the current FAST.
   modifier membership(address a) {
     require(LibFastAccess.data().memberSet.contains(a), LibFast.REQUIRES_FAST_MEMBERSHIP);
+    _;
+  }
+
+  /// @dev Ensures that the given address is a member of the current FAST or the Zero Address.
+  modifier membershipOrZero(address a) {
+    require(
+      LibFastAccess.data().memberSet.contains(a) ||
+      (LibFastToken.data().isSemiPublic && LibFast.data().exchange.isMember(a)) ||
+        a == ZERO_ADDRESS,
+      LibFast.REQUIRES_FAST_MEMBERSHIP
+    );
     _;
   }
 }
