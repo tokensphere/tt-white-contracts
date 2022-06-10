@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../Spc.sol';
 import '../Exchange.sol';
 import '../interfaces/IERC20.sol';    // Token.
 import '../interfaces/IERC173.sol';   // Ownership.
@@ -25,7 +24,6 @@ contract FastInitFacet is AFastFacet {
 
   struct InitializerParams {
     // Fast stuff.
-    Spc spc;
     Exchange exchange;
     // Access stuff.
     address governor;
@@ -42,8 +40,8 @@ contract FastInitFacet is AFastFacet {
       diamondOwner() {
     // Initialize top-level storage.
     LibFast.Data storage fastData = LibFast.data();
-    fastData.spc = params.spc;
     fastData.exchange = params.exchange;
+    fastData.spc = fastData.exchange.spc();
     
     // Initialize access storage.
     LibFastAccess.Data storage accessData = LibFastAccess.data();

@@ -45,8 +45,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       live: false,
-      saveDeployments: true,
-      tags: ['test', 'local']
+      saveDeployments: false,
+      tags: ['local', 'test']
     },
     localhost: {
       live: false,
@@ -55,18 +55,9 @@ const config: HardhatUserConfig = {
     }
   },
   namedAccounts: {
-    deployer: {
-      hardhat: 0,
-      localhost: 0
-    },
-    spcMember: {
-      hardhat: 1,
-      localhost: 1
-    },
-    fastGovernor: {
-      hardhat: 2,
-      localhost: 2
-    }
+    deployer: 0,
+    spcMember: 1,
+    fastGovernor: 2
   },
   typechain: {
     outDir: 'typechain',

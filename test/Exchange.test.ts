@@ -5,7 +5,7 @@ import { ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Exchange__factory, Spc, Exchange } from '../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { REQUIRES_FAST_GOVERNORSHIP } from './utils';
+import { REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -52,7 +52,7 @@ describe('Exchange', () => {
       it('requires governance (anonymous)', async () => {
         const subject = exchange.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires that the address is not a member yet', async () => {
@@ -91,7 +91,7 @@ describe('Exchange', () => {
       it('requires governance (anonymous)', async () => {
         const subject = exchange.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
       it('requires that the address is an existing member', async () => {

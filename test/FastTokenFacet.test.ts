@@ -23,17 +23,17 @@ import {
 chai.use(solidity);
 chai.use(smock.matchers);
 
+const FAST_FIXTURE_NAME = 'FastTokenFixture';
+
 // ERC20 parameters to deploy our fixtures.
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
-const ERC20_TOKEN_DECIMALS = 18;
+const ERC20_TOKEN_DECIMALS = BigNumber.from(18);
 
 interface FastFixtureOpts {
   // Ops variables.
   deployer: string;
-  spcMember: string;
   governor: string;
-  spc: string;
   exchange: string;
   // Config.
   name: string;
@@ -46,23 +46,23 @@ interface FastFixtureOpts {
 const FAST_FACETS = ['FastFacet', 'FastAccessFacet', 'FastTokenFacet', 'FastHistoryFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const opts = uOpts as FastFixtureOpts;
+  const initOpts = uOpts as FastFixtureOpts;
   // Deploy the fast.
-  const fastDeploy = await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  const fastDeploy = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: [...FAST_FACETS, 'FastInitFacet'],
     deterministicSalt: DEPLOYMENT_SALT
   });
 
   // Call the initialization facet.
   const init = await ethers.getContractAt('FastInitFacet', fastDeploy.address) as FastInitFacet;
-  await init.initialize(opts);
+  await init.initialize(initOpts);
 
   // Remove the initialization facet.
-  await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: FAST_FACETS,
     deterministicSalt: DEPLOYMENT_SALT
   });
@@ -70,7 +70,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   return fastDeploy;
 });
 
-describe('FastToken', () => {
+describe('FastTokenFacet', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
@@ -94,7 +94,7 @@ describe('FastToken', () => {
     // Create an SPC and Exchange mocks.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
-
+    exchange.spc.returns(spc.address);
   });
 
   beforeEach(async () => {
@@ -107,18 +107,17 @@ describe('FastToken', () => {
     exchange.isMember.returns(false);
     exchange.isMember.whenCalledWith(exchangeMember.address).returns(true)
 
-    const { address: fastAddr } = await fastDeployFixture({
+    const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
-      spcMember: spcMember.address,
       governor: governor.address,
-      spc: spc.address,
       exchange: exchange.address,
       name: ERC20_TOKEN_NAME,
       symbol: ERC20_TOKEN_SYMBOL,
       decimals: ERC20_TOKEN_DECIMALS,
       hasFixedSupply: true,
       isSemiPublic: false
-    });
+    };
+    const { address: fastAddr } = await fastDeployFixture(initOpts);
     const fast = await ethers.getContractAt('Fast', fastAddr) as Fast;
     const governedFast = fast.connect(governor);
 

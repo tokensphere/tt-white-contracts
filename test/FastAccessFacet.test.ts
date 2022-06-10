@@ -11,12 +11,12 @@ import { Spc, Exchange, Fast, FastFacet, FastInitFacet, FastTokenFacet, FastAcce
 chai.use(solidity);
 chai.use(smock.matchers);
 
+const FAST_FIXTURE_NAME = 'FastFixture';
+
 interface FastFixtureOpts {
   // Ops variables.
   deployer: string;
-  spcMember: string;
   governor: string;
-  spc: string;
   exchange: string;
   // Config.
   name: string;
@@ -29,23 +29,23 @@ interface FastFixtureOpts {
 const FAST_FACETS = ['FastFacet', 'FastAccessFacet', 'FastTokenFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const opts = uOpts as FastFixtureOpts;
+  const initOpts = uOpts as FastFixtureOpts;
   // Deploy the fast.
-  const fastDeploy = await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  const fastDeploy = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: [...FAST_FACETS, 'FastInitFacet'],
     deterministicSalt: DEPLOYMENT_SALT
   });
 
   // Call the initialization facet.
   const init = await ethers.getContractAt('FastInitFacet', fastDeploy.address) as FastInitFacet;
-  await init.initialize(opts);
+  await init.initialize(initOpts);
 
   // Remove the initialization facet.
-  await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: FAST_FACETS,
     deterministicSalt: DEPLOYMENT_SALT
   });
@@ -77,24 +77,24 @@ describe('FastAccessFacet', () => {
     // Mock an SPC and a FAST.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
+    exchange.spc.returns(spc.address);
   });
 
   beforeEach(async () => {
     spc.isMember.returns(false);
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
 
-    const { address: fastAddr } = await fastDeployFixture({
+    const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
-      spcMember: spcMember.address,
       governor: governor.address,
-      spc: spc.address,
       exchange: exchange.address,
       name: 'Better, Stronger, FASTer',
       symbol: 'BSF',
-      decimals: 18,
+      decimals: BigNumber.from(18),
       hasFixedSupply: true,
       isSemiPublic: true
-    });
+    };
+    const { address: fastAddr } = await fastDeployFixture(initOpts);
     const fast = await ethers.getContractAt('Fast', fastAddr) as Fast;
 
     // TODO: Once smock fixes their stuff. replace facets by fakes.

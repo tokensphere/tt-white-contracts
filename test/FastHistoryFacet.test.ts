@@ -11,11 +11,12 @@ import { REQUIRES_DIAMOND_CALLER } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
+const FAST_FIXTURE_NAME = 'FastHistoryFixture';
+
 interface FastFixtureOpts {
   // Ops variables.
   deployer: string;
   governor: string;
-  spc: string;
   exchange: string;
   // Config.
   name: string;
@@ -28,23 +29,23 @@ interface FastFixtureOpts {
 const FAST_FACETS = ['FastFacet', 'FastHistoryFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const opts = uOpts as FastFixtureOpts;
+  const initOpts = uOpts as FastFixtureOpts;
   // Deploy the fast.
-  const fastDeploy = await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  const fastDeploy = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: [...FAST_FACETS, 'FastInitFacet'],
     deterministicSalt: DEPLOYMENT_SALT
   });
 
   // Call the initialization facet.
   const init = await ethers.getContractAt('FastInitFacet', fastDeploy.address) as FastInitFacet;
-  await init.initialize(opts);
+  await init.initialize(initOpts);
 
   // Remove the initialization facet.
-  await deployments.diamond.deploy('Fast', {
-    from: opts.deployer,
-    owner: opts.deployer,
+  await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+    from: initOpts.deployer,
+    owner: initOpts.deployer,
     facets: FAST_FACETS,
     deterministicSalt: DEPLOYMENT_SALT
   });
@@ -52,7 +53,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   return fastDeploy;
 });
 
-describe('FastHistory', () => {
+describe('FastHistoryFacet', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
@@ -72,26 +73,23 @@ describe('FastHistory', () => {
     // Mock an SPC and a FAST.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
+    exchange.spc.returns(spc.address);
   });
 
   beforeEach(async () => {
-    const deploy = await fastDeployFixture({
+    const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
-      spcMember: spcMember.address,
       governor: governor.address,
-      spc: spc.address,
       exchange: exchange.address,
       name: 'Better, Stronger, FASTer',
       symbol: 'BSF',
-      decimals: 18,
+      decimals: BigNumber.from(18),
       hasFixedSupply: true,
       isSemiPublic: true
-    });
-
-    const fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
-
+    };
+    const deploy = await fastDeployFixture(initOpts);
     // Spin up our History contract.
-    history = fast as FastHistoryFacet;
+    history = await ethers.getContractAt('Fast', deploy.address) as FastHistoryFacet;
     governedHistory = history.connect(governor);
   });
 
