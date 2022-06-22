@@ -3,9 +3,11 @@ version: "3.7"
 services:
   geth:
     image: ethereum/client-go:v1.10.19
-    entrypoint: "/bin/sh"
-    command: [ "./scripts/geth-local-poa-chain.sh" ]
+    entrypoint: "/bin/sh -c"
+    command: [ "apk add -U bash && ./scripts/geth-local-poa-chain.sh" ]
     working_dir: /data
+    env_file:
+      - './.env.docker'
     volumes:
       - type: bind
         source: ./
