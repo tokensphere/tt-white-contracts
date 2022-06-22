@@ -1,16 +1,21 @@
 # JS and other stuff.
 node_modules
-.env
 coverage
 coverage.json
-typechain
 .vscode/
 
 # Hardhat files.
 abi/
 cache/
 artifacts/
-typechain-types/
+typechain/
+deployments/dev
+deployments/hardhat
+deployments/localhost
 
-# Openzeppelin stuff.
-.openzeppelin/*-31337.json
+# Private data that should not be visible publicly.
+conf/keys.staging.json
+conf/keys.production.json
+
+# Geth local chain state.
+geth-local-poa-chain/geth

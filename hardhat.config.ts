@@ -1,21 +1,18 @@
-import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
-import '@openzeppelin/hardhat-upgrades';
 import '@typechain/hardhat';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
-import 'hardhat-gas-reporter';
+import 'hardhat-deploy';
+import 'hardhat-deploy-ethers';
+import 'hardhat-diamond-abi';
 import 'solidity-coverage';
-
-// Loads `.env` file into `process.env`.
-dotenv.config();
+import 'hardhat-gas-reporter';
 
 // Import all of our tasks here!
-import './src/tasks/accounts';
-import './src/tasks/libraries';
-import './src/tasks/spc';
-import './src/tasks/fast';
-import './src/tasks/bootstrap';
+import './tasks/accounts';
+import './tasks/spc';
+import './tasks/exchange';
+import './tasks/fast';
+import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl } from './src/utils';
+
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -28,16 +25,126 @@ const config: HardhatUserConfig = {
       }
     }
   },
+  diamondAbi: [{
+    name: 'Spc',
+    include: [
+      'IERC173',
+      'IERC165',
+      'IDiamondCut',
+      'IDiamondLoupe',
+      'SpcTopFacet',
+      'SpcFrontendFacet'
+    ]
+  }, {
+    name: 'Exchange',
+    include: [
+      'IERC173',
+      'IERC165',
+      'IDiamondCut',
+      'IDiamondLoupe',
+      'ExchangeTopFacet'
+    ]
+  }, {
+    name: 'Fast',
+    include: [
+      'IERC173',
+      'IERC165',
+      'IDiamondCut',
+      'IDiamondLoupe',
+      'FastTopFacet',
+      'FastAccessFacet',
+      'FastTokenFacet',
+      'FastHistoryFacet',
+      'FastFrontendFacet'
+    ]
+  }],
   networks: {
-    ropsten: {
-      url: process.env.ROPSTEN_URL || '',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    dev: {
+      live: true,
+      saveDeployments: true,
+      url: nodeUrl('dev'),
+      chainId: 18021980,
+      accounts: accounts('dev')
     },
+    staging: {
+      live: true,
+      saveDeployments: true,
+      url: nodeUrl('staging'),
+      chainId: 18021981,
+      accounts: accounts('staging')
+    },
+    production: {
+      live: true,
+      saveDeployments: true,
+      url: nodeUrl('production'),
+      chainId: 18021982,
+      accounts: accounts('production')
+    }
+  },
+  namedAccounts: {
+    // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
+    deployer: {
+      default: 0,
+      staging: '0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE',
+      production: '0x214a62AB48a2BbBf7938c353F0388D1996C627a3'
+    },
+    // The account who will be the first member of the SPC contract.
+    spcMember: {
+      default: 1,
+      staging: '0x1d90a74D7A2BCC94F35477480d5A5Fb808e3086e',
+      production: '0xa6cD80b78638E1eCcBE933148d9BBc6AeCDc6f98',
+    },
+    // Used exclusively in dev environments when deploying test FAST contracts.
+    fastGovernor: { default: 2 },
+    // Used to hold genesis Eth in our live environments.
+    storage: {
+      default: 3,
+      staging: '0x459afD5DC396d24Fa4843a42276e5260c73A62f1',
+      production: '0xB4C87127F59c9b8653790e15F92effa62f7D17D7',
+    },
+    // Various users...
+    user1: { default: 4 },
+    user2: { default: 5 },
+    user3: { default: 6 },
+    user4: { default: 7 },
+    user5: { default: 8 },
+    user6: { default: 9 },
+    user7: { default: 10 },
+    user8: { default: 11 },
+    user9: { default: 12 },
+    user10: { default: 13 }
+  },
+  // Our deterministic deployment parameters were generated using https://github.com/safe-global/safe-singleton-factory.
+  // These shouldn't need to change - they are self-contained, and allow to deploy everything needed
+  // for determinist deployments on our three environments.
+  deterministicDeployment: {
+    // Hardhat / Localhost.
+    31337: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a78085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf382f4f5a03381292b6ba77ee1f88e5418750ba737f5e94d8df24b67c4eab84b6a96801c70a03409d040cfc82946e15e361c5142cc7b811c8ee3d9b94460ba3ef45d0e293dde',
+    },
+    // Local Geth POA chain.
+    18021980: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdba01590b43af70aef60a9342a33eaf1536b07df9ba36e96f0e5102485b4f23f7720a01e6266145487736a1809cf67cbc0a86d9eee3438cc97e0bd523694f3f3e9e1cb',
+    },
+    // Staging.
+    18021981: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdea06ad52d72e9acaacd578c2c0582df2f9793dfba35f20bf7a36e5c3ff36b81dba5a07f4012aa24648095dc422bb1aff8918cad962c367c1ab4643f04dff97fdee941',
+    },
+    // Production.
+    18021982: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdfa008e1c44962bf042ecfc8957cbe4becaef17ef447c04b7307fefdc88f5deff596a0549894bfc3037be469ad6784c988110fb8ae8d3f8a5258d1180fd965890b7267',
+    }
+  },
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5',
   },
   gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    gasPrice: 21,
-    currency: 'EUR'
+    enabled: process.env.REPORT_GAS !== undefined
   }
 };
 export default config;
