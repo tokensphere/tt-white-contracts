@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 trap cleanup EXIT
 DATADIR="./geth-local-poa-chain"
 
@@ -14,13 +14,15 @@ cleanup
 # Initialize data dir from Genesis.
 geth init \
   --datadir "$DATADIR" \
-  "./geth-local-poa-chain/genesis.json"
+  "${DATADIR}/genesis.json"
 
 # Run geth in dev mode (poa, sealing enabled).
 geth --dev \
+  --ipcdisable \
   --datadir "$DATADIR" \
   --miner.etherbase "0x53df057d9468b50702f5705a420031a059d71a87" \
   --http \
+  --http.addr "0.0.0.0" \
   --http.port 8546 \
   --http.api "eth,web3,net" \
   --http.corsdomain "*"

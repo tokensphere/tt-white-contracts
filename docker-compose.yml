@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  geth:
+    image: ethereum/client-go:v1.10.19
+    entrypoint: "/bin/sh"
+    command: [ "./scripts/geth-local-poa-chain.sh" ]
+    working_dir: /data
+    volumes:
+      - type: bind
+        source: ./
+        target: /data
+    ports:
+      - "8546:8546"
