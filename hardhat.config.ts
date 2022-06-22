@@ -94,14 +94,14 @@ const config: HardhatUserConfig = {
       staging: '0x1d90a74D7A2BCC94F35477480d5A5Fb808e3086e',
       production: '0xa6cD80b78638E1eCcBE933148d9BBc6AeCDc6f98',
     },
+    // Used exclusively in dev environments when deploying test FAST contracts.
+    fastGovernor: { default: 2 },
     // Used to hold genesis Eth in our live environments.
     storage: {
-      default: 2,
-      staging: '',
-      production: '',
+      default: 3,
+      staging: '0x459afD5DC396d24Fa4843a42276e5260c73A62f1',
+      production: '0xB4C87127F59c9b8653790e15F92effa62f7D17D7',
     },
-    // Used exclusively in dev environments when deploying test FAST contracts.
-    fastGovernor: { default: 3 },
     // Various users...
     user1: { default: 4 },
     user2: { default: 5 },
