@@ -21,6 +21,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const iou = await ethers.getContract('FastIOU') as Fast;
   await iou.connect(spcMemberSigner).addTransferCredits('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 };
-func.tags = ['FastIOU'];
-func.dependencies = ['Spc', 'Exchange'];
+func.tags = ['DeployIOU'];
 export default func;

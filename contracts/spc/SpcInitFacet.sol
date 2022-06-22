@@ -32,7 +32,7 @@ contract SpcInitFacet is ASpcFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      deployerContract() {
+      diamondOwner() {
     // Grab our top-level storage.
     LibSpc.Data storage spcData = LibSpc.data();
     // Make sure we havn't initialized yet.

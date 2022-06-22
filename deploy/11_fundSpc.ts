@@ -6,7 +6,6 @@ import { toBaseUnit } from '../src/utils';
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // We only want to do this in local development nodes.
   const { ethers, getNamedAccounts, network: { name: netName } } = hre;
-  if (netName != 'hardhat' && netName != 'localhost') { return; }
   const { storage } = await getNamedAccounts();
   const storageSigner = await ethers.getSigner(storage);
 
@@ -16,5 +15,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   spc.connect(storageSigner).provisionWithEth({ value: toBaseUnit(10_000, 18) });
 };
 func.tags = ['FundSpc'];
-func.dependencies = ['Spc'];
 export default func;

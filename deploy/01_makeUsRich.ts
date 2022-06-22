@@ -13,5 +13,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       return hre.network.provider.send("hardhat_setBalance", [address, '0xC9F2C9CD04674EDEA40000000'])
     }));
 };
-func.tags = ['BlingBling'];
+func.tags = ['MakeUsRich'];
 export default func;

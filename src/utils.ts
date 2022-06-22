@@ -8,7 +8,7 @@ const DEPLOYER_FACTORY_COMMON = {
   deployer: '0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e',
   factory: '0x6DF2D25d8C6FD680730ee658b530A05a99BB769a',
   funding: '10000000000000000',
-  salt: '0xc9fa71d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d'
+  salt: '0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d'
 }
 
 function fromBaseUnit(amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber {

@@ -1,7 +1,7 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DEPLOYER_FACTORY_COMMON } from '../src/utils';
-import { Spc, Exchange } from '../typechain'
+import { Spc, Exchange, SpcInitFacet } from '../typechain'
 
 // Tasks.
 
@@ -45,18 +45,19 @@ async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
   const deploy = await diamond.deploy('Spc', {
     from: deployer,
     owner: deployer,
-    facets: SPC_FACETS,
-    execute: {
-      contract: 'SpcInitFacet',
-      methodName: 'initialize',
-      args: [{ member: spcMember }]
-    },
+    facets: [...SPC_FACETS, 'SpcInitFacet'],
     deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
     log: true
   });
 
+  // Initialize the diamond. We are doing it in two steps, because the SPC member is different
+  // in each environment, and this would make our deployment transaction different in each and
+  // therefore defeat the deterministic deployment strategy.
+  const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
+  await init.initialize({ member: spcMember });
+
   // Return a handle to the diamond.
-  return await ethers.getContractAt('Spc', deploy.address) as Spc;
+  return await ethers.getContractAt('Spc', deploy.address);
 }
 
 export { SPC_FACETS, deploySpc };

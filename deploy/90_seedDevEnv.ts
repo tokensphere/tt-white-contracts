@@ -68,5 +68,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await cvd.connect(fastGovernorSigner).addMember(address);
 };
 func.tags = ['SeedDevEnv'];
-func.dependencies = ['CreditIOU'];
 export default func;
