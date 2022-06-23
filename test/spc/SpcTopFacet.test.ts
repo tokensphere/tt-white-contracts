@@ -257,12 +257,34 @@ describe('SpcTopFacet', () => {
 
   /// FAST management stuff.
 
+  describe('isFastRegistered', async () => {
+    let fast: FakeContract<FastTokenFacet>;
+
+    beforeEach(async () => {
+      // Set up a token mock.
+      fast = await smock.fake('FastTokenFacet');
+      fast.symbol.returns('FST');
+      // Register the FST token using the spcMember account.
+      await spcMemberSpc.registerFast(fast.address);
+    });
+
+    it('returns false when the FAST symbol is unknown', async () => {
+      const subject = await spc.isFastRegistered(ZERO_ADDRESS);
+      expect(subject).to.eq(false);
+    });
+
+    it('returns true when the FAST symbol is registered', async () => {
+      const subject = await spc.isFastRegistered(fast.address);
+      expect(subject).to.eq(true);
+    });
+  });
+
   describe('fastBySymbol', async () => {
     let fast: FakeContract<FastTokenFacet>;
 
     beforeEach(async () => {
       // Set up a token mock.
-      const fast = await smock.fake('FastTokenFacet');
+      fast = await smock.fake('FastTokenFacet');
       fast.symbol.returns('FST');
       // Register the FST token using the spcMember account.
       await spcMemberSpc.registerFast(fast.address);
