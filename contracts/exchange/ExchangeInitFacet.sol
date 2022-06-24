@@ -10,11 +10,7 @@ import '../lib/LibDiamond.sol';
 import './lib/AExchangeFacet.sol';
 
 
-/** @title The Exchange Smart Contract.
- *  @dev The exchange contract is in charge of keeping track of exchange members and has logic
- *  related to trading.
- *  It requires an SPC contract instance at construct-time, as it relies on SPC membership
- *  to permission governance functions.
+/** @dev The Exchange initialization facet.
  */
 contract ExchangeInitFacet is AExchangeFacet {
   struct InitializerParams {

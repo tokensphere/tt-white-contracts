@@ -28,12 +28,6 @@ abstract contract ASpcFacet {
     _;
   }
 
-  /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier deployerContract() {
-    require(msg.sender == LibConstants.DEPLOYER_CONTRACT, LibConstants.INTERNAL_METHOD);
-    _;
-  }
-
   /// @dev Ensures that the given address is a member of the current FAST.
   modifier membership(address a) {
     require(LibSpc.data().memberSet.contains(a), LibConstants.REQUIRES_SPC_MEMBERSHIP);
