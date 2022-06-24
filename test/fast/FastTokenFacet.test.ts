@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTokenFacet, FastInitFacet } from '../../typechain';
+import { Spc, Exchange, Fast, FastTokenFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import {
   INSUFFICIENT_ALLOWANCE,
@@ -20,7 +20,8 @@ import {
   REQUIRES_FAST_MEMBERSHIP,
   REQUIRES_FAST_MEMBERSHIP_CODE,
   REQUIRES_SPC_MEMBERSHIP,
-  UNKNOWN_RESTRICTION_CODE
+  UNKNOWN_RESTRICTION_CODE,
+  UNSUPPORTED_OPERATION
 } from '../utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -199,7 +200,25 @@ describe('FastTokenFacet', () => {
   /// Other stuff.
 
   describe('setIsSemiPublic', async () => {
-    it('NEEDS MORE TESTS');
+    it('requires SPC membership for the sender', async () => {
+      const subject = token.setIsSemiPublic(true);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('cannot revert an SPC to non-semi public once set', async () => {
+      // Set as semi public.
+      await spcMemberToken.setIsSemiPublic(true);
+      // Attempt to revert to non-semi public.
+      const subject = spcMemberToken.setIsSemiPublic(false);
+      await expect(subject).to.be
+        .revertedWith(UNSUPPORTED_OPERATION);
+    });
+
+    it('sets the required isSemiPublic flag on the token', async () => {
+      await spcMemberToken.setIsSemiPublic(true);
+      expect(await spcMemberToken.isSemiPublic()).to.be.true;
+    });
   });
 
   describe('setHasFixedSupply', async () => {
@@ -1070,7 +1089,16 @@ describe('FastTokenFacet', () => {
   /// Allowance querying.
 
   describe('givenAllowanceCount', async () => {
-    it('NEEDS MORE TESTS');
+    beforeEach(async () => {
+      // Let alice give allowance to bob and john.
+      await token.connect(alice).approve(bob.address, 5);
+      await token.connect(alice).approve(john.address, 10);
+    });
+
+    it('returns the count of allowancesByOwner', async () => {
+      const count = await token.givenAllowanceCount(alice.address);
+      expect(count).to.eq(2);
+    });
   });
 
   describe('paginateAllowancesByOwner', async () => {
@@ -1094,7 +1122,15 @@ describe('FastTokenFacet', () => {
   });
 
   describe('receivedAllowanceCount', async () => {
-    it('NEEDS MORE TESTS');
+    beforeEach(async () => {
+      // Approve a transaction for Bob.
+      await token.connect(alice).approve(bob.address, 5);
+    });
+
+    it('returns the count of allowancesBySpender', async () => {
+      const count = await token.receivedAllowanceCount(bob.address);
+      expect(count).to.eq(1);
+    });
   });
 
   describe('paginateAllowancesBySpender', async () => {
