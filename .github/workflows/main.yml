@@ -31,3 +31,11 @@ jobs:
       run: |
         . ./.env
         yarn coverage
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+        files: ./coverage.json
+        verbose: true
