@@ -16,6 +16,7 @@ export const twoHundredForty = ethers.utils.parseEther('240.0');
 export const negTwoHundredForty = twoHundredForty.mul(-1);
 export const twoHundredFifty = ethers.utils.parseEther('250.0');
 export const negTwoHundredFifty = twoHundredFifty.mul(-1);
+export const tenThousand = ethers.utils.parseEther('10000.0');
 export const oneMillion = ethers.utils.parseEther('1000000.0');
 
 // Restriction codes.
