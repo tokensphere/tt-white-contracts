@@ -7,6 +7,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { address: spcAddr } = await deployments.get('Spc');
   await deployExchange(hre, spcAddr);
 };
-func.tags = ['Exchange'];
-func.dependencies = ['Spc'];
+func.tags = ['DeployExchange'];
 export default func;

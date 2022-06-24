@@ -15,8 +15,6 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const SPC_FIXTURE_NAME = 'Spc';
-
 interface SpcFixtureOpts {
   // Ops variables.
   deployer: string;
@@ -28,18 +26,22 @@ const SPC_FACETS = ['SpcTopFacet'];
 
 const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as SpcFixtureOpts;
+  const { deployer, ...initFacetOpts } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy(SPC_FIXTURE_NAME, {
+  const deploy = await deployments.diamond.deploy('Spc', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: [...SPC_FACETS, 'SpcInitFacet'],
-    execute: {
-      contract: 'SpcInitFacet',
-      methodName: 'initialize',
-      args: [initOpts]
-    },
     deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
   });
+
+  // Initialize the diamond. We are doing it in two steps, because the SPC member is different
+  // in each environment, and this would make our deployment transaction different in each and
+  // therefore defeat the deterministic deployment strategy.
+  const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
+  await init.initialize(initFacetOpts);
+
+  return deploy;
 });
 
 describe('SpcTopFacet', () => {

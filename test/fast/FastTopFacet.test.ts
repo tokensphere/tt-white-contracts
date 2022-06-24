@@ -11,8 +11,6 @@ import { Spc, Exchange, Fast, FastTopFacet, FastInitFacet, FastTokenFacet, FastA
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastFixture';
-
 interface FastFixtureOpts {
   // Ops variables.
   deployer: string;
@@ -31,27 +29,19 @@ const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
+  const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  const deploy = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: [...FAST_FACETS, 'FastInitFacet'],
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
-  });
-
-  // Call the initialization facet.
-  const init = await ethers.getContractAt('FastInitFacet', deploy.address) as FastInitFacet;
-  await init.initialize(initOpts);
-
-  // Remove the initialization facet.
-  await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+  return await deployments.diamond.deploy('Fast', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
+    execute: {
+      contract: 'FastInitFacet',
+      methodName: 'initialize',
+      args: [initFacetArgs],
+    },
     deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
   });
-
-  return deploy;
 });
 
 describe('FastAccessFacet', () => {

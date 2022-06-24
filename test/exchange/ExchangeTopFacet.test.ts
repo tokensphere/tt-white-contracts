@@ -7,10 +7,9 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Exchange, ExchangeInitFacet } from '../../typechain';
 import { REQUIRES_SPC_MEMBERSHIP } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
+import { EXCHANGE_FACETS } from '../../tasks/exchange';
 chai.use(solidity);
 chai.use(smock.matchers);
-
-const EXCHANGE_FIXTURE_NAME = 'Exchange';
 
 interface ExchangeFixtureOpts {
   // Ops variables.
@@ -19,31 +18,21 @@ interface ExchangeFixtureOpts {
   spc: string;
 }
 
-const EXCHANGE_FACETS = ['ExchangeTopFacet'];
-
 const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as ExchangeFixtureOpts;
+  const { deployer, ...initFacetOpts } = initOpts;
   // Deploy the diamond.
-  const deploy = await deployments.diamond.deploy(EXCHANGE_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: [...EXCHANGE_FACETS, 'ExchangeInitFacet'],
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
-  });
-
-  // Call the initialization facet.
-  const init = await ethers.getContractAt('ExchangeInitFacet', deploy.address) as ExchangeInitFacet;
-  await init.initialize(initOpts);
-
-  // Remove the initialization facet.
-  await deployments.diamond.deploy(EXCHANGE_FIXTURE_NAME, {
+  return await deployments.diamond.deploy('Exchange', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: EXCHANGE_FACETS,
+    execute: {
+      contract: 'ExchangeInitFacet',
+      methodName: 'initialize',
+      args: [initFacetOpts]
+    },
     deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
   });
-
-  return deploy;
 });
 
 describe('ExchangeTopFacet', () => {

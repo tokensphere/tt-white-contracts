@@ -59,6 +59,9 @@ const config: HardhatUserConfig = {
     ]
   }],
   networks: {
+    hardhat: {
+      saveDeployments: false
+    },
     dev: {
       live: true,
       saveDeployments: true,
@@ -82,27 +85,27 @@ const config: HardhatUserConfig = {
     }
   },
   namedAccounts: {
+    // TODO: WE NEED DEPLOYER TO BE THE SAME ACROSS ALL LIVE ENVIRONMENTS.
     // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
     deployer: {
       default: 0,
       staging: '0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE',
-      production: '0x214a62AB48a2BbBf7938c353F0388D1996C627a3'
+      production: '0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE'
     },
     // The account who will be the first member of the SPC contract.
     spcMember: {
       default: 1,
-      staging: '0x1d90a74D7A2BCC94F35477480d5A5Fb808e3086e',
-      production: '0xa6cD80b78638E1eCcBE933148d9BBc6AeCDc6f98',
+      staging: '0xd786f085c53E1674afFcEe9252Bb3E7044698267',
+      production: '0xb1004872B989ec8894F8Dd07da85437Dff9ddb37',
     },
-    // Used exclusively in dev environments when deploying test FAST contracts.
-    fastGovernor: { default: 2 },
     // Used to hold genesis Eth in our live environments.
     storage: {
-      default: 3,
+      default: 2,
       staging: '0x459afD5DC396d24Fa4843a42276e5260c73A62f1',
-      production: '0xB4C87127F59c9b8653790e15F92effa62f7D17D7',
+      production: '0x459afD5DC396d24Fa4843a42276e5260c73A62f1',
     },
-    // Various users...
+    // Used exclusively in dev environments when deploying test FAST contracts.
+    fastGovernor: { default: 3 },
     user1: { default: 4 },
     user2: { default: 5 },
     user3: { default: 6 },

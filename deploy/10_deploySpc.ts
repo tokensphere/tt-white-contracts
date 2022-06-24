@@ -7,6 +7,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { spcMember } = await getNamedAccounts();
   await deploySpc(hre, spcMember);
 };
-func.tags = ['Spc'];
-func.dependencies = ['BlingBling'];
+func.tags = ['DeploySpc'];
 export default func;
