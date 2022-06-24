@@ -11,8 +11,6 @@ import { Spc, Exchange, Fast, FastTopFacet, FastInitFacet, FastTokenFacet, FastA
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastFixture';
-
 interface FastFixtureOpts {
   // Ops variables.
   deployer: string;
@@ -33,7 +31,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
   const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+  return await deployments.diamond.deploy('Fast', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
