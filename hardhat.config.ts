@@ -59,6 +59,9 @@ const config: HardhatUserConfig = {
     ]
   }],
   networks: {
+    hardhat: {
+      saveDeployments: false
+    },
     dev: {
       live: true,
       saveDeployments: true,
