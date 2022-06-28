@@ -41,7 +41,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function setIsSemiPublic(bool flag)
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
     require(!s.isSemiPublic || s.isSemiPublic == flag, LibConstants.UNSUPPORTED_OPERATION);
@@ -55,7 +55,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function setHasFixedSupply(bool flag)
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.data().hasFixedSupply = flag;
   }
 
@@ -63,7 +63,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function mint(uint256 amount, string calldata ref)
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
@@ -85,7 +85,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function burn(uint256 amount, string calldata ref)
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(!s.hasFixedSupply, LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
@@ -110,14 +110,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function addTransferCredits(uint256 amount)
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.data().transferCredits += amount;
     emit TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
     emit TransferCreditsDrained(msg.sender, s.transferCredits);
     s.transferCredits = 0;

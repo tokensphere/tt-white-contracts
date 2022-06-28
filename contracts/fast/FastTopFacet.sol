@@ -35,7 +35,7 @@ contract FastTopFacet is AFastFacet {
 
   function drainEth()
       external
-      spcMembership(msg.sender) {
+      spcMembership {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);

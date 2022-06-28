@@ -24,11 +24,10 @@ abstract contract AExchangeFacet {
     _;
   }
 
-  /** @dev Requires that the given address is a member of the linked SPC.
-   *  @param candidate is the address to be checked.
+  /** @dev Requires that the message sender is a member of the linked SPC.
    */
-  modifier spcMembership(address candidate) {
-    require(IHasMembers(LibExchange.data().spc).isMember(candidate), LibConstants.REQUIRES_SPC_MEMBERSHIP);
+  modifier spcMembership() {
+    require(IHasMembers(LibExchange.data().spc).isMember(msg.sender), LibConstants.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 

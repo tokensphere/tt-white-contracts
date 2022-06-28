@@ -39,53 +39,52 @@ abstract contract AFastFacet {
   }
 
   /** @dev Ensures that the given address is **not** a contract.
-   *  @param a The address to check.
+   *  @param candidate The address to check.
    */
-  modifier nonContract(address a) {
-    require(!LibHelpers.isContract(a), LibConstants.REQUIRES_NON_CONTRACT_ADDR);
+  modifier nonContract(address candidate) {
+    require(!LibHelpers.isContract(candidate), LibConstants.REQUIRES_NON_CONTRACT_ADDR);
     _;
   }
 
   /** @dev Ensures that the given address is a member of the Exchange.
-   *  @param a The address to check.
+   *  @param candidate The address to check.
    */
-  modifier exchangeMember(address a) {
-    require(IHasMembers(LibFast.data().exchange).isMember(a), LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP);
+  modifier exchangeMember(address candidate) {
+    require(IHasMembers(LibFast.data().exchange).isMember(candidate), LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP);
     _;
   }
 
-  /** @dev Ensures that the given address is a member of the SPC.
-   *  @param a The address to check.
+  /** @dev Ensures that the message sender is a member of the SPC.
    */
-  modifier spcMembership(address a) {
-    require(IHasMembers(LibFast.data().spc).isMember(a), LibConstants.REQUIRES_SPC_MEMBERSHIP);
+  modifier spcMembership() {
+    require(IHasMembers(LibFast.data().spc).isMember(msg.sender), LibConstants.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 
   /** @dev Ensures that the given address is a governor of the FAST.
-   *  @param a The address to check.
+   *  @param candidate The address to check.
    */
-  modifier governance(address a) {
-    require(LibFastAccess.data().governorSet.contains(a), LibConstants.REQUIRES_FAST_GOVERNORSHIP);
+  modifier governance(address candidate) {
+    require(LibFastAccess.data().governorSet.contains(candidate), LibConstants.REQUIRES_FAST_GOVERNORSHIP);
     _;
   }
 
   /** @dev Ensures that the given address is a member of the FAST.
-   *  @param a The address to check.
+   *  @param candidate The address to check.
    */
-  modifier membership(address a) {
-    require(LibFastAccess.data().memberSet.contains(a), LibConstants.REQUIRES_FAST_MEMBERSHIP);
+  modifier membership(address candidate) {
+    require(LibFastAccess.data().memberSet.contains(candidate), LibConstants.REQUIRES_FAST_MEMBERSHIP);
     _;
   }
 
   /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
-   *  @param a The address to check.
+   *  @param candidate The address to check.
    */
-  modifier membershipOrZero(address a) {
+  modifier membershipOrZero(address candidate) {
     require(
-      LibFastAccess.data().memberSet.contains(a) ||
-      (LibFastToken.data().isSemiPublic && IHasMembers(LibFast.data().exchange).isMember(a)) ||
-        a == address(0),
+      LibFastAccess.data().memberSet.contains(candidate) ||
+      (LibFastToken.data().isSemiPublic && IHasMembers(LibFast.data().exchange).isMember(candidate)) ||
+        candidate == address(0),
       LibConstants.REQUIRES_FAST_MEMBERSHIP
     );
     _;
