@@ -29,8 +29,8 @@ abstract contract ASpcFacet {
   }
 
   /// @dev Ensures that the given address is a member of the current FAST.
-  modifier membership(address a) {
-    require(LibSpcAccess.data().memberSet.contains(a), LibConstants.REQUIRES_SPC_MEMBERSHIP);
+  modifier membership(address candidate) {
+    require(LibSpcAccess.data().memberSet.contains(candidate), LibConstants.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 }
