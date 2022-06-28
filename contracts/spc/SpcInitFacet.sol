@@ -11,6 +11,7 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../interfaces/IHasMembers.sol';
 import './lib/LibSpc.sol';
+import './lib/LibSpcAccess.sol';
 import './lib/ASpcFacet.sol';
 import 'hardhat/console.sol';
 
@@ -34,10 +35,8 @@ contract SpcInitFacet is ASpcFacet {
       external
       diamondOwner() {
     // Grab our top-level storage.
-    LibSpc.Data storage spcData = LibSpc.data();
     // Make sure we havn't initialized yet.
-    require(spcData.version < LibSpc.STORAGE_VERSION, 'Already initialized');
-    spcData.version = LibSpc.STORAGE_VERSION;
+    require(LibSpc.data().version < LibSpc.STORAGE_VERSION, 'Already initialized');
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -50,7 +49,15 @@ contract SpcInitFacet is ASpcFacet {
     // ------------------------------------- //
 
     // Initialize top-level storage.
-    spcData.memberSet.add(params.member, false);
+    LibSpc.Data storage topData = LibSpc.data();
+    topData.version = LibSpc.STORAGE_VERSION;
+
+    // ------------------------------------- //
+
+    // Initialize access storage.
+    LibSpcAccess.Data storage accessData = LibSpcAccess.data();
+    accessData.version = LibSpcAccess.STORAGE_VERSION;
+    accessData.memberSet.add(params.member, false);
     // Emit!
     emit LibSpc.MemberAdded(params.member);
   }

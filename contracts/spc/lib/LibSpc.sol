@@ -16,8 +16,6 @@ library LibSpc {
   struct Data {
     /// @dev The latest intializer version that was called.
     uint16 version;
-    // This is where we hold our members data.
-    LibAddressSet.Data memberSet;
     // This is where we keep our list of deployed fast FASTs.
     LibAddressSet.Data fastSet;
     // We keep track of the FAST symbols that were already used.

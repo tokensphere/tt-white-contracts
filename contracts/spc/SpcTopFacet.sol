@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../lib/LibHelpers.sol';
-import '../interfaces/IHasMembers.sol';
 import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
 import './lib/ASpcFacet.sol';
@@ -15,7 +14,7 @@ import './lib/LibSpc.sol';
  *  @dev The SPC contract is the central place for top-level governorship. It requires that a
  *        first member address is passed at construction time.
  */
-contract SpcTopFacet is ASpcFacet, IHasMembers {
+contract SpcTopFacet is ASpcFacet {
   using LibAddressSet for LibAddressSet.Data;
 
   // Constants.
@@ -64,71 +63,6 @@ contract SpcTopFacet is ASpcFacet, IHasMembers {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
-  }
-
-  // Membership management.
-
-  /** @dev Queries whether a given address is a member of this SPC or not.
-   *  @param candidate The address to test.
-   *  @return A `boolean` flag.
-   */
-  function isMember(address candidate)
-      external override view returns(bool) {
-    return LibSpc.data().memberSet.contains(candidate);
-  }
-
-  /** @dev Counts the numbers of members present in this SPC.
-   *  @return The number of members in this SPC.
-   */
-  function memberCount()
-      external override view returns(uint256) {
-    return LibSpc.data().memberSet.values.length;
-  }
-
-  /** @dev Paginates the members of this SPC based on a starting cursor and a number of records per page.
-   *  @param cursor The index at which to start.
-   *  @param perPage How many records should be returned at most.
-   *  @return A `address[]` list of values at most `perPage` big.
-   *  @return A `uint256` index to the next page.
-   */
-  function paginateMembers(uint256 cursor, uint256 perPage)
-      external override view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(LibSpc.data().memberSet.values, cursor, perPage);
-  }
-
-  /** @dev Adds a member to this SPC member list.
-   *  @param member The address of the member to be added.
-   *  @notice Requires that the caller is a member of this SPC.
-   *  @notice Emits a `IHasMembers.MemberAdded` event.
-   */
-  function addMember(address payable member)
-      external override
-      membership(msg.sender) {
-    // Add the member to our list.
-    LibSpc.data().memberSet.add(member, false);
-
-    // Provision the member with some Eth.
-    uint256 amount = LibHelpers.upTo(member, MEMBER_ETH_PROVISION);
-    if (amount != 0) { member.transfer(amount); }
-
-    // Emit!
-    emit IHasMembers.MemberAdded(member);
-  }
-
-  /** @dev Removes a member from this SPC.
-   *  @param member The address of the member to be removed.
-   *  @notice Requires that the caller is a member of this SPC.
-   *  @notice Emits a `IHasMembers.MemberRemoved` event.
-   */
-  function removeMember(address member)
-      external override
-      membership(msg.sender) {
-    // No suicide allowed.
-    require(msg.sender != member, 'Cannot remove self');
-    // Remove the member from the set.
-    LibSpc.data().memberSet.remove(member, false);
-    // Emit!
-    emit IHasMembers.MemberRemoved(member);
   }
 
   // FAST management related methods.

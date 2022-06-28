@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import '../../lib/LibConstants.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IERC173.sol';
-import '../lib/LibSpc.sol';
+import '../lib/LibSpcAccess.sol';
 
 
 /**
@@ -30,7 +30,7 @@ abstract contract ASpcFacet {
 
   /// @dev Ensures that the given address is a member of the current FAST.
   modifier membership(address a) {
-    require(LibSpc.data().memberSet.contains(a), LibConstants.REQUIRES_SPC_MEMBERSHIP);
+    require(LibSpcAccess.data().memberSet.contains(a), LibConstants.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
 }

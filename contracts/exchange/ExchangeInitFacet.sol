@@ -20,11 +20,8 @@ contract ExchangeInitFacet is AExchangeFacet {
   function initialize(InitializerParams calldata params)
       external
       deployerContract() {
-    // Grab our storage.
-    LibExchange.Data storage s = LibExchange.data();
     // Make sure we havn't initialized yet.
-    require(s.version < LibExchange.STORAGE_VERSION, 'Already initialized');
-    s.version = LibExchange.STORAGE_VERSION;
+    require(LibExchange.data().version < LibExchange.STORAGE_VERSION, 'Already initialized');
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -37,6 +34,14 @@ contract ExchangeInitFacet is AExchangeFacet {
     // ------------------------------------- //
 
     // Initialize top-level storage.
-    s.spc = params.spc;
+    LibExchange.Data storage topData = LibExchange.data();
+    topData.version = LibExchange.STORAGE_VERSION;
+    topData.spc = params.spc;
+
+    // ------------------------------------- //
+
+    // Initialize access storage.
+    LibExchangeAccess.Data storage accessData = LibExchangeAccess.data();
+    accessData.version = LibExchangeAccess.STORAGE_VERSION;
   }
 }

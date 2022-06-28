@@ -41,11 +41,8 @@ contract FastInitFacet is AFastFacet {
   function initialize(InitializerParams calldata params)
       external
       deployerContract() {
-    // Grab our top-level storage.
-    LibFast.Data storage fastData = LibFast.data();
     // Make sure we havn't initialized yet.
-    require(fastData.version < LibFast.STORAGE_VERSION, 'Already initialized');
-    fastData.version = LibFast.STORAGE_VERSION;
+    require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized');
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -61,8 +58,10 @@ contract FastInitFacet is AFastFacet {
     // ------------------------------------- //
 
     // Initialize top-level storage.
-    fastData.spc = params.spc;
-    fastData.exchange = params.exchange;
+    LibFast.Data storage topData = LibFast.data();
+    topData.version = LibFast.STORAGE_VERSION;
+    topData.spc = params.spc;
+    topData.exchange = params.exchange;
     
     // ------------------------------------- //
 
