@@ -40,7 +40,7 @@ contract FastInitFacet is AFastFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      deployerContract() {
+      deployerContract {
     // Make sure we havn't initialized yet.
     require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized');
 

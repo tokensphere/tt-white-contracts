@@ -19,7 +19,7 @@ contract ExchangeInitFacet is AExchangeFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      deployerContract() {
+      deployerContract {
     // Make sure we havn't initialized yet.
     require(LibExchange.data().version < LibExchange.STORAGE_VERSION, 'Already initialized');
 
