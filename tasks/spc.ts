@@ -34,7 +34,11 @@ task('spc-update-facets', 'Updates facets of our SPC')
 
 // Reusable functions.
 
-const SPC_FACETS = ['SpcTopFacet', 'SpcFrontendFacet'];
+const SPC_FACETS = [
+  'SpcTopFacet',
+  'SpcAccessFacet',
+  'SpcFrontendFacet'
+];
 
 async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
   : Promise<Spc> {
