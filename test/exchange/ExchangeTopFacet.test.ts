@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Spc, Exchange, ExchangeInitFacet } from '../../typechain';
+import { Spc, Exchange } from '../../typechain';
 import { REQUIRES_SPC_MEMBERSHIP } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { EXCHANGE_FACETS } from '../../tasks/exchange';
@@ -73,6 +73,13 @@ describe('ExchangeTopFacet', () => {
 
   describe('initialize', async () => {
     it('Keeps track of the SPC contract');
+  });
+
+  describe('spcAddress', async () => {
+    it('returns the SPC address', async () => {
+      const subject = await exchange.spcAddress();
+      expect(subject).to.eq(spc.address);
+    });
   });
 
   describe('IHasMembers', async () => {
