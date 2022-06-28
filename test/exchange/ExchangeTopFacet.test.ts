@@ -210,4 +210,21 @@ describe('ExchangeTopFacet', () => {
       });
     });
   });
+
+  // This should delegate to LibPaginate.addresses().
+  describe('fastMemberships', async () => {
+    it('returns an array of addresses with a cursor');
+  });
+
+  describe('memberAddedToFast', async () => {
+    it('requires the calling FAST contract to be FastRegistered');
+
+    it('adds the calling FAST contract to the member list of the Fast');
+  });
+
+  describe('memberRemovedFromFast', async () => {
+    it('requires the calling FAST contract to be FastRegistered');
+
+    it('removes the FAST contract from the list of Fast members');
+  });
 });
