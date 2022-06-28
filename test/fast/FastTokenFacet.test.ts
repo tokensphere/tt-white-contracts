@@ -16,6 +16,8 @@ import {
   INTERNAL_METHOD,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE,
+  REQUIRES_EXCHANGE_MEMBERSHIP,
+  REQUIRES_EXCHANGE_MEMBERSHIP_CODE,
   REQUIRES_FAST_GOVERNORSHIP,
   REQUIRES_FAST_MEMBERSHIP,
   REQUIRES_FAST_MEMBERSHIP_CODE,
@@ -1192,12 +1194,12 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(INSUFFICIENT_TRANSFER_CREDITS);
       });
 
-      it('the lack of sender membership', async () => {
-        const subject = await token.messageForTransferRestriction(REQUIRES_FAST_MEMBERSHIP_CODE);
-        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP);
+      it('exchange membership required', async () => {
+        const subject = await token.messageForTransferRestriction(REQUIRES_EXCHANGE_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_EXCHANGE_MEMBERSHIP);
       });
 
-      it('the lack of recipient membership', async () => {
+      it('the lack of FAST membership', async () => {
         const subject = await token.messageForTransferRestriction(REQUIRES_FAST_MEMBERSHIP_CODE);
         expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP);
       });
