@@ -6,7 +6,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
-import { Spc, Exchange, Fast, FastHistoryFacet, FastInitFacet } from '../../typechain';
+import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
 import { INTERNAL_METHOD } from '../utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -310,5 +310,13 @@ describe('FastHistoryFacet', () => {
     //   expect(proofs[3]).to.eq(3);
     //   expect(proofs[4]).to.eq(4);
     // });
+  });
+
+  describe('paginateTransferProofIndicesByInvolvee', async () => {
+    it('returns a paginated list of addresses and cursor');
+  });
+
+  describe('transferProofByInvolveeCount', async () => {
+    it('returns the count of the transfer proofs for a given address');
   });
 });
