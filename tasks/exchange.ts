@@ -33,7 +33,7 @@ task('exchange-update-facets', 'Updates facets of our SPC')
 
 // Reusable functions.
 
-const EXCHANGE_FACETS = ['ExchangeTopFacet'];
+const EXCHANGE_FACETS = ['ExchangeTopFacet', 'ExchangeAccessFacet'];
 
 async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
   : Promise<Exchange> {

@@ -5,7 +5,7 @@ import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import '../exchange/ExchangeTopFacet.sol';
+import '../exchange/ExchangeAccessFacet.sol';
 import './FastTokenFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
@@ -141,7 +141,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       FastTopFacet(payable(address(this))).payUpTo(member, MEMBER_ETH_PROVISION);
     }
     // Notify exchange that this member was added to this FAST.
-    ExchangeTopFacet(LibFast.data().exchange).memberAddedToFast(member);
+    ExchangeAccessFacet(LibFast.data().exchange).memberAddedToFast(member);
     // Emit!
     emit IHasMembers.MemberAdded(member);
   }
@@ -157,7 +157,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Remove member.
     LibFastAccess.data().memberSet.remove(member, false);
     // Notify exchange that this member was removed from this FAST.
-    ExchangeTopFacet(LibFast.data().exchange).memberRemovedFromFast(member);
+    ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
     // Emit!
     emit IHasMembers.MemberRemoved(member);
   }

@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import '../../lib/LibConstants.sol';
 import '../../lib/LibAddressSet.sol';
 import '../lib/LibExchange.sol';
+import '../lib/LibExchangeAccess.sol';
 import '../../interfaces/IERC173.sol';
 import '../../interfaces/IHasMembers.sol';
 
@@ -35,7 +36,7 @@ abstract contract AExchangeFacet {
    *  @param candidate is the address to be checked.
    */
   modifier membership(address candidate) {
-    require(LibExchange.data().memberSet.contains(candidate), LibConstants.REQUIRES_FAST_MEMBERSHIP);
+    require(LibExchangeAccess.data().memberSet.contains(candidate), LibConstants.REQUIRES_FAST_MEMBERSHIP);
     _;
   }
 }

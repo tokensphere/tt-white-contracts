@@ -5,13 +5,16 @@ import 'hardhat-deploy-ethers';
 import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
+import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl } from './src/utils';
+import { SPC_FACETS } from './tasks/spc';
+import { EXCHANGE_FACETS } from './tasks/exchange';
+import { FAST_FACETS } from './tasks/fast';
 
 // Import all of our tasks here!
 import './tasks/accounts';
 import './tasks/spc';
 import './tasks/exchange';
 import './tasks/fast';
-import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl } from './src/utils';
 
 
 const config: HardhatUserConfig = {
@@ -32,8 +35,7 @@ const config: HardhatUserConfig = {
       'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
-      'SpcTopFacet',
-      'SpcFrontendFacet'
+      ...SPC_FACETS
     ]
   }, {
     name: 'Exchange',
@@ -42,7 +44,7 @@ const config: HardhatUserConfig = {
       'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
-      'ExchangeTopFacet'
+      ...EXCHANGE_FACETS
     ]
   }, {
     name: 'Fast',
@@ -51,11 +53,7 @@ const config: HardhatUserConfig = {
       'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
-      'FastTopFacet',
-      'FastAccessFacet',
-      'FastTokenFacet',
-      'FastHistoryFacet',
-      'FastFrontendFacet'
+      ...FAST_FACETS
     ]
   }],
   networks: {

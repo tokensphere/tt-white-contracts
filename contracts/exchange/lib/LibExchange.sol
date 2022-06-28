@@ -15,10 +15,6 @@ library LibExchange {
     uint16 version;
     /// @dev The internal pointer to the SPC contract.
     address spc;
-    /// @dev This is where we hold our members data.
-    LibAddressSet.Data memberSet;
-    /// @dev This is where we keep track of our member FAST memberships.
-    mapping(address => LibAddressSet.Data) fastMemberships;
   }
 
   function data()
