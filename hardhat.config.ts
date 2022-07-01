@@ -50,7 +50,6 @@ const config: HardhatUserConfig = {
     name: 'Fast',
     include: [
       'IERC173',
-      'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
       ...FAST_FACETS

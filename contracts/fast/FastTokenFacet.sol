@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import '../interfaces/IERC20.sol';
+import '../interfaces/IERC165.sol';
 import '../interfaces/IERC1404.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
@@ -11,7 +12,7 @@ import './FastHistoryFacet.sol';
 import './lib/AFastFacet.sol';
 
 
-contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
+contract FastTokenFacet is AFastFacet, IERC20, IERC165, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
@@ -243,6 +244,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       index,
       perPage
     );
+  }
+
+  /// IERC165 implementation.
+
+  function supportsInterface(bytes4 interfaceId)
+    external view override returns(bool) {
+    LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+    return ds.supportedInterfaces[interfaceId];
   }
 
   /// ERC1404 implementation.
