@@ -22,7 +22,7 @@ interface SpcFixtureOpts {
   member: string;
 }
 
-const SPC_FACETS = ['SpcTopFacet'];
+const SPC_FACETS = ['SpcAccessFacet', 'SpcTopFacet'];
 
 const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as SpcFixtureOpts;
