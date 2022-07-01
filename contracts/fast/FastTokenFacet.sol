@@ -152,8 +152,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transfer(address to, uint256 amount)
       external override returns(bool) {
-    _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
-    return true;
+    return _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
@@ -174,11 +173,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   function approve(address spender, uint256 amount)
-      external override
-      membership(msg.sender)
-      returns(bool) {
-    _approve(msg.sender, spender, amount);
-    return true;
+      external override returns(bool) {
+    return _approve(msg.sender, spender, amount);
   }
 
   function disapprove(address spender)
@@ -280,8 +276,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   // Private.
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      private
-      membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) {
+      public
+      diamondInternal
+      membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) returns(bool) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(s.balances[from] >= amount, LibConstants.INSUFFICIENT_FUNDS);
@@ -305,10 +302,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     emit IERC20.Transfer(from, to, amount);
+    return true;
   }
 
   function _approve(address from, address spender, uint256 amount)
-      private {
+      private membership(msg.sender) returns(bool) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Store allowance...
@@ -319,6 +317,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     emit IERC20.Approval(from, spender, amount);
+    return true;
   }
 
   function _disapprove(address from, address spender)
