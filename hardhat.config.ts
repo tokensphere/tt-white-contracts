@@ -32,7 +32,6 @@ const config: HardhatUserConfig = {
     name: 'Spc',
     include: [
       'IERC173',
-      'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
       ...SPC_FACETS
@@ -41,7 +40,6 @@ const config: HardhatUserConfig = {
     name: 'Exchange',
     include: [
       'IERC173',
-      'IERC165',
       'IDiamondCut',
       'IDiamondLoupe',
       ...EXCHANGE_FACETS

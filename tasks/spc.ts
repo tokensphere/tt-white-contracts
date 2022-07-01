@@ -1,6 +1,6 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DEPLOYER_FACTORY_COMMON } from '../src/utils';
+import { COMMON_DIAMOND_FACETS, DEPLOYER_FACTORY_COMMON } from '../src/utils';
 import { Spc, Exchange, SpcInitFacet } from '../typechain'
 
 // Tasks.
@@ -35,6 +35,7 @@ task('spc-update-facets', 'Updates facets of our SPC')
 // Reusable functions.
 
 const SPC_FACETS = [
+  ...COMMON_DIAMOND_FACETS,
   'SpcTopFacet',
   'SpcAccessFacet',
   'SpcFrontendFacet'

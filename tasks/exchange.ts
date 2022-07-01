@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DEPLOYER_FACTORY_COMMON } from '../src/utils';
+import { COMMON_DIAMOND_FACETS, DEPLOYER_FACTORY_COMMON } from '../src/utils';
 import { Exchange } from '../typechain'
 
 // Tasks.
@@ -33,7 +33,11 @@ task('exchange-update-facets', 'Updates facets of our SPC')
 
 // Reusable functions.
 
-const EXCHANGE_FACETS = ['ExchangeTopFacet', 'ExchangeAccessFacet'];
+const EXCHANGE_FACETS = [
+  ...COMMON_DIAMOND_FACETS,
+  'ExchangeTopFacet',
+  'ExchangeAccessFacet'
+];
 
 async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
   : Promise<Exchange> {
