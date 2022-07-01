@@ -936,10 +936,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@defi-wonderland/smock@^2.0.7":
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/@defi-wonderland/smock/-/smock-2.0.7.tgz#59d5fc93e175ad120c5dcdd8294e07525606c855"
-  integrity sha512-RVpODLKZ/Cr0C1bCbhJ2aXbAr2Ll/K2WO7hDL96tqhMzCsA7ToWdDIgiNpV5Vtqqvpftu5ddO7v3TAurQNSU0w==
+"@defi-wonderland/smock@0.0.0-9be6e836":
+  version "0.0.0-9be6e836"
+  resolved "https://registry.yarnpkg.com/@defi-wonderland/smock/-/smock-0.0.0-9be6e836.tgz#4710c3839da35f67aa53b234ddc4c3d9268eaeda"
+  integrity sha512-JTYu2VvvvxfGsisGY0q/suEfe4DOHwBodY5VZM+u2SFvzyUJ25A5UhWglQoqlCXsnigdEBoFb2585gWmZbdW/g==
   dependencies:
     "@nomiclabs/ethereumjs-vm" "^4.2.2"
     diff "^5.0.0"
