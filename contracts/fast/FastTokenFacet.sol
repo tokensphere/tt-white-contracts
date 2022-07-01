@@ -156,7 +156,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
-      external {
+      external returns(bool) {
     return _transfer(msg.sender, msg.sender, to, amount, ref);
   }
 
