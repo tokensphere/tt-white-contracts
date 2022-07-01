@@ -11,6 +11,10 @@ const DEPLOYER_FACTORY_COMMON = {
   salt: '0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d'
 }
 
+const COMMON_DIAMOND_FACETS = [
+  'ERC165Facet'
+];
+
 function fromBaseUnit(amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber {
   amount = BigNumber.from(amount);
   decimals = BigNumber.from(decimals);
@@ -74,7 +78,7 @@ const accounts = (networkName: string): string[] => {
 
 
 export {
-  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON,
+  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON, COMMON_DIAMOND_FACETS,
   fromBaseUnit, toBaseUnit, toHexString,
   nodeUrl, accounts
 }

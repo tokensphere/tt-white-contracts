@@ -1,7 +1,7 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BigNumber } from 'ethers';
-import { fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../src/utils';
+import { COMMON_DIAMOND_FACETS, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 import { DEPLOYER_FACTORY_COMMON } from '../src/utils';
 import { Spc, Fast, FastInitFacet, Exchange } from '../typechain';
 import { id } from 'ethers/lib/utils';
@@ -145,6 +145,7 @@ task('fast-balance', 'Retrieves the balance of a given account')
 // Reusable functions.
 
 const FAST_FACETS = [
+  ...COMMON_DIAMOND_FACETS,
   'FastTopFacet',
   'FastAccessFacet',
   'FastTokenFacet',
