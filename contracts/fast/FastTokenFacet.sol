@@ -277,7 +277,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       public
-      diamondInternal
       membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) returns(bool) {
     LibFastToken.Data storage s = LibFastToken.data();
 
