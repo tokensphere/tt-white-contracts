@@ -25,6 +25,14 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
+// A way, not the best way, to get a POJO from a struct.
+const structToObj = (struct: {}) => {
+  let
+    entries = Object.entries(struct),
+    start = entries.length / 2;
+  return Object.fromEntries(entries.slice(start));
+}
+
 const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastFrontendFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
@@ -61,15 +69,15 @@ describe('FastFrontendFacet', () => {
     // Mock an SPC and an Exchange contract.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
+    // Stub isMember, spcAddress calls.
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
     exchange.spcAddress.returns(spc.address);
     exchange.isMember.whenCalledWith(member.address).returns(true);
+    exchange.isMember.whenCalledWith(governor.address).returns(true);
     exchange.isMember.returns(false);
   });
 
-  // TODO: We probably want to have at least two members added, and have their balances
-  // and details different so that we can check that the population of the structs is correct.
   beforeEach(async () => {
     const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
@@ -85,51 +93,89 @@ describe('FastFrontendFacet', () => {
     await fastDeployFixture(initOpts);
     fast = await ethers.getContract('FastBSF');
     spcMemberFast = fast.connect(spcMember);
-    // Add a member.
+    // Add members.
     await fast.connect(governor).addMember(member.address);
+    await fast.connect(governor).addMember(governor.address);
   });
 
   describe('details', async () => {
     it('returns a populated details struct', async () => {
       const subject = await spcMemberFast.details();
+      const subjectObj = structToObj(subject);
 
-      expect(subject.addr).to.eq(fast.address);
-      expect(subject.name).to.eq("Better, Stronger, FASTer");
-      expect(subject.symbol).to.eq("BSF");
-      expect(subject.decimals).to.eq(18);
-      expect(subject.totalSupply).to.eq(0);
-      expect(subject.transferCredits).to.eq(0);
-      expect(subject.isSemiPublic).to.eq(true);
-      expect(subject.hasFixedSupply).to.eq(true);
-      expect(subject.reserveBalance).to.eq(0);
-      expect(subject.memberCount).to.eq(1);
-      expect(subject.governorCount).to.eq(1);
+      expect(subjectObj).to.eql({
+        addr: fast.address,
+        decimals: BigNumber.from(18),
+        governorCount: BigNumber.from(1),
+        name: "Better, Stronger, FASTer",
+        symbol: "BSF",
+        totalSupply: BigNumber.from(0),
+        transferCredits: BigNumber.from(0),
+        isSemiPublic: true,
+        memberCount: BigNumber.from(2),
+        hasFixedSupply: true,
+        reserveBalance: BigNumber.from(0),
+      });
     });
   });
 
   describe('detailedMember', async () => {
     it('returns MemberDetails populated struct', async () => {
-      // TODO: Rework this when smock can handle it.
-      //   const subject = await spcMemberFast.detailedMember(spcMember.address);
-      //   const d: MemberDetails = subject;
+      const subject = await spcMemberFast.detailedMember(spcMember.address);
+      const memberObj = structToObj(subject);
 
-      //   expect(d.addr).to.eq(spcMember.address);
-      //   expect(d.balance).to.eq(0.0);
-      //   expect(d.ethBalance).to.eq(tenThousand);
-      //   expect(d.isGovernor).to.eq(false);
+      expect(memberObj).to.eql({
+        addr: spcMember.address,
+        balance: BigNumber.from(0.0),
+        ethBalance: (await spcMember.getBalance()),
+        isGovernor: false
+      });
     });
   });
 
   describe('paginateDetailedMembers', async () => {
     it('returns member details with next cursor', async () => {
-      const [[memberDetails], nextCursor] = await spcMemberFast.paginateDetailedMembers(0, 5);
-      // Member details.
-      expect(memberDetails.addr).to.eq(member.address);
-      expect(memberDetails.balance).to.eq(0.0);
-      expect(memberDetails.ethBalance).to.eq(tenThousand);
-      expect(memberDetails.isGovernor).to.eq(false);
+      const [[
+        memberA,
+        memberB
+      ], nextCursor] = await spcMemberFast.paginateDetailedMembers(0, 5);
+
+      // Convert the structs to objects.
+      const memberAObj = structToObj(memberA);
+      const memberBObj = structToObj(memberB);
+
+      // Member A details.
+      expect(memberAObj).to.eql({
+        addr: member.address,
+        balance: BigNumber.from(0),
+        ethBalance: tenThousand,
+        isGovernor: false
+      });
+
+      // Member B details.
+      expect(memberBObj).to.eql({
+        addr: governor.address,
+        balance: BigNumber.from(0),
+        ethBalance: (await governor.getBalance()),
+        isGovernor: true
+      });
+
       // Next cursor.
-      expect(nextCursor).to.eq(1);
+      expect(nextCursor).to.eq(2);
+    });
+
+    it('handles an offset index cursor', async () => {
+      // Fetch details of Member passing 1 as an offset index.
+      const [[memberB],] = await spcMemberFast.paginateDetailedMembers(1, 2);
+      const memberBObj = structToObj(memberB);
+
+      // Expect Member B.
+      expect(memberBObj).to.eql({
+        addr: governor.address,
+        balance: BigNumber.from(0),
+        ethBalance: (await governor.getBalance()),
+        isGovernor: true
+      });
     });
   });
 });
