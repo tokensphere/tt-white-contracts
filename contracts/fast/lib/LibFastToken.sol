@@ -10,6 +10,14 @@ library LibFastToken {
   // This is keccak256('Fast.storage.Token'):
   bytes32 internal constant STORAGE_SLOT = 0xb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261;
 
+
+  // ERC20 and Token related events.
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Disapproval(address indexed owner, address indexed spender);
+
+  // Data structures.
+
   struct Data {
     /// @dev The latest intializer version that was called.
     uint16 version;
