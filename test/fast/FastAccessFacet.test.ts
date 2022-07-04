@@ -366,7 +366,7 @@ describe('FastAccessFacet', () => {
 
       it('returns the current count of members', async () => {
         const subject = await access.memberCount();
-        expect(subject).to.eq(2);
+        expect(subject).to.eq(1);
       });
     });
 
@@ -388,15 +388,14 @@ describe('FastAccessFacet', () => {
       it('does not crash when overflowing and returns the correct cursor', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [, cursor] = await access.paginateMembers(1, 10);
-        expect(cursor).to.eq(5);
+        expect(cursor).to.eq(4);
       });
 
-      it('returns the governors in the order they were added', async () => {
+      it('returns the members in the order they were added', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [values,] = await access.paginateMembers(0, 5);
         expect(values).to.be
           .ordered.members([
-            governor.address,
             alice.address,
             bob.address,
             rob.address,
@@ -410,7 +409,9 @@ describe('FastAccessFacet', () => {
 
   describe('flags', async () => {
     it('is accurate when all flags set', async () => {
-      const { isGovernor, isMember } = await access.flags(governor.address);
+      await spcMemberAccess.addGovernor(alice.address);
+      await governedAccess.addMember(alice.address);
+      const { isGovernor, isMember } = await access.flags(alice.address);
       expect(isGovernor).to.eq(true);
       expect(isMember).to.eq(true);
     });

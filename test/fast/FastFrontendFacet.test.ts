@@ -7,7 +7,7 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { tenThousand } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
-import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
+import { Spc, Exchange, Fast } from '../../typechain';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -25,36 +25,13 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-// Interfaces for returned structs.
-
-interface Details {
-  addr: string;
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  totalSupply: BigNumber;
-  transferCredits: BigNumber;
-  isSemiPublic: boolean;
-  hasFixedSupply: boolean;
-  reserveBalance: BigNumber;
-  memberCount: BigNumber;
-  governorCount: BigNumber;
-}
-
-interface MemberDetails {
-  addr: string;
-  balance: BigNumber;
-  ethBalance: BigNumber;
-  isGovernor: boolean;
-}
-
-const FAST_FACETS = ['FastFrontendFacet'];
+const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastFrontendFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
   const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy('FastFrontendFacet', {
+  return await deployments.diamond.deploy('FastBSF', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
@@ -71,25 +48,29 @@ describe('FastFrontendFacet', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
-    governor: SignerWithAddress;
+    governor: SignerWithAddress,
+    member: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    token: FastFrontendFacet,
-    spcMemberToken: FastFrontendFacet;
+    fast: Fast,
+    spcMemberFast: Fast;
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor] = await ethers.getSigners();
+    [deployer, spcMember, governor, member] = await ethers.getSigners();
     // Mock an SPC and an Exchange contract.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
-    exchange.spcAddress.returns(spc.address);
-  });
-
-  beforeEach(async () => {
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
+    exchange.spcAddress.returns(spc.address);
+    exchange.isMember.whenCalledWith(member.address).returns(true);
+    exchange.isMember.returns(false);
+  });
 
+  // TODO: We probably want to have at least two members added, and have their balances
+  // and details different so that we can check that the population of the structs is correct.
+  beforeEach(async () => {
     const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
       governor: governor.address,
@@ -101,37 +82,35 @@ describe('FastFrontendFacet', () => {
       hasFixedSupply: true,
       isSemiPublic: true
     };
-    const deploy = await fastDeployFixture(initOpts);
-    const fast = await ethers.getContractAt('Fast', deploy.address) as FastFrontendFacet;
-
-    // TODO: Once smock fixes their stuff, replace facets by fakes.
-    token = fast as FastFrontendFacet;
-    spcMemberToken = token.connect(spcMember);
+    await fastDeployFixture(initOpts);
+    fast = await ethers.getContract('FastBSF');
+    spcMemberFast = fast.connect(spcMember);
+    // Add a member.
+    await fast.connect(governor).addMember(member.address);
   });
 
   describe('details', async () => {
-    it('returns a populated Details struct', async () => {
-      const subject = await spcMemberToken.details();
-      const d: Details = subject;
+    it('returns a populated details struct', async () => {
+      const subject = await spcMemberFast.details();
 
-      expect(d.addr).to.eq(token.address);
-      expect(d.name).to.eq("Better, Stronger, FASTer");
-      expect(d.symbol).to.eq("BSF");
-      expect(d.decimals).to.eq(18);
-      expect(d.totalSupply).to.eq(0);
-      expect(d.transferCredits).to.eq(0);
-      expect(d.isSemiPublic).to.eq(true);
-      expect(d.hasFixedSupply).to.eq(true);
-      expect(d.reserveBalance).to.eq(0);
-      expect(d.memberCount).to.eq(1);
-      expect(d.governorCount).to.eq(1);
+      expect(subject.addr).to.eq(fast.address);
+      expect(subject.name).to.eq("Better, Stronger, FASTer");
+      expect(subject.symbol).to.eq("BSF");
+      expect(subject.decimals).to.eq(18);
+      expect(subject.totalSupply).to.eq(0);
+      expect(subject.transferCredits).to.eq(0);
+      expect(subject.isSemiPublic).to.eq(true);
+      expect(subject.hasFixedSupply).to.eq(true);
+      expect(subject.reserveBalance).to.eq(0);
+      expect(subject.memberCount).to.eq(1);
+      expect(subject.governorCount).to.eq(1);
     });
   });
 
   describe('detailedMember', async () => {
     it('returns MemberDetails populated struct', async () => {
       // TODO: Rework this when smock can handle it.
-      //   const subject = await spcMemberToken.detailedMember(spcMember.address);
+      //   const subject = await spcMemberFast.detailedMember(spcMember.address);
       //   const d: MemberDetails = subject;
 
       //   expect(d.addr).to.eq(spcMember.address);
@@ -142,20 +121,15 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('paginateDetailedMembers', async () => {
-    it('returns MemberDetails array with next cursor', async () => {
-      const index = 0;
-      const perPage = 5;
-      const subject = await spcMemberToken.paginateDetailedMembers(index, perPage);
-      const [[memberDetails], page] = subject
-
+    it('returns member details with next cursor', async () => {
+      const [[memberDetails], nextCursor] = await spcMemberFast.paginateDetailedMembers(0, 5);
       // Member details.
-      expect(memberDetails.addr).to.eq(governor.address);
+      expect(memberDetails.addr).to.eq(member.address);
       expect(memberDetails.balance).to.eq(0.0);
       expect(memberDetails.ethBalance).to.eq(tenThousand);
-      expect(memberDetails.isGovernor).to.eq(true);
-
-      // Page 1.
-      expect(page).to.eq(1);
+      expect(memberDetails.isGovernor).to.eq(false);
+      // Next cursor.
+      expect(nextCursor).to.eq(1);
     });
   });
 });
