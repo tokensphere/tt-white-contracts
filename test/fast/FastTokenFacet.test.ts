@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { artifacts, deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTokenFacet, FastTokenFacet__factory } from '../../typechain';
+import { Spc, Exchange, Fast, FastTokenFacet, FastTokenFacet__factory, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { FunctionFragment, Interface } from 'ethers/lib/utils';
 import { FacetCutAction } from 'hardhat-deploy/dist/types';
@@ -52,7 +52,12 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastTokenFacet', 'FastHistoryFacet'];
+const FAST_FACETS = ['FastTopFacet',
+  'FastAccessFacet',
+  'FastTokenFacet',
+  'FastTokenInternalFacet',
+  'FastHistoryFacet'
+];
 
 // Map over the ABI, filter by functions and get the signature hashes.
 const sigsFromABI = (abi: any[]): string[] =>
@@ -590,43 +595,37 @@ describe('FastTokenFacet', () => {
     });
 
     describe('transferWithRef', async () => {
-      let fastTokenFacet: MockContract<FastTokenFacet>;
+      let fastTokenFacet: FakeContract<FastTokenInternalFacet>;
 
-      beforeEach(async () => {
-        // Get the selectors from the FastTokenFacet ABI.
-        let fastTokenFacetSelectors = sigsFromABI((await artifacts.readArtifact('FastTokenFacet')).abi);
+      describe.only('delegation to _transfer', async () => {
+        beforeEach(async () => {
+          // Build the mock and deploy it.
+          fastTokenFacet = await smock.fake('FastTokenInternalFacet');
 
-        // Build the mock and deploy it.
-        let fastTokenFacetFactory = await smock.mock<FastTokenFacet__factory>('FastTokenFacet');
-        fastTokenFacet = await fastTokenFacetFactory.deploy();
+          // We want to cut in our swapped out FastTokenFacet mock.
+          await fast.diamondCut([{
+            facetAddress: fastTokenFacet.address,
+            action: FacetCutAction.Replace,
+            functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
+          }], ethers.constants.AddressZero, '0x');
+        });
 
-        // Stub the return on _transfer.
-        fastTokenFacet._transfer.reset();
-        fastTokenFacet._transfer.returns(true);
+        it('is done with the correct arguments', async () => {
+          // Expected passed arguments.
+          const spender = alice.address;
+          const from = alice.address;
+          const to = bob.address;
+          const amount = BigNumber.from(1.0);
+          const ref = "Some ref message";
 
-        // We want to cut in our swapped out FastTokenFacet mock.
-        await fast.diamondCut([{
-          facetAddress: fastTokenFacet.address,
-          action: FacetCutAction.Replace,
-          functionSelectors: fastTokenFacetSelectors
-        }], ethers.constants.AddressZero, '0x');
-      });
+          // Call the function.
+          await fast.connect(alice).transferWithRef(to, amount, ref);
 
-      it('delegates to _transfer passing expected arguments', async () => {
-        // Expected passed arguments.
-        const spender = alice.address;
-        const from = alice.address;
-        const to = bob.address;
-        const amount = BigNumber.from(1.0);
-        const ref = "Some ref message";
-
-        // Call the function.
-        await fastTokenFacet.connect(alice).transferWithRef(to, amount, ref);
-
-        // Expect _transfer to be called correctly.
-        expect(fastTokenFacet._transfer).to.have.been.called
-        // .calledWith(spender, from, to, amount, ref)
-        // .delegatedFrom(token.address);
+          // Expect _transfer to be called correctly.
+          expect(fastTokenFacet._transfer).to.have.been
+            .calledOnceWith(spender, from, to, amount, ref)
+            .delegatedFrom(fast.address);
+        });
       });
     });
 
