@@ -80,7 +80,6 @@ const config: HardhatUserConfig = {
     }
   },
   namedAccounts: {
-    // TODO: WE NEED DEPLOYER TO BE THE SAME ACROSS ALL LIVE ENVIRONMENTS.
     // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
     deployer: {
       default: 0,

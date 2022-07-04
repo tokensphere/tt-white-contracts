@@ -68,12 +68,10 @@ contract FastInitFacet is AFastFacet {
     // Initialize access storage.
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     accessData.version = LibFastAccess.STORAGE_VERSION;
-    // Add the governor both as a governor and as a member.
-    accessData.memberSet.add(params.governor, false);
+    // Add the governor.
     accessData.governorSet.add(params.governor, false);
     // Emit!
     emit LibFastAccess.GovernorAdded(params.governor);
-    emit LibFastAccess.MemberAdded(params.governor);
 
     // ------------------------------------- //
 
