@@ -1023,12 +1023,6 @@ describe('FastTokenFacet', () => {
     });
 
     describe.only('when successful', async () => {
-      before(async () => {
-        // TODO: When smock fixes their stuff, replace some facets by fakes.
-        // Make sure our access contract can pay for its gas fees.
-        // await ethers.provider.send('hardhat_setBalance', [access.address, toHexString(oneMillion)])
-      });
-
       beforeEach(async () => {
         // Give alice some tokens.
         // await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 500);
