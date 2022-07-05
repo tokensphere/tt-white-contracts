@@ -19,7 +19,7 @@ import './FastTopFacet.sol';
 */
 contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
-  /// Structs.
+  // Structs.
 
   /**
    * @dev This structure isn't used anywhere in storage. Instead, it
@@ -31,14 +31,32 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     bool isMember;
   }
 
-  /// Constants.
+  // Constants.
 
   // This represents how much Eth we provision new governors with.
   uint256 constant private GOVERNOR_ETH_PROVISION = 10 ether;
   // This represents how much Eth we provision new members with.
   uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
 
-  /// Governorship related stuff.
+  // Initializers.
+
+  function initialize(address payable governor)
+      external
+      diamondInternal {
+    // Grab our storage.
+    LibFastAccess.Data storage s = LibFastAccess.data();
+    // Make sure we havn't initialized yet.
+    require(s.version < LibFastAccess.STORAGE_VERSION, 'Already initialized');
+    // Initialize access storage.
+    s.version = LibFastAccess.STORAGE_VERSION;
+
+    // Add the governor.
+    s.governorSet.add(governor, false);
+    // Emit!
+    emit GovernorAdded(governor);
+  }
+
+  // Governorship related stuff.
 
   /**
    * @dev Queries whether a given address is a governor or not.
@@ -82,7 +100,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       FastTopFacet(payable(address(this))).payUpTo(governor, GOVERNOR_ETH_PROVISION);
     }
     // Emit!
-    emit LibFastAccess.GovernorAdded(governor);
+    emit IHasGovernors.GovernorAdded(governor);
   }
 
   /**
@@ -94,7 +112,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
-    emit LibFastAccess.GovernorRemoved(governor);
+    emit IHasGovernors.GovernorRemoved(governor);
   }
 
   /// Membership related stuff.

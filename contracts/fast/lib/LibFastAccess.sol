@@ -4,13 +4,6 @@ pragma solidity ^0.8.4;
 import '../../lib/LibAddressSet.sol';
 
 library LibFastAccess {
-  // These are from IHasMembers.
-  event MemberAdded(address indexed member);
-  event MemberRemoved(address indexed member);
-  // These are from IHasGovernors.
-  event GovernorAdded(address indexed governor);
-  event GovernorRemoved(address indexed governor);
-
   // The current version of the storage.
   uint16 internal constant STORAGE_VERSION = 1;
   // This is keccak256('Fast.storage.Access'):

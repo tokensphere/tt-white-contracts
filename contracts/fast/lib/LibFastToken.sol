@@ -20,17 +20,6 @@ library LibFastToken {
 
   string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
 
-  // Events.
-
-  // Issuance related events.
-  event Minted(uint256 indexed amount, string indexed ref);
-  event Burnt(uint256 indexed amount, string indexed ref);
-
-  // ERC20 and Token related events.
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
-  event Disapproval(address indexed owner, address indexed spender);
-
   // Data structures.
 
   struct Data {
