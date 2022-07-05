@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { tenThousand } from '../utils';
+import { zero, tenThousand } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { Spc, Exchange, Fast } from '../../typechain';
 chai.use(solidity);
@@ -109,12 +109,12 @@ describe('FastFrontendFacet', () => {
         governorCount: BigNumber.from(1),
         name: "Better, Stronger, FASTer",
         symbol: "BSF",
-        totalSupply: BigNumber.from(0),
-        transferCredits: BigNumber.from(0),
+        totalSupply: zero,
+        transferCredits: zero,
         isSemiPublic: true,
         memberCount: BigNumber.from(2),
         hasFixedSupply: true,
-        reserveBalance: BigNumber.from(0),
+        reserveBalance: zero,
       });
     });
   });
@@ -126,7 +126,7 @@ describe('FastFrontendFacet', () => {
 
       expect(memberObj).to.eql({
         addr: spcMember.address,
-        balance: BigNumber.from(0.0),
+        balance: zero,
         ethBalance: (await spcMember.getBalance()),
         isGovernor: false
       });
@@ -147,7 +147,7 @@ describe('FastFrontendFacet', () => {
       // Member A details.
       expect(memberAObj).to.eql({
         addr: member.address,
-        balance: BigNumber.from(0),
+        balance: zero,
         ethBalance: tenThousand,
         isGovernor: false
       });
@@ -155,7 +155,7 @@ describe('FastFrontendFacet', () => {
       // Member B details.
       expect(memberBObj).to.eql({
         addr: governor.address,
-        balance: BigNumber.from(0),
+        balance: zero,
         ethBalance: (await governor.getBalance()),
         isGovernor: true
       });
@@ -172,7 +172,7 @@ describe('FastFrontendFacet', () => {
       // Expect Member B.
       expect(memberBObj).to.eql({
         addr: governor.address,
-        balance: BigNumber.from(0),
+        balance: zero,
         ethBalance: (await governor.getBalance()),
         isGovernor: true
       });
