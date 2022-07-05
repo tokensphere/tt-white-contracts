@@ -155,7 +155,7 @@ describe('SpcFrontendFacet', () => {
       expect(details.isSemiPublic).to.eq(true);
       expect(details.hasFixedSupply).to.eq(true);
       expect(details.reserveBalance).to.eq(0);
-      expect(details.memberCount).to.eq(1);
+      expect(details.memberCount).to.eq(0);
       expect(details.governorCount).to.eq(1);
 
       // Page 1.

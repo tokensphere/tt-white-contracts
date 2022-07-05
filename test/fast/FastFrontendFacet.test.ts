@@ -5,9 +5,9 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { tenThousand } from '../utils';
+import { zero, tenThousand } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
-import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
+import { Spc, Exchange, Fast } from '../../typechain';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -25,36 +25,21 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-// Interfaces for returned structs.
-
-interface Details {
-  addr: string;
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  totalSupply: BigNumber;
-  transferCredits: BigNumber;
-  isSemiPublic: boolean;
-  hasFixedSupply: boolean;
-  reserveBalance: BigNumber;
-  memberCount: BigNumber;
-  governorCount: BigNumber;
+// A way, not the best way, to get a POJO from a struct.
+const structToObj = (struct: {}) => {
+  let
+    entries = Object.entries(struct),
+    start = entries.length / 2;
+  return Object.fromEntries(entries.slice(start));
 }
 
-interface MemberDetails {
-  addr: string;
-  balance: BigNumber;
-  ethBalance: BigNumber;
-  isGovernor: boolean;
-}
-
-const FAST_FACETS = ['FastFrontendFacet'];
+const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastFrontendFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
   const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy('FastFrontendFacet', {
+  return await deployments.diamond.deploy('FastBSF', {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
@@ -71,25 +56,29 @@ describe('FastFrontendFacet', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
-    governor: SignerWithAddress;
+    governor: SignerWithAddress,
+    member: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    token: FastFrontendFacet,
-    spcMemberToken: FastFrontendFacet;
+    fast: Fast,
+    spcMemberFast: Fast;
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor] = await ethers.getSigners();
+    [deployer, spcMember, governor, member] = await ethers.getSigners();
     // Mock an SPC and an Exchange contract.
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
+    // Stub isMember, spcAddress calls.
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    spc.isMember.returns(false);
     exchange.spcAddress.returns(spc.address);
+    exchange.isMember.whenCalledWith(member.address).returns(true);
+    exchange.isMember.whenCalledWith(governor.address).returns(true);
+    exchange.isMember.returns(false);
   });
 
   beforeEach(async () => {
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    spc.isMember.returns(false);
-
     const initOpts: FastFixtureOpts = {
       deployer: deployer.address,
       governor: governor.address,
@@ -101,61 +90,92 @@ describe('FastFrontendFacet', () => {
       hasFixedSupply: true,
       isSemiPublic: true
     };
-    const deploy = await fastDeployFixture(initOpts);
-    const fast = await ethers.getContractAt('Fast', deploy.address) as FastFrontendFacet;
-
-    // TODO: Once smock fixes their stuff, replace facets by fakes.
-    token = fast as FastFrontendFacet;
-    spcMemberToken = token.connect(spcMember);
+    await fastDeployFixture(initOpts);
+    fast = await ethers.getContract('FastBSF');
+    spcMemberFast = fast.connect(spcMember);
+    // Add members.
+    await fast.connect(governor).addMember(member.address);
+    await fast.connect(governor).addMember(governor.address);
   });
 
   describe('details', async () => {
-    it('returns a populated Details struct', async () => {
-      const subject = await spcMemberToken.details();
-      const d: Details = subject;
+    it('returns a populated details struct', async () => {
+      const subject = await spcMemberFast.details();
+      const subjectObj = structToObj(subject);
 
-      expect(d.addr).to.eq(token.address);
-      expect(d.name).to.eq("Better, Stronger, FASTer");
-      expect(d.symbol).to.eq("BSF");
-      expect(d.decimals).to.eq(18);
-      expect(d.totalSupply).to.eq(0);
-      expect(d.transferCredits).to.eq(0);
-      expect(d.isSemiPublic).to.eq(true);
-      expect(d.hasFixedSupply).to.eq(true);
-      expect(d.reserveBalance).to.eq(0);
-      expect(d.memberCount).to.eq(1);
-      expect(d.governorCount).to.eq(1);
+      expect(subjectObj).to.eql({
+        addr: fast.address,
+        decimals: BigNumber.from(18),
+        governorCount: BigNumber.from(1),
+        name: "Better, Stronger, FASTer",
+        symbol: "BSF",
+        totalSupply: zero,
+        transferCredits: zero,
+        isSemiPublic: true,
+        memberCount: BigNumber.from(2),
+        hasFixedSupply: true,
+        reserveBalance: zero,
+      });
     });
   });
 
   describe('detailedMember', async () => {
     it('returns MemberDetails populated struct', async () => {
-      // TODO: Rework this when smock can handle it.
-      //   const subject = await spcMemberToken.detailedMember(spcMember.address);
-      //   const d: MemberDetails = subject;
+      const subject = await spcMemberFast.detailedMember(spcMember.address);
+      const memberObj = structToObj(subject);
 
-      //   expect(d.addr).to.eq(spcMember.address);
-      //   expect(d.balance).to.eq(0.0);
-      //   expect(d.ethBalance).to.eq(tenThousand);
-      //   expect(d.isGovernor).to.eq(false);
+      expect(memberObj).to.eql({
+        addr: spcMember.address,
+        balance: zero,
+        ethBalance: (await spcMember.getBalance()),
+        isGovernor: false
+      });
     });
   });
 
   describe('paginateDetailedMembers', async () => {
-    it('returns MemberDetails array with next cursor', async () => {
-      const index = 0;
-      const perPage = 5;
-      const subject = await spcMemberToken.paginateDetailedMembers(index, perPage);
-      const [[memberDetails], page] = subject
+    it('returns member details with next cursor', async () => {
+      const [[
+        memberA,
+        memberB
+      ], nextCursor] = await spcMemberFast.paginateDetailedMembers(0, 5);
 
-      // Member details.
-      expect(memberDetails.addr).to.eq(governor.address);
-      expect(memberDetails.balance).to.eq(0.0);
-      expect(memberDetails.ethBalance).to.eq(tenThousand);
-      expect(memberDetails.isGovernor).to.eq(true);
+      // Convert the structs to objects.
+      const memberAObj = structToObj(memberA);
+      const memberBObj = structToObj(memberB);
 
-      // Page 1.
-      expect(page).to.eq(1);
+      // Member A details.
+      expect(memberAObj).to.eql({
+        addr: member.address,
+        balance: zero,
+        ethBalance: tenThousand,
+        isGovernor: false
+      });
+
+      // Member B details.
+      expect(memberBObj).to.eql({
+        addr: governor.address,
+        balance: zero,
+        ethBalance: (await governor.getBalance()),
+        isGovernor: true
+      });
+
+      // Next cursor.
+      expect(nextCursor).to.eq(2);
+    });
+
+    it('handles an offset index cursor', async () => {
+      // Fetch details of Member passing 1 as an offset index.
+      const [[memberB],] = await spcMemberFast.paginateDetailedMembers(1, 2);
+      const memberBObj = structToObj(memberB);
+
+      // Expect Member B.
+      expect(memberBObj).to.eql({
+        addr: governor.address,
+        balance: zero,
+        ethBalance: (await governor.getBalance()),
+        isGovernor: true
+      });
     });
   });
 });
