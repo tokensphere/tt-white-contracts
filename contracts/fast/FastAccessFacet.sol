@@ -170,8 +170,6 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   function removeMember(address member)
       external override 
       governance(msg.sender) {
-    // Notify token contract.
-    FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Remove member.
     LibFastAccess.data().memberSet.remove(member, false);
     // Notify exchange that this member was removed from this FAST.
