@@ -6,15 +6,15 @@ import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasMembers.sol';   // Membership management.
+
 import '../lib/LibConstants.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../interfaces/IHasMembers.sol';
+
+import './lib/ASpcFacet.sol';
 import './lib/LibSpc.sol';
 import './lib/LibSpcAccess.sol';
-import './lib/ASpcFacet.sol';
-import 'hardhat/console.sol';
+import './SpcAccessFacet.sol';
 
 
 /** @title The Spc Smart Contract.
@@ -29,7 +29,7 @@ contract SpcInitFacet is ASpcFacet {
   /// Initializers.
 
   struct InitializerParams {
-    address member;
+    address payable member;
   }
 
   function initialize(InitializerParams calldata params)
@@ -56,10 +56,6 @@ contract SpcInitFacet is ASpcFacet {
     // ------------------------------------- //
 
     // Initialize access storage.
-    LibSpcAccess.Data storage accessData = LibSpcAccess.data();
-    accessData.version = LibSpcAccess.STORAGE_VERSION;
-    accessData.memberSet.add(params.member, false);
-    // Emit!
-    emit LibSpc.MemberAdded(params.member);
+    SpcAccessFacet(address(this)).initialize(params.member);
   }
 }

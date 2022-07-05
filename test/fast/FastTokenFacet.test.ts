@@ -4,8 +4,8 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { artifacts, deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTokenFacet, FastTokenFacet__factory, FastTokenInternalFacet } from '../../typechain';
+import { FakeContract, smock } from '@defi-wonderland/smock';
+import { Spc, Exchange, Fast, FastTokenFacet, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { FunctionFragment, Interface } from 'ethers/lib/utils';
 import { FacetCutAction } from 'hardhat-deploy/dist/types';
@@ -597,7 +597,7 @@ describe('FastTokenFacet', () => {
     describe('transferWithRef', async () => {
       let fastTokenFacet: FakeContract<FastTokenInternalFacet>;
 
-      describe.only('delegation to _transfer', async () => {
+      describe('delegation to _transfer', async () => {
         beforeEach(async () => {
           // Build the mock and deploy it.
           fastTokenFacet = await smock.fake('FastTokenInternalFacet');
@@ -622,8 +622,8 @@ describe('FastTokenFacet', () => {
           await fast.connect(alice).transferWithRef(to, amount, ref);
 
           // Expect _transfer to be called correctly.
-          expect(fastTokenFacet._transfer).to.have.been
-            .calledOnceWith(spender, from, to, amount, ref)
+          expect(fastTokenFacet.performTransfer).to.have.been
+            .calledOnceWith({ spender, from, to, amount, ref })
             .delegatedFrom(fast.address);
         });
       });

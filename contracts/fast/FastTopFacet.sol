@@ -7,6 +7,13 @@ import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
 
 contract FastTopFacet is AFastFacet {
+
+  // Events.
+
+  // Eth provisioning related events.
+  event EthReceived(address indexed from, uint256 amount);
+  event EthDrained(address indexed to, uint256 amount);
+
   // Getters.
 
   function spcAddress()
@@ -24,7 +31,7 @@ contract FastTopFacet is AFastFacet {
   function provisionWithEth()
       external payable {
     require(msg.value > 0, LibConstants.MISSING_ATTACHED_ETH);
-    emit LibFast.EthReceived(msg.sender, msg.value);
+    emit EthReceived(msg.sender, msg.value);
   }
 
   function drainEth()
@@ -32,7 +39,7 @@ contract FastTopFacet is AFastFacet {
       spcMembership {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
-    emit LibFast.EthDrained(msg.sender, amount);
+    emit EthDrained(msg.sender, amount);
   }
 
   /**

@@ -64,7 +64,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   });
 });
 
-const SPC_FACETS = ['SpcTopFacet', 'SpcFrontendFacet'];
+const SPC_FACETS = ['SpcTopFacet', 'SpcAccessFacet', 'SpcFrontendFacet'];
 
 const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as SpcFixtureOpts;

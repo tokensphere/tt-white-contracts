@@ -16,6 +16,16 @@ import './lib/LibFastToken.sol';
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
+  // Events.
+
+  // Issuance related events.
+  event Minted(uint256 indexed amount, string indexed ref);
+  event Burnt(uint256 indexed amount, string indexed ref);
+
+  // Transfer credits related events.
+  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
+  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
+
   // Public functions.
 
   function isSemiPublic()
@@ -64,7 +74,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).minted(amount, ref);
 
     // Emit!
-    emit LibFastToken.Minted(amount, ref);
+    emit Minted(amount, ref);
   }
 
   function burn(uint256 amount, string calldata ref)
@@ -82,7 +92,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).burnt(amount, ref);
 
     // Emit!
-    emit LibFastToken.Burnt(amount, ref);
+    emit Burnt(amount, ref);
   }
 
   /// Tranfer Credit management.
@@ -96,14 +106,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external
       spcMembership {
     LibFastToken.data().transferCredits += amount;
-    emit LibFast.TransferCreditsAdded(msg.sender, amount);
+    emit TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()
       external
       spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
-    emit LibFast.TransferCreditsDrained(msg.sender, s.transferCredits);
+    emit TransferCreditsDrained(msg.sender, s.transferCredits);
     s.transferCredits = 0;
   }
 
@@ -136,7 +146,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transfer(address to, uint256 amount)
       external override returns(bool) {
-    return FastTokenInternalFacet(address(this))
+    FastTokenInternalFacet(address(this))
       .performTransfer(
         FastTokenInternalFacet.TransferArgs({
         spender: msg.sender,
@@ -146,11 +156,12 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
         ref: LibFastToken.DEFAULT_TRANSFER_REFERENCE
       })
     );
+    return true;
   }
 
-  function transferWithRef(address to, uint256 amount, string memory ref)
-      external returns(bool) {
-    return FastTokenInternalFacet(address(this))
+  function transferWithRef(address to, uint256 amount, string calldata ref)
+      external {
+    FastTokenInternalFacet(address(this))
       .performTransfer(
         FastTokenInternalFacet.TransferArgs({
           spender: msg.sender,
@@ -167,15 +178,18 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the allowance being queried is from the zero address and the spender
     // is a governor, we want to make sure that the spender has full rights over it.
-    return (owner == address(0) && FastAccessFacet(address(this)).isGovernor(spender))
-      ? s.balances[owner]
-      : s.allowances[owner][spender];
+    if (owner == address(0)) {
+      require(FastAccessFacet(address(this)).isGovernor(spender), LibConstants.REQUIRES_FAST_GOVERNORSHIP);
+      return s.balances[owner];
+    }
+    return s.allowances[owner][spender];
   }
 
   function approve(address spender, uint256 amount)
       external override returns(bool) {
-    return FastTokenInternalFacet(address(this))
+    FastTokenInternalFacet(address(this))
       .performApproval(msg.sender, spender, amount);
+    return true;
   }
 
   function disapprove(address spender)

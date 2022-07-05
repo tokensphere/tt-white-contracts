@@ -29,7 +29,7 @@ contract FastInitFacet is AFastFacet {
     address spc;
     address exchange;
     // Access stuff.
-    address governor;
+    address payable governor;
     // Token stuff.
     string name;
     string symbol;
@@ -65,13 +65,7 @@ contract FastInitFacet is AFastFacet {
     
     // ------------------------------------- //
 
-    // Initialize access storage.
-    LibFastAccess.Data storage accessData = LibFastAccess.data();
-    accessData.version = LibFastAccess.STORAGE_VERSION;
-    // Add the governor.
-    accessData.governorSet.add(params.governor, false);
-    // Emit!
-    emit LibFastAccess.GovernorAdded(params.governor);
+    FastAccessFacet(address(this)).initialize(params.governor);
 
     // ------------------------------------- //
 

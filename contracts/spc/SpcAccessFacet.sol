@@ -25,6 +25,24 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
   // This represents how much Eth new FASTs are provisioned with.
   uint256 constant private FAST_ETH_PROVISION = 250 ether;
 
+  // Initializers.
+
+  function initialize(address payable member)
+      external
+      diamondInternal {
+    // Grab our storage.
+    LibSpcAccess.Data storage s = LibSpcAccess.data();
+    // Make sure we havn't initialized yet.
+    require(s.version < LibSpcAccess.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
+    // Initialize access storage.
+    s.version = LibSpcAccess.STORAGE_VERSION;
+
+    // Add the member.
+    s.memberSet.add(member, false);
+    // Emit!
+    emit MemberAdded(member);
+  }
+
   // Membership management.
 
   /** @dev Queries whether a given address is a member of this SPC or not.

@@ -12,6 +12,11 @@ import '../interfaces/IERC20.sol';
 contract FastTokenInternalFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
+  // ERC20 and Token related events.
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Disapproval(address indexed owner, address indexed spender);
+
   // Public (internal to this diamond) functions.
 
   struct TransferArgs {
@@ -77,13 +82,13 @@ contract FastTokenInternalFacet is AFastFacet {
     FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
 
     // Emit!
-    emit LibFastToken.Transfer(p.from, p.to, p.amount);
+    emit Transfer(p.from, p.to, p.amount);
   }
 
   function performApproval(address from, address spender, uint256 amount)
       external
       diamondInternal
-      membership(msg.sender) returns(bool) {
+      membership(from) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Store allowance...
@@ -93,8 +98,7 @@ contract FastTokenInternalFacet is AFastFacet {
     s.allowancesBySpender[spender].add(from, true);
 
     // Emit!
-    emit LibFastToken.Approval(from, spender, amount);
-    return true;
+    emit Approval(from, spender, amount);
   }
 
   function performDisapproval(address from, address spender)
@@ -108,7 +112,7 @@ contract FastTokenInternalFacet is AFastFacet {
     s.allowancesBySpender[spender].remove(from, false);
 
     // Emit!
-    emit LibFastToken.Disapproval(from, spender);
+    emit Disapproval(from, spender);
   }
 
   // Modifiers.
