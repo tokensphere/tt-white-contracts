@@ -8,6 +8,18 @@ library LibFast {
   // This is keccak256('Fast.storage'):
   bytes32 internal constant STORAGE_SLOT = 0x80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705;
 
+  // Events.
+
+  // Eth provisioning related events.
+  event EthReceived(address indexed from, uint256 amount);
+  event EthDrained(address indexed to, uint256 amount);
+
+  // Transfer credits related events.
+  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
+  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
+
+  // Data structures.
+
   struct Data {
     /// @dev The latest intializer version that was called.
     uint16 version;

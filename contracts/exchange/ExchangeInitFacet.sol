@@ -6,6 +6,7 @@ import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasMembers.sol';   // Membership management.
+import '../lib/LibConstants.sol';
 import '../lib/LibDiamond.sol';
 import './lib/AExchangeFacet.sol';
 
@@ -21,7 +22,7 @@ contract ExchangeInitFacet is AExchangeFacet {
       external
       deployerContract {
     // Make sure we havn't initialized yet.
-    require(LibExchange.data().version < LibExchange.STORAGE_VERSION, 'Already initialized');
+    require(LibExchange.data().version < LibExchange.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();

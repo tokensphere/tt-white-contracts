@@ -10,26 +10,11 @@ import './FastAccessFacet.sol';
 import './FastTokenInternalFacet.sol';
 import './FastHistoryFacet.sol';
 import './lib/AFastFacet.sol';
+import './lib/LibFastToken.sol';
 
 
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
-
-  // Constants.
-
-  // Restriction codes.
-  uint8 private constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 1;
-  uint8 private constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;
-  uint8 private constant REQUIRES_EXCHANGE_MEMBERSHIP_CODE = 3;
-  uint8 private constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;
-
-  // Events.
-
-  event Minted(uint256 indexed amount, string indexed ref);
-  event Burnt(uint256 indexed amount, string indexed ref);
-
-  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
-  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
 
   // Public functions.
 
@@ -79,7 +64,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).minted(amount, ref);
 
     // Emit!
-    emit Minted(amount, ref);
+    emit LibFastToken.Minted(amount, ref);
   }
 
   function burn(uint256 amount, string calldata ref)
@@ -97,7 +82,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).burnt(amount, ref);
 
     // Emit!
-    emit Burnt(amount, ref);
+    emit LibFastToken.Burnt(amount, ref);
   }
 
   /// Tranfer Credit management.
@@ -111,14 +96,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external
       spcMembership {
     LibFastToken.data().transferCredits += amount;
-    emit TransferCreditsAdded(msg.sender, amount);
+    emit LibFast.TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()
       external
       spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
-    emit TransferCreditsDrained(msg.sender, s.transferCredits);
+    emit LibFast.TransferCreditsDrained(msg.sender, s.transferCredits);
     s.transferCredits = 0;
   }
 
@@ -152,7 +137,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function transfer(address to, uint256 amount)
       external override returns(bool) {
     return FastTokenInternalFacet(address(this))
-      ._transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
+      ._transfer(msg.sender, msg.sender, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
@@ -188,7 +173,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transferFrom(address from, address to, uint256 amount)
       external override returns(bool) {
-    transferFromWithRef(from, to, amount, 'Unspecified - via ERC20');
+    transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
     return true;
   }
 
@@ -251,27 +236,27 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external view override returns(uint8) {
     LibFastToken.Data storage s = LibFastToken.data();
     if (s.transferCredits < amount) {
-      return INSUFFICIENT_TRANSFER_CREDITS_CODE;
+      return LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE;
     } else if (!FastAccessFacet(address(this)).isMember(from) ||
                !FastAccessFacet(address(this)).isMember(to)) {
       return s.isSemiPublic
-        ? REQUIRES_EXCHANGE_MEMBERSHIP_CODE
-        : REQUIRES_FAST_MEMBERSHIP_CODE;
+        ? LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE
+        : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (from == to) {
-      return REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
+      return LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
     }
     return 0;
   }
 
   function messageForTransferRestriction(uint8 restrictionCode)
       external override pure returns(string memory) {
-    if (restrictionCode == INSUFFICIENT_TRANSFER_CREDITS_CODE) {
+    if (restrictionCode == LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE) {
       return LibConstants.INSUFFICIENT_TRANSFER_CREDITS;
-    } else if (restrictionCode == REQUIRES_EXCHANGE_MEMBERSHIP_CODE) {
+    } else if (restrictionCode == LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE) {
       return LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP;
-    } else if (restrictionCode == REQUIRES_FAST_MEMBERSHIP_CODE) {
+    } else if (restrictionCode == LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE) {
       return LibConstants.REQUIRES_FAST_MEMBERSHIP;
-    } else if (restrictionCode == REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
+    } else if (restrictionCode == LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
       return LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT;
     }
     revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
