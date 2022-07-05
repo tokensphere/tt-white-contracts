@@ -149,6 +149,7 @@ const FAST_FACETS = [
   'FastTopFacet',
   'FastAccessFacet',
   'FastTokenFacet',
+  'FastTokenInternalFacet',
   'FastHistoryFacet',
   'FastFrontendFacet'
 ];

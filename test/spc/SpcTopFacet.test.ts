@@ -269,7 +269,8 @@ describe('SpcTopFacet', () => {
     });
 
     it('returns false when the FAST symbol is unknown', async () => {
-      const subject = await spc.isFastRegistered(ZERO_ADDRESS);
+      const [notAContract] = await ethers.getSigners()
+      const subject = await spc.isFastRegistered(notAContract.address);
       expect(subject).to.eq(false);
     });
 

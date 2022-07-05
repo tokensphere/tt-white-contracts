@@ -7,6 +7,7 @@ import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './FastAccessFacet.sol';
+import './FastTokenInternalFacet.sol';
 import './FastHistoryFacet.sol';
 import './lib/AFastFacet.sol';
 
@@ -14,7 +15,7 @@ import './lib/AFastFacet.sol';
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
-  /// Constants.
+  // Constants.
 
   // Restriction codes.
   uint8 private constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 1;
@@ -29,8 +30,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   event TransferCreditsAdded(address indexed spcMember, uint256 amount);
   event TransferCreditsDrained(address indexed spcMember, uint256 amount);
-
-  event Disapproval(address indexed owner, address indexed spender);
 
   // Public functions.
 
@@ -152,12 +151,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transfer(address to, uint256 amount)
       external override returns(bool) {
-    return _transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
+    return FastTokenInternalFacet(address(this))
+      ._transfer(msg.sender, msg.sender, to, amount, 'Unspecified - via ERC20');
   }
 
   function transferWithRef(address to, uint256 amount, string memory ref)
       external returns(bool) {
-    return _transfer(msg.sender, msg.sender, to, amount, ref);
+    return FastTokenInternalFacet(address(this))
+      ._transfer(msg.sender, msg.sender, to, amount, ref);
   }
 
   function allowance(address owner, address spender)
@@ -174,13 +175,15 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function approve(address spender, uint256 amount)
       external override returns(bool) {
-    return _approve(msg.sender, spender, amount);
+    return FastTokenInternalFacet(address(this))
+      ._approve(msg.sender, spender, amount);
   }
 
   function disapprove(address spender)
       external
       membership(msg.sender) {
-    _disapprove(msg.sender, spender);
+    FastTokenInternalFacet(address(this))
+      ._disapprove(msg.sender, spender);
   }
 
   function transferFrom(address from, address to, uint256 amount)
@@ -208,7 +211,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       }
     }
 
-    _transfer(msg.sender, from, to, amount, ref);
+    FastTokenInternalFacet(address(this))
+      ._transfer(msg.sender, from, to, amount, ref);
   }
 
   /// Allowances query operations.
@@ -273,66 +277,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
   }
 
-  // Private.
-
-  function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
-      public
-      membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) returns(bool) {
-    LibFastToken.Data storage s = LibFastToken.data();
-
-    require(s.balances[from] >= amount, LibConstants.INSUFFICIENT_FUNDS);
-    require(
-      from == address(0) ||
-        s.transferCredits >= amount,
-      LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-    );
-
-    // Keep track of the balances.
-    s.balances[from] -= amount;
-    s.balances[to] += amount;
-
-    // If the funds are going to the ZERO address, decrease total supply.
-    if (to == address(0)) { s.totalSupply -= amount; }
-    // If the funds are moving from the zero address, increase total supply.
-    else if (from == address(0)) { s.totalSupply += amount; }
-
-    // Keep track of the transfer.
-    FastHistoryFacet(address(this)).transfered(spender, from, to, amount, ref);
-
-    // Emit!
-    emit IERC20.Transfer(from, to, amount);
-    return true;
-  }
-
-  function _approve(address from, address spender, uint256 amount)
-      private membership(msg.sender) returns(bool) {
-    LibFastToken.Data storage s = LibFastToken.data();
-
-    // Store allowance...
-    s.allowances[from][spender] += amount;
-    // Keep track of given and received allowances.
-    s.allowancesByOwner[from].add(spender, true);
-    s.allowancesBySpender[spender].add(from, true);
-
-    // Emit!
-    emit IERC20.Approval(from, spender, amount);
-    return true;
-  }
-
-  function _disapprove(address from, address spender)
-      private {
-    LibFastToken.Data storage s = LibFastToken.data();
-
-    // Remove allowance.
-    s.allowances[from][spender] = 0;
-    s.allowancesByOwner[from].remove(spender, false);
-    s.allowancesBySpender[spender].remove(from, false);
-
-    // Emit!
-    emit Disapproval(from, spender);
-  }
-
-  /// Callbacks from other contracts.
+  // Callbacks from other contracts.
 
   // WARNING: This function contains two loops. We know that this should never
   // happen in solidity. However:
@@ -346,27 +291,27 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     {
       uint256 balance = balanceOf(member);
       if (balance > 0) {
-        _transfer(address(0), member, address(0), balance, 'Member removal');
+        FastTokenInternalFacet(address(this))
+          ._transfer(address(0), member, address(0), balance, 'Member removal');
       }
     }
 
     // Remove all given allowances.
     {
       address[] storage gaData = s.allowancesByOwner[member].values;
-      while (gaData.length > 0) { _disapprove(member, gaData[0]); }
+      while (gaData.length > 0) {
+        FastTokenInternalFacet(address(this))
+          ._disapprove(member, gaData[0]);
+      }
     }
 
     // Remove all received allowances.
     {
       address[] storage raData = s.allowancesBySpender[member].values;
-      while (raData.length > 0) { _disapprove(raData[0], member); }
+      while (raData.length > 0) {
+        FastTokenInternalFacet(address(this))
+          ._disapprove(raData[0], member);
+      }
     }
-  }
-
-  // Modifiers.
-
-  modifier differentAddresses(address a, address b) {
-    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
-    _;
   }
 }

@@ -33,7 +33,7 @@
     "typescript": "^4.5.2"
   },
   "devDependencies": {
-    "@defi-wonderland/smock": "^2.0.7",
+    "@defi-wonderland/smock": "0.0.0-9be6e836",
     "@typechain/ethers-v5": "^10.0.0",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",

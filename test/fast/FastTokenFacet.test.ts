@@ -2,11 +2,13 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
-import { deployments, ethers } from 'hardhat';
+import { artifacts, deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTokenFacet } from '../../typechain';
+import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
+import { Spc, Exchange, Fast, FastTokenFacet, FastTokenFacet__factory, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
+import { FunctionFragment, Interface } from 'ethers/lib/utils';
+import { FacetCutAction } from 'hardhat-deploy/dist/types';
 import {
   INSUFFICIENT_ALLOWANCE,
   INSUFFICIENT_FUNDS,
@@ -25,6 +27,7 @@ import {
   UNKNOWN_RESTRICTION_CODE,
   UNSUPPORTED_OPERATION
 } from '../utils';
+import { fast } from '../../typechain/contracts';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -49,7 +52,18 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastTokenFacet', 'FastHistoryFacet'];
+const FAST_FACETS = ['FastTopFacet',
+  'FastAccessFacet',
+  'FastTokenFacet',
+  'FastTokenInternalFacet',
+  'FastHistoryFacet'
+];
+
+// Map over the ABI, filter by functions and get the signature hashes.
+const sigsFromABI = (abi: any[]): string[] =>
+  abi
+    .filter(frag => frag.type === 'function')
+    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
@@ -81,6 +95,7 @@ describe('FastTokenFacet', () => {
   let
     spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
+    fast: Fast,
     token: FastTokenFacet,
     governedToken: FastTokenFacet,
     spcMemberToken: FastTokenFacet;
@@ -120,12 +135,8 @@ describe('FastTokenFacet', () => {
       isSemiPublic: false
     };
     const deploy = await fastDeployFixture(initOpts);
-    const fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
+    fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
     const governedFast = fast.connect(governor);
-
-    // TODO: When smock fixes their stuff, replace some facets by fakes.
-    // Get our facet addresses.
-    const facetAddrs = await fast.facetAddresses()
 
     token = fast as FastTokenFacet;
     governedToken = token.connect(governor);
@@ -584,93 +595,37 @@ describe('FastTokenFacet', () => {
     });
 
     describe('transferWithRef', async () => {
-      // IMPORTANT:
-      // All these tests have the exact same rules as for `transfer`, same
-      // order, same everything **please**.
+      let fastTokenFacet: FakeContract<FastTokenInternalFacet>;
 
-      describe('when semi-public', async () => {
+      describe.only('delegation to _transfer', async () => {
         beforeEach(async () => {
-          spcMemberToken.setIsSemiPublic(true);
+          // Build the mock and deploy it.
+          fastTokenFacet = await smock.fake('FastTokenInternalFacet');
+
+          // We want to cut in our swapped out FastTokenFacet mock.
+          await fast.diamondCut([{
+            facetAddress: fastTokenFacet.address,
+            action: FacetCutAction.Replace,
+            functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
+          }], ethers.constants.AddressZero, '0x');
         });
 
-        it('requires sender membership or Exchange membership');
-        it('requires recipient membership or Exchange membership');
+        it('is done with the correct arguments', async () => {
+          // Expected passed arguments.
+          const spender = alice.address;
+          const from = alice.address;
+          const to = bob.address;
+          const amount = BigNumber.from(1.0);
+          const ref = "Some ref message";
 
-        it('allows exchange members to transact', async () => {
-          await governedToken.transferFrom(ZERO_ADDRESS, exchangeMember.address, 100);
-          const subject = () => token.connect(exchangeMember).transferWithRef(bob.address, 100, 'I am trader');
-          await expect(subject).to
-            .changeTokenBalances(token, [exchangeMember, bob], [-100, 100]);
+          // Call the function.
+          await fast.connect(alice).transferWithRef(to, amount, ref);
+
+          // Expect _transfer to be called correctly.
+          expect(fastTokenFacet._transfer).to.have.been
+            .calledOnceWith(spender, from, to, amount, ref)
+            .delegatedFrom(fast.address);
         });
-      });
-
-      describe('when private', async () => {
-        it('requires sender membership (anonymous)', async () => {
-          const subject = token.transferWithRef(bob.address, 100, 'One');
-          await expect(subject).to.have
-            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
-        });
-
-        it('requires sender membership (Exchange member)');
-
-        it('requires recipient membership (anonymous)', async () => {
-          const subject = token.connect(alice).transferWithRef(anonymous.address, 100, 'Two');
-          await expect(subject).to.have
-            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
-        });
-
-        it('requires recipient membership (Exchange member)');
-      });
-
-      it('requires that the sender and recipient are different', async () => {
-        const subject = token.connect(bob).transferWithRef(bob.address, 101, 'No!');
-        await expect(subject).to.have
-          .revertedWith(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
-      });
-
-      it('requires sufficient funds', async () => {
-        const subject = token.connect(bob).transferWithRef(alice.address, 101, 'Three');
-        await expect(subject).to.have
-          .revertedWith(INSUFFICIENT_FUNDS);
-      });
-
-      it('requires sufficient transfer credits', async () => {
-        // Drain all credits, and provision some more.
-        await spcMemberToken.drainTransferCredits();
-        await spcMemberToken.addTransferCredits(90);
-        // Do it!
-        const subject = token.connect(alice).transferWithRef(bob.address, 100, 'Four');
-        await expect(subject).to.be
-          .revertedWith(INSUFFICIENT_TRANSFER_CREDITS);
-      });
-
-      it('transfers from / to the given wallet address', async () => {
-        const subject = () => token.connect(alice).transferWithRef(bob.address, 100, 'Five');
-        await expect(subject).to
-          .changeTokenBalances(token, [alice, bob], [-100, 100]);
-      });
-
-      it('delegates to the history contract', async () => {
-        await token.connect(alice).transferWithRef(bob.address, 12, 'Six')
-        // TODO: When smock fixes their stuff, replace some facets by fakes.
-        // expect(history.transfered).to.have.been
-        //   .calledOnceWith(alice.address, alice.address, bob.address, 12, 'Six');
-      });
-
-      it('decreases total supply when transferring to the zero address', async () => {
-        // Keep total supply.
-        const supplyBefore = await token.totalSupply();
-        // Do it!
-        await token.connect(alice).transferWithRef(ZERO_ADDRESS, 100, 'Six and a half?');
-        // Check that total supply decreased.
-        expect(await token.totalSupply()).to.eql(supplyBefore.add(-100));
-      });
-
-      it('emits a IERC20.Transfer event', async () => {
-        const subject = token.connect(alice).transferWithRef(bob.address, 98, 'Seven');
-        await expect(subject).to
-          .emit(token, 'Transfer')
-          .withArgs(alice.address, bob.address, 98);
       });
     });
 
