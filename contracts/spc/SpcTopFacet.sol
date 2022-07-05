@@ -24,24 +24,6 @@ contract SpcTopFacet is ASpcFacet {
   // This represents how much Eth new FASTs are provisioned with.
   uint256 constant private FAST_ETH_PROVISION = 250 ether;
 
-  // Events.
-
-  /** @dev Emited when a new FAST is registered.
-   *  @param fast The address of the newly registered FAST diamond.
-   */
-  event FastRegistered(address indexed fast);
-
-  /** @dev Emited when someone provisions this SPC with Eth.
-   *  @param from The sender of the Eth.
-   *  @param amount The quantity of Eth, expressed in Wei.
-   */
-  event EthReceived(address indexed from, uint256 amount);
-  /** @dev Emited when Eth is drained from this SPC.
-   *  @param to The caller and recipient of the drained Eth.
-   *  @param amount The quantity of Eth that was drained, expressed in Wei.
-   */
-  event EthDrained(address indexed to, uint256 amount);
-
   // Eth provisioning stuff.
 
   /** @dev A function that alllows provisioning this SPC with Eth.
@@ -50,7 +32,7 @@ contract SpcTopFacet is ASpcFacet {
   function provisionWithEth()
       external payable {
     require(msg.value > 0, LibConstants.MISSING_ATTACHED_ETH);
-    emit EthReceived(msg.sender, msg.value);
+    emit LibSpc.EthReceived(msg.sender, msg.value);
   }
 
   /** @dev A function that alllows draining this SPC from its Eth.
@@ -62,7 +44,7 @@ contract SpcTopFacet is ASpcFacet {
       membership(msg.sender) {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
-    emit EthDrained(msg.sender, amount);
+    emit LibSpc.EthDrained(msg.sender, amount);
   }
 
   // FAST management related methods.
@@ -109,7 +91,7 @@ contract SpcTopFacet is ASpcFacet {
       FastTopFacet(fast).provisionWithEth{ value: amount }();
     }
     // Emit!
-    emit FastRegistered(fast);
+    emit LibSpc.FastRegistered(fast);
   }
 
   /** @dev Counts the number of FAST diamonds registered with this SPC.

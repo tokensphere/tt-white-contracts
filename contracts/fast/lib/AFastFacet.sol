@@ -80,13 +80,18 @@ abstract contract AFastFacet {
   /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
    *  @param candidate The address to check.
    */
-  modifier membershipOrZero(address candidate) {
-    require(
-      LibFastAccess.data().memberSet.contains(candidate) ||
-      (LibFastToken.data().isSemiPublic && IHasMembers(LibFast.data().exchange).isMember(candidate)) ||
-        candidate == address(0),
-      LibConstants.REQUIRES_FAST_MEMBERSHIP
-    );
+  modifier canHoldTokens(address candidate) {
+    // Only perform checks if the address is non-zero.
+    if (candidate != address(0)) {
+    // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
+      if (LibFastToken.data().isSemiPublic) {
+        require(IHasMembers(LibFast.data().exchange).isMember(candidate), LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP);
+      }
+      // FAST is private, the requirement to hold tokens is to be a member of that FAST.
+      else {
+        require(LibFastAccess.data().memberSet.contains(candidate), LibConstants.REQUIRES_FAST_MEMBERSHIP);
+      }
+    }
     _;
   }
 }

@@ -16,25 +16,30 @@ contract FastTokenInternalFacet is AFastFacet {
   function _transfer(address spender, address from, address to, uint256 amount, string memory ref)
       external
       diamondInternal
-      membershipOrZero(from) membershipOrZero(to) differentAddresses(from, to) returns(bool) {
+      canHoldTokens(from) canHoldTokens(to) differentAddresses(from, to) returns(bool) {
     LibFastToken.Data storage s = LibFastToken.data();
 
+    // Make sure that there's enough funds.
     require(s.balances[from] >= amount, LibConstants.INSUFFICIENT_FUNDS);
-    require(
-      from == address(0) || s.transferCredits >= amount,
-      LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-    );
+    // Make sure that the FAST has enough transfer credits.
+    if (from != address(0)) {
+      require(s.transferCredits >= amount, LibConstants.INSUFFICIENT_TRANSFER_CREDITS);
+    }
 
-    // Keep track of the balances.
+    // Keep track of the balances - `from` spends, `to` receives.
     s.balances[from] -= amount;
     s.balances[to] += amount;
 
     // If the funds are going to the ZERO address, decrease total supply.
-    if (to == address(0)) { s.totalSupply -= amount; }
+    if (to == address(0)) {
+      s.totalSupply -= amount;
+    }
     // If the funds are moving from the zero address, increase total supply.
-    else if (from == address(0)) { s.totalSupply += amount; }
+    else if (from == address(0)) {
+      s.totalSupply += amount;
+    }
 
-    // Keep track of the transfer.
+    // Keep track of the transfer in the history facet.
     FastHistoryFacet(address(this)).transfered(spender, from, to, amount, ref);
 
     // Emit!

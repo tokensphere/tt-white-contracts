@@ -6,6 +6,7 @@ import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasMembers.sol';   // Membership management.
+import '../lib/LibConstants.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
@@ -36,7 +37,7 @@ contract SpcInitFacet is ASpcFacet {
       diamondOwner {
     // Grab our top-level storage.
     // Make sure we havn't initialized yet.
-    require(LibSpc.data().version < LibSpc.STORAGE_VERSION, 'Already initialized');
+    require(LibSpc.data().version < LibSpc.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
