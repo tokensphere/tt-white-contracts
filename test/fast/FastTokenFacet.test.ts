@@ -1043,6 +1043,8 @@ describe('FastTokenFacet', () => {
         await ethers.provider.send("hardhat_stopImpersonatingAccount", [fast.address]);
       });
 
+      it('reverts if the member to remove still has a positive balance');
+
       it('sets allowances to / from the removed members to zero', async () => {
         await token.connect(await ethers.getSigner(fast.address)).beforeRemovingMember(alice.address);
         expect(await token.allowance(alice.address, bob.address)).to.eq(0);
