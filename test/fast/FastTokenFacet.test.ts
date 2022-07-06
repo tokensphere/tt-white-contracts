@@ -8,6 +8,7 @@ import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { Spc, Exchange, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
 import {
+  BALANCE_IS_POSITIVE,
   INSUFFICIENT_ALLOWANCE,
   INSUFFICIENT_FUNDS,
   INSUFFICIENT_TRANSFER_CREDITS,
@@ -496,16 +497,34 @@ describe('FastTokenFacet', () => {
     });
 
     describe('approve', async () => {
-      describe('when semi-public', async () => {
-        it('requires sender membership or Exchange membership');
-        it('requires recipient membership or Exchange membership');
+      it('delegates to FastTokenInternalFacet', async () => {
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);
+        tokenInternalFacetFake.performApproval.reset();
+
+        const args = {
+          spender: alice.address,
+          from: john.address,
+          amount: BigNumber.from(1),
+        };
+
+        // Let alice give allowance to john.
+        await token.connect(alice).approve(args.from, args.amount);
+
+        // Expect performApproval to be called correctly.
+        expect(tokenInternalFacetFake.performApproval).to.have.been
+          .calledOnceWith(args.spender, args.from, args.amount)
+          .delegatedFrom(token.address);
       });
 
-      describe('when private', async () => {
-        it('requires sender membership (anonymous)');
-        it('requires sender membership (Exchange member)');
-        it('requires recipient membership (anonymous)');
-        it('requires recipient membership (Exchange member)');
+      it('requires FAST membership', async () => {
+        // Remove alice as a member.
+        await fast.connect(governor).removeMember(alice.address);
+
+        // Let alice give allowance to john.
+        const subject = token.connect(alice).approve(john.address, 1);
+
+        await expect(subject).to.have.been
+          .revertedWith(REQUIRES_FAST_MEMBERSHIP);
       });
 
       it('adds an allowance with the correct parameters', async () => {
@@ -553,16 +572,22 @@ describe('FastTokenFacet', () => {
         await token.connect(bob).approve(john.address, 15);
       });
 
-      describe('when semi-public', async () => {
-        it('requires sender membership or Exchange membership');
-        it('requires recipient membership or Exchange membership');
-      });
+      it('delegates to FastTokenInternalFacet', async () => {
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);
+        tokenInternalFacetFake.performDisapproval.reset();
 
-      describe('when private', async () => {
-        it('requires sender membership (anonymous)');
-        it('requires sender membership (Exchange member)');
-        it('requires recipient membership (anonymous)');
-        it('requires recipient membership (Exchange member)');
+        const args = {
+          spender: alice.address,
+          from: john.address,
+        };
+
+        // Let alice give allowance to john.
+        await token.connect(alice).disapprove(args.from);
+
+        // Expect performDisapproval to be called correctly.
+        expect(tokenInternalFacetFake.performDisapproval).to.have.been
+          .calledOnceWith(args.spender, args.from)
+          .delegatedFrom(token.address);
       });
 
       it('sets the allowance to zero', async () => {
@@ -571,8 +596,17 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(0);
       });
 
-      it('removes the spender received allowance');
-      it('removes the original given allowance');
+      it('removes the spender received allowance', async () => {
+        await token.connect(bob).disapprove(john.address);
+        const [allowances, /*cursor*/] = await token.paginateAllowancesBySpender(john.address, 0, 5);
+        expect(allowances).to.be.empty;
+      });
+
+      it('removes the original given allowance', async () => {
+        await token.connect(bob).disapprove(john.address);
+        const [allowances, /*cursor*/] = await token.paginateAllowancesByOwner(bob.address, 0, 5);
+        expect(allowances).to.be.empty;
+      });
 
       it('emits a Disapproval event', async () => {
         const subject = token.connect(bob).disapprove(john.address);
@@ -606,7 +640,7 @@ describe('FastTokenFacet', () => {
     describe('transferFromWithRef', async () => {
       beforeEach(async () => {
         // Let bob give allowance to john.
-        await token.connect(bob).approve(john.address, 150);
+        await token.connect(bob).approve(john.address, 100);
       });
 
       it('delegates to the internal performTransfer method', async () => {
@@ -631,22 +665,61 @@ describe('FastTokenFacet', () => {
           topMock.isSemiPublic.returns(true);
         });
 
-        it('requires sender membership or Exchange membership');
-        it('requires recipient membership or Exchange membership');
-        it('allows exchange members to transact');
+        it('requires sender membership (Exchange membership)', async () => {
+          exchange.isMember.reset();
+          // Only Bob will be an exchange member.
+          exchange.isMember.whenCalledWith(bob.address).returns(true);
+          exchange.isMember.returns(false);
+
+          const subject = token.connect(alice).transferFromWithRef(john.address, bob.address, 100, 'One');
+          await expect(subject).to.have
+            .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+        });
+
+        it('requires recipient membership (Exchange membership)', async () => {
+          exchange.isMember.reset();
+          // Only Bob will be an exchange member.
+          exchange.isMember.whenCalledWith(bob.address).returns(true);
+          exchange.isMember.returns(false);
+
+          const subject = token.connect(alice).transferFromWithRef(bob.address, john.address, 100, 'One');
+          await expect(subject).to.have
+            .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+        });
+
+        it('allows exchange members to transact', async () => {
+          exchange.isMember.reset();
+          // Bob and John will be exchange members.
+          exchange.isMember.whenCalledWith(bob.address).returns(true);
+          exchange.isMember.whenCalledWith(john.address).returns(true);
+          exchange.isMember.returns(false);
+
+          // Let bob give allowance to alice.
+          await token.connect(bob).approve(alice.address, 100);
+
+          const subject = () => token.connect(alice).transferFromWithRef(bob.address, john.address, 100, 'One');
+          await expect(subject).to
+            .changeTokenBalances(token, [bob, john], [-100, 100]);
+        });
       });
 
       describe('when private', async () => {
-        it('requires sender membership (anonymous)');
-        it('requires sender membership (Exchange member)');
+        beforeEach(async () => {
+          // Explicitly set the token as private.
+          await spcMemberToken.setIsSemiPublic(false);
+        });
 
-        it('requires recipient membership (anonymous)', async () => {
-          const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
+        it('requires sender membership (FAST member)', async () => {
+          const subject = token.connect(john).transferFromWithRef(anonymous.address, bob.address, 100, 'One');
           await expect(subject).to.have
             .revertedWith(REQUIRES_FAST_MEMBERSHIP);
         });
 
-        it('requires recipient membership (Exchange member)');
+        it('requires recipient membership (FAST member)', async () => {
+          const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
+          await expect(subject).to.have
+            .revertedWith(REQUIRES_FAST_MEMBERSHIP);
+        });
       });
 
       it('decreases the transfer credits when not transacting from the zero address');
@@ -916,8 +989,6 @@ describe('FastTokenFacet', () => {
       let tokenAsItself: FastTokenFacet;
 
       beforeEach(async () => {
-        // Give alice some tokens.
-        // await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 500);
         // Add transfer credits to the token contract.
         await spcMemberToken.addTransferCredits(1_000);
         // Let alice give allowance to bob, and john give allowance to alice.
@@ -926,17 +997,24 @@ describe('FastTokenFacet', () => {
           token.connect(john).approve(alice.address, 500)
         ]);
         // Provision the fast with some ETH.
-        await ethers.provider.send('hardhat_setBalance', [token.address, '0xde0b6b3a7640000']);
+        await ethers.provider.send('hardhat_setBalance', [token.address, oneMillion.toHexString()]);
         // Allow to impersonate the FAST.
         await ethers.provider.send("hardhat_impersonateAccount", [token.address]);
-        tokenAsItself = await token.connect(await ethers.getSigner(token.address));
+        tokenAsItself = token.connect(await ethers.getSigner(token.address));
       });
 
       afterEach(async () => {
         await ethers.provider.send("hardhat_stopImpersonatingAccount", [token.address]);
       });
 
-      it('reverts if the member to remove still has a positive balance');
+      it('reverts if the member to remove still has a positive balance', async () => {
+        // Give alice some tokens.
+        await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
+        // Attempt to run the callback, removing alice.
+        const subject = tokenAsItself.beforeRemovingMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(BALANCE_IS_POSITIVE);
+      });
 
       it('sets allowances to / from the removed members to zero', async () => {
         await tokenAsItself.beforeRemovingMember(alice.address);

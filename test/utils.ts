@@ -51,6 +51,7 @@ export const INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
 export const INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';
 export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
 export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
+export const BALANCE_IS_POSITIVE = 'Balance is positive';
 
 export const sigsFromABI = (abi: any[]): string[] =>
   abi
