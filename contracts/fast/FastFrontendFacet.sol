@@ -4,8 +4,8 @@ pragma solidity ^0.8.4;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
-import './FastAccessFacet.sol';
-import './FastTokenFacet.sol';
+import './lib/LibFastAccess.sol';
+import './lib/LibFastToken.sol';
 
 
 /** @title The SPC Smart Contract.
@@ -14,6 +14,20 @@ import './FastTokenFacet.sol';
  */
 contract FastFrontendFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
+
+  // Events.
+
+  // This is an event that is fired whenever any of some of the FAST parameters
+  // change, so that the frontend can react to it and refresh the general header
+  // for that fast as well as the baseball cards in the FASTs list.
+  event DetailsChanged(
+    uint256 memberCount,
+    uint256 governorCount,
+    uint256 totalSupply,
+    uint256 transferCredits,
+    uint256 reserveBalance,
+    uint256 ethBalance
+  );
 
   // Data structures.
 
@@ -38,12 +52,28 @@ contract FastFrontendFacet is AFastFacet {
     bool isGovernor;
   }
 
+  // Emitters.
+
+  function emitDetailsChanged()
+      external diamondInternal {
+    LibFastAccess.Data storage accessData = LibFastAccess.data();
+    LibFastToken.Data storage tokenData = LibFastToken.data();
+    emit DetailsChanged({
+      memberCount: accessData.memberSet.values.length,
+      governorCount: accessData.governorSet.values.length,
+      totalSupply: tokenData.totalSupply,
+      transferCredits: tokenData.transferCredits,
+      reserveBalance: tokenData.balances[LibConstants.ZERO_ADDRESS],
+      ethBalance: payable(address(this)).balance
+    });
+  }
+
   // Public functions.
 
   function details()
       public view returns(Details memory) {
-    LibFastToken.Data storage tokenStorage = LibFastToken.data();
     LibFastAccess.Data storage accessStorage = LibFastAccess.data();
+    LibFastToken.Data storage tokenStorage = LibFastToken.data();
     return Details({
       addr: address(this),
       name: tokenStorage.name,

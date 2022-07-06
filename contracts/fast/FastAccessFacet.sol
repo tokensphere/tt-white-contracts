@@ -11,6 +11,7 @@ import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
 import './lib/LibFastAccess.sol';
 import './FastTopFacet.sol';
+import './FastFrontendFacet.sol';
 
 
 /**
@@ -100,6 +101,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       FastTopFacet(payable(address(this))).payUpTo(governor, GOVERNOR_ETH_PROVISION);
     }
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit IHasGovernors.GovernorAdded(governor);
   }
 
@@ -112,6 +114,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit IHasGovernors.GovernorRemoved(governor);
   }
 
@@ -161,6 +164,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Notify exchange that this member was added to this FAST.
     ExchangeAccessFacet(LibFast.data().exchange).memberAddedToFast(member);
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit IHasMembers.MemberAdded(member);
   }
 
@@ -175,6 +179,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Notify exchange that this member was removed from this FAST.
     ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit IHasMembers.MemberRemoved(member);
   }
 

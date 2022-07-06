@@ -6,11 +6,12 @@ import '../interfaces/IERC1404.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import './FastAccessFacet.sol';
-import './FastTokenInternalFacet.sol';
-import './FastHistoryFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
+import './FastTokenInternalFacet.sol';
+import './FastAccessFacet.sol';
+import './FastHistoryFacet.sol';
+import './FastFrontendFacet.sol';
 
 
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
@@ -74,6 +75,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).minted(amount, ref);
 
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit Minted(amount, ref);
   }
 
@@ -92,6 +94,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).burnt(amount, ref);
 
     // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit Burnt(amount, ref);
   }
 
@@ -106,6 +109,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external
       spcMembership {
     LibFastToken.data().transferCredits += amount;
+    // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
     emit TransferCreditsAdded(msg.sender, amount);
   }
 
@@ -113,8 +118,12 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external
       spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
+    // Emit!
     emit TransferCreditsDrained(msg.sender, s.transferCredits);
+    // Drain credits.
     s.transferCredits = 0;
+    // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   /// ERC20 implementation and transfer related methods.

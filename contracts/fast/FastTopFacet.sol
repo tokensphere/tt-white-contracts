@@ -5,10 +5,10 @@ import '../lib/LibConstants.sol';
 import '../lib/LibHelpers.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
+import './FastAccessFacet.sol';
+import './FastTokenFacet.sol';
 
 contract FastTopFacet is AFastFacet {
-
-  // Events.
 
   // Eth provisioning related events.
   event EthReceived(address indexed from, uint256 amount);
@@ -32,6 +32,7 @@ contract FastTopFacet is AFastFacet {
       external payable {
     require(msg.value > 0, LibConstants.MISSING_ATTACHED_ETH);
     emit EthReceived(msg.sender, msg.value);
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   function drainEth()
@@ -40,6 +41,7 @@ contract FastTopFacet is AFastFacet {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   /**
@@ -52,5 +54,6 @@ contract FastTopFacet is AFastFacet {
     amount = LibHelpers.upTo(recipient, amount);
     // Transfer some eth!
     if (amount != 0) { recipient.transfer(amount); }
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 }

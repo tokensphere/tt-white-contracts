@@ -27,7 +27,13 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastTokenFacet'];
+// TODO: We probably want to remove FastTopFacet, FastTokenFacet and FastFrontendFacet and replace them by fakes...
+const FAST_FACETS = [
+  'FastTopFacet',
+  'FastAccessFacet',
+  'FastTokenFacet',
+  'FastFrontendFacet'
+];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;

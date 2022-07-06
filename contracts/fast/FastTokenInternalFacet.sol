@@ -5,6 +5,7 @@ import '../lib/LibAddressSet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
 import './FastTokenFacet.sol';
+import './FastFrontendFacet.sol';
 import './FastHistoryFacet.sol';
 import '../interfaces/IERC20.sol';
 
@@ -72,10 +73,14 @@ contract FastTokenInternalFacet is AFastFacet {
     // If the funds are going to the ZERO address, decrease total supply.
     if (p.to == address(0)) {
       s.totalSupply -= p.amount;
+      // If funds at address zero changed, we can emit a top-level details change event.
+      FastFrontendFacet(address(this)).emitDetailsChanged();
     }
     // If the funds are moving from the zero address, increase total supply.
     else if (p.from == address(0)) {
       s.totalSupply += p.amount;
+      // If funds at address zero changed, we can emit a top-level details change event.
+      FastFrontendFacet(address(this)).emitDetailsChanged();
     }
 
     // Keep track of the transfer in the history facet.

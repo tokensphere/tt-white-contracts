@@ -1,14 +1,13 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
-import { BaseContract, BigNumber } from 'ethers';
-import { artifacts, deployments, ethers } from 'hardhat';
+import { BigNumber } from 'ethers';
+import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, IDiamondCut } from '../../typechain';
+import { Spc, Exchange, Fast } from '../../typechain';
 import { FastTokenFacet, FastTopFacet, FastHistoryFacet, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
-import { FunctionFragment, Interface } from 'ethers/lib/utils';
 import { FacetCutAction } from 'hardhat-deploy/dist/types';
 import {
   INSUFFICIENT_ALLOWANCE,
@@ -28,7 +27,9 @@ import {
   UNKNOWN_RESTRICTION_CODE,
   UNSUPPORTED_OPERATION,
   DEFAULT_TRANSFER_REFERENCE,
-  one
+  one,
+  sigsFromABI,
+  setupDiamondFacet
 } from '../utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -54,28 +55,14 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
+// TODO: We probably want to remove FastAccessFacet and replace it by a fakes...
+//        It would require that no other facets use `LibFastAccess.data()...` but
+//        instead use `FastAccessFacet(address(this))...`.
 const FAST_FACETS = [
   'FastAccessFacet',
   'FastTokenFacet',
   'FastTokenInternalFacet'
 ];
-
-// Map over the ABI, filter by functions and get the signature hashes.
-const sigsFromABI = (abi: any[]): string[] =>
-  abi
-    .filter(frag => frag.type === 'function')
-    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
-
-const setupDiamondFacet =
-  async <T extends BaseContract>(diamond: IDiamondCut, fake: FakeContract<T>, facet: string, action: FacetCutAction) => {
-    // We want to cut in our swapped out FastTokenFacet mock.
-    await diamond.diamondCut([{
-      facetAddress: fake.address,
-      action,
-      functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
-    }], ethers.constants.AddressZero, '0x');
-    return fake;
-  };
 
 describe('FastTokenFacet', () => {
   let
@@ -95,6 +82,7 @@ describe('FastTokenFacet', () => {
     topFacetFake: FakeContract<FastTopFacet>,
     historyFacetFake: FakeContract<FastHistoryFacet>,
     tokenInternalFacetFake: FakeContract<FastTokenInternalFacet>,
+    frontendFacetFake: FakeContract<FastTokenInternalFacet>,
     governedToken: FastTokenFacet,
     spcMemberToken: FastTokenFacet;
 
@@ -125,6 +113,9 @@ describe('FastTokenFacet', () => {
     // Set up our history facet fake and install it.
     historyFacetFake = await smock.fake('FastHistoryFacet');
     await setupDiamondFacet(fast, historyFacetFake, 'FastHistoryFacet', FacetCutAction.Add);
+    // Set up our frontend facet fake and install it.
+    frontendFacetFake = await smock.fake('FastFrontendFacet');
+    await setupDiamondFacet(fast, frontendFacetFake, 'FastFrontendFacet', FacetCutAction.Add);
     // Create an internal facet fake, but don't install it yet, as we only
     // need it in certain tests while others need the real functionality.
     tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
