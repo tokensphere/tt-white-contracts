@@ -2,6 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployFast } from '../tasks/fast';
 import { Exchange, Fast } from '../typechain';
+import { wait } from '../src/utils';
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -23,6 +24,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const iou = await ethers.getContract('FastIOU') as Fast;
   await iou.connect(spcMemberSigner).addTransferCredits('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+  
+  await wait(8000);
 };
 func.tags = ['DeployIOU'];
 export default func;

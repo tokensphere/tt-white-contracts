@@ -76,9 +76,10 @@ const accounts = (networkName: string): string[] => {
   }
 }
 
+const wait = async (timeout: number) => new Promise((res) => setTimeout(() => res(null), timeout))
 
 export {
   ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON, COMMON_DIAMOND_FACETS,
   fromBaseUnit, toBaseUnit, toHexString,
-  nodeUrl, accounts
+  nodeUrl, accounts, wait
 }

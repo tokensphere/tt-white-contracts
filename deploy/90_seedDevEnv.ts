@@ -3,7 +3,7 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers, getNamedAccounts } from 'hardhat';
 import { deployFast, fastMint } from '../tasks/fast';
 import { Exchange, Fast } from '../typechain';
-import { toBaseUnit, ZERO_ADDRESS } from '../src/utils';
+import { toBaseUnit, wait, ZERO_ADDRESS } from '../src/utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // We only want to do this in local development nodes.
@@ -30,6 +30,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log('Minting 1_000_000 IOU...');
   await fastMint(spcMemberIOU, 1_000_000, 'Initial mint');
 
+  await wait(8000);
+  
   console.log('Provisioning user[1, 4, 5, 8, 9] with some IOU...');
   for (const address of [user1, user4, user5, user8, user9])
     await spcMemberIOU.transferFrom(ZERO_ADDRESS, address, toBaseUnit(1_000, 18));
@@ -45,12 +47,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
   console.log('Minting 500_000 SAF...');
   await fastMint(saf.connect(spcMemberSigner), 500_000, 'Whatever');
+
+  await wait(8000);
+
   console.log('Adding user[1-5] as members of the SAF FAST...');
   for (const address of [user1, user2, user3, user4, user5])
     await saf.connect(fastGovernorSigner).addMember(address);
   console.log('Transferring SAF to user[1-3]...');
   for (const [index, address] of [user1, user2, user3].entries())
     await saf.connect(fastGovernorSigner).transferFromWithRef(ZERO_ADDRESS, address, toBaseUnit(1_000 * (index + 1), 18), `Transfer ${index + 1}`);
+
+  await wait(8000);
 
   console.log('Deploying CVD FAST...');
   const { fast: cvd } = await deployFast(hre, {
@@ -61,6 +68,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     hasFixedSupply: true,
     isSemiPublic: false
   });
+  
+  await wait(8000);
+  
   console.log('Minting 5_000_000 CVD...');
   await fastMint(cvd.connect(spcMemberSigner), 5_000_000, 'Whatever');
   console.log('Adding user[3-7] as members of the CVD FAST...');
