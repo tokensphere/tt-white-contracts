@@ -5,7 +5,8 @@ import { BigNumber } from 'ethers';
 import { artifacts, deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTokenFacet, FastTopFacet, FastHistoryFacet } from '../../typechain';
+import { Spc, Exchange, Fast } from '../../typechain';
+import { FastTokenFacet, FastTopFacet, FastHistoryFacet, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { FunctionFragment, Interface } from 'ethers/lib/utils';
 import { FacetCutAction } from 'hardhat-deploy/dist/types';
@@ -65,23 +66,6 @@ const sigsFromABI = (abi: any[]): string[] =>
     .filter(frag => frag.type === 'function')
     .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
 
-const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as FastFixtureOpts;
-  const { deployer, ...initFacetArgs } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [initFacetArgs],
-    },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
-  });
-});
-
 describe('FastTokenFacet', () => {
   let
     deployer: SignerWithAddress,
@@ -97,10 +81,58 @@ describe('FastTokenFacet', () => {
     exchange: FakeContract<Exchange>,
     fast: Fast,
     token: FastTokenFacet,
-    topFacet: FakeContract<FastTopFacet>,
-    historyFacet: FakeContract<FastHistoryFacet>,
+    topFacetFake: FakeContract<FastTopFacet>,
+    historyFacetFake: FakeContract<FastHistoryFacet>,
+    tokenInternalFacetFake: FakeContract<FastTokenInternalFacet>,
     governedToken: FastTokenFacet,
     spcMemberToken: FastTokenFacet;
+
+  const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
+    const initOpts = uOpts as FastFixtureOpts;
+    const { deployer, ...initFacetArgs } = initOpts;
+    // Deploy the diamond.
+    const deploy = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+      from: initOpts.deployer,
+      owner: initOpts.deployer,
+      facets: FAST_FACETS,
+      execute: {
+        contract: 'FastInitFacet',
+        methodName: 'initialize',
+        args: [initFacetArgs],
+      },
+      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    });
+
+    fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
+    token = await ethers.getContractAt('FastTokenFacet', deploy.address) as FastTokenFacet;
+    governedToken = token.connect(governor);
+    spcMemberToken = token.connect(spcMember);
+
+    // Build the mock and deploy it.
+    topFacetFake = await smock.fake('FastTopFacet');
+    // We want to cut in our swapped out FastTokenFacet mock.
+    await fast.diamondCut([{
+      facetAddress: topFacetFake.address,
+      action: FacetCutAction.Add,
+      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTopFacet')).abi)
+    }], ethers.constants.AddressZero, '0x');
+
+
+    // Build the mock and deploy it.
+    historyFacetFake = await smock.fake('FastHistoryFacet');
+    // We want to cut in our swapped out FastTokenFacet mock.
+    await fast.diamondCut([{
+      facetAddress: historyFacetFake.address,
+      action: FacetCutAction.Add,
+      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastHistoryFacet')).abi)
+    }], ethers.constants.AddressZero, '0x');
+
+    // Add a few FAST members.
+    const governedFast = fast.connect(governor);
+    await Promise.all([alice, bob, john].map(
+      async ({ address }) => governedFast.addMember(address))
+    );
+  });
 
   before(async () => {
     // Keep track of a few signers.
@@ -125,7 +157,7 @@ describe('FastTokenFacet', () => {
     );
     exchange.isMember.returns(false);
 
-    const initOpts: FastFixtureOpts = {
+    await fastDeployFixture({
       deployer: deployer.address,
       governor: governor.address,
       exchange: exchange.address,
@@ -135,37 +167,7 @@ describe('FastTokenFacet', () => {
       decimals: ERC20_TOKEN_DECIMALS,
       hasFixedSupply: true,
       isSemiPublic: false
-    };
-    const deploy = await fastDeployFixture(initOpts);
-    fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
-    const governedFast = fast.connect(governor);
-
-    // Build the mock and deploy it.
-    topFacet = await smock.fake('FastTopFacet');
-    // We want to cut in our swapped out FastTokenFacet mock.
-    await fast.diamondCut([{
-      facetAddress: topFacet.address,
-      action: FacetCutAction.Add,
-      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTopFacet')).abi)
-    }], ethers.constants.AddressZero, '0x');
-
-    // Build the mock and deploy it.
-    historyFacet = await smock.fake('FastHistoryFacet');
-    // We want to cut in our swapped out FastTokenFacet mock.
-    await fast.diamondCut([{
-      facetAddress: historyFacet.address,
-      action: FacetCutAction.Add,
-      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastHistoryFacet')).abi)
-    }], ethers.constants.AddressZero, '0x');
-
-    token = fast as FastTokenFacet;
-    governedToken = token.connect(governor);
-    spcMemberToken = token.connect(spcMember);
-
-    // Add a few FAST members.
-    await Promise.all([alice, bob, john].map(
-      async ({ address }) => governedFast.addMember(address))
-    );
+    });
   });
 
   /// Public stuff.
@@ -330,8 +332,9 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the history contract', async () => {
+      historyFacetFake.minted.reset();
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      expect(historyFacet.minted).to.have.been
+      expect(historyFacetFake.minted).to.have.been
         .calledOnceWith(5_000, 'Attempt 1')
         .delegatedFrom(token.address);
     });
@@ -407,8 +410,9 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the history contract', async () => {
+      historyFacetFake.burnt.reset();
       await spcMemberToken.burn(50, 'It is hot');
-      expect(historyFacet.burnt).to.have.been
+      expect(historyFacetFake.burnt).to.have.been
         .calledOnceWith(50, 'It is hot')
         .delegatedFrom(token.address);
     });
@@ -516,11 +520,10 @@ describe('FastTokenFacet', () => {
     describe('transfer', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
         // Build the mock and deploy it.
-        const fastTokenFacet = await smock.fake('FastTokenInternalFacet');
-
+        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
         // We want to cut in our swapped out FastTokenFacet mock.
         await fast.diamondCut([{
-          facetAddress: fastTokenFacet.address,
+          facetAddress: tokenInternalFacetFake.address,
           action: FacetCutAction.Replace,
           functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
         }], ethers.constants.AddressZero, '0x');
@@ -533,22 +536,22 @@ describe('FastTokenFacet', () => {
           amount: BigNumber.from(1),
           ref: DEFAULT_TRANSFER_REFERENCE
         };
-        await fast.connect(alice).transfer(args.to, args.amount);
+        await token.connect(alice).transfer(args.to, args.amount);
         // Expect performTransfer to be called correctly.
-        expect(fastTokenFacet.performTransfer).to.have.been
+        expect(tokenInternalFacetFake.performTransfer).to.have.been
           .calledOnceWith(args)
-          .delegatedFrom(fast.address);
+          .delegatedFrom(token.address);
       });
     });
 
     describe('transferWithRef', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
         // Build the mock and deploy it.
-        const fastTokenFacet = await smock.fake('FastTokenInternalFacet');
+        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
 
         // We want to cut in our swapped out FastTokenFacet mock.
         await fast.diamondCut([{
-          facetAddress: fastTokenFacet.address,
+          facetAddress: tokenInternalFacetFake.address,
           action: FacetCutAction.Replace,
           functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
         }], ethers.constants.AddressZero, '0x');
@@ -561,11 +564,11 @@ describe('FastTokenFacet', () => {
           amount: BigNumber.from(1),
           ref: 'Some ref message'
         };
-        await fast.connect(alice).transferWithRef(args.to, args.amount, args.ref);
+        await token.connect(alice).transferWithRef(args.to, args.amount, args.ref);
         // Expect performTransfer to be called correctly.
-        expect(fastTokenFacet.performTransfer).to.have.been
+        expect(tokenInternalFacetFake.performTransfer).to.have.been
           .calledOnceWith(args)
-          .delegatedFrom(fast.address);
+          .delegatedFrom(token.address);
       });
     });
 
@@ -636,12 +639,13 @@ describe('FastTokenFacet', () => {
         expect(a1).to.eq(alice.address);
       });
 
-      it('emits a Approval event', async () => {
+      it('emits an Approval event', async () => {
         // Let alice give allowance to bob.
         const subject = token.connect(alice).approve(bob.address, 60);
-        // Do it!
+        // Note that we're observing the fast diamond, not just the token facet.
+        // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Approval')
+          .emit(fast, 'Approval')
           .withArgs(alice.address, bob.address, 60)
       });
     });
@@ -675,8 +679,10 @@ describe('FastTokenFacet', () => {
 
       it('emits a Disapproval event', async () => {
         const subject = token.connect(bob).disapprove(john.address);
+        // Note that we're observing the fast diamond, not just the token facet.
+        // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(bob.address, john.address);
       });
     });
@@ -684,11 +690,11 @@ describe('FastTokenFacet', () => {
     describe('transferFrom', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
         // Build the mock and deploy it.
-        const fastTokenFacet = await smock.fake('FastTokenInternalFacet');
+        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
 
         // We want to cut in our swapped out FastTokenFacet mock.
         await fast.diamondCut([{
-          facetAddress: fastTokenFacet.address,
+          facetAddress: tokenInternalFacetFake.address,
           action: FacetCutAction.Replace,
           functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
         }], ethers.constants.AddressZero, '0x');
@@ -701,11 +707,11 @@ describe('FastTokenFacet', () => {
           amount: BigNumber.from(1),
           ref: DEFAULT_TRANSFER_REFERENCE
         };
-        await fast.connect(alice).transferFrom(args.from, args.to, args.amount);
+        await token.connect(alice).transferFrom(args.from, args.to, args.amount);
         // Expect performTransfer to be called correctly.
-        expect(fastTokenFacet.performTransfer).to.have.been
+        expect(tokenInternalFacetFake.performTransfer).to.have.been
           .calledOnceWith(args)
-          .delegatedFrom(fast.address);
+          .delegatedFrom(token.address);
       });
     });
 
@@ -717,11 +723,11 @@ describe('FastTokenFacet', () => {
 
       it('delegates to FastTokenInternalFacet', async () => {
         // Build the mock and deploy it.
-        const fastTokenFacet = await smock.fake('FastTokenInternalFacet');
+        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
 
         // We want to cut in our swapped out FastTokenFacet mock.
         await fast.diamondCut([{
-          facetAddress: fastTokenFacet.address,
+          facetAddress: tokenInternalFacetFake.address,
           action: FacetCutAction.Replace,
           functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
         }], ethers.constants.AddressZero, '0x');
@@ -734,11 +740,11 @@ describe('FastTokenFacet', () => {
           amount: BigNumber.from(1),
           ref: 'Some useful ref'
         };
-        await fast.connect(alice).transferFromWithRef(args.from, args.to, args.amount, args.ref);
+        await token.connect(alice).transferFromWithRef(args.from, args.to, args.amount, args.ref);
         // Expect performTransfer to be called correctly.
-        expect(fastTokenFacet.performTransfer).to.have.been
+        expect(tokenInternalFacetFake.performTransfer).to.have.been
           .calledOnceWith(args)
-          .delegatedFrom(fast.address);
+          .delegatedFrom(token.address);
       });
 
       describe('when semi-public', async () => {
@@ -793,10 +799,11 @@ describe('FastTokenFacet', () => {
       });
 
       it('delegates to the history contract', async () => {
+        historyFacetFake.transfered.reset();
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        expect(historyFacet.transfered).to.have.been
+        expect(historyFacetFake.transfered).to.have.been
           .calledOnceWith(john.address, bob.address, alice.address, 12, 'Five')
-          .delegatedFrom(fast.address)
+          .delegatedFrom(token.address)
       });
 
       it('decreases total supply when transferring to the zero address', async () => {
@@ -810,8 +817,10 @@ describe('FastTokenFacet', () => {
 
       it('emits a IERC20.Transfer event', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
+        // Note that we're observing the fast diamond, not just the token facet.
+        // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Transfer')
+          .emit(fast, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
 
@@ -1022,7 +1031,9 @@ describe('FastTokenFacet', () => {
         .revertedWith(INTERNAL_METHOD);
     });
 
-    describe.only('when successful', async () => {
+    describe('when successful', async () => {
+      let tokenAsItself: FastTokenFacet;
+
       beforeEach(async () => {
         // Give alice some tokens.
         // await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 500);
@@ -1034,25 +1045,26 @@ describe('FastTokenFacet', () => {
           token.connect(john).approve(alice.address, 500)
         ]);
         // Provision the fast with some ETH.
-        await ethers.provider.send('hardhat_setBalance', [fast.address, '0xde0b6b3a7640000']);
+        await ethers.provider.send('hardhat_setBalance', [token.address, '0xde0b6b3a7640000']);
         // Allow to impersonate the FAST.
-        await ethers.provider.send("hardhat_impersonateAccount", [fast.address]);
+        await ethers.provider.send("hardhat_impersonateAccount", [token.address]);
+        tokenAsItself = await token.connect(await ethers.getSigner(token.address));
       });
 
       afterEach(async () => {
-        await ethers.provider.send("hardhat_stopImpersonatingAccount", [fast.address]);
+        await ethers.provider.send("hardhat_stopImpersonatingAccount", [token.address]);
       });
 
       it('reverts if the member to remove still has a positive balance');
 
       it('sets allowances to / from the removed members to zero', async () => {
-        await token.connect(await ethers.getSigner(fast.address)).beforeRemovingMember(alice.address);
+        await tokenAsItself.beforeRemovingMember(alice.address);
         expect(await token.allowance(alice.address, bob.address)).to.eq(0);
         expect(await token.allowance(john.address, alice.address)).to.eq(0);
       });
 
       it('removes given and received allowances', async () => {
-        await token.connect(await ethers.getSigner(fast.address)).beforeRemovingMember(alice.address);
+        await tokenAsItself.beforeRemovingMember(alice.address);
         // Check that allowances received by the members are gone.
         const [ra, /*cursor*/] = await token.paginateAllowancesBySpender(bob.address, 0, 5);
         expect(ra).to.be.empty
@@ -1062,13 +1074,14 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a Disapproval event as many times as it removed allowance', async () => {
-        const subject = token.connect(await ethers.getSigner(fast.address)).beforeRemovingMember(alice.address);
+        const subject = tokenAsItself.beforeRemovingMember(alice.address);
+        // Note that we're observing the fast diamond, not just the token facet.
+        // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(alice.address, bob.address);
-
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(john.address, alice.address);
       });
     });
