@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
-import { BigNumber } from 'ethers';
+import { BaseContract, BigNumber } from 'ethers';
 import { artifacts, deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast } from '../../typechain';
+import { Spc, Exchange, Fast, IDiamondCut } from '../../typechain';
 import { FastTokenFacet, FastTopFacet, FastHistoryFacet, FastTokenInternalFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { FunctionFragment, Interface } from 'ethers/lib/utils';
@@ -66,6 +66,17 @@ const sigsFromABI = (abi: any[]): string[] =>
     .filter(frag => frag.type === 'function')
     .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
 
+const setupDiamondFacet =
+  async <T extends BaseContract>(diamond: IDiamondCut, fake: FakeContract<T>, facet: string, action: FacetCutAction) => {
+    // We want to cut in our swapped out FastTokenFacet mock.
+    await diamond.diamondCut([{
+      facetAddress: fake.address,
+      action,
+      functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
+    }], ethers.constants.AddressZero, '0x');
+    return fake;
+  };
+
 describe('FastTokenFacet', () => {
   let
     deployer: SignerWithAddress,
@@ -108,24 +119,15 @@ describe('FastTokenFacet', () => {
     governedToken = token.connect(governor);
     spcMemberToken = token.connect(spcMember);
 
-    // Build the mock and deploy it.
+    // Set up a top facet fake and install it.
     topFacetFake = await smock.fake('FastTopFacet');
-    // We want to cut in our swapped out FastTokenFacet mock.
-    await fast.diamondCut([{
-      facetAddress: topFacetFake.address,
-      action: FacetCutAction.Add,
-      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTopFacet')).abi)
-    }], ethers.constants.AddressZero, '0x');
-
-
-    // Build the mock and deploy it.
+    await setupDiamondFacet(fast, topFacetFake, 'FastTopFacet', FacetCutAction.Add);
+    // Set up our history facet fake and install it.
     historyFacetFake = await smock.fake('FastHistoryFacet');
-    // We want to cut in our swapped out FastTokenFacet mock.
-    await fast.diamondCut([{
-      facetAddress: historyFacetFake.address,
-      action: FacetCutAction.Add,
-      functionSelectors: sigsFromABI((await artifacts.readArtifact('FastHistoryFacet')).abi)
-    }], ethers.constants.AddressZero, '0x');
+    await setupDiamondFacet(fast, historyFacetFake, 'FastHistoryFacet', FacetCutAction.Add);
+    // Create an internal facet fake, but don't install it yet, as we only
+    // need it in certain tests while others need the real functionality.
+    tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
 
     // Add a few FAST members.
     const governedFast = fast.connect(governor);
@@ -519,14 +521,8 @@ describe('FastTokenFacet', () => {
 
     describe('transfer', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
-        // Build the mock and deploy it.
-        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
-        // We want to cut in our swapped out FastTokenFacet mock.
-        await fast.diamondCut([{
-          facetAddress: tokenInternalFacetFake.address,
-          action: FacetCutAction.Replace,
-          functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
-        }], ethers.constants.AddressZero, '0x');
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);
+        tokenInternalFacetFake.performTransfer.reset();
 
         // Expected passed arguments.
         const args = {
@@ -546,17 +542,9 @@ describe('FastTokenFacet', () => {
 
     describe('transferWithRef', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
-        // Build the mock and deploy it.
-        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);        // Expected passed arguments.
+        tokenInternalFacetFake.performTransfer.reset();
 
-        // We want to cut in our swapped out FastTokenFacet mock.
-        await fast.diamondCut([{
-          facetAddress: tokenInternalFacetFake.address,
-          action: FacetCutAction.Replace,
-          functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
-        }], ethers.constants.AddressZero, '0x');
-
-        // Expected passed arguments.
         const args = {
           spender: alice.address,
           from: alice.address,
@@ -689,17 +677,9 @@ describe('FastTokenFacet', () => {
 
     describe('transferFrom', async () => {
       it('delegates to FastTokenInternalFacet', async () => {
-        // Build the mock and deploy it.
-        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);        // Expected passed arguments.
+        tokenInternalFacetFake.performTransfer.reset();
 
-        // We want to cut in our swapped out FastTokenFacet mock.
-        await fast.diamondCut([{
-          facetAddress: tokenInternalFacetFake.address,
-          action: FacetCutAction.Replace,
-          functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
-        }], ethers.constants.AddressZero, '0x');
-
-        // Expected passed arguments.
         const args = {
           spender: alice.address,
           from: alice.address,
@@ -722,17 +702,9 @@ describe('FastTokenFacet', () => {
       });
 
       it('delegates to FastTokenInternalFacet', async () => {
-        // Build the mock and deploy it.
-        tokenInternalFacetFake = await smock.fake('FastTokenInternalFacet');
+        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);        // Expected passed arguments.
+        tokenInternalFacetFake.performTransfer.reset();
 
-        // We want to cut in our swapped out FastTokenFacet mock.
-        await fast.diamondCut([{
-          facetAddress: tokenInternalFacetFake.address,
-          action: FacetCutAction.Replace,
-          functionSelectors: sigsFromABI((await artifacts.readArtifact('FastTokenInternalFacet')).abi)
-        }], ethers.constants.AddressZero, '0x');
-
-        // Expected passed arguments.
         const args = {
           spender: alice.address,
           from: alice.address,
