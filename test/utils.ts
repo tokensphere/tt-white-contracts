@@ -40,6 +40,8 @@ export const REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
 export const REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
 export const REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
 export const DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
+export const REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';
+export const REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
 
 export const DUPLICATE_ENTRY = 'Duplicate entry';
 export const UNSUPPORTED_OPERATION = 'Unsupported operation';

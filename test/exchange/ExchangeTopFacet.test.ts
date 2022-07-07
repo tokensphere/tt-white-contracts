@@ -5,8 +5,8 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, ExchangeTopFacet } from '../../typechain';
-import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 import { EXCHANGE_FACETS } from '../../tasks/exchange';
+import { deploymentSalt } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -32,7 +32,7 @@ const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
       methodName: 'initialize',
       args: [initFacetOpts]
     },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    deterministicSalt: deploymentSalt(hre)
   });
 });
 

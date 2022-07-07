@@ -4,8 +4,8 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Spc, Exchange, ExchangeAccessFacet } from '../../typechain';
-import { REQUIRES_SPC_MEMBERSHIP } from '../utils';
+import { Spc, Fast, ExchangeAccessFacet } from '../../typechain';
+import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, oneMillion } from '../utils';
 import { deploymentSalt } from '../../src/utils';
 import { EXCHANGE_FACETS } from '../../tasks/exchange';
 chai.use(solidity);
@@ -37,7 +37,7 @@ const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   });
 });
 
-describe('ExchangeTopFacet', () => {
+describe('ExchangeAccessFacet', () => {
   let
     deployer: SignerWithAddress,
     spcMember: SignerWithAddress,
@@ -47,14 +47,16 @@ describe('ExchangeTopFacet', () => {
     john: SignerWithAddress;
 
   let spc: FakeContract<Spc>,
+    fast: FakeContract<Fast>,
     exchange: ExchangeAccessFacet,
     spcMemberExchange: ExchangeAccessFacet;
 
   before(async () => {
     // Keep track of a few signers.
     [deployer, spcMember, alice, bob, rob, john] = await ethers.getSigners();
-    // Mock an SPC contract.
+    // Mock SPC and Fast contracts.
     spc = await smock.fake('Spc');
+    fast = await smock.fake('Fast');
   });
 
   beforeEach(async () => {
@@ -120,10 +122,29 @@ describe('ExchangeTopFacet', () => {
           .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
-      it('requires that the address is an existing member', async () => {
+      it('requires that the address is an existing member - calls LibAddressSet', async () => {
         const subject = spcMemberExchange.removeMember(bob.address);
         await expect(subject).to.be
           .revertedWith('Address does not exist in set');
+      });
+
+      it('requires that the address has no FAST memberships', async () => {
+        // The fake FAST is registered.
+        spc.isFastRegistered.reset();
+        spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
+        spc.isFastRegistered.returns(false);
+
+        // Add Alice to a fast via memberAddedToFast callback.
+        await ethers
+          .provider
+          .send('hardhat_setBalance', [fast.address, oneMillion.toHexString()]);
+        await exchange
+          .connect(await ethers.getSigner(fast.address))
+          .memberAddedToFast(alice.address);
+
+        const subject = spcMemberExchange.removeMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_NO_FAST_MEMBERSHIPS);
       });
 
       it('removes the given address as a member', async () => {
@@ -208,7 +229,23 @@ describe('ExchangeTopFacet', () => {
   });
 
   describe('memberAddedToFast', async () => {
-    it('requires the calling FAST contract to be FastRegistered');
+    beforeEach(async () => {
+      // The fake FAST is not registered.
+      spc.isFastRegistered.reset();
+      spc.isFastRegistered.returns(false);
+    });
+
+    it('requires the calling FAST contract to be FastRegistered', async () => {
+      // Override the balance for the FAST contract.
+      await ethers.provider.send('hardhat_setBalance', [fast.address, oneMillion.toHexString()]);
+      // Connect up.
+      const exchangeAsFast = exchange.connect(await ethers.getSigner(fast.address));
+
+      // Hit the memberAddedToFast callback.
+      const subject = exchangeAsFast.memberAddedToFast(alice.address);
+      await expect(subject).to.have.been
+        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+    });
 
     it('adds the calling FAST contract to the member list of the Fast');
   });
