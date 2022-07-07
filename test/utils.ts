@@ -53,10 +53,24 @@ export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sende
 export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
 export const BALANCE_IS_POSITIVE = 'Balance is positive';
 
-export const sigsFromABI = (abi: any[]): string[] =>
-  abi
-    .filter(frag => frag.type === 'function')
-    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
+// Get a POJO from a struct.
+export const structToObj = (struct: {}) => {
+  let
+    entries = Object.entries(struct),
+    start = entries.length / 2;
+  return Object.fromEntries(entries.slice(start));
+};
+
+export const impersonateDiamond =
+  async <T extends BaseContract>(
+    contract: T
+  ): Promise<T> => {
+    // Provision the fast with some ETH.
+    await ethers.provider.send('hardhat_setBalance', [contract.address, oneMillion.toHexString()]);
+    // Allow to impersonate the FAST.
+    await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
+    return contract.connect(await ethers.getSigner(contract.address)) as T;
+  };
 
 export const setupDiamondFacet =
   async <T extends BaseContract>(
@@ -72,3 +86,9 @@ export const setupDiamondFacet =
       functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
     }], ethers.constants.AddressZero, '0x');
   };
+
+// Used when setting up a diamond facet.
+const sigsFromABI = (abi: any[]): string[] =>
+  abi
+    .filter(frag => frag.type === 'function')
+    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));

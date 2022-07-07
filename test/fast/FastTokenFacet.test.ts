@@ -24,7 +24,11 @@ import {
   REQUIRES_FAST_MEMBERSHIP_CODE,
   REQUIRES_SPC_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
-  DEFAULT_TRANSFER_REFERENCE
+  UNSUPPORTED_OPERATION,
+  DEFAULT_TRANSFER_REFERENCE,
+  one,
+  setupDiamondFacet,
+  impersonateDiamond
 } from '../utils';
 import { fastFixtureFunc } from './utils';
 chai.use(solidity);
@@ -996,11 +1000,9 @@ describe('FastTokenFacet', () => {
           token.connect(alice).approve(bob.address, 500),
           token.connect(john).approve(alice.address, 500)
         ]);
-        // Provision the fast with some ETH.
-        await ethers.provider.send('hardhat_setBalance', [token.address, oneMillion.toHexString()]);
-        // Allow to impersonate the FAST.
-        await ethers.provider.send("hardhat_impersonateAccount", [token.address]);
-        tokenAsItself = token.connect(await ethers.getSigner(token.address));
+
+        // Impersonate the diamond.
+        tokenAsItself = await impersonateDiamond(token);
       });
 
       afterEach(async () => {
