@@ -7,9 +7,17 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { negOneHundred, oneHundred, ninety, REQUIRES_SPC_MEMBERSHIP, MISSING_ATTACHED_ETH, INTERNAL_METHOD } from '../utils';
 import { DEPLOYER_FACTORY_COMMON, toHexString } from '../../src/utils';
-import { Spc, Exchange, Fast, FastTopFacet } from '../../typechain';
+import { Spc, Exchange, Fast, FastTopFacet, FastTokenFacet } from '../../typechain';
 chai.use(solidity);
 chai.use(smock.matchers);
+
+const FAST_FIXTURE_NAME = 'FastTopFixture'
+// TODO: We probably want to remove FastAccessFacet and FastFrontendFacet and replace them by fakes...
+const FAST_FACETS = [
+  'FastTopFacet',
+  'FastAccessFacet',
+  'FastFrontendFacet'
+];
 
 interface FastFixtureOpts {
   // Ops variables.
@@ -25,18 +33,11 @@ interface FastFixtureOpts {
   isSemiPublic: boolean;
 }
 
-// TODO: We probably want to remove FastAccessFacet and FastFrontendFacet and replace them by fakes...
-const FAST_FACETS = [
-  'FastTopFacet',
-  'FastAccessFacet',
-  'FastFrontendFacet'
-];
-
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
   const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy('Fast', {
+  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
@@ -57,7 +58,7 @@ describe('FastTopFacet', () => {
     bob: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    token: FastTopFacet,
+    topFacet: FastTopFacet,
     spcMemberToken: FastTopFacet,
     deployerToken: FastTopFacet;
 
@@ -85,14 +86,13 @@ describe('FastTopFacet', () => {
       hasFixedSupply: true,
       isSemiPublic: true
     };
-    const deploy = await fastDeployFixture(initOpts);
-    const fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
+    await fastDeployFixture(initOpts);
 
     // TODO: Once smock fixes their stuff. replace facets by fakes.
 
-    token = fast as FastTopFacet;
-    spcMemberToken = token.connect(spcMember);
-    deployerToken = token.connect(deployer);
+    topFacet = await ethers.getContract<FastTopFacet>(FAST_FIXTURE_NAME);
+    spcMemberToken = topFacet.connect(spcMember);
+    deployerToken = topFacet.connect(deployer);
   });
 
   // Getters.
@@ -123,33 +123,33 @@ describe('FastTopFacet', () => {
     it('emits a EthReceived event', async () => {
       const subject = spcMemberToken.provisionWithEth({ value: ninety });
       await expect(subject).to
-        .emit(token, 'EthReceived')
+        .emit(topFacet, 'EthReceived')
         .withArgs(spcMember.address, ninety)
     });
   });
 
   describe('drainEth', async () => {
     it('requires SPC membership', async () => {
-      const subject = token.drainEth();
+      const subject = topFacet.drainEth();
       await expect(subject).to.be
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('transfers all the locked Eth to the caller', async () => {
-      // Provision the token with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
-      // Drain the token.
+      // Provision the FAST with a lot of Eth.
+      await ethers.provider.send("hardhat_setBalance", [topFacet.address, toHexString(oneHundred)]);
+      // Drain the FAST.
       const subject = async () => await spcMemberToken.drainEth();
-      await expect(subject).to.changeEtherBalances([token, spcMember], [negOneHundred, oneHundred]);
+      await expect(subject).to.changeEtherBalances([topFacet, spcMember], [negOneHundred, oneHundred]);
     });
 
     it('emits a EthDrained event', async () => {
-      // Provision the token with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
-      // Drain the token.
+      // Provision the FAST with a lot of Eth.
+      await ethers.provider.send("hardhat_setBalance", [topFacet.address, toHexString(oneHundred)]);
+      // Drain the FAST.
       const subject = spcMemberToken.drainEth();
       await expect(subject).to
-        .emit(token, 'EthDrained')
+        .emit(topFacet, 'EthDrained')
         .withArgs(spcMember.address, oneHundred);
     });
   });

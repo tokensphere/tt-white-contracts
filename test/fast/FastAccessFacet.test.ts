@@ -12,6 +12,13 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 const FAST_FIXTURE_NAME = 'FastAccessFixture';
+// TODO: We probably want to remove FastTopFacet, FastTokenFacet and FastFrontendFacet and replace them by fakes...
+const FAST_FACETS = [
+  'FastTopFacet',
+  'FastAccessFacet',
+  'FastTokenFacet',
+  'FastFrontendFacet'
+];
 
 interface FastFixtureOpts {
   // Ops variables.
@@ -26,14 +33,6 @@ interface FastFixtureOpts {
   hasFixedSupply: boolean;
   isSemiPublic: boolean;
 }
-
-// TODO: We probably want to remove FastTopFacet, FastTokenFacet and FastFrontendFacet and replace them by fakes...
-const FAST_FACETS = [
-  'FastTopFacet',
-  'FastAccessFacet',
-  'FastTokenFacet',
-  'FastFrontendFacet'
-];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
@@ -98,9 +97,8 @@ describe('FastAccessFacet', () => {
       hasFixedSupply: true,
       isSemiPublic: true
     };
-    const deploy = await fastDeployFixture(initOpts);
-    const fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
-    access = fast as FastAccessFacet;
+    await fastDeployFixture(initOpts);
+    access = await ethers.getContract<FastAccessFacet>(FAST_FIXTURE_NAME);
     governedAccess = access.connect(governor);
     spcMemberAccess = access.connect(spcMember);
   });

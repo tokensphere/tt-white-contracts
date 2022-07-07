@@ -35,6 +35,14 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 const FAST_FIXTURE_NAME = 'FastTokenFixture';
+// TODO: We probably want to remove FastAccessFacet and replace it by a fakes...
+//        It would require that no other facets use `LibFastAccess.data()...` but
+//        instead use `FastAccessFacet(address(this))...`.
+const FAST_FACETS = [
+  'FastAccessFacet',
+  'FastTokenFacet',
+  'FastTokenInternalFacet'
+];
 
 // ERC20 parameters to deploy our fixtures.
 const ERC20_TOKEN_NAME = 'Random FAST Token';
@@ -54,15 +62,6 @@ interface FastFixtureOpts {
   hasFixedSupply: boolean;
   isSemiPublic: boolean;
 }
-
-// TODO: We probably want to remove FastAccessFacet and replace it by a fakes...
-//        It would require that no other facets use `LibFastAccess.data()...` but
-//        instead use `FastAccessFacet(address(this))...`.
-const FAST_FACETS = [
-  'FastAccessFacet',
-  'FastTokenFacet',
-  'FastTokenInternalFacet'
-];
 
 describe('FastTokenFacet', () => {
   let
@@ -102,8 +101,8 @@ describe('FastTokenFacet', () => {
       deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
     });
 
-    fast = await ethers.getContractAt('Fast', deploy.address) as Fast;
-    token = await ethers.getContractAt('FastTokenFacet', deploy.address) as FastTokenFacet;
+    fast = await ethers.getContract<Fast>(FAST_FIXTURE_NAME);
+    token = await ethers.getContract<FastTokenFacet>(FAST_FIXTURE_NAME);
     governedToken = token.connect(governor);
     spcMemberToken = token.connect(spcMember);
 
