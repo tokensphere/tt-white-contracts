@@ -59,7 +59,7 @@ async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
   // in each environment, and this would make our deployment transaction different in each and
   // therefore defeat the deterministic deployment strategy.
   const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
-  await init.initialize({ member: spcMember });
+  await (await init.initialize({ member: spcMember })).wait();
 
   // Return a handle to the diamond.
   return await ethers.getContractAt('Spc', deploy.address);

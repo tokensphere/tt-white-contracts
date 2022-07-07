@@ -2,8 +2,6 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployFast } from '../tasks/fast';
 import { Exchange, Fast } from '../typechain';
-import { wait } from '../src/utils';
-
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, getNamedAccounts } = hre;
@@ -22,10 +20,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     isSemiPublic: true
   });
 
-  const iou = await ethers.getContract('FastIOU') as Fast;
-  await iou.connect(spcMemberSigner).addTransferCredits('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-  
-  await wait(8000);
+  const iou = await ethers.getContract<Fast>('FastIOU');
+  (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
 };
 func.tags = ['DeployIOU'];
 export default func;

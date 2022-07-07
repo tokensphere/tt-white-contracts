@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { Spc } from '../typechain';
-import { toBaseUnit, wait } from '../src/utils';
+import { toBaseUnit } from '../src/utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // We only want to do this in local development nodes.
@@ -10,11 +10,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const storageSigner = await ethers.getSigner(storage);
 
   // Provision the SPC contract.
-  const spc = await ethers.getContract('Spc') as Spc;
+  const spc = await ethers.getContract<Spc>('Spc');
   console.log(`Funding the SPC at ${spc.address} with 10_000 ETH...`);
-  spc.connect(storageSigner).provisionWithEth({ value: toBaseUnit(10_000, 18) });
-
-  await wait(8000)
+  (await spc.connect(storageSigner).provisionWithEth({ value: toBaseUnit(10_000, 18) })).wait();
 };
 func.tags = ['FundSpc'];
 export default func;

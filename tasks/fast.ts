@@ -163,24 +163,29 @@ interface FastDeployParams {
   readonly isSemiPublic: boolean;
 };
 
-const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployParams)
+const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployParams, fromArtifacts: boolean = true)
   : Promise<{ fast: Fast; diamondName: string; }> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
   const { deployer, spcMember } = await getNamedAccounts();
   // Grab a handle on the deployed SPC and Exchange contract.
-  const spc = await ethers.getContract('Spc') as Spc;
-  const exchange = await ethers.getContract('Exchange') as Exchange;
-
-  // Check that symbol isn't taken.
-  const existingAddr = await spc.fastBySymbol(params.symbol);
-  if (existingAddr != ZERO_ADDRESS) {
-    throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
-  }
+  const spc = await ethers.getContract<Spc>('Spc');
+  const exchange = await ethers.getContract<Exchange>('Exchange');
 
   // Make a unique diamond name for that FAST.
   const diamondName = `Fast${params.symbol}`;
   const deterministicSalt = id(`${DEPLOYER_FACTORY_COMMON.salt}:${diamondName}`);
+
+  // Check that symbol isn't taken.
+  let existingAddr: string;
+  if (fromArtifacts)
+    existingAddr = (await ethers.getContract(diamondName)).address;
+  else
+    existingAddr = await spc.fastBySymbol(params.symbol);
+
+  if (existingAddr != ZERO_ADDRESS) {
+    throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
+  }
 
   // Deploy the diamond with an additional initialization facet.
   const { address } = await diamond.deploy(diamondName, {
@@ -207,33 +212,37 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
 
   // Register the new FAST with the SPC.
   const spcMemberSigner = await ethers.getSigner(spcMember);
-  await spc.connect(spcMemberSigner).registerFast(address);
+  await (await spc.connect(spcMemberSigner).registerFast(address)).wait();
 
   // Return a handle to the diamond.
-  const fast = await ethers.getContractAt('Fast', address) as Fast;
+  const fast = await ethers.getContract<Fast>(diamondName);
   return { fast, diamondName };
 }
 
-const fastBySymbol = async ({ ethers }: HardhatRuntimeEnvironment, symbol: string) => {
-  // Grab a handle on the deployed SPC contract.
-  const spc = await ethers.getContract('Spc') as Spc;
-  // Grab a handle to the deployed fast.
-  const fastAddr = await spc.fastBySymbol(symbol);
-  // Not found?
-  if (fastAddr == ZERO_ADDRESS) { return undefined; }
-  return await ethers.getContractAt('Fast', fastAddr) as Fast;
+const fastBySymbol = async ({ ethers }: HardhatRuntimeEnvironment, symbol: string, fromArtifacts: boolean = true) => {
+  if (fromArtifacts)
+    return await ethers.getContract<Fast>(`Fast${symbol}`);
+  else {
+    // Grab a handle on the deployed SPC contract.
+    const spc = await ethers.getContract<Spc>('Spc');
+    // Grab a handle to the deployed fast.
+    const fastAddr = await spc.fastBySymbol(symbol);
+    // Not found?
+    if (fastAddr == ZERO_ADDRESS) { return undefined; }
+    return await ethers.getContractAt<Fast>('Fast', fastAddr);
+  }
 };
 
 const fastMint = async (fast: Fast, amount: number | BigNumber, ref: string) => {
   const [decimals, symbol] = await Promise.all([fast.decimals(), fast.symbol()]);
   const baseAmount = toBaseUnit(BigNumber.from(amount), decimals);
-  await fast.mint(baseAmount, ref);
+  await (await fast.mint(baseAmount, ref)).wait();
   return { symbol, decimals, baseAmount };
 }
 
 const fastAddTransferCredits = async (fast: Fast, credits: number | BigNumber) => {
   const decimals = await fast.decimals();
-  await fast.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals));
+  await (await fast.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals))).wait();
 }
 
 export { FAST_FACETS, deployFast, fastBySymbol, fastMint, fastAddTransferCredits };
