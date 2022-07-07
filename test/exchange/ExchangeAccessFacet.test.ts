@@ -4,12 +4,14 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Spc, Exchange } from '../../typechain';
+import { Spc, Exchange, ExchangeAccessFacet } from '../../typechain';
 import { REQUIRES_SPC_MEMBERSHIP } from '../utils';
 import { deploymentSalt } from '../../src/utils';
 import { EXCHANGE_FACETS } from '../../tasks/exchange';
 chai.use(solidity);
 chai.use(smock.matchers);
+
+const FAST_FIXTURE_NAME = 'ExchangeAccessFixture';
 
 interface ExchangeFixtureOpts {
   // Ops variables.
@@ -22,7 +24,7 @@ const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as ExchangeFixtureOpts;
   const { deployer, ...initFacetOpts } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy('Exchange', {
+  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: EXCHANGE_FACETS,
@@ -45,8 +47,8 @@ describe('ExchangeTopFacet', () => {
     john: SignerWithAddress;
 
   let spc: FakeContract<Spc>,
-    exchange: Exchange,
-    spcMemberExchange: Exchange;
+    exchange: ExchangeAccessFacet,
+    spcMemberExchange: ExchangeAccessFacet;
 
   before(async () => {
     // Keep track of a few signers.
@@ -66,20 +68,9 @@ describe('ExchangeTopFacet', () => {
       deployer: deployer.address,
       spc: spc.address,
     };
-    const deploy = await exchangeDeployFixture(initOpts);
-    exchange = await ethers.getContractAt('Exchange', deploy.address) as Exchange;
+    await exchangeDeployFixture(initOpts);
+    exchange = await ethers.getContract<ExchangeAccessFacet>(FAST_FIXTURE_NAME);
     spcMemberExchange = exchange.connect(spcMember);
-  });
-
-  describe('initialize', async () => {
-    it('Keeps track of the SPC contract');
-  });
-
-  describe('spcAddress', async () => {
-    it('returns the SPC address', async () => {
-      const subject = await exchange.spcAddress();
-      expect(subject).to.eq(spc.address);
-    });
   });
 
   describe('IHasMembers', async () => {
