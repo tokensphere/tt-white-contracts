@@ -5,10 +5,10 @@ import '../../lib/LibConstants.sol';
 import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IHasMembers.sol';
+import '../../interfaces/IHasGovernors.sol';
 import '../../interfaces/IERC173.sol';
+import './IFast.sol';
 import '../lib/LibFast.sol';
-import '../lib/LibFastAccess.sol';
-import '../lib/LibFastToken.sol';
 
 
 /**
@@ -72,7 +72,7 @@ abstract contract AFastFacet {
    */
   modifier governance(address candidate) {
     require(
-      LibFastAccess.data().governorSet.contains(candidate),
+      IHasGovernors(address(this)).isGovernor(candidate),
       LibConstants.REQUIRES_FAST_GOVERNORSHIP
     );
     _;
@@ -83,7 +83,7 @@ abstract contract AFastFacet {
    */
   modifier membership(address candidate) {
     require(
-      LibFastAccess.data().memberSet.contains(candidate),
+      IHasMembers(address(this)).isMember(candidate),
       LibConstants.REQUIRES_FAST_MEMBERSHIP
     );
     _;
@@ -96,7 +96,7 @@ abstract contract AFastFacet {
     // Only perform checks if the address is non-zero.
     if (candidate != address(0)) {
     // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
-      if (LibFastToken.data().isSemiPublic) {
+      if (IFast(address(this)).isSemiPublic()) {
         require(
           IHasMembers(LibFast.data().exchange).isMember(candidate),
           LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
@@ -105,7 +105,7 @@ abstract contract AFastFacet {
       // FAST is private, the requirement to hold tokens is to be a member of that FAST.
       else {
         require(
-          LibFastAccess.data().memberSet.contains(candidate),
+          IHasMembers(address(this)).isMember(candidate),
           LibConstants.REQUIRES_FAST_MEMBERSHIP
         );
       }

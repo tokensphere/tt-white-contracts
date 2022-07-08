@@ -1,4 +1,9 @@
-import { ethers } from "hardhat";
+import { FakeContract, MockContract } from "@defi-wonderland/smock";
+import { BaseContract } from "ethers";
+import { FunctionFragment, Interface } from "ethers/lib/utils";
+import { artifacts, ethers } from "hardhat";
+import { FacetCutAction } from "hardhat-deploy/dist/types";
+import { IDiamondCut } from "../typechain";
 
 export const zero = ethers.utils.parseEther('0.0');
 export const one = ethers.utils.parseEther('1.0');
@@ -46,3 +51,23 @@ export const INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
 export const INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';
 export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
 export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
+
+export const sigsFromABI = (abi: any[]): string[] =>
+  abi
+    .filter(frag => frag.type === 'function')
+    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
+
+export const setupDiamondFacet =
+  async <T extends BaseContract>(
+    diamond: IDiamondCut,
+    fake: FakeContract<T> | MockContract<T>,
+    facet: string,
+    action: FacetCutAction
+  ) => {
+    // We want to cut in our swapped out FastTokenFacet mock.
+    await diamond.diamondCut([{
+      facetAddress: fake.address,
+      action,
+      functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
+    }], ethers.constants.AddressZero, '0x');
+  };

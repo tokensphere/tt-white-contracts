@@ -12,6 +12,7 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 const FAST_FIXTURE_NAME = 'FastHistoryFixture';
+const FAST_FACETS = ['FastTopFacet', 'FastHistoryFacet'];
 
 interface FastFixtureOpts {
   // Ops variables.
@@ -26,8 +27,6 @@ interface FastFixtureOpts {
   hasFixedSupply: boolean;
   isSemiPublic: boolean;
 }
-
-const FAST_FACETS = ['FastTopFacet', 'FastHistoryFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
@@ -81,9 +80,9 @@ describe('FastHistoryFacet', () => {
       hasFixedSupply: true,
       isSemiPublic: true
     };
-    const deploy = await fastDeployFixture(initOpts);
+    await fastDeployFixture(initOpts);
     // Spin up our History contract.
-    history = await ethers.getContractAt('Fast', deploy.address) as FastHistoryFacet;
+    history = await ethers.getContract<FastHistoryFacet>(FAST_FIXTURE_NAME);
     governedHistory = history.connect(governor);
   });
 

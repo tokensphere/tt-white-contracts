@@ -62,7 +62,9 @@ contract FastInitFacet is AFastFacet {
     topData.version = LibFast.STORAGE_VERSION;
     topData.spc = params.spc;
     topData.exchange = params.exchange;
-    
+    topData.hasFixedSupply = params.hasFixedSupply;
+    topData.isSemiPublic = params.isSemiPublic;
+
     // ------------------------------------- //
 
     // Initialize access storage.
@@ -70,7 +72,7 @@ contract FastInitFacet is AFastFacet {
     accessData.version = LibFastAccess.STORAGE_VERSION;
     // Add the governor.
     accessData.governorSet.add(params.governor, false);
-    // TODO Emit!
+    // TODO: Find a nice way to emit.
     // emit GovernorAdded(params.governor);
 
     // ------------------------------------- //
@@ -83,8 +85,6 @@ contract FastInitFacet is AFastFacet {
       (params.name,   params.symbol,   params.decimals);
     tokenData.totalSupply = 0;
     // Initialize other internal stuff.
-    (tokenData.hasFixedSupply, tokenData.isSemiPublic) =
-      (params.hasFixedSupply,   params.isSemiPublic);
     tokenData.transferCredits = 0;
   }
 }

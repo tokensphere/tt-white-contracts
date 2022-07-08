@@ -33,13 +33,14 @@ const structToObj = (struct: {}) => {
   return Object.fromEntries(entries.slice(start));
 }
 
+const FAST_FIXTURE_NAME = 'FastFrontendFixture';
 const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastFrontendFacet'];
 
 const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as FastFixtureOpts;
   const { deployer, ...initFacetArgs } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy('FastBSF', {
+  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: FAST_FACETS,
@@ -91,7 +92,7 @@ describe('FastFrontendFacet', () => {
       isSemiPublic: true
     };
     await fastDeployFixture(initOpts);
-    fast = await ethers.getContract('FastBSF');
+    fast = await ethers.getContract(FAST_FIXTURE_NAME);
     spcMemberFast = fast.connect(spcMember);
     // Add members.
     await fast.connect(governor).addMember(member.address);

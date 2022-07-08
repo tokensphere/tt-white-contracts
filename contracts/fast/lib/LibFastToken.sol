@@ -35,10 +35,6 @@ library LibFastToken {
     // It becomes impossible to transact once it reaches zero, and must
     // be provisioned by an SPC governor.
     uint256 transferCredits;
-    // Whether or not external people can hold and transfer tokens on this FAST.
-    bool isSemiPublic;
-    // We have to track whether this token has continuous minting or fixed supply.
-    bool hasFixedSupply;
     // Our members balances are held here.
     mapping(address => uint256) balances;
     // Allowances are stored here.

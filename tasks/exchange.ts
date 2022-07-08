@@ -58,8 +58,9 @@ async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
     deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
     log: true
   });
+
   // Return a handle to the diamond.
-  return await ethers.getContractAt('Exchange', address) as Exchange;
+  return await ethers.getContract('Exchange');
 }
 
 export { EXCHANGE_FACETS, deployExchange };
