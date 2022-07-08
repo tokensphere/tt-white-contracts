@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const exchange = (await ethers.getContract('Exchange')).connect(spcMemberSigner) as Exchange;
   exchange.addMember(spcMember);
 
-  await deployFast(hre, {
+  const { fast: iou } = await deployFast(hre, {
     governor: spcMember,
     name: 'Consilience X Stable Coin',
     symbol: 'IOU',
@@ -20,7 +20,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     isSemiPublic: true
   });
 
-  const iou = await ethers.getContract<Fast>('FastIOU');
   (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
 };
 func.tags = ['DeployIOU'];

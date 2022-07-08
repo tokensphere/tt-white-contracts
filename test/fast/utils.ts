@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { BaseContract, BigNumber, ContractFactory } from "ethers";
+import { BigNumber, ContractFactory } from "ethers";
 import { smock, MockContract, MockContractFactory } from "@defi-wonderland/smock";
 import { FacetCutAction, FixtureFunc } from "hardhat-deploy/dist/types";
 import { DEPLOYER_FACTORY_COMMON } from "../../src/utils";

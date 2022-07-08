@@ -176,13 +176,13 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
   const deterministicSalt = id(`${DEPLOYER_FACTORY_COMMON.salt}:${diamondName}`);
 
   // Check that symbol isn't taken.
-  let existingAddr: string;
+  let existingAddr: string | undefined;
   if (fromArtifacts)
-    existingAddr = (await ethers.getContract(diamondName)).address;
+    existingAddr = (await ethers.getContractOrNull(diamondName))?.address;
   else
     existingAddr = await spc.fastBySymbol(params.symbol);
 
-  if (existingAddr != ZERO_ADDRESS) {
+  if (existingAddr && existingAddr != ZERO_ADDRESS) {
     throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
   }
 
@@ -220,7 +220,7 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
 
 const fastBySymbol = async ({ ethers }: HardhatRuntimeEnvironment, symbol: string, fromArtifacts: boolean = true) => {
   if (fromArtifacts)
-    return await ethers.getContract<Fast>(`Fast${symbol}`);
+    return (await ethers.getContractOrNull<Fast>(`Fast${symbol}`) || undefined);
   else {
     // Grab a handle on the deployed SPC contract.
     const spc = await ethers.getContract<Spc>('Spc');

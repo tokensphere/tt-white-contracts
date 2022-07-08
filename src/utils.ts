@@ -27,6 +27,10 @@ function toBaseUnit(rawAmount: BigNumber | string | number, decimals: BigNumber 
   rawAmount = BigNumber.from(rawAmount);
   decimals = BigNumber.from(decimals);
 
+  if (BigNumber.from(decimals).eq(0)) {
+    return BigNumber.from(rawAmount);
+  }
+
   let amount = rawAmount.toString();
   const ten = BigNumber.from(10);
   const base = ten.pow(BigNumber.from(decimals));
