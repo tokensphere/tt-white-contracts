@@ -1,12 +1,12 @@
 import { ethers } from "hardhat";
-import { BigNumber, ContractFactory } from "ethers";
-import { smock, MockContract } from "@defi-wonderland/smock";
+import { BaseContract, BigNumber, ContractFactory } from "ethers";
+import { smock, MockContract, MockContractFactory } from "@defi-wonderland/smock";
 import { FacetCutAction, FixtureFunc } from "hardhat-deploy/dist/types";
 import { DEPLOYER_FACTORY_COMMON } from "../../src/utils";
 import {
   Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
   FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory,
-  FastHistoryFacet__factory, FastFrontendFacet__factory
+  FastHistoryFacet__factory, FastFrontendFacet__factory, IDiamondCut
 } from "../../typechain";
 import { setupDiamondFacet } from "../utils";
 
@@ -41,6 +41,18 @@ interface FastFixtureResult {
   frontendMock: MockContract<FastFrontendFacet>;
 }
 
+declare type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;
+
+const facetMock = async <F extends ContractFactory>(diamond: IDiamondCut, facet: string) => {
+  const mockFactory = await smock.mock<F>(facet);
+  // Yikes. We would need to be able to infer that `mockFactory` has a `deploy` function
+  // that returns the same type than the successful promise type of the `deploy` on type `F`...
+  const mock = await (mockFactory as MockContractFactory<any>).deploy();
+  await setupDiamondFacet(diamond, mock, facet, FacetCutAction.Add);
+  // More or less solved here... But needing `any` two lines ago isn't great.
+  return mock as MockContract<ThenArg<ReturnType<F['deploy']>>>;
+};
+
 export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> =
   async (hre, allOpts) => {
     if (!allOpts) throw 'You must provide FAST fixture options.';
@@ -53,35 +65,13 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
       execute: { contract: 'FastInitFacet', methodName: 'initialize', args: [initWith] },
       deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
     });
+
     const fast = await ethers.getContractAt<Fast>('Fast', fastAddr);
-
-    // const facetMock = async function <T extends ContractFactory>(facet: string) {
-    //   const mockFactory = await smock.mock<T>(facet);
-    //   const mock = await mockFactory.deploy();
-    //   await setupDiamondFacet(fast, mock, 'FastTopFacet', FacetCutAction.Add);
-    //   return mock;
-    // };
-
-    // Set up a top facet fake and install it.
-    const topFactory = await smock.mock<FastTopFacet__factory>('FastTopFacet');
-    const topMock = await topFactory.deploy();
-    await setupDiamondFacet(fast, topMock, 'FastTopFacet', FacetCutAction.Add);
-    // Set up our access facet.
-    const accessFactory = await smock.mock<FastAccessFacet__factory>('FastAccessFacet');
-    const accessMock = await accessFactory.deploy();
-    await setupDiamondFacet(fast, accessMock, 'FastAccessFacet', FacetCutAction.Add);
-    // Set up our token facet.
-    const tokenFactory = await smock.mock<FastTokenFacet__factory>('FastTokenFacet');
-    const tokenMock = await tokenFactory.deploy();
-    await setupDiamondFacet(fast, tokenMock, 'FastTokenFacet', FacetCutAction.Add);
-    // Set up our history facet fake and install it.
-    const historyFactory = await smock.mock<FastHistoryFacet__factory>('FastHistoryFacet');
-    const historyMock = await historyFactory.deploy();
-    await setupDiamondFacet(fast, historyMock, 'FastHistoryFacet', FacetCutAction.Add);
-    // Set up our frontend facet fake and install it.
-    const frontendFactory = await smock.mock<FastFrontendFacet__factory>('FastFrontendFacet');
-    const frontendMock = await frontendFactory.deploy();
-    await setupDiamondFacet(fast, frontendMock, 'FastFrontendFacet', FacetCutAction.Add);
+    const topMock = await facetMock<FastTopFacet__factory>(fast, 'FastTopFacet');
+    const accessMock = await facetMock<FastAccessFacet__factory>(fast, 'FastAccessFacet');
+    const tokenMock = await facetMock<FastTokenFacet__factory>(fast, 'FastTokenFacet');
+    const historyMock = await facetMock<FastHistoryFacet__factory>(fast, 'FastHistoryFacet');
+    const frontendMock = await facetMock<FastFrontendFacet__factory>(fast, 'FastFrontendFacet');
 
     const result = { fast, topMock, accessMock, tokenMock, historyMock, frontendMock };
     await opts.afterDeploy.apply(this, [result]);
