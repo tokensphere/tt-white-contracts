@@ -36,7 +36,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     hasFixedSupply: true,
     isSemiPublic: true
   });
-  console.log('Minting 500_000 SAF...');
+  console.log('Minting 500_000 F01...');
   await fastMint(f01.connect(spcMemberSigner), 500_000, 'Whatever');
 
   console.log('Deploying F02 FAST...');
@@ -48,7 +48,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     hasFixedSupply: true,
     isSemiPublic: false
   });
-  console.log('Minting 5_000_000 CVD...');
+  console.log('Minting 5_000_000 F02...');
   await fastMint(f02.connect(spcMemberSigner), 5_000_000, 'Whatever');
 
   console.log('Deploying F03 FAST...');
