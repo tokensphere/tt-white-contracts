@@ -1,7 +1,7 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { COMMON_DIAMOND_FACETS, DEPLOYER_FACTORY_COMMON } from '../src/utils';
-import { Spc, Exchange, SpcInitFacet } from '../typechain'
+import { Spc, SpcInitFacet } from '../typechain'
 
 // Tasks.
 
