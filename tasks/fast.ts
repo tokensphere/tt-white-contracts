@@ -183,6 +183,7 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
   else
     existingAddr = await spc.fastBySymbol(params.symbol);
 
+  console.log(`${diamondName} found at ${existingAddr} using ${fromArtifacts ? 'artifacts' : 'on-chain SPC'}`);
   if (existingAddr && existingAddr != ZERO_ADDRESS) {
     throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
   }

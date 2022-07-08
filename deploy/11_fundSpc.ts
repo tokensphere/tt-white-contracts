@@ -5,7 +5,7 @@ import { toBaseUnit } from '../src/utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // We only want to do this in local development nodes.
-  const { ethers, getNamedAccounts, network: { name: netName } } = hre;
+  const { ethers, getNamedAccounts } = hre;
   const { storage } = await getNamedAccounts();
   const storageSigner = await ethers.getSigner(storage);
 

@@ -6,6 +6,7 @@ import { Exchange, Fast } from '../typechain';
 import { toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  return;
   // We only want to do this in local development nodes.
   const { name: netName } = hre.network;
   if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev') { return; }

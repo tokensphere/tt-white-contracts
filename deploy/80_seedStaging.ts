@@ -3,17 +3,14 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers, getNamedAccounts } from 'hardhat';
 import { deployFast, fastMint } from '../tasks/fast';
 import { Exchange, Fast } from '../typechain';
-import { toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  return;
   // We only want to do this in local development nodes.
   const { name: netName } = hre.network;
   if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev' && netName != 'staging') { return; }
 
-  const {
-    fastGovernor, spcMember,
-    user1, user2, user3, user4, user5, user6, user7, user8, user9, user10
-  } = await getNamedAccounts();
+  const { fastGovernor, spcMember } = await getNamedAccounts();
   // Grab various accounts.
   const spcMemberSigner = await ethers.getSigner(spcMember);
   const fastGovernorSigner = await ethers.getSigner(fastGovernor);
