@@ -1,4 +1,4 @@
-import { FakeContract } from "@defi-wonderland/smock";
+import { FakeContract, MockContract } from "@defi-wonderland/smock";
 import { BaseContract } from "ethers";
 import { FunctionFragment, Interface } from "ethers/lib/utils";
 import { artifacts, ethers } from "hardhat";
@@ -60,7 +60,7 @@ export const sigsFromABI = (abi: any[]): string[] =>
 export const setupDiamondFacet =
   async <T extends BaseContract>(
     diamond: IDiamondCut,
-    fake: FakeContract<T>,
+    fake: FakeContract<T> | MockContract<T>,
     facet: string,
     action: FacetCutAction
   ) => {

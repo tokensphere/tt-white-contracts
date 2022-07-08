@@ -72,6 +72,7 @@ contract FastFrontendFacet is AFastFacet {
 
   function details()
       public view returns(Details memory) {
+    LibFast.Data storage topStorage = LibFast.data();
     LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     LibFastToken.Data storage tokenStorage = LibFastToken.data();
     return Details({
@@ -81,8 +82,8 @@ contract FastFrontendFacet is AFastFacet {
       decimals: tokenStorage.decimals,
       totalSupply: tokenStorage.totalSupply,
       transferCredits: tokenStorage.transferCredits,
-      isSemiPublic: tokenStorage.isSemiPublic,
-      hasFixedSupply: tokenStorage.hasFixedSupply,
+      isSemiPublic: topStorage.isSemiPublic,
+      hasFixedSupply: topStorage.hasFixedSupply,
       reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],
       memberCount: accessStorage.memberSet.values.length,
       governorCount: accessStorage.governorSet.values.length

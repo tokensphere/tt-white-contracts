@@ -5,8 +5,7 @@ import '../lib/LibConstants.sol';
 import '../lib/LibHelpers.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
-import './FastAccessFacet.sol';
-import './FastTokenFacet.sol';
+import './FastFrontendFacet.sol';
 
 contract FastTopFacet is AFastFacet {
 
@@ -14,7 +13,7 @@ contract FastTopFacet is AFastFacet {
   event EthReceived(address indexed from, uint256 amount);
   event EthDrained(address indexed to, uint256 amount);
 
-  // Getters.
+  // Getters and setters for global flags.
 
   function spcAddress()
       external view returns(address) {
@@ -24,6 +23,28 @@ contract FastTopFacet is AFastFacet {
   function exchangeAddress()
       external view returns(address) {
     return LibFast.data().exchange;
+  }
+
+    function isSemiPublic()
+      external view returns(bool) {
+    return LibFast.data().isSemiPublic;
+  }
+
+  function hasFixedSupply()
+      external view returns(bool) {
+    return LibFast.data().hasFixedSupply;
+  }
+
+  // Setters for global flags.
+
+  /// @dev Allows to switch from a private scheme to a semi-public scheme, but not the other way around.
+  function setIsSemiPublic(bool flag)
+      external
+      spcMembership {
+    LibFast.Data storage s = LibFast.data();
+    // Someone is trying to toggle back to private?... No can do!isSemiPublic
+    require(!this.isSemiPublic() || this.isSemiPublic() == flag, LibConstants.UNSUPPORTED_OPERATION);
+    s.isSemiPublic = flag;
   }
 
   // Provisioning functions.

@@ -8,7 +8,7 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
-import './FastTokenInternalFacet.sol';
+import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
 import './FastFrontendFacet.sol';
@@ -27,33 +27,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   event TransferCreditsAdded(address indexed spcMember, uint256 amount);
   event TransferCreditsDrained(address indexed spcMember, uint256 amount);
 
-  // Public functions.
-
-  function isSemiPublic()
-      external view returns(bool) {
-    return LibFastToken.data().isSemiPublic;
-  }
-
-  function setIsSemiPublic(bool flag)
-      external
-      spcMembership {
-    LibFastToken.Data storage s = LibFastToken.data();
-    // Someone is trying to toggle back to private?... No can do!isSemiPublic
-    require(!s.isSemiPublic || s.isSemiPublic == flag, LibConstants.UNSUPPORTED_OPERATION);
-    s.isSemiPublic = flag;
-  }
-
-  function hasFixedSupply()
-      external view returns(bool) {
-    return LibFastToken.data().hasFixedSupply;
-  }
-
-  function setHasFixedSupply(bool flag)
-      external
-      spcMembership {
-    LibFastToken.data().hasFixedSupply = flag;
-  }
-
   /// Minting methods.
 
   function mint(uint256 amount, string calldata ref)
@@ -64,7 +37,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
     require(
-      !s.hasFixedSupply || (s.totalSupply == 0 && balanceOf(address(0)) == 0),
+      !FastTopFacet(address(this)).hasFixedSupply() || (s.totalSupply == 0 && this.balanceOf(address(0)) == 0),
       LibConstants.REQUIRES_CONTINUOUS_SUPPLY
     );
 
@@ -84,7 +57,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       spcMembership {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    require(!s.hasFixedSupply, LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
+    require(!FastTopFacet(address(this)).hasFixedSupply(), LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
     require(balanceOf(address(0)) >= amount, LibConstants.INSUFFICIENT_FUNDS);
 
     // Remove the minted amount from the zero address.
@@ -155,9 +128,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transfer(address to, uint256 amount)
       external override returns(bool) {
-    FastTokenInternalFacet(address(this))
-      .performTransfer(
-        FastTokenInternalFacet.TransferArgs({
+    // Make sure the call is performed externally so that we can mock.
+    this.performTransfer(
+      TransferArgs({
         spender: msg.sender,
         from: msg.sender,
         to: to,
@@ -170,14 +143,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transferWithRef(address to, uint256 amount, string calldata ref)
       external {
-    FastTokenInternalFacet(address(this))
-      .performTransfer(
-        FastTokenInternalFacet.TransferArgs({
-          spender: msg.sender,
-          from: msg.sender,
-          to: to,
-          amount: amount,
-          ref: ref
+    // Make sure the call is performed externally so that we can mock.
+    this.performTransfer(
+      TransferArgs({
+        spender: msg.sender,
+        from: msg.sender,
+        to: to,
+        amount: amount,
+        ref: ref
       })
     );
   }
@@ -196,16 +169,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function approve(address spender, uint256 amount)
       external override returns(bool) {
-    FastTokenInternalFacet(address(this))
-      .performApproval(msg.sender, spender, amount);
+    // Make sure the call is performed externally so that we can mock.
+    this.performApproval(msg.sender, spender, amount);
     return true;
   }
 
   function disapprove(address spender)
       external
       membership(msg.sender) {
-    FastTokenInternalFacet(address(this))
-      .performDisapproval(msg.sender, spender);
+    // Make sure the call is performed externally so that we can mock.
+    this.performDisapproval(msg.sender, spender);
   }
 
   function transferFrom(address from, address to, uint256 amount)
@@ -216,15 +189,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public {
-    FastTokenInternalFacet(address(this))
-      .performTransfer(
-        FastTokenInternalFacet.TransferArgs({
-          spender: msg.sender,
-          from: from,
-          to: to,
-          amount: amount,
-          ref: ref
-        }));
+    // Make sure the call is performed externally so that we can mock.
+    this.performTransfer(
+      TransferArgs({
+        spender: msg.sender,
+        from: from,
+        to: to,
+        amount: amount,
+        ref: ref
+      })
+    );
   }
 
   /// Allowances query operations.
@@ -266,7 +240,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       return LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE;
     } else if (!FastAccessFacet(address(this)).isMember(from) ||
                !FastAccessFacet(address(this)).isMember(to)) {
-      return s.isSemiPublic
+      return FastTopFacet(address(this)).isSemiPublic()
         ? LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE
         : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (from == to) {
@@ -289,7 +263,109 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
   }
 
-  // Callbacks from other contracts.
+  // These functions would be internal / private if we weren't using the diamond pattern.
+  // Instead, they're `diamondInternal` - eg can only be called by facets of the current
+  // FAST.
+
+  struct TransferArgs {
+    address spender;
+    address from;
+    address to;
+    uint256 amount;
+    string ref;
+  }
+
+  function performTransfer(TransferArgs calldata p)
+      external diamondInternal
+      canHoldTokens(p.from) canHoldTokens(p.to) differentAddresses(p.from, p.to) {
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    // Make sure that there's enough funds.
+    require(
+      s.balances[p.from] >= p.amount,
+      LibConstants.INSUFFICIENT_FUNDS
+    );
+
+    // If this is an allowance transfer...
+    if (p.spender != p.from) {
+      // Make sure that the spender has enough allowance.
+      require(
+        FastTokenFacet(address(this)).allowance(p.from, p.spender) >= p.amount,
+        LibConstants.INSUFFICIENT_ALLOWANCE
+      );
+
+      // If the from account isn't the zero address...
+      if (p.from != address(0)) {
+        // Make sure enough credits exist.
+        require(
+          s.transferCredits >= p.amount,
+          LibConstants.INSUFFICIENT_TRANSFER_CREDITS
+        );
+
+        // Decrease allowance.
+        uint256 newAllowance = s.allowances[p.from][p.spender] -= p.amount;
+        // If the allowance reached zero, we want to remove that allowance from
+        // the various other places where we keep track of it.
+        if (newAllowance == 0) {
+          s.allowancesByOwner[p.from].remove(p.spender, true);
+          s.allowancesBySpender[p.spender].remove(p.from, true);
+        }
+      }
+    }
+
+    // Keep track of the balances - `from` spends, `to` receives.
+    s.balances[p.from] -= p.amount;
+    s.balances[p.to] += p.amount;
+
+    // If the funds are going to the ZERO address, decrease total supply.
+    if (p.to == address(0)) {
+      s.totalSupply -= p.amount;
+      // If funds at address zero changed, we can emit a top-level details change event.
+      FastFrontendFacet(address(this)).emitDetailsChanged();
+    }
+    // If the funds are moving from the zero address, increase total supply.
+    else if (p.from == address(0)) {
+      s.totalSupply += p.amount;
+      // If funds at address zero changed, we can emit a top-level details change event.
+      FastFrontendFacet(address(this)).emitDetailsChanged();
+    }
+
+    // Keep track of the transfer in the history facet.
+    FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
+
+    // Emit!
+    emit IERC20.Transfer(p.from, p.to, p.amount);
+  }
+
+  function performApproval(address from, address spender, uint256 amount)
+      external
+      diamondInternal
+      membership(from) {
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    // Store allowance...
+    s.allowances[from][spender] += amount;
+    // Keep track of given and received allowances.
+    s.allowancesByOwner[from].add(spender, true);
+    s.allowancesBySpender[spender].add(from, true);
+
+    // Emit!
+    emit IERC20.Approval(from, spender, amount);
+  }
+
+  function performDisapproval(address from, address spender)
+      external
+      diamondInternal {
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    // Remove allowance.
+    s.allowances[from][spender] = 0;
+    s.allowancesByOwner[from].remove(spender, false);
+    s.allowancesBySpender[spender].remove(from, false);
+
+    // Emit!
+    emit IERC20.Disapproval(from, spender);
+  }
 
   // WARNING: This function contains two loops. We know that this should never
   // happen in solidity. However:
@@ -304,15 +380,22 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // Remove all given allowances.
     address[] storage gaData = s.allowancesByOwner[member].values;
     while (gaData.length > 0) {
-      FastTokenInternalFacet(address(this))
-        .performDisapproval(member, gaData[0]);
+      // Make sure the call is performed externally so that we can mock.
+      this.performDisapproval(member, gaData[0]);
     }
 
     // Remove all received allowances.
     address[] storage raData = s.allowancesBySpender[member].values;
     while (raData.length > 0) {
-      FastTokenInternalFacet(address(this))
-        .performDisapproval(raData[0], member);
+      // Make sure the call is performed externally so that we can mock.
+      this.performDisapproval(raData[0], member);
     }
+  }
+
+  // Modifiers.
+
+  modifier differentAddresses(address a, address b) {
+    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
+    _;
   }
 }
