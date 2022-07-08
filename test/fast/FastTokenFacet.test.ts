@@ -5,11 +5,8 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast } from '../../typechain';
-import { FastTokenFacet__factory, FastTopFacet__factory } from '../../typechain';
-import { FastTokenFacet, FastTopFacet, FastFrontendFacet, FastHistoryFacet } from '../../typechain';
-import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON } from '../../src/utils';
-import { FacetCutAction } from 'hardhat-deploy/dist/types';
+import { Spc, Exchange, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet } from '../../typechain';
+import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
 import {
   INSUFFICIENT_ALLOWANCE,
   INSUFFICIENT_FUNDS,
@@ -26,41 +23,18 @@ import {
   REQUIRES_FAST_MEMBERSHIP_CODE,
   REQUIRES_SPC_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
-  UNSUPPORTED_OPERATION,
-  DEFAULT_TRANSFER_REFERENCE,
-  one,
-  sigsFromABI,
-  setupDiamondFacet
+  DEFAULT_TRANSFER_REFERENCE
 } from '../utils';
+import { fastFixtureFunc } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
 const FAST_FIXTURE_NAME = 'FastTokenFixture';
-// TODO: We probably want to remove FastAccessFacet and replace it by a fakes...
-//        It would require that no other facets use `LibFastAccess.data()...` but
-//        instead use `FastAccessFacet(address(this))...`.
-const FAST_FACETS = [
-  'FastAccessFacet',
-];
 
 // ERC20 parameters to deploy our fixtures.
 const ERC20_TOKEN_NAME = 'Random FAST Token';
 const ERC20_TOKEN_SYMBOL = 'RFT';
 const ERC20_TOKEN_DECIMALS = BigNumber.from(18);
-
-interface FastFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  governor: string;
-  exchange: string;
-  // Config.
-  spc: string;
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  hasFixedSupply: boolean;
-  isSemiPublic: boolean;
-}
 
 describe('FastTokenFacet', () => {
   let
@@ -78,54 +52,14 @@ describe('FastTokenFacet', () => {
     fast: Fast,
     token: FastTokenFacet,
     tokenMock: MockContract<FastTokenFacet>,
-    topFake: MockContract<FastTopFacet>,
-    historyFake: FakeContract<FastHistoryFacet>,
-    frontendFake: FakeContract<FastFrontendFacet>,
+    topMock: MockContract<FastTopFacet>,
+    accessMock: MockContract<FastAccessFacet>,
+    historyMock: MockContract<FastHistoryFacet>,
+    frontendMock: MockContract<FastFrontendFacet>,
     governedToken: FastTokenFacet,
     spcMemberToken: FastTokenFacet;
 
-  const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-    const initOpts = uOpts as FastFixtureOpts;
-    const { deployer, ...initFacetArgs } = initOpts;
-    // Deploy the diamond.
-    const { address: fastAddr } = await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-      from: initOpts.deployer,
-      owner: initOpts.deployer,
-      facets: FAST_FACETS,
-      execute: {
-        contract: 'FastInitFacet',
-        methodName: 'initialize',
-        args: [initFacetArgs],
-      },
-      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
-    });
-
-    fast = await ethers.getContract<Fast>(FAST_FIXTURE_NAME);
-    const tokenFactory = await smock.mock<FastTokenFacet__factory>('FastTokenFacet');
-    tokenMock = await tokenFactory.deploy();
-    // Set up our main subject facet mock.
-    await setupDiamondFacet(fast, tokenMock, 'FastTokenFacet', FacetCutAction.Add);
-    // Set up a top facet fake and install it.
-    const topFactory = await smock.mock<FastTopFacet__factory>('FastTopFacet');
-    topFake = await topFactory.deploy();
-    await setupDiamondFacet(fast, topFake, 'FastTopFacet', FacetCutAction.Add);
-    // Set up our history facet fake and install it.
-    historyFake = await smock.fake('FastHistoryFacet');
-    await setupDiamondFacet(fast, historyFake, 'FastHistoryFacet', FacetCutAction.Add);
-    // Set up our frontend facet fake and install it.
-    frontendFake = await smock.fake('FastFrontendFacet');
-    await setupDiamondFacet(fast, frontendFake, 'FastFrontendFacet', FacetCutAction.Add);
-
-    token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fastAddr);
-    governedToken = token.connect(governor);
-    spcMemberToken = token.connect(spcMember);
-
-    // Add a few FAST members.
-    const governedFast = fast.connect(governor);
-    await Promise.all([alice, bob, john].map(
-      async ({ address }) => governedFast.addMember(address))
-    );
-  });
+  const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -137,35 +71,46 @@ describe('FastTokenFacet', () => {
   });
 
   beforeEach(async () => {
-    // Reset mocks.
-    spc.isMember.reset();
-    exchange.isMember.reset();
-    // Setup mocks.
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    spc.isMember.returns(false);
-    await Promise.all(
-      [exchangeMember, alice, bob, john].map(
-        async ({ address }) => exchange.isMember.whenCalledWith(address).returns(true)
-      )
-    );
-    exchange.isMember.returns(false);
-
     await fastDeployFixture({
-      deployer: deployer.address,
-      governor: governor.address,
-      exchange: exchange.address,
-      spc: spc.address,
-      name: ERC20_TOKEN_NAME,
-      symbol: ERC20_TOKEN_SYMBOL,
-      decimals: ERC20_TOKEN_DECIMALS,
-      hasFixedSupply: true,
-      isSemiPublic: false
+      opts: {
+        name: FAST_FIXTURE_NAME,
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ fast, accessMock, topMock, tokenMock, historyMock, frontendMock } = args);
+          token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fast.address);
+          governedToken = token.connect(governor);
+          spcMemberToken = token.connect(spcMember);
+
+          // Add an extra member to the exchange.
+          exchange.isMember.whenCalledWith(exchangeMember.address).returns(true)
+          // Add a few Exchange and FAST members.
+          for (const { address } of [alice, bob, john]) {
+            exchange.isMember.whenCalledWith(address).returns(true)
+            accessMock.isMember.whenCalledWith(address).returns(true)
+          }
+          // Set the SPC member.
+          spc.isMember.whenCalledWith(spcMember.address).returns(true);
+          // Set the defaults when querying the SPC or Exchange fakes.
+          spc.isMember.returns(false);
+          exchange.isMember.returns(false);
+        }
+      },
+      initWith: {
+        spc: spc.address,
+        exchange: exchange.address,
+        governor: governor.address,
+        name: ERC20_TOKEN_NAME,
+        symbol: ERC20_TOKEN_SYMBOL,
+        decimals: ERC20_TOKEN_DECIMALS,
+        hasFixedSupply: true,
+        isSemiPublic: false
+      }
     });
 
-    topFake.hasFixedSupply.reset();
-    topFake.hasFixedSupply.returns(true);
-    topFake.isSemiPublic.reset();
-    topFake.isSemiPublic.returns(false);
+    topMock.hasFixedSupply.reset();
+    topMock.hasFixedSupply.returns(true);
+    topMock.isSemiPublic.reset();
+    topMock.isSemiPublic.returns(false);
   });
 
   /// Public stuff.
@@ -286,7 +231,7 @@ describe('FastTokenFacet', () => {
 
     describe('with continuous supply', async () => {
       beforeEach(async () => {
-        topFake.hasFixedSupply.returns(false);
+        topMock.hasFixedSupply.returns(false);
       });
 
       it('is allowed more than once', async () => {
@@ -300,9 +245,9 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the history contract', async () => {
-      historyFake.minted.reset();
+      historyMock.minted.reset();
       await spcMemberToken.mint(5_000, 'Attempt 1');
-      expect(historyFake.minted).to.have.been
+      expect(historyMock.minted).to.have.been
         .calledOnceWith(5_000, 'Attempt 1')
         .delegatedFrom(token.address);
     });
@@ -329,7 +274,7 @@ describe('FastTokenFacet', () => {
 
   describe('burn', async () => {
     beforeEach(async () => {
-      topFake.hasFixedSupply.returns(false);
+      topMock.hasFixedSupply.returns(false);
       await spcMemberToken.mint(100, 'A hundred mints');
     });
 
@@ -352,7 +297,7 @@ describe('FastTokenFacet', () => {
     });
 
     it('requires that the supply is continuous', async () => {
-      topFake.hasFixedSupply.returns(true);
+      topMock.hasFixedSupply.returns(true);
       const subject = spcMemberToken.burn(5, 'Burn baby burn')
       await expect(subject).to.have
         .revertedWith(REQUIRES_CONTINUOUS_SUPPLY);
@@ -378,9 +323,9 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the history contract', async () => {
-      historyFake.burnt.reset();
+      historyMock.burnt.reset();
       await spcMemberToken.burn(50, 'It is hot');
-      expect(historyFake.burnt).to.have.been
+      expect(historyMock.burnt).to.have.been
         .calledOnceWith(50, 'It is hot')
         .delegatedFrom(token.address);
     });
@@ -536,7 +481,7 @@ describe('FastTokenFacet', () => {
       it('follows value at zero address for governors', async () => {
         let subject: BigNumber;
         // Make the token continuous supply.
-        topFake.hasFixedSupply.returns(false);
+        topMock.hasFixedSupply.returns(false);
         // Check the balance.
         const allocated = await token.balanceOf(ZERO_ADDRESS);
         subject = await token.allowance(ZERO_ADDRESS, governor.address);
@@ -683,7 +628,7 @@ describe('FastTokenFacet', () => {
 
       describe('when semi-public', async () => {
         beforeEach(async () => {
-          topFake.isSemiPublic.returns(true);
+          topMock.isSemiPublic.returns(true);
         });
 
         it('requires sender membership or Exchange membership');
@@ -733,9 +678,9 @@ describe('FastTokenFacet', () => {
       });
 
       it('delegates to the history contract', async () => {
-        historyFake.transfered.reset();
+        historyMock.transfered.reset();
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        expect(historyFake.transfered).to.have.been
+        expect(historyMock.transfered).to.have.been
           .calledOnceWith(john.address, bob.address, alice.address, 12, 'Five')
           .delegatedFrom(token.address)
       });

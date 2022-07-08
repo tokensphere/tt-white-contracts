@@ -2,7 +2,7 @@ import { FakeContract, MockContract } from "@defi-wonderland/smock";
 import { BaseContract } from "ethers";
 import { FunctionFragment, Interface } from "ethers/lib/utils";
 import { artifacts, ethers } from "hardhat";
-import { FacetCutAction } from "hardhat-deploy/types";
+import { FacetCutAction } from "hardhat-deploy/dist/types";
 import { IDiamondCut } from "../typechain";
 
 export const zero = ethers.utils.parseEther('0.0');
@@ -70,5 +70,4 @@ export const setupDiamondFacet =
       action,
       functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
     }], ethers.constants.AddressZero, '0x');
-    return fake;
   };

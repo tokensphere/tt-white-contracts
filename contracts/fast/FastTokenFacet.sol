@@ -340,7 +340,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function performApproval(address from, address spender, uint256 amount)
       external
       diamondInternal
-      membership(from) {
+      canHoldTokens(from) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Store allowance...
