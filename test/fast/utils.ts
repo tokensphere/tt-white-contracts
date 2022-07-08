@@ -54,26 +54,32 @@ const facetMock = async <F extends ContractFactory>(diamond: IDiamondCut, facet:
 };
 
 export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> =
-  async (hre, allOpts) => {
-    if (!allOpts) throw 'You must provide FAST fixture options.';
-    const { opts, initWith } = allOpts;
-    // Deploy the diamond.
-    const { address: fastAddr } = await hre.deployments.diamond.deploy(opts.name, {
-      from: opts.deployer,
-      owner: opts.deployer,
+  async (hre, opts) => {
+    // opts could be `undefined`.
+    if (!opts) throw 'You must provide FAST fixture options.';
+    const { opts: { deployer, name, afterDeploy }, initWith } = opts;
+    // Deploy empty diamond.
+    const { address: fastAddr } = await hre.deployments.diamond.deploy(name, {
+      from: deployer,
+      owner: deployer,
       facets: [],
       execute: { contract: 'FastInitFacet', methodName: 'initialize', args: [initWith] },
       deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
     });
 
+    // Get a FAST typed pointer.
     const fast = await ethers.getContractAt<Fast>('Fast', fastAddr);
-    const topMock = await facetMock<FastTopFacet__factory>(fast, 'FastTopFacet');
-    const accessMock = await facetMock<FastAccessFacet__factory>(fast, 'FastAccessFacet');
-    const tokenMock = await facetMock<FastTokenFacet__factory>(fast, 'FastTokenFacet');
-    const historyMock = await facetMock<FastHistoryFacet__factory>(fast, 'FastHistoryFacet');
-    const frontendMock = await facetMock<FastFrontendFacet__factory>(fast, 'FastFrontendFacet');
-
-    const result = { fast, topMock, accessMock, tokenMock, historyMock, frontendMock };
-    await opts.afterDeploy.apply(this, [result]);
+    // Build result.
+    const result = {
+      fast,
+      topMock: await facetMock<FastTopFacet__factory>(fast, 'FastTopFacet'),
+      accessMock: await facetMock<FastAccessFacet__factory>(fast, 'FastAccessFacet'),
+      tokenMock: await facetMock<FastTokenFacet__factory>(fast, 'FastTokenFacet'),
+      historyMock: await facetMock<FastHistoryFacet__factory>(fast, 'FastHistoryFacet'),
+      frontendMock: await facetMock<FastFrontendFacet__factory>(fast, 'FastFrontendFacet')
+    };
+    // Callback!
+    await afterDeploy.apply(this, [result]);
+    // Final return.
     return result;
   }
