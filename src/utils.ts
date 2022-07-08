@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { BigNumber, ethers } from 'ethers';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 const ZERO_ADDRESS = ethers.constants.AddressZero;
 const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
@@ -7,13 +8,26 @@ const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
 const DEPLOYER_FACTORY_COMMON = {
   deployer: '0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e',
   factory: '0x6DF2D25d8C6FD680730ee658b530A05a99BB769a',
-  funding: '10000000000000000',
-  salt: '0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d'
+  funding: '10000000000000000'
 }
 
 const COMMON_DIAMOND_FACETS = [
   'ERC165Facet'
 ];
+
+const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
+  // Staging or production environments.
+  if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev') {
+    const salt = process.env.DEPLOYMENT_SALT;
+    if (salt == undefined)
+      throw 'DEPLOYMENT_SALT must be set.';
+    return salt;
+  }
+  // Local environments.
+  else {
+    return '0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d';
+  }
+}
 
 function fromBaseUnit(amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber {
   amount = BigNumber.from(amount);
@@ -82,6 +96,6 @@ const accounts = (networkName: string): string[] => {
 
 export {
   ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON, COMMON_DIAMOND_FACETS,
-  fromBaseUnit, toBaseUnit, toHexString,
+  deploymentSalt, fromBaseUnit, toBaseUnit, toHexString,
   nodeUrl, accounts
 }

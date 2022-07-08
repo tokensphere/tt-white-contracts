@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
+import { deploymentSalt } from '../../src/utils';
 import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
 import { INTERNAL_METHOD } from '../utils';
 chai.use(solidity);
@@ -41,7 +41,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
       methodName: 'initialize',
       args: [initFacetArgs],
     },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    deterministicSalt: deploymentSalt(hre)
   });
 });
 

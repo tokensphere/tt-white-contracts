@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Spc, Exchange, SpcInitFacet, Fast } from '../../typechain';
-import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
+import { deploymentSalt } from '../../src/utils';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { BigNumber } from 'ethers';
 chai.use(solidity);
@@ -60,7 +60,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
       methodName: 'initialize',
       args: [initFacetArgs],
     },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    deterministicSalt: deploymentSalt(hre)
   });
 });
 
@@ -74,7 +74,7 @@ const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: [...SPC_FACETS, 'SpcInitFacet'],
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    deterministicSalt: deploymentSalt(hre)
   });
 
   // Initialize the diamond. We are doing it in two steps, because the SPC member is different

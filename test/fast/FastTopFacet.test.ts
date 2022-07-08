@@ -6,8 +6,8 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { negOneHundred, oneHundred, ninety, REQUIRES_SPC_MEMBERSHIP, MISSING_ATTACHED_ETH, INTERNAL_METHOD } from '../utils';
-import { DEPLOYER_FACTORY_COMMON, toHexString } from '../../src/utils';
-import { Spc, Exchange, Fast, FastTopFacet, FastTokenFacet } from '../../typechain';
+import { deploymentSalt, toHexString } from '../../src/utils';
+import { Spc, Exchange, FastTopFacet } from '../../typechain';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -46,7 +46,7 @@ const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
       methodName: 'initialize',
       args: [initFacetArgs],
     },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+    deterministicSalt: deploymentSalt(hre)
   });
 });
 

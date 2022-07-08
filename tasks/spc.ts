@@ -1,6 +1,6 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { COMMON_DIAMOND_FACETS, DEPLOYER_FACTORY_COMMON } from '../src/utils';
+import { COMMON_DIAMOND_FACETS, deploymentSalt } from '../src/utils';
 import { Spc, SpcInitFacet } from '../typechain'
 
 // Tasks.
@@ -19,7 +19,8 @@ interface SpcUpdateFacetsParams {
 }
 
 task('spc-update-facets', 'Updates facets of our SPC')
-  .setAction(async (params: SpcUpdateFacetsParams, { deployments, getNamedAccounts }) => {
+  .setAction(async (params: SpcUpdateFacetsParams, hre) => {
+    const { deployments, getNamedAccounts } = hre;
     const { deployer } = await getNamedAccounts()
     // Make sure that the fast is known from our tooling.
     const { address } = await deployments.get('Spc');
@@ -27,7 +28,7 @@ task('spc-update-facets', 'Updates facets of our SPC')
     await deployments.diamond.deploy('Spc', {
       from: deployer,
       facets: SPC_FACETS,
-      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
+      deterministicSalt: deploymentSalt(hre),
       log: true
     });
   });
@@ -51,7 +52,7 @@ async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
     from: deployer,
     owner: deployer,
     facets: [...SPC_FACETS, 'SpcInitFacet'],
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
+    deterministicSalt: deploymentSalt(hre),
     log: true
   });
 

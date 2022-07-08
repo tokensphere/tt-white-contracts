@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { COMMON_DIAMOND_FACETS, DEPLOYER_FACTORY_COMMON } from '../src/utils';
+import { COMMON_DIAMOND_FACETS, deploymentSalt } from '../src/utils';
 import { Exchange } from '../typechain'
 
 // Tasks.
@@ -18,7 +18,8 @@ interface ExchangeUpdateFacetsParams {
 }
 
 task('exchange-update-facets', 'Updates facets of our SPC')
-  .setAction(async (params: ExchangeUpdateFacetsParams, { deployments, getNamedAccounts }) => {
+  .setAction(async (params: ExchangeUpdateFacetsParams, hre) => {
+    const { deployments, getNamedAccounts } = hre;
     const { deployer } = await getNamedAccounts()
     // Make sure that the fast is known from our tooling.
     const { address } = await deployments.get('Exchange');
@@ -26,7 +27,7 @@ task('exchange-update-facets', 'Updates facets of our SPC')
     await deployments.diamond.deploy('Exchange', {
       from: deployer,
       facets: EXCHANGE_FACETS,
-      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
+      deterministicSalt: deploymentSalt(hre),
       log: true
     });
   });
@@ -55,7 +56,7 @@ async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
       methodName: 'initialize',
       args: [{ spc: spcAddr }]
     },
-    deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
+    deterministicSalt: deploymentSalt(hre),
     log: true
   });
 

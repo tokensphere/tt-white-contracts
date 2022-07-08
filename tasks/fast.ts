@@ -2,8 +2,8 @@ import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BigNumber } from 'ethers';
 import { COMMON_DIAMOND_FACETS, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from '../src/utils';
-import { DEPLOYER_FACTORY_COMMON } from '../src/utils';
-import { Spc, Fast, FastInitFacet, Exchange } from '../typechain';
+import { deploymentSalt } from '../src/utils';
+import { Spc, Fast, Exchange } from '../typechain';
 import { id } from 'ethers/lib/utils';
 
 // Tasks.
@@ -59,7 +59,8 @@ interface FastUpdateFacetsParams {
 
 task('fast-update-facets', 'Updates facets for a given FAST')
   .addPositionalParam('symbol', 'The FAST Token symbol to operate on', undefined, types.string)
-  .setAction(async (params: FastUpdateFacetsParams, { deployments, getNamedAccounts }) => {
+  .setAction(async (params: FastUpdateFacetsParams, hre) => {
+    const { deployments, getNamedAccounts } = hre;
     const { deployer } = await getNamedAccounts()
     const diamondName = `Fast${params.symbol}`;
     // Make sure that the fast is known from our tooling.
@@ -68,7 +69,7 @@ task('fast-update-facets', 'Updates facets for a given FAST')
     await deployments.diamond.deploy(diamondName, {
       from: deployer,
       facets: FAST_FACETS,
-      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt,
+      deterministicSalt: deploymentSalt(hre),
       log: true
     });
   });
@@ -173,7 +174,7 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
 
   // Make a unique diamond name for that FAST.
   const diamondName = `Fast${params.symbol}`;
-  const deterministicSalt = id(`${DEPLOYER_FACTORY_COMMON.salt}:${diamondName}`);
+  const deterministicSalt = id(`${deploymentSalt(hre)}:${diamondName}`);
 
   // Check that symbol isn't taken.
   let existingAddr: string | undefined;

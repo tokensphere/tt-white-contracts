@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { BigNumber, ContractFactory } from "ethers";
 import { smock, MockContract, MockContractFactory } from "@defi-wonderland/smock";
 import { FacetCutAction, FixtureFunc } from "hardhat-deploy/dist/types";
-import { DEPLOYER_FACTORY_COMMON } from "../../src/utils";
+import { deploymentSalt } from "../../src/utils";
 import {
   Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
   FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory,
@@ -64,7 +64,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
       owner: deployer,
       facets: [],
       execute: { contract: 'FastInitFacet', methodName: 'initialize', args: [initWith] },
-      deterministicSalt: DEPLOYER_FACTORY_COMMON.salt
+      deterministicSalt: deploymentSalt(hre)
     });
 
     // Get a FAST typed pointer.
