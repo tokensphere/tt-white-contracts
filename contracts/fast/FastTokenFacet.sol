@@ -317,6 +317,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.balances[p.from] -= p.amount;
     s.balances[p.to] += p.amount;
 
+    // If the funds are not moving from the zero address, decrease transfer credits.
+    if (p.from != address(0)) {
+      s.transferCredits -= p.amount;
+    }
+
     // If the funds are going to the ZERO address, decrease total supply.
     if (p.to == address(0)) {
       s.totalSupply -= p.amount;

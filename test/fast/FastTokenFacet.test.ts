@@ -649,6 +649,8 @@ describe('FastTokenFacet', () => {
         it('requires recipient membership (Exchange member)');
       });
 
+      it('decreases the transfer credits when not transacting from the zero address');
+
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, bob.address, 100, 'No!')
         await expect(subject).to.have
