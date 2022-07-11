@@ -1,7 +1,7 @@
 import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { COMMON_DIAMOND_FACETS, deploymentSalt } from '../src/utils';
-import { Spc, SpcInitFacet } from '../typechain'
+import { Spc } from '../typechain'
 
 // Tasks.
 
@@ -44,26 +44,39 @@ const SPC_FACETS = [
 
 async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
   : Promise<Spc> {
-  const { ethers, getNamedAccounts, deployments: { diamond } } = hre;
+  const { ethers, deployments, getNamedAccounts, deployments: { diamond } } = hre;
   const { deployer } = await getNamedAccounts();
 
-  // Deploy the diamond with an additional initialization facet.
-  const deploy = await diamond.deploy('Spc', {
-    from: deployer,
-    owner: deployer,
-    facets: [...SPC_FACETS, 'SpcInitFacet'],
-    deterministicSalt: deploymentSalt(hre),
-    log: true
-  });
+  let deploy = await deployments.getOrNull('Spc');
+  if (deploy) {
+    console.log(`Spc already deployed at ${deploy.address}, skipping deployment.`);
+  } else {
+    console.log('Deploying Spc...');
+    // Deploy the diamond with an additional initialization facet.
+    deploy = await diamond.deploy('Spc', {
+      from: deployer,
+      owner: deployer,
+      facets: [...SPC_FACETS, 'SpcInitFacet'],
+      deterministicSalt: deploymentSalt(hre),
+      log: true
+    });
+  }
+  const spc = await ethers.getContract<Spc>('Spc');
 
-  // Initialize the diamond. We are doing it in two steps, because the SPC member is different
-  // in each environment, and this would make our deployment transaction different in each and
-  // therefore defeat the deterministic deployment strategy.
-  const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
-  await (await init.initialize({ member: spcMember })).wait();
+  if (!(await spc.memberCount()).isZero()) {
+    console.log('Spc already initialized, skipping initialization.');
+  }
+  else {
+    console.log('Initializing Spc...');
+    // Initialize the diamond. We are doing it in two steps, because the SPC member is different
+    // in each environment, and this would make our deployment transaction different in each and
+    // therefore defeat the deterministic deployment strategy.
+    const spcInitFacet = await ethers.getContractAt('SpcInitFacet', deploy.address);
+    await (await spcInitFacet.initialize({ member: spcMember })).wait();
+  }
 
   // Return a handle to the diamond.
-  return await ethers.getContractAt('Spc', deploy.address);
+  return spc;
 }
 
 export { SPC_FACETS, deploySpc };

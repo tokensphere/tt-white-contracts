@@ -1,15 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployFast } from '../tasks/fast';
-import { Exchange, Fast } from '../typechain';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, getNamedAccounts } = hre;
   const { spcMember } = await getNamedAccounts();
   const spcMemberSigner = await ethers.getSigner(spcMember);
-
-  const exchange = (await ethers.getContract('Exchange')).connect(spcMemberSigner) as Exchange;
-  exchange.addMember(spcMember);
 
   const { fast: iou } = await deployFast(hre, {
     governor: spcMember,
@@ -20,7 +16,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     isSemiPublic: true
   });
 
-  (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
+  if (!(await iou.transferCredits()).isZero()) {
+    console.log('FastIOU already provisioned with transfer credits, skipping provisioning.');
+  } else {
+    console.log('Provisioning FastIOU with transfer credits...');
+    (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
+  }
 };
 func.tags = ['DeployIOU'];
 export default func;
