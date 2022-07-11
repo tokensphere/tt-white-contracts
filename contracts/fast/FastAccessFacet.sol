@@ -176,6 +176,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       governance(msg.sender) {
     // Remove member.
     LibFastAccess.data().memberSet.remove(member, false);
+    // Notify token facet that this member was removed.
+    FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Notify exchange that this member was removed from this FAST.
     ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
     // Emit!
