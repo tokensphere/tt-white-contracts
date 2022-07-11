@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers, getNamedAccounts } from 'hardhat';
-import { deployFast, fastMint } from '../tasks/fast';
+import { fastMint } from '../tasks/fast';
 import { Exchange, Fast } from '../typechain';
 import { toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 
