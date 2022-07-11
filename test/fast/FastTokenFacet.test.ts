@@ -27,10 +27,10 @@ import {
   UNSUPPORTED_OPERATION,
   DEFAULT_TRANSFER_REFERENCE,
   one,
-  setupDiamondFacet,
   impersonateDiamond
 } from '../utils';
 import { fastFixtureFunc } from './utils';
+import { access } from 'fs';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -85,19 +85,6 @@ describe('FastTokenFacet', () => {
           token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fast.address);
           governedToken = token.connect(governor);
           spcMemberToken = token.connect(spcMember);
-
-          // Add an extra member to the exchange.
-          exchange.isMember.whenCalledWith(exchangeMember.address).returns(true)
-          // Add a few Exchange and FAST members.
-          for (const { address } of [alice, bob, john]) {
-            exchange.isMember.whenCalledWith(address).returns(true)
-            accessMock.isMember.whenCalledWith(address).returns(true)
-          }
-          // Set the SPC member.
-          spc.isMember.whenCalledWith(spcMember.address).returns(true);
-          // Set the defaults when querying the SPC or Exchange fakes.
-          spc.isMember.returns(false);
-          exchange.isMember.returns(false);
         }
       },
       initWith: {
@@ -111,6 +98,24 @@ describe('FastTokenFacet', () => {
         isSemiPublic: false
       }
     });
+
+    // Reset expected returns.
+    spc.isMember.reset();
+    exchange.isMember.reset();
+    accessMock.isMember.reset();
+
+    // Add an extra member to the exchange.
+    exchange.isMember.whenCalledWith(exchangeMember.address).returns(true);
+    // Add a few Exchange and FAST members.
+    for (const { address } of [alice, bob, john]) {
+      exchange.isMember.whenCalledWith(address).returns(true);
+      accessMock.isMember.whenCalledWith(address).returns(true);
+    }
+    // Set the SPC member.
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    // Set the defaults when querying the SPC or Exchange fakes.
+    spc.isMember.returns(false);
+    exchange.isMember.returns(false);
 
     topMock.hasFixedSupply.reset();
     topMock.hasFixedSupply.returns(true);
@@ -501,9 +506,8 @@ describe('FastTokenFacet', () => {
     });
 
     describe('approve', async () => {
-      it('delegates to FastTokenInternalFacet', async () => {
-        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);
-        tokenInternalFacetFake.performApproval.reset();
+      it('delegates to the internal performApproval method', async () => {
+        tokenMock.performApproval.reset()
 
         const args = {
           spender: alice.address,
@@ -515,14 +519,15 @@ describe('FastTokenFacet', () => {
         await token.connect(alice).approve(args.from, args.amount);
 
         // Expect performApproval to be called correctly.
-        expect(tokenInternalFacetFake.performApproval).to.have.been
+        expect(tokenMock.performApproval).to.have.been
           .calledOnceWith(args.spender, args.from, args.amount)
           .delegatedFrom(token.address);
       });
 
       it('requires FAST membership', async () => {
         // Remove alice as a member.
-        await fast.connect(governor).removeMember(alice.address);
+        accessMock.isMember.reset();
+        accessMock.isMember.whenCalledWith(alice.address).returns(false);
 
         // Let alice give allowance to john.
         const subject = token.connect(alice).approve(john.address, 1);
@@ -576,20 +581,19 @@ describe('FastTokenFacet', () => {
         await token.connect(bob).approve(john.address, 15);
       });
 
-      it('delegates to FastTokenInternalFacet', async () => {
-        await setupDiamondFacet(fast, tokenInternalFacetFake, 'FastTokenInternalFacet', FacetCutAction.Replace);
-        tokenInternalFacetFake.performDisapproval.reset();
+      it('delegates to the internal Disapproval method', async () => {
+        tokenMock.performDisapproval.reset();
 
         const args = {
-          spender: alice.address,
+          spender: bob.address,
           from: john.address,
         };
 
-        // Let alice give allowance to john.
-        await token.connect(alice).disapprove(args.from);
+        // Remove Johns approval.
+        await token.connect(bob).disapprove(args.from);
 
         // Expect performDisapproval to be called correctly.
-        expect(tokenInternalFacetFake.performDisapproval).to.have.been
+        expect(tokenMock.performDisapproval).to.have.been
           .calledOnceWith(args.spender, args.from)
           .delegatedFrom(token.address);
       });
@@ -710,7 +714,8 @@ describe('FastTokenFacet', () => {
       describe('when private', async () => {
         beforeEach(async () => {
           // Explicitly set the token as private.
-          await spcMemberToken.setIsSemiPublic(false);
+          topMock.isSemiPublic.reset();
+          topMock.isSemiPublic.returns(false);
         });
 
         it('requires sender membership (FAST member)', async () => {
@@ -726,7 +731,17 @@ describe('FastTokenFacet', () => {
         });
       });
 
-      it('decreases the transfer credits when not transacting from the zero address');
+      it('decreases the transfer credits when not transacting from the zero address', async () => {
+        // The token transfer amount.
+        const transferAmount = 100;
+
+        // Snapshot the transfer tokens before, transfer then check balance after.
+        const creditsBefore = await spcMemberToken.transferCredits();
+        await token.connect(john).transferFromWithRef(bob.address, alice.address, transferAmount, 'No!');
+        const creditsAfter = await spcMemberToken.transferCredits();
+
+        expect(creditsAfter).to.be.eql(creditsBefore.sub(transferAmount));
+      });
 
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, bob.address, 100, 'No!')
