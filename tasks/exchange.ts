@@ -46,22 +46,26 @@ async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
   const { diamond } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  // Deploy the diamond with an additional initialization facet.
-  const { address } = await diamond.deploy('Exchange', {
-    from: deployer,
-    owner: deployer,
-    facets: EXCHANGE_FACETS,
-    execute: {
-      contract: 'ExchangeInitFacet',
-      methodName: 'initialize',
-      args: [{ spc: spcAddr }]
-    },
-    deterministicSalt: deploymentSalt(hre),
-    log: true
-  });
-
+  let deploy = await deployments.getOrNull('Exchange');
+  if (deploy) {
+    console.log(`Exchange already deployed at ${deploy.address}, skipping.`);
+  } else {
+    // Deploy the diamond with an additional initialization facet.
+    deploy = await diamond.deploy('Exchange', {
+      from: deployer,
+      owner: deployer,
+      facets: EXCHANGE_FACETS,
+      execute: {
+        contract: 'ExchangeInitFacet',
+        methodName: 'initialize',
+        args: [{ spc: spcAddr }]
+      },
+      deterministicSalt: deploymentSalt(hre),
+      log: true
+    });
+  }
   // Return a handle to the diamond.
-  return await ethers.getContract('Exchange');
+  return await ethers.getContract<Exchange>('Exchange');
 }
 
 export { EXCHANGE_FACETS, deployExchange };

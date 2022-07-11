@@ -11,8 +11,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // Provision the SPC contract.
   const spc = await ethers.getContract<Spc>('Spc');
-  console.log(`Funding the SPC at ${spc.address} with 10_000 ETH...`);
-  (await spc.connect(storageSigner).provisionWithEth({ value: toBaseUnit(10_000, 18) })).wait();
+  if (!(await ethers.provider.getBalance(spc.address)).isZero()) {
+    console.log('Spc already funded, skipping Spc funding.');
+  } else {
+    console.log(`Funding the SPC at ${spc.address} with 10_000 ETH...`);
+    (await spc.connect(storageSigner).provisionWithEth({ value: toBaseUnit(10_000, 18) })).wait();
+  }
 };
 func.tags = ['FundSpc'];
 export default func;

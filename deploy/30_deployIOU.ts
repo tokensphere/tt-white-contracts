@@ -14,9 +14,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     decimals: 18,
     hasFixedSupply: false,
     isSemiPublic: true
-  }, false);
+  });
 
-  (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
+  if (!(await iou.transferCredits()).isZero()) {
+    console.log('FastIOU already provisioned with transfer credits, skipping provisioning.');
+  } else {
+    console.log('Provisioning FastIOU with transfer credits...');
+    (await iou.connect(spcMemberSigner).addTransferCredits('0xd3c21bcecceda1000000')).wait();
+  }
 };
 func.tags = ['DeployIOU'];
 export default func;

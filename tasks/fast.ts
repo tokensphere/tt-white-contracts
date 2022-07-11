@@ -163,7 +163,7 @@ interface FastDeployParams {
   readonly isSemiPublic: boolean;
 };
 
-const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployParams, fromArtifacts: boolean = true)
+const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployParams)
   : Promise<{ fast: Fast; diamondName: string; }> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
@@ -176,44 +176,43 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
   const diamondName = `Fast${params.symbol}`;
   const deterministicSalt = id(`${deploymentSalt(hre)}:${diamondName}`);
 
-  // Check that symbol isn't taken.
-  let existingAddr: string | undefined;
-  if (fromArtifacts)
-    existingAddr = (await ethers.getContractOrNull(diamondName))?.address;
-  else
-    existingAddr = await spc.fastBySymbol(params.symbol);
-
-  console.log(`${diamondName} found at ${existingAddr} using ${fromArtifacts ? 'artifacts' : 'on-chain SPC'}`);
-  if (existingAddr && existingAddr != ZERO_ADDRESS) {
-    throw `It seems that a FAST was already deployed at ${existingAddr} with symbol ${params.symbol}!`;
+  let deploy = await deployments.getOrNull(diamondName);
+  if (deploy) {
+    console.log(`${diamondName} deployment found, skipping deployment.`);
+  } else {
+    console.log(`Deploying ${diamondName} with governor ${params.governor}...`);
+    // Deploy the diamond with an additional initialization facet.
+    deploy = await diamond.deploy(diamondName, {
+      from: deployer,
+      owner: deployer,
+      facets: FAST_FACETS,
+      execute: {
+        contract: 'FastInitFacet',
+        methodName: 'initialize',
+        args: [{
+          spc: spc.address,
+          exchange: exchange.address,
+          governor: params.governor,
+          name: params.name,
+          symbol: params.symbol,
+          decimals: params.decimals,
+          hasFixedSupply: params.hasFixedSupply,
+          isSemiPublic: params.isSemiPublic
+        }]
+      },
+      deterministicSalt,
+      log: true
+    });
   }
 
-  // Deploy the diamond with an additional initialization facet.
-  const { address } = await diamond.deploy(diamondName, {
-    from: deployer,
-    owner: deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [{
-        spc: spc.address,
-        exchange: exchange.address,
-        governor: params.governor,
-        name: params.name,
-        symbol: params.symbol,
-        decimals: params.decimals,
-        hasFixedSupply: params.hasFixedSupply,
-        isSemiPublic: params.isSemiPublic
-      }]
-    },
-    deterministicSalt,
-    log: true
-  });
-
   // Register the new FAST with the SPC.
-  const spcMemberSigner = await ethers.getSigner(spcMember);
-  await (await spc.connect(spcMemberSigner).registerFast(address)).wait();
+  if ((await spc.fastBySymbol(params.symbol)) != ZERO_ADDRESS) {
+    console.log(`${diamondName} already registered with the Spc, skipping registration.`);
+  } else {
+    console.log(`Registering ${diamondName} at ${deploy.address} with the Spc...`);
+    const spcMemberSigner = await ethers.getSigner(spcMember);
+    await (await spc.connect(spcMemberSigner).registerFast(deploy.address)).wait();
+  }
 
   // Return a handle to the diamond.
   const fast = await ethers.getContract<Fast>(diamondName);

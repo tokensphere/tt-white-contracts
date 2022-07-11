@@ -4,8 +4,7 @@ import { deployExchange } from '../tasks/exchange';
 import { deployments } from 'hardhat';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { address: spcAddr } = await deployments.get('Spc');
-  await deployExchange(hre, spcAddr);
+  await deployExchange(hre, (await deployments.get('Spc')).address);
 };
 func.tags = ['DeployExchange'];
 export default func;
