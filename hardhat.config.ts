@@ -99,7 +99,10 @@ const config: HardhatUserConfig = {
       production: '0x459afD5DC396d24Fa4843a42276e5260c73A62f1',
     },
     // Used exclusively in dev environments when deploying test FAST contracts.
-    fastGovernor: { default: 3 },
+    fastGovernor: {
+      default: 3,
+      staging: '0x626a705C4DE35d2035c3E6A663A3711369d87D1a'
+    },
     user1: { default: 4 },
     user2: { default: 5 },
     user3: { default: 6 },
