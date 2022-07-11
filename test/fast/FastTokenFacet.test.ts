@@ -24,13 +24,10 @@ import {
   REQUIRES_FAST_MEMBERSHIP_CODE,
   REQUIRES_SPC_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
-  UNSUPPORTED_OPERATION,
   DEFAULT_TRANSFER_REFERENCE,
-  one,
   impersonateDiamond
 } from '../utils';
 import { fastFixtureFunc } from './utils';
-import { access } from 'fs';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -60,7 +57,6 @@ describe('FastTokenFacet', () => {
     topMock: MockContract<FastTopFacet>,
     accessMock: MockContract<FastAccessFacet>,
     historyMock: MockContract<FastHistoryFacet>,
-    frontendMock: MockContract<FastFrontendFacet>,
     governedToken: FastTokenFacet,
     spcMemberToken: FastTokenFacet;
 
@@ -81,7 +77,7 @@ describe('FastTokenFacet', () => {
         name: FAST_FIXTURE_NAME,
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast, accessMock, topMock, tokenMock, historyMock, frontendMock } = args);
+          ({ fast, accessMock, topMock, tokenMock, historyMock } = args);
           token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fast.address);
           governedToken = token.connect(governor);
           spcMemberToken = token.connect(spcMember);
@@ -177,39 +173,6 @@ describe('FastTokenFacet', () => {
       expect(subject).to.eq(0);
     });
   });
-
-  // TODO: Move to top facet tests.
-  // describe('hasFixedSupply', async () => {
-  //   it('returns the token fixed supply parameter', async () => {
-  //     const subject = await token.hasFixedSupply();
-  //     expect(subject).to.eq(true);
-  //   });
-  // });
-
-  /// Other stuff.
-
-  // TODO: Move to top facet tests.
-  // describe('setIsSemiPublic', async () => {
-  //   it('requires SPC membership for the sender', async () => {
-  //     const subject = token.setIsSemiPublic(true);
-  //     await expect(subject).to.be
-  //       .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-  //   });
-
-  //   it('cannot revert an SPC to non-semi public once set', async () => {
-  //     // Set as semi public.
-  //     await spcMemberToken.setIsSemiPublic(true);
-  //     // Attempt to revert to non-semi public.
-  //     const subject = spcMemberToken.setIsSemiPublic(false);
-  //     await expect(subject).to.be
-  //       .revertedWith(UNSUPPORTED_OPERATION);
-  //   });
-
-  //   it('sets the required isSemiPublic flag on the token', async () => {
-  //     await spcMemberToken.setIsSemiPublic(true);
-  //     expect(await spcMemberToken.isSemiPublic()).to.be.true;
-  //   });
-  // });
 
   describe('mint', async () => {
     it('requires SPC membership (anonymous)', async () => {
