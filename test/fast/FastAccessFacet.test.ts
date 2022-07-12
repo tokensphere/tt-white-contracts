@@ -75,7 +75,6 @@ describe('FastAccessFacet', () => {
   describe('IHasGovernors implementation', async () => {
     describe('addGovernor', async () => {
       it('requires SPC membership (anonymous)', async () => {
-        console.log('Final address', access.address);
         const subject = access.addGovernor(alice.address);
         // Check that the registry
         await expect(subject).to.be
