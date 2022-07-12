@@ -43,7 +43,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   function initialize(address payable governor)
       external
-      diamondInternal {
+      onlyDiamondFacet {
     // Grab our storage.
     LibFastAccess.Data storage s = LibFastAccess.data();
     // Make sure we havn't initialized yet.
@@ -68,7 +68,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Queries the number of governors in the governorship list.
+   * @dev Queries the number of governors in the governor list.
    */
   function governorCount()
       external override view returns(uint256) {
@@ -88,11 +88,11 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Adds a governor to the governorship list.
+   * @dev Adds a governor to the governor list.
    */
   function addGovernor(address payable governor)
       external override
-      spcMembership {
+      onlySpcMember {
     // Add governor to list.
     LibFastAccess.data().governorSet.add(governor, false);
     // If the address is a regular wallet...
@@ -106,11 +106,11 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Removes a governor from the governorship list.
+   * @dev Removes a governor from the governor list.
    */
   function removeGovernor(address governor)
       external override
-      spcMembership {
+      onlySpcMember {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
@@ -153,7 +153,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function addMember(address payable member)
       external override 
-      governance(msg.sender) exchangeMember(member) {
+      onlyGovernor(msg.sender) onlyExchangeMember(member) {
     // Add the member.
     LibFastAccess.data().memberSet.add(member, false);
     // If the address is a regular wallet...
@@ -173,7 +173,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function removeMember(address member)
       external override 
-      governance(msg.sender) {
+      onlyGovernor(msg.sender) {
     // Remove member.
     LibFastAccess.data().memberSet.remove(member, false);
     // Notify token facet that this member was removed.

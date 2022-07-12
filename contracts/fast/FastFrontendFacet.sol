@@ -8,10 +8,6 @@ import './lib/LibFastAccess.sol';
 import './lib/LibFastToken.sol';
 
 
-/** @title The SPC Smart Contract.
- *  @dev The SPC contract is the central place for top-level governorship. It requires that a
- *        first member address is passed at construction time.
- */
 contract FastFrontendFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
@@ -55,7 +51,7 @@ contract FastFrontendFacet is AFastFacet {
   // Emitters.
 
   function emitDetailsChanged()
-      external diamondInternal {
+      external onlyDiamondFacet {
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     LibFastToken.Data storage tokenData = LibFastToken.data();
     emit DetailsChanged({

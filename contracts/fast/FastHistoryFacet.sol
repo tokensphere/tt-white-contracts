@@ -10,7 +10,7 @@ contract FastHistoryFacet is AFastFacet {
   /// Minting history-keeping methods.
 
   function minted(uint256 amount, string calldata ref)
-      external diamondInternal() {
+      external onlyDiamondFacet() {
     // Keep track of the mint.
     LibFastHistory.data().supplyProofs.push(
       LibFastHistory.SupplyProof({
@@ -23,7 +23,7 @@ contract FastHistoryFacet is AFastFacet {
   }
 
   function burnt(uint256 amount, string calldata ref)
-      external diamondInternal() {
+      external onlyDiamondFacet() {
     // Keep track of the unmint.
     LibFastHistory.data().supplyProofs.push(
       LibFastHistory.SupplyProof({
@@ -48,7 +48,7 @@ contract FastHistoryFacet is AFastFacet {
   /// Transfer history-keeping methods.
 
   function transfered(address spender, address from, address to, uint256 amount, string calldata ref)
-      external diamondInternal() {
+      external onlyDiamondFacet() {
     LibFastHistory.Data storage s = LibFastHistory.data();
     // Keep track of the transfer proof ID for the sender and for the recipient.
     s.transferProofInvolvements[from].push(s.transferProofs.length);

@@ -52,7 +52,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
    */
   function addMember(address payable member)
       external override
-      spcMembership {
+      onlySpcMember {
     // Add the member to our list.
     LibExchangeAccess.data().memberSet.add(member, false);
     // Emit!
@@ -66,7 +66,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
    */
   function removeMember(address member)
       external override
-      spcMembership {
+      onlySpcMember {
     LibExchangeAccess.Data storage s = LibExchangeAccess.data();
     // Ensure that member doesn't have any FAST membership.
     require(s.fastMemberships[member].values.length == 0, LibConstants.REQUIRES_NO_FAST_MEMBERSHIPS);

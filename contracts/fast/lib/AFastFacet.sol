@@ -7,7 +7,6 @@ import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IHasMembers.sol';
 import '../../interfaces/IHasGovernors.sol';
 import '../../interfaces/IERC173.sol';
-import './IFast.sol';
 import '../lib/LibFast.sol';
 
 
@@ -21,19 +20,19 @@ abstract contract AFastFacet {
   /// Modifiers.
 
   /// @dev Ensures that a method can only be called by another facet of the same diamond.
-  modifier diamondInternal() {
+  modifier onlyDiamondFacet() {
     require(msg.sender == address(this), LibConstants.INTERNAL_METHOD);
     _;
   }
 
   /// @dev Ensures that a method can only be called by the owner of this diamond.
-  modifier diamondOwner() {
+  modifier onlyDiamondOwner() {
     require(msg.sender == IERC173(address(this)).owner(), LibConstants.REQUIRES_DIAMOND_OWNERSHIP);
     _;
   }
 
   /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier deployerContract() {
+  modifier onlyDeployer() {
     require(msg.sender == LibConstants.DEPLOYER_CONTRACT, LibConstants.INTERNAL_METHOD);
     _;
   }
@@ -49,7 +48,7 @@ abstract contract AFastFacet {
   /** @dev Ensures that the given address is a member of the Exchange.
    *  @param candidate The address to check.
    */
-  modifier exchangeMember(address candidate) {
+  modifier onlyExchangeMember(address candidate) {
     require(
       IHasMembers(LibFast.data().exchange).isMember(candidate),
       LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
@@ -59,7 +58,7 @@ abstract contract AFastFacet {
 
   /** @dev Ensures that the message sender is a member of the SPC.
    */
-  modifier spcMembership() {
+  modifier onlySpcMember() {
     require(
       IHasMembers(LibFast.data().spc).isMember(msg.sender),
       LibConstants.REQUIRES_SPC_MEMBERSHIP
@@ -70,7 +69,7 @@ abstract contract AFastFacet {
   /** @dev Ensures that the given address is a governor of the FAST.
    *  @param candidate The address to check.
    */
-  modifier governance(address candidate) {
+  modifier onlyGovernor(address candidate) {
     require(
       IHasGovernors(address(this)).isGovernor(candidate),
       LibConstants.REQUIRES_FAST_GOVERNORSHIP
@@ -81,35 +80,11 @@ abstract contract AFastFacet {
   /** @dev Ensures that the given address is a member of the FAST.
    *  @param candidate The address to check.
    */
-  modifier membership(address candidate) {
+  modifier onlyMember(address candidate) {
     require(
       IHasMembers(address(this)).isMember(candidate),
       LibConstants.REQUIRES_FAST_MEMBERSHIP
     );
-    _;
-  }
-
-  /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
-   *  @param candidate The address to check.
-   */
-  modifier canHoldTokens(address candidate) {
-    // Only perform checks if the address is non-zero.
-    if (candidate != address(0)) {
-    // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
-      if (IFast(address(this)).isSemiPublic()) {
-        require(
-          IHasMembers(LibFast.data().exchange).isMember(candidate),
-          LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
-        );
-      }
-      // FAST is private, the requirement to hold tokens is to be a member of that FAST.
-      else {
-        require(
-          IHasMembers(address(this)).isMember(candidate),
-          LibConstants.REQUIRES_FAST_MEMBERSHIP
-        );
-      }
-    }
     _;
   }
 }

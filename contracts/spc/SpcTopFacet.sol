@@ -10,10 +10,6 @@ import './lib/ASpcFacet.sol';
 import './lib/LibSpc.sol';
 
 
-/** @title The SPC Smart Contract.
- *  @dev The SPC contract is the central place for top-level governorship. It requires that a
- *        first member address is passed at construction time.
- */
 contract SpcTopFacet is ASpcFacet {
   using LibAddressSet for LibAddressSet.Data;
 
@@ -59,7 +55,7 @@ contract SpcTopFacet is ASpcFacet {
    */
   function drainEth()
       external
-      membership(msg.sender) {
+      onlyMember(msg.sender) {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
@@ -92,7 +88,7 @@ contract SpcTopFacet is ASpcFacet {
    */
   function registerFast(address fast)
       external
-      membership(msg.sender) {
+      onlyMember(msg.sender) {
     LibSpc.Data storage s = LibSpc.data();
     string memory symbol = FastTokenFacet(fast).symbol();
     require(s.fastSymbols[symbol] == address(0), LibConstants.DUPLICATE_ENTRY);

@@ -11,10 +11,6 @@ import './lib/ASpcFacet.sol';
 import './lib/LibSpcAccess.sol';
 
 
-/** @title The SPC Smart Contract.
- *  @dev The SPC contract is the central place for top-level governorship. It requires that a
- *        first member address is passed at construction time.
- */
 contract SpcAccessFacet is ASpcFacet, IHasMembers {
   using LibAddressSet for LibAddressSet.Data;
 
@@ -29,7 +25,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
 
   function initialize(address payable member)
       external
-      diamondInternal {
+      onlyDiamondFacet {
     // Grab our storage.
     LibSpcAccess.Data storage s = LibSpcAccess.data();
     // Make sure we havn't initialized yet.
@@ -80,7 +76,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
    */
   function addMember(address payable member)
       external override
-      membership(msg.sender) {
+      onlyMember(msg.sender) {
     // Add the member to our list.
     LibSpcAccess.data().memberSet.add(member, false);
 
@@ -99,7 +95,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
    */
   function removeMember(address member)
       external override
-      membership(msg.sender) {
+      onlyMember(msg.sender) {
     // No suicide allowed.
     require(msg.sender != member, 'Cannot remove self');
     // Remove the member from the set.

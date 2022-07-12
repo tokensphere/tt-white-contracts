@@ -19,14 +19,14 @@ abstract contract AExchangeFacet {
   // Modifiers.
 
   /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier deployerContract() {
+  modifier onlyDeployer() {
     require(msg.sender == LibConstants.DEPLOYER_CONTRACT, LibConstants.INTERNAL_METHOD);
     _;
   }
 
   /** @dev Requires that the message sender is a member of the linked SPC.
    */
-  modifier spcMembership() {
+  modifier onlySpcMember() {
     require(IHasMembers(LibExchange.data().spc).isMember(msg.sender), LibConstants.REQUIRES_SPC_MEMBERSHIP);
     _;
   }
@@ -34,7 +34,7 @@ abstract contract AExchangeFacet {
   /** @dev Requires that the given address is a member of the exchange.
    *  @param candidate is the address to be checked.
    */
-  modifier membership(address candidate) {
+  modifier onlyMember(address candidate) {
     require(LibExchangeAccess.data().memberSet.contains(candidate), LibConstants.REQUIRES_FAST_MEMBERSHIP);
     _;
   }
