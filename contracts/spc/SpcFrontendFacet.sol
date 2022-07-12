@@ -7,10 +7,6 @@ import './lib/ASpcFacet.sol';
 import './lib/LibSpc.sol';
 
 
-/** @title The SPC Smart Contract.
- *  @dev The SPC contract is the central place for top-level governorship. It requires that a
- *        first member address is passed at construction time.
- */
 contract SpcFrontendFacet is ASpcFacet {
 
   // Public functions.

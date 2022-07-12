@@ -3,11 +3,14 @@ pragma solidity ^0.8.4;
 
 import '../interfaces/IERC20.sol';
 import '../interfaces/IERC1404.sol';
+import '../interfaces/IHasMembers.sol';
+import '../interfaces/IHasGovernors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
+import './lib/IFast.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
@@ -31,7 +34,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function mint(uint256 amount, string calldata ref)
       external
-      spcMembership {
+      onlySpcMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
@@ -54,7 +57,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function burn(uint256 amount, string calldata ref)
       external
-      spcMembership {
+      onlySpcMember {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(!FastTopFacet(address(this)).hasFixedSupply(), LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
@@ -80,7 +83,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function addTransferCredits(uint256 amount)
       external
-      spcMembership {
+      onlySpcMember {
     LibFastToken.data().transferCredits += amount;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
@@ -89,7 +92,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function drainTransferCredits()
       external
-      spcMembership {
+      onlySpcMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // Emit!
     emit TransferCreditsDrained(msg.sender, s.transferCredits);
@@ -176,7 +179,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function disapprove(address spender)
       external
-      membership(msg.sender) {
+      onlyMember(msg.sender) {
     // Make sure the call is performed externally so that we can mock.
     this.performDisapproval(msg.sender, spender);
   }
@@ -264,7 +267,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   // These functions would be internal / private if we weren't using the diamond pattern.
-  // Instead, they're `diamondInternal` - eg can only be called by facets of the current
+  // Instead, they're `onlyDiamondFacet` - eg can only be called by facets of the current
   // FAST.
 
   struct TransferArgs {
@@ -276,8 +279,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   function performTransfer(TransferArgs calldata p)
-      external diamondInternal
-      canHoldTokens(p.from) canHoldTokens(p.to) differentAddresses(p.from, p.to) {
+      external onlyDiamondFacet
+      differentAddresses(p.from, p.to)
+      onlyTokenHolder(p.from)
+      onlyTokenHolder(p.to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Make sure that there's enough funds.
@@ -344,8 +349,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function performApproval(address from, address spender, uint256 amount)
       external
-      diamondInternal
-      canHoldTokens(from) {
+      onlyDiamondFacet
+      onlyTokenHolder(from) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Store allowance...
@@ -360,7 +365,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function performDisapproval(address from, address spender)
       external
-      diamondInternal {
+      onlyDiamondFacet {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Remove allowance.
@@ -377,7 +382,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   // - In the context of our private chain, gas is cheap.
   // - It can only be called by a governor.
   function beforeRemovingMember(address member)
-      external diamondInternal() {
+      external onlyDiamondFacet() {
     require(balanceOf(member) == 0, 'Balance is positive');
 
     LibFastToken.Data storage s = LibFastToken.data();
@@ -401,6 +406,30 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   modifier differentAddresses(address a, address b) {
     require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
+    _;
+  }
+
+  /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
+   *  @param candidate The address to check.
+   */
+  modifier onlyTokenHolder(address candidate) {
+    // Only perform checks if the address is non-zero.
+    if (candidate != address(0)) {
+    // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
+      if (IFast(address(this)).isSemiPublic()) {
+        require(
+          IHasMembers(LibFast.data().exchange).isMember(candidate),
+          LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
+        );
+      }
+      // FAST is private, the requirement to hold tokens is to be a member of that FAST.
+      else {
+        require(
+          IHasMembers(address(this)).isMember(candidate),
+          LibConstants.REQUIRES_FAST_MEMBERSHIP
+        );
+      }
+    }
     _;
   }
 }

@@ -34,7 +34,7 @@ contract SpcInitFacet is ASpcFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      diamondOwner {
+      onlyDiamondOwner {
     // Grab our top-level storage.
     // Make sure we havn't initialized yet.
     require(LibSpc.data().version < LibSpc.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
