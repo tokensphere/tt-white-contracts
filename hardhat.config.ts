@@ -34,6 +34,7 @@ const config: HardhatUserConfig = {
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
+      'ISpcEvents',
       ...SPC_FACETS
     ]
   }, {
@@ -42,6 +43,7 @@ const config: HardhatUserConfig = {
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
+      'IExchangeEvents',
       ...EXCHANGE_FACETS
     ]
   }, {
@@ -50,6 +52,7 @@ const config: HardhatUserConfig = {
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
+      'IFastEvents',
       ...FAST_FACETS
     ]
   }],

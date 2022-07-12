@@ -128,7 +128,7 @@ describe('FastTopFacet', () => {
     it('emits a EthReceived event', async () => {
       const subject = spcMemberToken.provisionWithEth({ value: ninety });
       await expect(subject).to
-        .emit(token, 'EthReceived')
+        .emit(fast, 'EthReceived')
         .withArgs(spcMember.address, ninety)
     });
   });
@@ -154,7 +154,7 @@ describe('FastTopFacet', () => {
       // Drain the FAST.
       const subject = spcMemberToken.drainEth();
       await expect(subject).to
-        .emit(token, 'EthDrained')
+        .emit(fast, 'EthDrained')
         .withArgs(spcMember.address, oneHundred);
     });
   });

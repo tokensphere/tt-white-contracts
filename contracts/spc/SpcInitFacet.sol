@@ -12,9 +12,9 @@ import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 
 import './lib/ASpcFacet.sol';
+import './lib/LibSpcEvents.sol';
 import './lib/LibSpc.sol';
 import './lib/LibSpcAccess.sol';
-import './SpcAccessFacet.sol';
 
 
 /** @title The Spc Smart Contract.
@@ -56,6 +56,10 @@ contract SpcInitFacet is ASpcFacet {
     // ------------------------------------- //
 
     // Initialize access storage.
-    SpcAccessFacet(address(this)).initializeAccessFacet(params.member);
+    LibSpcAccess.Data storage s = LibSpcAccess.data();
+    s.version = LibSpcAccess.STORAGE_VERSION;
+    // Add the member and emit.
+    s.memberSet.add(params.member, false);
+    emit LibSpcEvents.MemberAdded(params.member);
   }
 }

@@ -6,6 +6,7 @@ import '../lib/LibPaginate.sol';
 import '../spc/SpcTopFacet.sol';
 import '../interfaces/IHasMembers.sol';
 import './lib/LibExchangeAccess.sol';
+import './lib/LibExchangeEvents.sol';
 import './lib/AExchangeFacet.sol';
 
 
@@ -56,7 +57,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
     // Add the member to our list.
     LibExchangeAccess.data().memberSet.add(member, false);
     // Emit!
-    emit IHasMembers.MemberAdded(member);
+    emit LibExchangeEvents.MemberAdded(member);
   }
 
   /** @dev Removes a member from this Exchange.
@@ -73,7 +74,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
     // Remove member.
     s.memberSet.remove(member, false);
     // Emit!
-    emit IHasMembers.MemberRemoved(member);
+    emit LibExchangeEvents.MemberRemoved(member);
   }
 
   /** @dev Allows to query FAST memberships for a given member address.

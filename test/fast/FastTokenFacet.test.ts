@@ -229,7 +229,7 @@ describe('FastTokenFacet', () => {
     it('emits a Minted event', async () => {
       const subject = spcMemberToken.mint(3_000, 'Attempt 1');
       await expect(subject).to
-        .emit(token, 'Minted')
+        .emit(fast, 'Minted')
         .withArgs(3_000, 'Attempt 1');
     });
   });
@@ -295,7 +295,7 @@ describe('FastTokenFacet', () => {
     it('emits a Burnt event', async () => {
       const subject = spcMemberToken.burn(50, 'Feel the burn');
       await expect(subject).to
-        .emit(token, 'Burnt')
+        .emit(fast, 'Burnt')
         .withArgs(50, 'Feel the burn');
     });
   });
@@ -331,7 +331,7 @@ describe('FastTokenFacet', () => {
     it('emits a TransferCreditsAdded event', async () => {
       const subject = spcMemberToken.addTransferCredits(50);
       await expect(subject).to
-        .emit(token, 'TransferCreditsAdded')
+        .emit(fast, 'TransferCreditsAdded')
         .withArgs(spcMember.address, 50);
     });
   });
@@ -365,7 +365,7 @@ describe('FastTokenFacet', () => {
       const creditsBefore = await token.transferCredits();
       const subject = spcMemberToken.drainTransferCredits();
       await expect(subject).to
-        .emit(token, 'TransferCreditsDrained')
+        .emit(fast, 'TransferCreditsDrained')
         .withArgs(spcMember.address, creditsBefore);
     });
   });
@@ -522,7 +522,7 @@ describe('FastTokenFacet', () => {
         // Note that we're observing the fast diamond, not just the token facet.
         // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Approval')
+          .emit(fast, 'Approval')
           .withArgs(alice.address, bob.address, 60)
       });
     });
@@ -573,7 +573,7 @@ describe('FastTokenFacet', () => {
         // Note that we're observing the fast diamond, not just the token facet.
         // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(bob.address, john.address);
       });
     });
@@ -745,7 +745,7 @@ describe('FastTokenFacet', () => {
         // Note that we're observing the fast diamond, not just the token facet.
         // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Transfer')
+          .emit(fast, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
       });
 
@@ -1006,10 +1006,10 @@ describe('FastTokenFacet', () => {
         // Note that we're observing the fast diamond, not just the token facet.
         // This is because the event is not emitted by the token facet itself.
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(alice.address, bob.address);
         await expect(subject).to
-          .emit(token, 'Disapproval')
+          .emit(fast, 'Disapproval')
           .withArgs(john.address, alice.address);
       });
     });

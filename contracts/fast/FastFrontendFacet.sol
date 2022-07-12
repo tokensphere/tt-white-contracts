@@ -4,26 +4,13 @@ pragma solidity ^0.8.4;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
+import './lib/LibFastEvents.sol';
 import './lib/LibFastAccess.sol';
 import './lib/LibFastToken.sol';
 
 
 contract FastFrontendFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
-
-  // Events.
-
-  // This is an event that is fired whenever any of some of the FAST parameters
-  // change, so that the frontend can react to it and refresh the general header
-  // for that fast as well as the baseball cards in the FASTs list.
-  event DetailsChanged(
-    uint256 memberCount,
-    uint256 governorCount,
-    uint256 totalSupply,
-    uint256 transferCredits,
-    uint256 reserveBalance,
-    uint256 ethBalance
-  );
 
   // Data structures.
 
@@ -37,6 +24,7 @@ contract FastFrontendFacet is AFastFacet {
     bool isSemiPublic;
     bool hasFixedSupply;
     uint256 reserveBalance;
+    uint256 ethBalance;
     uint256 memberCount;
     uint256 governorCount;
   }
@@ -54,7 +42,7 @@ contract FastFrontendFacet is AFastFacet {
       external onlyDiamondFacet {
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     LibFastToken.Data storage tokenData = LibFastToken.data();
-    emit DetailsChanged({
+    emit LibFastEvents.DetailsChanged({
       memberCount: accessData.memberSet.values.length,
       governorCount: accessData.governorSet.values.length,
       totalSupply: tokenData.totalSupply,
@@ -81,6 +69,7 @@ contract FastFrontendFacet is AFastFacet {
       isSemiPublic: topStorage.isSemiPublic,
       hasFixedSupply: topStorage.hasFixedSupply,
       reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],
+      ethBalance: address(this).balance,
       memberCount: accessStorage.memberSet.values.length,
       governorCount: accessStorage.governorSet.values.length
     });

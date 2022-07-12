@@ -74,6 +74,7 @@ describe('SpcFrontendFacet', () => {
       const fast = await smock.fake<Fast>('Fast');
       const symbol = `F0${id}`;
       fast.symbol.returns(symbol);
+      fast.details.reset();
       fast.details.returns({
         ...FAST_INIT_DEFAULTS,
         addr: fast.address,
@@ -95,15 +96,12 @@ describe('SpcFrontendFacet', () => {
 
   describe('paginateDetailedFasts', async () => {
     it('returns a paginated list of detailed FAST details', async () => {
-      // Get the detailed list of FASTs.
       const [[{ name: f1Name }, { name: f2Name }], nextCursor] = await spcMemberSpc.paginateDetailedFasts(0, 5);
 
       expect(fast1.details).to.have.been.calledOnceWith();
       expect(f1Name).to.eq('Fast 1');
-
       expect(fast2.details).to.have.been.calledOnceWith();
       expect(f2Name).to.eq('Fast 2');
-
       expect(nextCursor).to.eq(2);
     });
   });

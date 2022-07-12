@@ -111,7 +111,7 @@ describe('FastAccessFacet', () => {
       it('emits a GovernorAdded event', async () => {
         const subject = spcMemberAccess.addGovernor(alice.address);
         await expect(subject).to
-          .emit(access, 'GovernorAdded')
+          .emit(fast, 'GovernorAdded')
           .withArgs(alice.address);
       });
     });
@@ -149,7 +149,7 @@ describe('FastAccessFacet', () => {
       it('emits a GovernorRemoved event', async () => {
         const subject = spcMemberAccess.removeGovernor(alice.address);
         await expect(subject).to
-          .emit(access, 'GovernorRemoved')
+          .emit(fast, 'GovernorRemoved')
           .withArgs(alice.address);
       });
     });
@@ -263,7 +263,7 @@ describe('FastAccessFacet', () => {
       it('emits a MemberAdded event', async () => {
         const subject = governedAccess.addMember(alice.address);
         await expect(subject).to
-          .emit(access, 'MemberAdded')
+          .emit(fast, 'MemberAdded')
           .withArgs(alice.address);
       });
     });
@@ -311,7 +311,7 @@ describe('FastAccessFacet', () => {
       it('emits a MemberRemoved event', async () => {
         const subject = governedAccess.removeMember(alice.address);
         await expect(subject).to
-          .emit(access, 'MemberRemoved')
+          .emit(fast, 'MemberRemoved')
           .withArgs(alice.address);
       });
     });

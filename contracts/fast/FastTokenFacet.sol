@@ -8,9 +8,10 @@ import '../interfaces/IHasGovernors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import './lib/AFastFacet.sol';
-import './lib/LibFastToken.sol';
 import './lib/IFast.sol';
+import './lib/AFastFacet.sol';
+import './lib/LibFastEvents.sol';
+import './lib/LibFastToken.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
@@ -20,17 +21,7 @@ import './FastFrontendFacet.sol';
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
-  // Events.
-
-  // Issuance related events.
-  event Minted(uint256 indexed amount, string indexed ref);
-  event Burnt(uint256 indexed amount, string indexed ref);
-
-  // Transfer credits related events.
-  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
-  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
-
-  /// Minting methods.
+  // Minting methods.
 
   function mint(uint256 amount, string calldata ref)
       external
@@ -52,7 +43,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit Minted(amount, ref);
+    emit LibFastEvents.Minted(amount, ref);
   }
 
   function burn(uint256 amount, string calldata ref)
@@ -71,10 +62,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit Burnt(amount, ref);
+    emit LibFastEvents.Burnt(amount, ref);
   }
 
-  /// Tranfer Credit management.
+  // Tranfer Credit management.
 
   function transferCredits()
       external view returns(uint256) {
@@ -87,7 +78,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.data().transferCredits += amount;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit TransferCreditsAdded(msg.sender, amount);
+    emit LibFastEvents.TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()
@@ -95,14 +86,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       onlySpcMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // Emit!
-    emit TransferCreditsDrained(msg.sender, s.transferCredits);
+    emit LibFastEvents.TransferCreditsDrained(msg.sender, s.transferCredits);
     // Drain credits.
     s.transferCredits = 0;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
-  /// ERC20 implementation and transfer related methods.
+  // ERC20 implementation and transfer related methods.
 
   function name()
       external view returns(string memory) {
@@ -204,7 +195,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     );
   }
 
-  /// Allowances query operations.
+  // Allowances query operations.
 
   function givenAllowanceCount(address owner)
       external view returns(uint256) {
@@ -234,7 +225,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     );
   }
 
-  /// ERC1404 implementation.
+  // ERC1404 implementation.
 
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
@@ -344,7 +335,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
 
     // Emit!
-    emit IERC20.Transfer(p.from, p.to, p.amount);
+    emit LibFastEvents.Transfer(p.from, p.to, p.amount);
   }
 
   function performApproval(address from, address spender, uint256 amount)
@@ -360,7 +351,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].add(from, true);
 
     // Emit!
-    emit IERC20.Approval(from, spender, amount);
+    emit LibFastEvents.Approval(from, spender, amount);
   }
 
   function performDisapproval(address from, address spender)
@@ -374,7 +365,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].remove(from, false);
 
     // Emit!
-    emit IERC20.Disapproval(from, spender);
+    emit LibFastEvents.Disapproval(from, spender);
   }
 
   // WARNING: This function contains two loops. We know that this should never

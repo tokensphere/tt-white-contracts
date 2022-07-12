@@ -5,9 +5,10 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { zero, tenThousand, structToObj } from '../utils';
+import { zero, tenThousand, structToObj, oneHundred } from '../utils';
 import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from './utils';
+import { toHexString } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -62,6 +63,7 @@ describe('FastFrontendFacet', () => {
 
   describe('details', async () => {
     it('returns a populated details struct', async () => {
+      await ethers.provider.send("hardhat_setBalance", [frontend.address, toHexString(oneHundred)]);
       const subject = await frontend.details();
       const subjectObj = structToObj(subject);
 
@@ -75,6 +77,7 @@ describe('FastFrontendFacet', () => {
         isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
         hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
         reserveBalance: zero,
+        ethBalance: oneHundred,
         memberCount: BigNumber.from(2),
         governorCount: BigNumber.from(1)
       });

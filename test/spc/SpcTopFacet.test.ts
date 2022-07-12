@@ -82,9 +82,8 @@ describe('SpcTopFacet', () => {
     });
 
     it('emits a MemberAdded event', async () => {
-      const access = await ethers.getContractAt<SpcAccessFacet>('SpcAccessFacet', spc.address);
       await expect(initTx).to
-        .emit(access, 'MemberAdded')
+        .emit(spc, 'MemberAdded')
         .withArgs(spcMember.address);
     });
   });

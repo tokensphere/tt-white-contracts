@@ -9,6 +9,7 @@ import '../exchange/ExchangeAccessFacet.sol';
 import './FastTokenFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
+import './lib/LibFastEvents.sol';
 import './lib/LibFastAccess.sol';
 import './FastTopFacet.sol';
 import './FastFrontendFacet.sol';
@@ -38,24 +39,6 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   uint256 constant private GOVERNOR_ETH_PROVISION = 10 ether;
   // This represents how much Eth we provision new members with.
   uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
-
-  // Initializers.
-
-  function initializeAccessFacet(address payable governor)
-      external
-      onlyDiamondFacet {
-    // Grab our storage.
-    LibFastAccess.Data storage s = LibFastAccess.data();
-    // Make sure we haven't initialized yet.
-    require(s.version < LibFastAccess.STORAGE_VERSION, 'Already initialized');
-    // Initialize access storage.
-    s.version = LibFastAccess.STORAGE_VERSION;
-
-    // Add the governor.
-    s.governorSet.add(governor, false);
-    // Emit!
-    emit IHasGovernors.GovernorAdded(governor);
-  }
 
   // Governorship related stuff.
 
@@ -102,7 +85,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     }
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasGovernors.GovernorAdded(governor);
+    emit LibFastEvents.GovernorAdded(governor);
   }
 
   /**
@@ -115,7 +98,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasGovernors.GovernorRemoved(governor);
+    emit LibFastEvents.GovernorRemoved(governor);
   }
 
   /// Membership related stuff.
@@ -165,7 +148,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     ExchangeAccessFacet(LibFast.data().exchange).memberAddedToFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasMembers.MemberAdded(member);
+    emit LibFastEvents.MemberAdded(member);
   }
 
   /**
@@ -182,7 +165,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasMembers.MemberRemoved(member);
+    emit LibFastEvents.MemberRemoved(member);
   }
 
   /// Flags.
