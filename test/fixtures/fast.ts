@@ -46,7 +46,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     // opts could be `undefined`.
     if (!opts) throw 'You must provide FAST fixture options.';
     const { opts: { deployer, name, afterDeploy }, initWith } = opts;
-    // Deploy empty diamond.
+    // Deploy diamond.
     const { address: fastAddr } = await hre.deployments.diamond.deploy(name, {
       from: deployer,
       owner: deployer,

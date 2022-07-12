@@ -37,7 +37,7 @@ export const spcFixtureFunc: FixtureFunc<SpcFixtureResult, SpcFixtureFuncArgs> =
     // opts could be `undefined`.
     if (!opts) throw 'You must provide SPC fixture options.';
     const { opts: { deployer, name, afterDeploy }, initWith } = opts;
-    // Deploy empty diamond.
+    // Deploy diamond.
     const { address: spcAddr } = await hre.deployments.diamond.deploy(name, {
       from: deployer,
       owner: deployer,

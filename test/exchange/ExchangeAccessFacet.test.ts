@@ -6,36 +6,9 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Fast, ExchangeAccessFacet, Exchange } from '../../typechain';
 import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, oneMillion } from '../utils';
-import { deploymentSalt } from '../../src/utils';
-import { EXCHANGE_FACETS } from '../../tasks/exchange';
+import { exchangeFixtureFunc } from '../fixtures/exchange';
 chai.use(solidity);
 chai.use(smock.matchers);
-
-const EXCHANGE_FIXTURE_NAME = 'ExchangeAccessFixture';
-
-interface ExchangeFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  // Config.
-  spc: string;
-}
-
-const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as ExchangeFixtureOpts;
-  const { deployer, ...initFacetOpts } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(EXCHANGE_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: EXCHANGE_FACETS,
-    execute: {
-      contract: 'ExchangeInitFacet',
-      methodName: 'initialize',
-      args: [initFacetOpts]
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
 
 describe('ExchangeAccessFacet', () => {
   let
@@ -52,6 +25,8 @@ describe('ExchangeAccessFacet', () => {
     access: ExchangeAccessFacet,
     spcMemberAccess: ExchangeAccessFacet;
 
+  const exchangeDeployFixture = deployments.createFixture(exchangeFixtureFunc);
+
   before(async () => {
     // Keep track of a few signers.
     [deployer, spcMember, alice, bob, rob, john] = await ethers.getSigners();
@@ -61,20 +36,26 @@ describe('ExchangeAccessFacet', () => {
   });
 
   beforeEach(async () => {
+    await exchangeDeployFixture({
+      opts: {
+        name: 'ExchangeAccessFixture',
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ exchange } = args);
+          access = await ethers.getContractAt<ExchangeAccessFacet>('ExchangeAccessFacet', exchange.address);
+          spcMemberAccess = access.connect(spcMember);
+        }
+      },
+      initWith: {
+        spc: spc.address
+      }
+    });
+
     // Reset mocks.
     spc.isMember.reset();
     // Setup mocks.
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
-
-    const initOpts: ExchangeFixtureOpts = {
-      deployer: deployer.address,
-      spc: spc.address,
-    };
-    const { address: exchangeAddr } = await exchangeDeployFixture(initOpts);
-    exchange = await ethers.getContractAt<Exchange>('Exchange', exchangeAddr);
-    access = await ethers.getContractAt<ExchangeAccessFacet>('ExchangeAccessFacet', exchangeAddr);
-    spcMemberAccess = access.connect(spcMember);
   });
 
   describe('IHasMembers', async () => {

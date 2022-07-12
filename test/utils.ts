@@ -75,7 +75,7 @@ export const impersonateDiamond =
     return contract.connect(await ethers.getSigner(contract.address)) as T;
   };
 
-export const setupDiamondFacet =
+const setupDiamondFacet =
   async <T extends BaseContract>(
     diamond: IDiamondCut,
     fake: FakeContract<T> | MockContract<T>,

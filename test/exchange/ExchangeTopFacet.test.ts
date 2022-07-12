@@ -4,42 +4,19 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Spc, ExchangeTopFacet } from '../../typechain';
-import { EXCHANGE_FACETS } from '../../tasks/exchange';
-import { deploymentSalt } from '../../src/utils';
+import { Spc, ExchangeTopFacet, Exchange } from '../../typechain';
+import { exchangeFixtureFunc } from '../fixtures/exchange';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'ExchangeTopFixture';
-
-interface ExchangeFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  // Config.
-  spc: string;
-}
-
-const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as ExchangeFixtureOpts;
-  const { deployer, ...initFacetOpts } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: EXCHANGE_FACETS,
-    execute: {
-      contract: 'ExchangeInitFacet',
-      methodName: 'initialize',
-      args: [initFacetOpts]
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
 
 describe('ExchangeTopFacet', () => {
   let deployer: SignerWithAddress;
   let spc: FakeContract<Spc>,
-    exchange: ExchangeTopFacet;
+    exchange: Exchange,
+    top: ExchangeTopFacet;
+
+  const exchangeDeployFixture = deployments.createFixture(exchangeFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -49,12 +26,19 @@ describe('ExchangeTopFacet', () => {
   });
 
   beforeEach(async () => {
-    const initOpts: ExchangeFixtureOpts = {
-      deployer: deployer.address,
-      spc: spc.address,
-    };
-    await exchangeDeployFixture(initOpts);
-    exchange = await ethers.getContract<ExchangeTopFacet>(FAST_FIXTURE_NAME);
+    await exchangeDeployFixture({
+      opts: {
+        name: 'ExchangeTopFixture',
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ exchange } = args);
+          top = await ethers.getContractAt<ExchangeTopFacet>('ExchangeTopFacet', exchange.address);
+        }
+      },
+      initWith: {
+        spc: spc.address
+      }
+    });
   });
 
   describe('spcAddress', async () => {
