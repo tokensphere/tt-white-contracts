@@ -40,6 +40,9 @@ export const REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
 export const REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
 export const REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
 export const DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
+export const REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';
+export const REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
+export const REQUIRES_NON_ZERO_ADDRESS = 'Requires non-zero address';
 
 export const DUPLICATE_ENTRY = 'Duplicate entry';
 export const UNSUPPORTED_OPERATION = 'Unsupported operation';
@@ -51,11 +54,26 @@ export const INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
 export const INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';
 export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
 export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
+export const BALANCE_IS_POSITIVE = 'Balance is positive';
 
-export const sigsFromABI = (abi: any[]): string[] =>
-  abi
-    .filter(frag => frag.type === 'function')
-    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
+// Get a POJO from a struct.
+export const structToObj = (struct: {}) => {
+  let
+    entries = Object.entries(struct),
+    start = entries.length / 2;
+  return Object.fromEntries(entries.slice(start));
+};
+
+export const impersonateDiamond =
+  async <T extends BaseContract>(
+    contract: T
+  ): Promise<T> => {
+    // Provision the fast with some ETH.
+    await ethers.provider.send('hardhat_setBalance', [contract.address, oneMillion.toHexString()]);
+    // Allow to impersonate the FAST.
+    await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
+    return contract.connect(await ethers.getSigner(contract.address)) as T;
+  };
 
 export const setupDiamondFacet =
   async <T extends BaseContract>(
@@ -71,3 +89,9 @@ export const setupDiamondFacet =
       functionSelectors: sigsFromABI((await artifacts.readArtifact(facet)).abi)
     }], ethers.constants.AddressZero, '0x');
   };
+
+// Used when setting up a diamond facet.
+const sigsFromABI = (abi: any[]): string[] =>
+  abi
+    .filter(frag => frag.type === 'function')
+    .map(frag => Interface.getSighash(FunctionFragment.from(frag)));

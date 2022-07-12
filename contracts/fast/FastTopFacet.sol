@@ -25,7 +25,7 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().exchange;
   }
 
-    function isSemiPublic()
+  function isSemiPublic()
       external view returns(bool) {
     return LibFast.data().isSemiPublic;
   }

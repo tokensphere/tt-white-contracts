@@ -5,8 +5,8 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { zero, tenThousand } from '../utils';
 import { deploymentSalt } from '../../src/utils';
+import { zero, tenThousand, structToObj } from '../utils';
 import { Spc, Exchange, Fast } from '../../typechain';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -23,14 +23,6 @@ interface FastFixtureOpts {
   decimals: BigNumber;
   hasFixedSupply: boolean;
   isSemiPublic: boolean;
-}
-
-// A way, not the best way, to get a POJO from a struct.
-const structToObj = (struct: {}) => {
-  let
-    entries = Object.entries(struct),
-    start = entries.length / 2;
-  return Object.fromEntries(entries.slice(start));
 }
 
 const FAST_FIXTURE_NAME = 'FastFrontendFixture';

@@ -3,52 +3,31 @@ import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
-import { FakeContract, smock } from '@defi-wonderland/smock';
+import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { negOneHundred, oneHundred, ninety, REQUIRES_SPC_MEMBERSHIP, MISSING_ATTACHED_ETH, INTERNAL_METHOD } from '../utils';
-import { deploymentSalt, toHexString } from '../../src/utils';
-import { Spc, Exchange, FastTopFacet } from '../../typechain';
+import {
+  negOneHundred,
+  oneHundred,
+  ninety,
+  REQUIRES_SPC_MEMBERSHIP,
+  REQUIRES_NON_ZERO_ADDRESS,
+  UNSUPPORTED_OPERATION,
+  MISSING_ATTACHED_ETH,
+  INTERNAL_METHOD,
+  impersonateDiamond
+} from '../utils';
+import { toHexString, ZERO_ADDRESS } from '../../src/utils';
+import { Spc, Exchange, FastTopFacet, FastTokenFacet, FastAccessFacet, Fast } from '../../typechain';
+import { fastFixtureFunc } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
 const FAST_FIXTURE_NAME = 'FastTopFixture'
-// TODO: We probably want to remove FastAccessFacet and FastFrontendFacet and replace them by fakes...
-const FAST_FACETS = [
-  'FastTopFacet',
-  'FastAccessFacet',
-  'FastFrontendFacet'
-];
 
-interface FastFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  governor: string;
-  exchange: string;
-  // Config.
-  spc: string,
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  hasFixedSupply: boolean;
-  isSemiPublic: boolean;
-}
-
-const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as FastFixtureOpts;
-  const { deployer, ...initFacetArgs } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [initFacetArgs],
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
+// ERC20 parameters to deploy our fixtures.
+const ERC20_TOKEN_NAME = 'Random FAST Token';
+const ERC20_TOKEN_SYMBOL = 'RFT';
+const ERC20_TOKEN_DECIMALS = BigNumber.from(18);
 
 describe('FastTopFacet', () => {
   let
@@ -58,9 +37,14 @@ describe('FastTopFacet', () => {
     bob: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    topFacet: FastTopFacet,
-    spcMemberToken: FastTopFacet,
-    deployerToken: FastTopFacet;
+    fast: Fast,
+    token: FastTopFacet,
+    tokenMock: MockContract<FastTokenFacet>,
+    topMock: MockContract<FastTopFacet>,
+    accessMock: MockContract<FastAccessFacet>,
+    spcMemberToken: FastTopFacet;
+
+  const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -72,27 +56,32 @@ describe('FastTopFacet', () => {
   });
 
   beforeEach(async () => {
+    await fastDeployFixture({
+      opts: {
+        name: FAST_FIXTURE_NAME,
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ fast, accessMock, topMock } = args);
+          token = await ethers.getContractAt<FastTopFacet>('FastTopFacet', fast.address);
+          spcMemberToken = token.connect(spcMember);
+        }
+      },
+      initWith: {
+        spc: spc.address,
+        exchange: exchange.address,
+        governor: governor.address,
+        name: ERC20_TOKEN_NAME,
+        symbol: ERC20_TOKEN_SYMBOL,
+        decimals: ERC20_TOKEN_DECIMALS,
+        hasFixedSupply: true,
+        isSemiPublic: false
+      }
+    });
+
+    // Set the SPC member.
+    spc.isMember.reset();
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
-
-    const initOpts: FastFixtureOpts = {
-      deployer: deployer.address,
-      governor: governor.address,
-      exchange: exchange.address,
-      spc: spc.address,
-      name: 'Better, Stronger, FASTer',
-      symbol: 'BSF',
-      decimals: BigNumber.from(18),
-      hasFixedSupply: true,
-      isSemiPublic: true
-    };
-    await fastDeployFixture(initOpts);
-
-    // TODO: Once smock fixes their stuff. replace facets by fakes.
-
-    topFacet = await ethers.getContract<FastTopFacet>(FAST_FIXTURE_NAME);
-    spcMemberToken = topFacet.connect(spcMember);
-    deployerToken = topFacet.connect(deployer);
   });
 
   // Getters.
@@ -111,6 +100,37 @@ describe('FastTopFacet', () => {
     });
   });
 
+  describe('hasFixedSupply', async () => {
+    it('returns the token fixed supply parameter', async () => {
+      const subject = await token.hasFixedSupply();
+      expect(subject).to.eq(true);
+    });
+  });
+
+  // Setters.
+
+  describe('setIsSemiPublic', async () => {
+    it('requires SPC membership for the sender', async () => {
+      const subject = token.setIsSemiPublic(true);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('cannot revert an SPC to non-semi public once set', async () => {
+      // Set as semi public.
+      await spcMemberToken.setIsSemiPublic(true);
+      // Attempt to revert to non-semi public.
+      const subject = spcMemberToken.setIsSemiPublic(false);
+      await expect(subject).to.be
+        .revertedWith(UNSUPPORTED_OPERATION);
+    });
+
+    it('sets the required isSemiPublic flag on the token', async () => {
+      await spcMemberToken.setIsSemiPublic(true);
+      expect(await spcMemberToken.isSemiPublic()).to.be.true;
+    });
+  });
+
   // Provisioning functions.
 
   describe('provisionWithEth', async () => {
@@ -123,33 +143,33 @@ describe('FastTopFacet', () => {
     it('emits a EthReceived event', async () => {
       const subject = spcMemberToken.provisionWithEth({ value: ninety });
       await expect(subject).to
-        .emit(topFacet, 'EthReceived')
+        .emit(token, 'EthReceived')
         .withArgs(spcMember.address, ninety)
     });
   });
 
   describe('drainEth', async () => {
     it('requires SPC membership', async () => {
-      const subject = topFacet.drainEth();
+      const subject = token.drainEth();
       await expect(subject).to.be
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the FAST with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [topFacet.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
       // Drain the FAST.
       const subject = async () => await spcMemberToken.drainEth();
-      await expect(subject).to.changeEtherBalances([topFacet, spcMember], [negOneHundred, oneHundred]);
+      await expect(subject).to.changeEtherBalances([token, spcMember], [negOneHundred, oneHundred]);
     });
 
     it('emits a EthDrained event', async () => {
       // Provision the FAST with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [topFacet.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
       // Drain the FAST.
       const subject = spcMemberToken.drainEth();
       await expect(subject).to
-        .emit(topFacet, 'EthDrained')
+        .emit(token, 'EthDrained')
         .withArgs(spcMember.address, oneHundred);
     });
   });
@@ -160,6 +180,23 @@ describe('FastTopFacet', () => {
         .revertedWith(INTERNAL_METHOD);
     });
 
-    it('requires the recipient to be non-zero address');
+    describe('as diamondInternal', async () => {
+      let tokenAsItself: FastTopFacet;
+
+      beforeEach(async () => {
+        // Impersonate the diamond.
+        tokenAsItself = await impersonateDiamond(token);
+      });
+
+      afterEach(async () => {
+        await ethers.provider.send("hardhat_stopImpersonatingAccount", [token.address]);
+      });
+
+      it('requires the recipient to be non-zero address', async () => {
+        const subject = tokenAsItself.payUpTo(ZERO_ADDRESS, ninety);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_NON_ZERO_ADDRESS);
+      });
+    });
   });
 });
