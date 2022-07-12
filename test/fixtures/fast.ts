@@ -1,60 +1,18 @@
 import { ethers } from "hardhat";
-import { BigNumber, ContractFactory } from "ethers";
-import { smock, MockContract, MockContractFactory } from "@defi-wonderland/smock";
-import { FacetCutAction, FixtureFunc } from "hardhat-deploy/dist/types";
+import { BigNumber } from "ethers";
+import { MockContract } from "@defi-wonderland/smock";
+import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
+import { facetMock } from "../utils";
 import {
   Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
   FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory,
-  FastHistoryFacet__factory, FastFrontendFacet__factory, IDiamondCut
+  FastHistoryFacet__factory, FastFrontendFacet__factory, FastInitFacet
 } from "../../typechain";
-import { setupDiamondFacet } from "../utils";
 import { FAST_FACETS } from "../../tasks/fast";
 
-interface FastFixtureOpts {
-  readonly name: string;
-  readonly deployer: string;
-  readonly afterDeploy: (result: FastFixtureResult) => void
-};
 
-interface FastInitFacetArgs {
-  readonly spc: string;
-  readonly exchange: string;
-  readonly governor: string;
-  readonly name: string;
-  readonly symbol: string;
-  readonly decimals: BigNumber;
-  readonly hasFixedSupply: boolean;
-  readonly isSemiPublic: boolean;
-}
-
-interface FastFixtureFuncArgs {
-  readonly initWith: {};
-  readonly opts: FastFixtureOpts;
-};
-
-interface FastFixtureResult {
-  fast: Fast;
-  topMock: MockContract<FastTopFacet>;
-  accessMock: MockContract<FastAccessFacet>;
-  tokenMock: MockContract<FastTokenFacet>;
-  historyMock: MockContract<FastHistoryFacet>;
-  frontendMock: MockContract<FastFrontendFacet>;
-}
-
-declare type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;
-
-const facetMock = async <F extends ContractFactory>(diamond: IDiamondCut, facet: string) => {
-  const mockFactory = await smock.mock<F>(facet);
-  // Yikes. We would need to be able to infer that `mockFactory` has a `deploy` function
-  // that returns the same type than the successful promise type of the `deploy` on type `F`...
-  const mock = await (mockFactory as MockContractFactory<any>).deploy();
-  await setupDiamondFacet(diamond, mock, facet, FacetCutAction.Replace);
-  // More or less solved here... But needing `any` two lines ago isn't great.
-  return mock as MockContract<ThenArg<ReturnType<F['deploy']>>>;
-};
-
-export const FAST_INIT_DEFAULTS: FastInitFacetArgs = {
+export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
   exchange: ZERO_ADDRESS,
   spc: ZERO_ADDRESS,
   governor: ZERO_ADDRESS,
@@ -64,6 +22,24 @@ export const FAST_INIT_DEFAULTS: FastInitFacetArgs = {
   hasFixedSupply: true,
   isSemiPublic: false
 };
+
+interface FastFixtureOpts {
+  readonly name: string;
+  readonly deployer: string;
+  readonly afterDeploy: (result: FastFixtureResult) => void
+};
+interface FastFixtureFuncArgs {
+  readonly initWith: {};
+  readonly opts: FastFixtureOpts;
+};
+interface FastFixtureResult {
+  fast: Fast;
+  topMock: MockContract<FastTopFacet>;
+  accessMock: MockContract<FastAccessFacet>;
+  tokenMock: MockContract<FastTokenFacet>;
+  historyMock: MockContract<FastHistoryFacet>;
+  frontendMock: MockContract<FastFrontendFacet>;
+}
 
 export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> =
   async (hre, opts) => {
@@ -86,7 +62,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     // Get a FAST typed pointer.
     const fast = await ethers.getContractAt<Fast>('Fast', fastAddr);
     // Build result.
-    const result = {
+    const result: FastFixtureResult = {
       fast,
       topMock: await facetMock<FastTopFacet__factory>(fast, 'FastTopFacet'),
       accessMock: await facetMock<FastAccessFacet__factory>(fast, 'FastAccessFacet'),

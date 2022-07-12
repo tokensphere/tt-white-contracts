@@ -27,7 +27,7 @@ import {
   DEFAULT_TRANSFER_REFERENCE,
   impersonateDiamond
 } from '../utils';
-import { fastFixtureFunc, FAST_INIT_DEFAULTS } from './utils';
+import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -227,7 +227,7 @@ describe('FastTokenFacet', () => {
     });
 
     it('emits a Minted event', async () => {
-      const subject = spcMemberToken.mint(3_000, 'Attempt 1');
+      const subject = await spcMemberToken.mint(3_000, 'Attempt 1');
       await expect(subject).to
         .emit(fast, 'Minted')
         .withArgs(3_000, 'Attempt 1');
@@ -293,7 +293,7 @@ describe('FastTokenFacet', () => {
     });
 
     it('emits a Burnt event', async () => {
-      const subject = spcMemberToken.burn(50, 'Feel the burn');
+      const subject = await spcMemberToken.burn(50, 'Feel the burn');
       await expect(subject).to
         .emit(fast, 'Burnt')
         .withArgs(50, 'Feel the burn');
@@ -329,7 +329,7 @@ describe('FastTokenFacet', () => {
     });
 
     it('emits a TransferCreditsAdded event', async () => {
-      const subject = spcMemberToken.addTransferCredits(50);
+      const subject = await spcMemberToken.addTransferCredits(50);
       await expect(subject).to
         .emit(fast, 'TransferCreditsAdded')
         .withArgs(spcMember.address, 50);
@@ -363,7 +363,7 @@ describe('FastTokenFacet', () => {
 
     it('emits a TransferCreditsDrained event', async () => {
       const creditsBefore = await token.transferCredits();
-      const subject = spcMemberToken.drainTransferCredits();
+      const subject = await spcMemberToken.drainTransferCredits();
       await expect(subject).to
         .emit(fast, 'TransferCreditsDrained')
         .withArgs(spcMember.address, creditsBefore);
@@ -518,9 +518,7 @@ describe('FastTokenFacet', () => {
 
       it('emits an Approval event', async () => {
         // Let alice give allowance to bob.
-        const subject = token.connect(alice).approve(bob.address, 60);
-        // Note that we're observing the fast diamond, not just the token facet.
-        // This is because the event is not emitted by the token facet itself.
+        const subject = await token.connect(alice).approve(bob.address, 60);
         await expect(subject).to
           .emit(fast, 'Approval')
           .withArgs(alice.address, bob.address, 60)
@@ -569,9 +567,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a Disapproval event', async () => {
-        const subject = token.connect(bob).disapprove(john.address);
-        // Note that we're observing the fast diamond, not just the token facet.
-        // This is because the event is not emitted by the token facet itself.
+        const subject = await token.connect(bob).disapprove(john.address);
         await expect(subject).to
           .emit(fast, 'Disapproval')
           .withArgs(bob.address, john.address);
@@ -741,9 +737,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a IERC20.Transfer event', async () => {
-        const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
-        // Note that we're observing the fast diamond, not just the token facet.
-        // This is because the event is not emitted by the token facet itself.
+        const subject = await token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
         await expect(subject).to
           .emit(fast, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
@@ -1002,9 +996,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a Disapproval event as many times as it removed allowance', async () => {
-        const subject = tokenAsItself.beforeRemovingMember(alice.address);
-        // Note that we're observing the fast diamond, not just the token facet.
-        // This is because the event is not emitted by the token facet itself.
+        const subject = await tokenAsItself.beforeRemovingMember(alice.address);
         await expect(subject).to
           .emit(fast, 'Disapproval')
           .withArgs(alice.address, bob.address);

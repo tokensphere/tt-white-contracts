@@ -11,7 +11,7 @@ import { EXCHANGE_FACETS } from '../../tasks/exchange';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'ExchangeAccessFixture';
+const EXCHANGE_FIXTURE_NAME = 'ExchangeAccessFixture';
 
 interface ExchangeFixtureOpts {
   // Ops variables.
@@ -24,7 +24,7 @@ const exchangeDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   const initOpts = uOpts as ExchangeFixtureOpts;
   const { deployer, ...initFacetOpts } = initOpts;
   // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
+  return await deployments.diamond.deploy(EXCHANGE_FIXTURE_NAME, {
     from: initOpts.deployer,
     owner: initOpts.deployer,
     facets: EXCHANGE_FACETS,
@@ -71,9 +71,9 @@ describe('ExchangeAccessFacet', () => {
       deployer: deployer.address,
       spc: spc.address,
     };
-    await exchangeDeployFixture(initOpts);
-    exchange = await ethers.getContract<Exchange>(FAST_FIXTURE_NAME);
-    access = await ethers.getContract<ExchangeAccessFacet>(FAST_FIXTURE_NAME);
+    const { address: exchangeAddr } = await exchangeDeployFixture(initOpts);
+    exchange = await ethers.getContractAt<Exchange>('Exchange', exchangeAddr);
+    access = await ethers.getContractAt<ExchangeAccessFacet>('ExchangeAccessFacet', exchangeAddr);
     spcMemberAccess = access.connect(spcMember);
   });
 
@@ -98,18 +98,17 @@ describe('ExchangeAccessFacet', () => {
         expect(subject).to.eq(true);
       });
 
-      it('delegates to the SPC for permissioning', async () => {
+      it('delegates to the SPC for permission', async () => {
         await spcMemberAccess.addMember(alice.address);
         expect(spc.isMember).to.be
           .calledOnceWith(spcMember.address);
       });
 
       it('emits a MemberAdded event', async () => {
-        // TODO: Find how to fix this.
-        // const subject = spcMemberAccess.addMember(alice.address);
-        // await expect(subject).to
-        //   .emit(exchange, 'MemberAdded')
-        //   .withArgs(alice.address);
+        const subject = await spcMemberAccess.addMember(alice.address);
+        await expect(subject).to
+          .emit(exchange, 'MemberAdded')
+          .withArgs(alice.address);
       });
     });
 
@@ -157,11 +156,10 @@ describe('ExchangeAccessFacet', () => {
       });
 
       it('emits a MemberRemoved event', async () => {
-        // TODO: Find how to fix this.
-        // const subject = spcMemberAccess.removeMember(alice.address);
-        // await expect(subject).to
-        //   .emit(exchange, 'MemberRemoved')
-        //   .withArgs(alice.address);
+        const subject = await spcMemberAccess.removeMember(alice.address);
+        await expect(subject).to
+          .emit(exchange, 'MemberRemoved')
+          .withArgs(alice.address);
       });
     });
 

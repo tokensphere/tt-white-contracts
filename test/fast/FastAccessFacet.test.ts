@@ -7,7 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
 import { toHexString } from '../../src/utils';
 import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, Fast } from '../../typechain';
-import { fastFixtureFunc } from './utils';
+import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -109,7 +109,7 @@ describe('FastAccessFacet', () => {
       });
 
       it('emits a GovernorAdded event', async () => {
-        const subject = spcMemberAccess.addGovernor(alice.address);
+        const subject = await spcMemberAccess.addGovernor(alice.address);
         await expect(subject).to
           .emit(fast, 'GovernorAdded')
           .withArgs(alice.address);
@@ -147,7 +147,7 @@ describe('FastAccessFacet', () => {
       });
 
       it('emits a GovernorRemoved event', async () => {
-        const subject = spcMemberAccess.removeGovernor(alice.address);
+        const subject = await spcMemberAccess.removeGovernor(alice.address);
         await expect(subject).to
           .emit(fast, 'GovernorRemoved')
           .withArgs(alice.address);
@@ -261,7 +261,7 @@ describe('FastAccessFacet', () => {
       });
 
       it('emits a MemberAdded event', async () => {
-        const subject = governedAccess.addMember(alice.address);
+        const subject = await governedAccess.addMember(alice.address);
         await expect(subject).to
           .emit(fast, 'MemberAdded')
           .withArgs(alice.address);
@@ -309,7 +309,7 @@ describe('FastAccessFacet', () => {
       it('delegates to the Exchange contract to signal the membership addition');
 
       it('emits a MemberRemoved event', async () => {
-        const subject = governedAccess.removeMember(alice.address);
+        const subject = await governedAccess.removeMember(alice.address);
         await expect(subject).to
           .emit(fast, 'MemberRemoved')
           .withArgs(alice.address);
