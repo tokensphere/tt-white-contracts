@@ -36,7 +36,7 @@ contract SpcInitFacet is ASpcFacet {
       external
       onlyDiamondOwner {
     // Grab our top-level storage.
-    // Make sure we havn't initialized yet.
+    // Make sure we haven't initialized yet.
     require(LibSpc.data().version < LibSpc.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
 
     // Register interfaces.
@@ -56,6 +56,6 @@ contract SpcInitFacet is ASpcFacet {
     // ------------------------------------- //
 
     // Initialize access storage.
-    SpcAccessFacet(address(this)).initialize(params.member);
+    SpcAccessFacet(address(this)).initializeAccessFacet(params.member);
   }
 }

@@ -1,9 +1,8 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
-import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
-import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import {
   negOneHundred,
@@ -17,17 +16,11 @@ import {
   impersonateDiamond
 } from '../utils';
 import { toHexString, ZERO_ADDRESS } from '../../src/utils';
-import { Spc, Exchange, FastTopFacet, FastTokenFacet, FastAccessFacet, Fast } from '../../typechain';
+import { Spc, Exchange, FastTopFacet, Fast } from '../../typechain';
 import { fastFixtureFunc } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastTopFixture'
-
-// ERC20 parameters to deploy our fixtures.
-const ERC20_TOKEN_NAME = 'Random FAST Token';
-const ERC20_TOKEN_SYMBOL = 'RFT';
-const ERC20_TOKEN_DECIMALS = BigNumber.from(18);
 
 describe('FastTopFacet', () => {
   let
@@ -39,9 +32,6 @@ describe('FastTopFacet', () => {
     exchange: FakeContract<Exchange>,
     fast: Fast,
     token: FastTopFacet,
-    tokenMock: MockContract<FastTokenFacet>,
-    topMock: MockContract<FastTopFacet>,
-    accessMock: MockContract<FastAccessFacet>,
     spcMemberToken: FastTopFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
@@ -58,10 +48,10 @@ describe('FastTopFacet', () => {
   beforeEach(async () => {
     await fastDeployFixture({
       opts: {
-        name: FAST_FIXTURE_NAME,
+        name: 'FastTopFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast, accessMock, topMock } = args);
+          ({ fast } = args);
           token = await ethers.getContractAt<FastTopFacet>('FastTopFacet', fast.address);
           spcMemberToken = token.connect(spcMember);
         }
@@ -69,12 +59,7 @@ describe('FastTopFacet', () => {
       initWith: {
         spc: spc.address,
         exchange: exchange.address,
-        governor: governor.address,
-        name: ERC20_TOKEN_NAME,
-        symbol: ERC20_TOKEN_SYMBOL,
-        decimals: ERC20_TOKEN_DECIMALS,
-        hasFixedSupply: true,
-        isSemiPublic: false
+        governor: governor.address
       }
     });
 

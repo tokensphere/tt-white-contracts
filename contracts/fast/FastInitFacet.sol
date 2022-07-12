@@ -29,7 +29,7 @@ contract FastInitFacet is AFastFacet {
     address spc;
     address exchange;
     // Access stuff.
-    address governor;
+    address payable governor;
     // Token stuff.
     string name;
     string symbol;
@@ -41,7 +41,7 @@ contract FastInitFacet is AFastFacet {
   function initialize(InitializerParams calldata params)
       external
       onlyDeployer {
-    // Make sure we havn't initialized yet.
+    // Make sure we haven't initialized yet.
     require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized');
 
     // Register interfaces.
@@ -74,6 +74,8 @@ contract FastInitFacet is AFastFacet {
     accessData.governorSet.add(params.governor, false);
     // TODO: Find a nice way to emit.
     // emit GovernorAdded(params.governor);
+    // TODO: Or find a way to call:
+    // FastAccessFacet(address(this)).initializeAccessFacet(params.governor);
 
     // ------------------------------------- //
 

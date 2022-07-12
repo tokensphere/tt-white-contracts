@@ -5,45 +5,12 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { deploymentSalt } from '../../src/utils';
 import { zero, tenThousand, structToObj } from '../utils';
-import { Spc, Exchange, Fast } from '../../typechain';
+import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
+import { fastFixtureFunc, FAST_INIT_DEFAULTS } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-interface FastFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  governor: string;
-  exchange: string;
-  // Config.
-  spc: string,
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  hasFixedSupply: boolean;
-  isSemiPublic: boolean;
-}
-
-const FAST_FIXTURE_NAME = 'FastFrontendFixture';
-const FAST_FACETS = ['FastTopFacet', 'FastAccessFacet', 'FastFrontendFacet'];
-
-const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as FastFixtureOpts;
-  const { deployer, ...initFacetArgs } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [initFacetArgs],
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
 
 describe('FastFrontendFacet', () => {
   let
@@ -53,8 +20,9 @@ describe('FastFrontendFacet', () => {
     member: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    fast: Fast,
-    spcMemberFast: Fast;
+    frontend: FastFrontendFacet;
+
+  const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -72,49 +40,50 @@ describe('FastFrontendFacet', () => {
   });
 
   beforeEach(async () => {
-    const initOpts: FastFixtureOpts = {
-      deployer: deployer.address,
-      governor: governor.address,
-      exchange: exchange.address,
-      spc: spc.address,
-      name: 'Better, Stronger, FASTer',
-      symbol: 'BSF',
-      decimals: BigNumber.from(18),
-      hasFixedSupply: true,
-      isSemiPublic: true
-    };
-    await fastDeployFixture(initOpts);
-    fast = await ethers.getContract(FAST_FIXTURE_NAME);
-    spcMemberFast = fast.connect(spcMember);
-    // Add members.
-    await fast.connect(governor).addMember(member.address);
-    await fast.connect(governor).addMember(governor.address);
+    await fastDeployFixture({
+      opts: {
+        name: 'FastFrontendFixture',
+        deployer: deployer.address,
+        afterDeploy: async ({ fast }) => {
+          frontend = await ethers.getContractAt<FastFrontendFacet>('FastFrontendFacet', fast.address);
+          // Add members.
+          const governedFast = fast.connect(governor);
+          await governedFast.addMember(member.address);
+          await governedFast.addMember(governor.address);
+        }
+      },
+      initWith: {
+        spc: spc.address,
+        exchange: exchange.address,
+        governor: governor.address,
+      }
+    });
   });
 
   describe('details', async () => {
     it('returns a populated details struct', async () => {
-      const subject = await spcMemberFast.details();
+      const subject = await frontend.details();
       const subjectObj = structToObj(subject);
 
       expect(subjectObj).to.eql({
-        addr: fast.address,
-        decimals: BigNumber.from(18),
-        governorCount: BigNumber.from(1),
-        name: "Better, Stronger, FASTer",
-        symbol: "BSF",
+        addr: frontend.address,
+        name: FAST_INIT_DEFAULTS.name,
+        symbol: FAST_INIT_DEFAULTS.symbol,
+        decimals: FAST_INIT_DEFAULTS.decimals,
         totalSupply: zero,
         transferCredits: zero,
-        isSemiPublic: true,
-        memberCount: BigNumber.from(2),
-        hasFixedSupply: true,
+        isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
+        hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
         reserveBalance: zero,
+        memberCount: BigNumber.from(2),
+        governorCount: BigNumber.from(1)
       });
     });
   });
 
   describe('detailedMember', async () => {
     it('returns MemberDetails populated struct', async () => {
-      const subject = await spcMemberFast.detailedMember(spcMember.address);
+      const subject = await frontend.detailedMember(spcMember.address);
       const memberObj = structToObj(subject);
 
       expect(memberObj).to.eql({
@@ -128,14 +97,9 @@ describe('FastFrontendFacet', () => {
 
   describe('paginateDetailedMembers', async () => {
     it('returns member details with next cursor', async () => {
-      const [[
-        memberA,
-        memberB
-      ], nextCursor] = await spcMemberFast.paginateDetailedMembers(0, 5);
-
+      const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
       // Convert the structs to objects.
-      const memberAObj = structToObj(memberA);
-      const memberBObj = structToObj(memberB);
+      const [memberAObj, memberBObj] = members.map(structToObj);
 
       // Member A details.
       expect(memberAObj).to.eql({
@@ -159,11 +123,12 @@ describe('FastFrontendFacet', () => {
 
     it('handles an offset index cursor', async () => {
       // Fetch details of Member passing 1 as an offset index.
-      const [[memberB],] = await spcMemberFast.paginateDetailedMembers(1, 2);
-      const memberBObj = structToObj(memberB);
+      const [members, /*nextCursor*/] = await frontend.paginateDetailedMembers(1, 2);
+      // Convert the structs to objects.
+      const [memberAObj] = members.map(structToObj);
 
       // Expect Member B.
-      expect(memberBObj).to.eql({
+      expect(memberAObj).to.eql({
         addr: governor.address,
         balance: zero,
         ethBalance: (await governor.getBalance()),

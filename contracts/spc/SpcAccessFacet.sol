@@ -23,12 +23,12 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
 
   // Initializers.
 
-  function initialize(address payable member)
+  function initializeAccessFacet(address payable member)
       external
       onlyDiamondFacet {
     // Grab our storage.
     LibSpcAccess.Data storage s = LibSpcAccess.data();
-    // Make sure we havn't initialized yet.
+    // Make sure we haven't initialized yet.
     require(s.version < LibSpcAccess.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
     // Initialize access storage.
     s.version = LibSpcAccess.STORAGE_VERSION;
@@ -36,7 +36,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
     // Add the member.
     s.memberSet.add(member, false);
     // Emit!
-    emit MemberAdded(member);
+    emit IHasMembers.MemberAdded(member);
   }
 
   // Membership management.
