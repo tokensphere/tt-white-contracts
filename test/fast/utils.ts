@@ -2,13 +2,14 @@ import { ethers } from "hardhat";
 import { BigNumber, ContractFactory } from "ethers";
 import { smock, MockContract, MockContractFactory } from "@defi-wonderland/smock";
 import { FacetCutAction, FixtureFunc } from "hardhat-deploy/dist/types";
-import { deploymentSalt } from "../../src/utils";
+import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import {
   Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
   FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory,
   FastHistoryFacet__factory, FastFrontendFacet__factory, IDiamondCut
 } from "../../typechain";
 import { setupDiamondFacet } from "../utils";
+import { FAST_FACETS } from "../../tasks/fast";
 
 interface FastFixtureOpts {
   readonly name: string;
@@ -28,7 +29,7 @@ interface FastInitFacetArgs {
 }
 
 interface FastFixtureFuncArgs {
-  readonly initWith: FastInitFacetArgs;
+  readonly initWith: {};
   readonly opts: FastFixtureOpts;
 };
 
@@ -48,9 +49,20 @@ const facetMock = async <F extends ContractFactory>(diamond: IDiamondCut, facet:
   // Yikes. We would need to be able to infer that `mockFactory` has a `deploy` function
   // that returns the same type than the successful promise type of the `deploy` on type `F`...
   const mock = await (mockFactory as MockContractFactory<any>).deploy();
-  await setupDiamondFacet(diamond, mock, facet, FacetCutAction.Add);
+  await setupDiamondFacet(diamond, mock, facet, FacetCutAction.Replace);
   // More or less solved here... But needing `any` two lines ago isn't great.
   return mock as MockContract<ThenArg<ReturnType<F['deploy']>>>;
+};
+
+export const FAST_INIT_DEFAULTS: FastInitFacetArgs = {
+  exchange: ZERO_ADDRESS,
+  spc: ZERO_ADDRESS,
+  governor: ZERO_ADDRESS,
+  name: 'Random FAST Token',
+  symbol: 'RFT',
+  decimals: BigNumber.from(18),
+  hasFixedSupply: true,
+  isSemiPublic: false
 };
 
 export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> =
@@ -62,8 +74,12 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     const { address: fastAddr } = await hre.deployments.diamond.deploy(name, {
       from: deployer,
       owner: deployer,
-      facets: [],
-      execute: { contract: 'FastInitFacet', methodName: 'initialize', args: [initWith] },
+      facets: FAST_FACETS,
+      execute: {
+        contract: 'FastInitFacet',
+        methodName: 'initialize',
+        args: [{ ...FAST_INIT_DEFAULTS, ...initWith }]
+      },
       deterministicSalt: deploymentSalt(hre)
     });
 

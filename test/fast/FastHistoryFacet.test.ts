@@ -5,45 +5,12 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { deploymentSalt } from '../../src/utils';
 import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
 import { INTERNAL_METHOD, impersonateDiamond, structToObj } from '../utils';
+import { fastFixtureFunc } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastHistoryFixture';
-const FAST_FACETS = ['FastTopFacet', 'FastHistoryFacet'];
-
-interface FastFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  governor: string;
-  exchange: string;
-  // Config.
-  spc: string;
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  hasFixedSupply: boolean;
-  isSemiPublic: boolean;
-}
-
-const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as FastFixtureOpts;
-  const { deployer, ...initFacetArgs } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [initFacetArgs],
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
 
 describe('FastHistoryFacet', () => {
   let
@@ -59,6 +26,8 @@ describe('FastHistoryFacet', () => {
     history: FastHistoryFacet,
     governedHistory: FastHistoryFacet;
 
+  const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
+
   before(async () => {
     // Keep track of a few signers.
     [deployer, spcMember, governor, alice, bob, john, rob] = await ethers.getSigners();
@@ -69,21 +38,21 @@ describe('FastHistoryFacet', () => {
   });
 
   beforeEach(async () => {
-    const initOpts: FastFixtureOpts = {
-      deployer: deployer.address,
-      governor: governor.address,
-      exchange: exchange.address,
-      spc: spc.address,
-      name: 'Better, Stronger, FASTer',
-      symbol: 'BSF',
-      decimals: BigNumber.from(18),
-      hasFixedSupply: true,
-      isSemiPublic: true
-    };
-    await fastDeployFixture(initOpts);
-    // Spin up our History contract.
-    history = await ethers.getContract<FastHistoryFacet>(FAST_FIXTURE_NAME);
-    governedHistory = history.connect(governor);
+    await fastDeployFixture({
+      opts: {
+        name: 'FastHistoryFixture',
+        deployer: deployer.address,
+        afterDeploy: async ({ fast }) => {
+          history = await ethers.getContractAt<FastHistoryFacet>('FastHistoryFacet', fast.address);
+          governedHistory = history.connect(governor);
+        }
+      },
+      initWith: {
+        spc: spc.address,
+        exchange: exchange.address,
+        governor: governor.address
+      }
+    });
   });
 
   /// Supply proofs.

@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, FastTokenFacet, SpcInitFacet } from '../../typechain';
+import { Spc, FastTokenFacet, SpcInitFacet, SpcAccessFacet } from '../../typechain';
 import { deploymentSalt, toHexString, ZERO_ADDRESS } from '../../src/utils';
 import {
   DUPLICATE_ENTRY,
@@ -12,6 +12,7 @@ import {
   nine, ninety, one, oneHundred, oneMillion, REQUIRES_SPC_MEMBERSHIP, ten, two, twoHundredFifty, twoHundredForty
 } from '../utils';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
+import { ContractTransaction } from 'ethers';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -39,9 +40,9 @@ const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
   // in each environment, and this would make our deployment transaction different in each and
   // therefore defeat the deterministic deployment strategy.
   const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
-  await init.initialize(initFacetOpts);
+  const initTx = await init.initialize(initFacetOpts);
 
-  return deploy;
+  return { deploy, initTx };
 });
 
 describe('SpcTopFacet', () => {
@@ -50,8 +51,9 @@ describe('SpcTopFacet', () => {
     spcMember: SignerWithAddress,
     bob: SignerWithAddress,
     alice: SignerWithAddress;
-  let spc: Spc;
-  let spcMemberSpc: Spc;
+  let spc: Spc,
+    spcMemberSpc: Spc,
+    initTx: ContractTransaction;
 
   before(async () => {
     // Keep track of a few signers.
@@ -63,9 +65,10 @@ describe('SpcTopFacet', () => {
       deployer: deployer.address,
       member: spcMember.address,
     };
-    const deploy = await spcDeployFixture(initOpts);
+    const res = await spcDeployFixture(initOpts);
+    initTx = res.initTx;
 
-    spc = await ethers.getContractAt('Spc', deploy.address) as Spc;
+    spc = await ethers.getContractAt('Spc', res.deploy.address) as Spc;
     spcMemberSpc = spc.connect(spcMember);
 
     // Provision the SPC with a load of eth.
@@ -79,10 +82,10 @@ describe('SpcTopFacet', () => {
     });
 
     it('emits a MemberAdded event', async () => {
-      // TODO.
-      // await expect(subject.deployTransaction).to
-      //   .emit(subject, 'MemberAdded')
-      //   .withArgs(spcMember.address);
+      const access = await ethers.getContractAt<SpcAccessFacet>('SpcAccessFacet', spc.address);
+      await expect(initTx).to
+        .emit(access, 'MemberAdded')
+        .withArgs(spcMember.address);
     });
   });
 

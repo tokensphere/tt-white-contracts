@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet } from '../../typechain';
+import { Spc, Exchange, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
 import {
   BALANCE_IS_POSITIVE,
@@ -27,16 +27,10 @@ import {
   DEFAULT_TRANSFER_REFERENCE,
   impersonateDiamond
 } from '../utils';
-import { fastFixtureFunc } from './utils';
+import { fastFixtureFunc, FAST_INIT_DEFAULTS } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastTokenFixture';
-
-// ERC20 parameters to deploy our fixtures.
-const ERC20_TOKEN_NAME = 'Random FAST Token';
-const ERC20_TOKEN_SYMBOL = 'RFT';
-const ERC20_TOKEN_DECIMALS = BigNumber.from(18);
 
 describe('FastTokenFacet', () => {
   let
@@ -74,7 +68,7 @@ describe('FastTokenFacet', () => {
   beforeEach(async () => {
     await fastDeployFixture({
       opts: {
-        name: FAST_FIXTURE_NAME,
+        name: 'FastTokenFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ fast, accessMock, topMock, tokenMock, historyMock } = args);
@@ -86,12 +80,7 @@ describe('FastTokenFacet', () => {
       initWith: {
         spc: spc.address,
         exchange: exchange.address,
-        governor: governor.address,
-        name: ERC20_TOKEN_NAME,
-        symbol: ERC20_TOKEN_SYMBOL,
-        decimals: ERC20_TOKEN_DECIMALS,
-        hasFixedSupply: true,
-        isSemiPublic: false
+        governor: governor.address
       }
     });
 
@@ -124,13 +113,13 @@ describe('FastTokenFacet', () => {
   describe('initialize', async () => {
     it('keeps track of the ERC20 parameters and extra ones', async () => {
       const name = await token.name();
-      expect(name).to.eq(ERC20_TOKEN_NAME);
+      expect(name).to.eq(FAST_INIT_DEFAULTS.name);
 
       const symbol = await token.symbol();
-      expect(symbol).to.eq(ERC20_TOKEN_SYMBOL);
+      expect(symbol).to.eq(FAST_INIT_DEFAULTS.symbol);
 
       const decimals = await token.decimals();
-      expect(decimals).to.eq(ERC20_TOKEN_DECIMALS);
+      expect(decimals).to.eq(FAST_INIT_DEFAULTS.decimals);
 
       const transferCredits = await token.transferCredits();
       expect(transferCredits).to.eq(0);
@@ -142,21 +131,21 @@ describe('FastTokenFacet', () => {
   describe('name', async () => {
     it('returns the name', async () => {
       const subject = await token.name();
-      expect(subject).to.eq(ERC20_TOKEN_NAME);
+      expect(subject).to.eq(FAST_INIT_DEFAULTS.name);
     });
   });
 
   describe('symbol', async () => {
     it('returns the symbol', async () => {
       const subject = await token.symbol();
-      expect(subject).to.eq(ERC20_TOKEN_SYMBOL);
+      expect(subject).to.eq(FAST_INIT_DEFAULTS.symbol);
     });
   });
 
   describe('decimals', async () => {
     it('returns the decimals', async () => {
       const subject = await token.decimals();
-      expect(subject).to.eq(ERC20_TOKEN_DECIMALS);
+      expect(subject).to.eq(FAST_INIT_DEFAULTS.decimals);
     });
   });
 

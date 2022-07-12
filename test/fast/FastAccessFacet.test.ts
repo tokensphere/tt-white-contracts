@@ -1,55 +1,16 @@
 import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
-import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
-import { FakeContract, smock } from '@defi-wonderland/smock';
+import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP } from '../utils';
-import { deploymentSalt, toHexString } from '../../src/utils';
-import { Spc, Exchange, FastAccessFacet } from '../../typechain';
+import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
+import { toHexString } from '../../src/utils';
+import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, Fast } from '../../typechain';
+import { fastFixtureFunc } from './utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const FAST_FIXTURE_NAME = 'FastAccessFixture';
-// TODO: We probably want to remove FastTopFacet, FastTokenFacet and FastFrontendFacet and replace them by fakes...
-const FAST_FACETS = [
-  'FastTopFacet',
-  'FastAccessFacet',
-  'FastTokenFacet',
-  'FastFrontendFacet'
-];
-
-interface FastFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  governor: string;
-  exchange: string;
-  // Config.
-  spc: string;
-  name: string;
-  symbol: string;
-  decimals: BigNumber;
-  hasFixedSupply: boolean;
-  isSemiPublic: boolean;
-}
-
-const fastDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as FastFixtureOpts;
-  const { deployer, ...initFacetArgs } = initOpts;
-  // Deploy the diamond.
-  return await deployments.diamond.deploy(FAST_FIXTURE_NAME, {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: FAST_FACETS,
-    execute: {
-      contract: 'FastInitFacet',
-      methodName: 'initialize',
-      args: [initFacetArgs],
-    },
-    deterministicSalt: deploymentSalt(hre)
-  });
-});
 
 describe('FastAccessFacet', () => {
   let
@@ -62,10 +23,14 @@ describe('FastAccessFacet', () => {
     john: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
+    fast: Fast,
     access: FastAccessFacet,
+    topMock: MockContract<FastTopFacet>,
+    tokenMock: MockContract<FastTokenFacet>,
     governedAccess: FastAccessFacet,
     spcMemberAccess: FastAccessFacet;
 
+  const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -86,21 +51,23 @@ describe('FastAccessFacet', () => {
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
 
-    const initOpts: FastFixtureOpts = {
-      deployer: deployer.address,
-      governor: governor.address,
-      exchange: exchange.address,
-      spc: spc.address,
-      name: 'Better, Stronger, FASTer',
-      symbol: 'BSF',
-      decimals: BigNumber.from(18),
-      hasFixedSupply: true,
-      isSemiPublic: true
-    };
-    await fastDeployFixture(initOpts);
-    access = await ethers.getContract<FastAccessFacet>(FAST_FIXTURE_NAME);
-    governedAccess = access.connect(governor);
-    spcMemberAccess = access.connect(spcMember);
+    await fastDeployFixture({
+      opts: {
+        name: 'FastAccessFixture',
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ fast, topMock, tokenMock } = args);
+          access = await ethers.getContractAt<FastAccessFacet>('FastAccessFacet', fast.address);
+          governedAccess = access.connect(governor);
+          spcMemberAccess = access.connect(spcMember);
+        }
+      },
+      initWith: {
+        spc: spc.address,
+        exchange: exchange.address,
+        governor: governor.address
+      }
+    });
   });
 
   /// Governorship related stuff.
@@ -133,11 +100,12 @@ describe('FastAccessFacet', () => {
         expect(subject).to.eq(true);
       });
 
-      it('delegates provisioning Eth to the governor using the registry', async () => {
+      it('delegates provisioning Eth to the governor to the diamond', async () => {
+        topMock.payUpTo.reset();
         await spcMemberAccess.addGovernor(alice.address);
-        // TODO: Will only work once `smock` fixes their injection thingy.
-        // expect(fastTopFacetMock.provisionWithEth).to.be
-        //   .calledOnceWith(alice.address);
+        expect(topMock.payUpTo).to.be
+          .calledOnceWith(alice.address, ten)
+          .delegatedFrom(fast.address);
       });
 
       it('emits a GovernorAdded event', async () => {
@@ -331,10 +299,11 @@ describe('FastAccessFacet', () => {
       });
 
       it('delegates to the token contract', async () => {
+        tokenMock.beforeRemovingMember.reset();
         await governedAccess.removeMember(alice.address);
-        // TODO: Will only work once `smock` fixes their injection thingy.
-        // expect(fastTokenFacetMock.beforeRemovingMember).to.be
-        //   .calledOnceWith(alice.address);
+        expect(tokenMock.beforeRemovingMember).to.be
+          .calledOnceWith(alice.address)
+          .delegatedFrom(fast.address);
       });
 
       it('delegates to the Exchange contract to signal the membership addition');
@@ -385,13 +354,13 @@ describe('FastAccessFacet', () => {
 
       it('returns the cursor to the next page', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-        const [, cursor] = await access.paginateMembers(0, 3);
+        const [/*members*/, cursor] = await access.paginateMembers(0, 3);
         expect(cursor).to.eq(3);
       });
 
       it('does not crash when overflowing and returns the correct cursor', async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-        const [, cursor] = await access.paginateMembers(1, 10);
+        const [/*members*/, cursor] = await access.paginateMembers(1, 10);
         expect(cursor).to.eq(4);
       });
 

@@ -41,12 +41,12 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   // Initializers.
 
-  function initialize(address payable governor)
+  function initializeAccessFacet(address payable governor)
       external
       onlyDiamondFacet {
     // Grab our storage.
     LibFastAccess.Data storage s = LibFastAccess.data();
-    // Make sure we havn't initialized yet.
+    // Make sure we haven't initialized yet.
     require(s.version < LibFastAccess.STORAGE_VERSION, 'Already initialized');
     // Initialize access storage.
     s.version = LibFastAccess.STORAGE_VERSION;
@@ -54,7 +54,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     // Add the governor.
     s.governorSet.add(governor, false);
     // Emit!
-    emit GovernorAdded(governor);
+    emit IHasGovernors.GovernorAdded(governor);
   }
 
   // Governorship related stuff.
