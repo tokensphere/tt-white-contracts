@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
-import { FakeContract, smock } from '@defi-wonderland/smock';
+import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { Spc, Exchange, SpcInitFacet, Fast } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { BigNumber } from 'ethers';
@@ -70,7 +70,7 @@ describe('SpcFrontendFacet', () => {
     exchange = await smock.fake('Exchange');
     exchange.spcAddress.returns(spc.address);
     // Mock a FAST.
-    [fast1, fast2] = await Promise.all([1, 2].map(async (id) => {
+    const deployFast = async (id: number): Promise<FakeContract<Fast>> => {
       const fast = await smock.fake<Fast>('Fast');
       const symbol = `F0${id}`;
       fast.symbol.returns(symbol);
@@ -88,7 +88,9 @@ describe('SpcFrontendFacet', () => {
       // Register the FAST.
       await spcMemberSpc.registerFast(fast.address);
       return fast;
-    }))
+    }
+    fast1 = await deployFast(1);
+    fast2 = await deployFast(2);
   });
 
   describe('paginateDetailedFasts', async () => {
