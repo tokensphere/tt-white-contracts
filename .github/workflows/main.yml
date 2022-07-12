@@ -22,11 +22,6 @@ jobs:
         . ./.env
         yarn
 
-    - name: Run the tests
-      run: |
-        . ./.env
-        yarn test
-
     - name: Test coverage
       run: |
         . ./.env
