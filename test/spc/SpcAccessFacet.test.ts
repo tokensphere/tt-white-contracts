@@ -7,7 +7,7 @@ import { Spc, SpcAccessFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { toHexString } from '../../src/utils';
 import {
-  negNine, negTen, negTwo, nine, one, oneMillion, REQUIRES_SPC_MEMBERSHIP, ten, two
+  negNine, negTen, negTwo, nine, one, REQUIRES_SPC_MEMBERSHIP, ten, two
 } from '../utils';
 import { ContractTransaction } from 'ethers';
 import { spcFixtureFunc } from '../fixtures/spc';
@@ -49,19 +49,6 @@ describe('SpcAccessFacet', () => {
       initWith: {
         member: spcMember.address
       }
-    });
-  });
-
-  describe('initialize', async () => {
-    it('adds the given member when deployed', async () => {
-      const subject = await access.isMember(spcMember.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('emits a MemberAdded event', async () => {
-      await expect(initTx).to
-        .emit(spc, 'MemberAdded')
-        .withArgs(spcMember.address);
     });
   });
 
