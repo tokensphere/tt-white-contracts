@@ -5,14 +5,10 @@ import '../lib/LibConstants.sol';
 import '../lib/LibHelpers.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
+import './lib/IFastEvents.sol';
 import './FastFrontendFacet.sol';
 
 contract FastTopFacet is AFastFacet {
-
-  // Eth provisioning related events.
-  event EthReceived(address indexed from, uint256 amount);
-  event EthDrained(address indexed to, uint256 amount);
-
   // Getters and setters for global flags.
 
   function spcAddress()

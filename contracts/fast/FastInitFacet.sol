@@ -14,6 +14,7 @@ import '../lib/LibAddressSet.sol';
 import '../exchange/ExchangeTopFacet.sol';
 import './lib/AFastFacet.sol';
 
+
 /**
 * @dev Note that although this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all
 *       methods are in fact implemented by the underlaying Diamond proxy. It is therefore safe to
@@ -70,12 +71,9 @@ contract FastInitFacet is AFastFacet {
     // Initialize access storage.
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     accessData.version = LibFastAccess.STORAGE_VERSION;
-    // Add the governor.
+    // Add the governor and emit.
     accessData.governorSet.add(params.governor, false);
-    // TODO: Find a nice way to emit.
-    // emit GovernorAdded(params.governor);
-    // TODO: Or find a way to call:
-    // FastAccessFacet(address(this)).initializeAccessFacet(params.governor);
+    emit GovernorAdded(params.governor);
 
     // ------------------------------------- //
 

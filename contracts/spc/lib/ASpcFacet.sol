@@ -5,13 +5,14 @@ import '../../lib/LibConstants.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IERC173.sol';
 import '../lib/LibSpcAccess.sol';
+import './ISpcEvents.sol';
 
 
 /**
 * @dev This contract is a group of modifiers that can be used by any facets to guard against
 *       certain permissions.
 */
-abstract contract ASpcFacet {
+abstract contract ASpcFacet is ISpcEvents {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Modifiers.

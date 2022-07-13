@@ -17,7 +17,7 @@ import {
 } from '../utils';
 import { toHexString, ZERO_ADDRESS } from '../../src/utils';
 import { Spc, Exchange, FastTopFacet, Fast } from '../../typechain';
-import { fastFixtureFunc } from './utils';
+import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -126,9 +126,9 @@ describe('FastTopFacet', () => {
     });
 
     it('emits a EthReceived event', async () => {
-      const subject = spcMemberToken.provisionWithEth({ value: ninety });
+      const subject = await spcMemberToken.provisionWithEth({ value: ninety });
       await expect(subject).to
-        .emit(token, 'EthReceived')
+        .emit(fast, 'EthReceived')
         .withArgs(spcMember.address, ninety)
     });
   });
@@ -152,9 +152,9 @@ describe('FastTopFacet', () => {
       // Provision the FAST with a lot of Eth.
       await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
       // Drain the FAST.
-      const subject = spcMemberToken.drainEth();
+      const subject = await spcMemberToken.drainEth();
       await expect(subject).to
-        .emit(token, 'EthDrained')
+        .emit(fast, 'EthDrained')
         .withArgs(spcMember.address, oneHundred);
     });
   });

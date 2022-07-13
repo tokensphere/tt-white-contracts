@@ -8,9 +8,9 @@ import '../interfaces/IHasGovernors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
+import './lib/IFast.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
-import './lib/IFast.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
@@ -20,17 +20,7 @@ import './FastFrontendFacet.sol';
 contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   using LibAddressSet for LibAddressSet.Data;
 
-  // Events.
-
-  // Issuance related events.
-  event Minted(uint256 indexed amount, string indexed ref);
-  event Burnt(uint256 indexed amount, string indexed ref);
-
-  // Transfer credits related events.
-  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
-  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
-
-  /// Minting methods.
+  // Minting methods.
 
   function mint(uint256 amount, string calldata ref)
       external
@@ -74,7 +64,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Burnt(amount, ref);
   }
 
-  /// Tranfer Credit management.
+  // Tranfer Credit management.
 
   function transferCredits()
       external view returns(uint256) {
@@ -102,7 +92,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
-  /// ERC20 implementation and transfer related methods.
+  // ERC20 implementation and transfer related methods.
 
   function name()
       external view returns(string memory) {
@@ -204,7 +194,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     );
   }
 
-  /// Allowances query operations.
+  // Allowances query operations.
 
   function givenAllowanceCount(address owner)
       external view returns(uint256) {
@@ -234,7 +224,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     );
   }
 
-  /// ERC1404 implementation.
+  // ERC1404 implementation.
 
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
@@ -290,6 +280,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       s.balances[p.from] >= p.amount,
       LibConstants.INSUFFICIENT_FUNDS
     );
+    require(
+      p.amount > 0,
+      LibConstants.UNSUPPORTED_OPERATION
+    );
 
     // If this is an allowance transfer...
     if (p.spender != p.from) {
@@ -301,12 +295,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
       // If the from account isn't the zero address...
       if (p.from != address(0)) {
-        // Make sure enough credits exist.
-        require(
-          s.transferCredits >= p.amount,
-          LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-        );
-
         // Decrease allowance.
         uint256 newAllowance = s.allowances[p.from][p.spender] -= p.amount;
         // If the allowance reached zero, we want to remove that allowance from
@@ -324,6 +312,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
+      // Make sure enough credits exist.
+      require(
+        s.transferCredits >= p.amount,
+        LibConstants.INSUFFICIENT_TRANSFER_CREDITS
+      );
       s.transferCredits -= p.amount;
     }
 
@@ -344,7 +337,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
 
     // Emit!
-    emit IERC20.Transfer(p.from, p.to, p.amount);
+    emit Transfer(p.from, p.to, p.amount);
   }
 
   function performApproval(address from, address spender, uint256 amount)
@@ -360,7 +353,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].add(from, true);
 
     // Emit!
-    emit IERC20.Approval(from, spender, amount);
+    emit Approval(from, spender, amount);
   }
 
   function performDisapproval(address from, address spender)
@@ -374,7 +367,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].remove(from, false);
 
     // Emit!
-    emit IERC20.Disapproval(from, spender);
+    emit Disapproval(from, spender);
   }
 
   // WARNING: This function contains two loops. We know that this should never

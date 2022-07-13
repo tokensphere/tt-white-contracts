@@ -1,21 +1,23 @@
 import fs from 'fs';
 import { BigNumber, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { utils } from 'ethers';
+import { JsonFragment } from '@ethersproject/abi';
 
-const ZERO_ADDRESS = ethers.constants.AddressZero;
-const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
+export const ZERO_ADDRESS = ethers.constants.AddressZero;
+export const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
 
-const DEPLOYER_FACTORY_COMMON = {
+export const DEPLOYER_FACTORY_COMMON = {
   deployer: '0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e',
   factory: '0x6DF2D25d8C6FD680730ee658b530A05a99BB769a',
   funding: '10000000000000000'
 }
 
-const COMMON_DIAMOND_FACETS = [
+export const COMMON_DIAMOND_FACETS = [
   'ERC165Facet'
 ];
 
-const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
+export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
   // Staging or production environments.
   if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev') {
     const salt = process.env.DEPLOYMENT_SALT;
@@ -29,7 +31,21 @@ const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironmen
   }
 }
 
-function fromBaseUnit(amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber {
+// Transforms an ABIElement
+export const abiElementToSignature = (abiElement: JsonFragment): string =>
+  utils.Fragment.fromObject(abiElement).format()
+
+export type AbiIgnoreList = ReadonlyArray<[Readonly<string>, Readonly<string>]>;
+export const abiFilter = (ignoreList: AbiIgnoreList) =>
+  (abiElement: any, index: number, abi: any, contractName: string) =>
+    // Find the first filter that matches...
+    !ignoreList.some(
+      ([nameMatcher, sig]) =>
+        // If the name matches the name matcher and the function signature, we can set it to "ignore".
+        contractName.match(nameMatcher) && abiElementToSignature(abiElement) === sig
+    )
+
+export const fromBaseUnit = (amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber => {
   amount = BigNumber.from(amount);
   decimals = BigNumber.from(decimals);
   const ten = BigNumber.from(10);
@@ -37,7 +53,7 @@ function fromBaseUnit(amount: BigNumber | string | number, decimals: BigNumber |
   return amount.div(exp);
 }
 
-function toBaseUnit(rawAmount: BigNumber | string | number, decimals: BigNumber | string | number) {
+export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: BigNumber | string | number) => {
   rawAmount = BigNumber.from(rawAmount);
   decimals = BigNumber.from(decimals);
 
@@ -77,25 +93,18 @@ function toBaseUnit(rawAmount: BigNumber | string | number, decimals: BigNumber 
   return BigNumber.from(wei.toString());
 }
 
-function toHexString(amount: BigNumber) {
-  return amount.toHexString().replace(/0x0+/, '0x');
-}
+export const toHexString = (amount: BigNumber) =>
+  amount.toHexString().replace(/0x0+/, '0x')
 
 // =================================================== //
 
-const nodeUrl = (networkName: string): string =>
+export const nodeUrl = (networkName: string): string =>
   process.env[`ETH_NODE_URI_${networkName.toUpperCase()}`] as string;
 
-const accounts = (networkName: string): string[] => {
+export const accounts = (networkName: string): string[] => {
   try {
     return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, 'utf8'));
   } catch (_error) {
     return [];
   }
-}
-
-export {
-  ZERO_ADDRESS, ZERO_ACCOUNT_MOCK, DEPLOYER_FACTORY_COMMON, COMMON_DIAMOND_FACETS,
-  deploymentSalt, fromBaseUnit, toBaseUnit, toHexString,
-  nodeUrl, accounts
 }

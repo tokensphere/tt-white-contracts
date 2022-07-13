@@ -3,7 +3,7 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { Spc } from '../typechain';
 import { toBaseUnit } from '../src/utils';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
   const { ethers, getNamedAccounts } = hre;
   const { storage } = await getNamedAccounts();

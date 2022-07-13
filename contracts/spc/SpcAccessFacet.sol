@@ -13,31 +13,12 @@ import './lib/LibSpcAccess.sol';
 
 contract SpcAccessFacet is ASpcFacet, IHasMembers {
   using LibAddressSet for LibAddressSet.Data;
-
   // Constants.
 
   // This represents how much Eth we provision new SPC members with.
   uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
   // This represents how much Eth new FASTs are provisioned with.
   uint256 constant private FAST_ETH_PROVISION = 250 ether;
-
-  // Initializers.
-
-  function initializeAccessFacet(address payable member)
-      external
-      onlyDiamondFacet {
-    // Grab our storage.
-    LibSpcAccess.Data storage s = LibSpcAccess.data();
-    // Make sure we haven't initialized yet.
-    require(s.version < LibSpcAccess.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
-    // Initialize access storage.
-    s.version = LibSpcAccess.STORAGE_VERSION;
-
-    // Add the member.
-    s.memberSet.add(member, false);
-    // Emit!
-    emit IHasMembers.MemberAdded(member);
-  }
 
   // Membership management.
 
@@ -85,7 +66,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
     if (amount != 0) { member.transfer(amount); }
 
     // Emit!
-    emit IHasMembers.MemberAdded(member);
+    emit MemberAdded(member);
   }
 
   /** @dev Removes a member from this SPC.
@@ -101,6 +82,6 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
     // Remove the member from the set.
     LibSpcAccess.data().memberSet.remove(member, false);
     // Emit!
-    emit IHasMembers.MemberRemoved(member);
+    emit MemberRemoved(member);
   }
 }

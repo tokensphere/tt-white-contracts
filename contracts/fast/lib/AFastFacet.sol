@@ -8,13 +8,14 @@ import '../../interfaces/IHasMembers.sol';
 import '../../interfaces/IHasGovernors.sol';
 import '../../interfaces/IERC173.sol';
 import '../lib/LibFast.sol';
+import './IFastEvents.sol';
 
 
 /**
 * @dev This contract is a group of modifiers that can be used by any facets to guard against
 *       certain permissions.
 */
-abstract contract AFastFacet {
+abstract contract AFastFacet is IFastEvents {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Modifiers.

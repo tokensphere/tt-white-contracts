@@ -1,5 +1,5 @@
-import { FakeContract, MockContract } from "@defi-wonderland/smock";
-import { BaseContract } from "ethers";
+import { smock, FakeContract, MockContract, MockContractFactory } from "@defi-wonderland/smock";
+import { BaseContract, ContractFactory } from "ethers";
 import { FunctionFragment, Interface } from "ethers/lib/utils";
 import { artifacts, ethers } from "hardhat";
 import { FacetCutAction } from "hardhat-deploy/dist/types";
@@ -75,7 +75,7 @@ export const impersonateDiamond =
     return contract.connect(await ethers.getSigner(contract.address)) as T;
   };
 
-export const setupDiamondFacet =
+const setupDiamondFacet =
   async <T extends BaseContract>(
     diamond: IDiamondCut,
     fake: FakeContract<T> | MockContract<T>,
@@ -91,7 +91,19 @@ export const setupDiamondFacet =
   };
 
 // Used when setting up a diamond facet.
-const sigsFromABI = (abi: any[]): string[] =>
+export const sigsFromABI = (abi: any[]): string[] =>
   abi
     .filter(frag => frag.type === 'function')
     .map(frag => Interface.getSighash(FunctionFragment.from(frag)));
+
+declare type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;
+
+export const facetMock = async <F extends ContractFactory>(diamond: IDiamondCut, facet: string) => {
+  const mockFactory = await smock.mock<F>(facet);
+  // Yikes. We would need to be able to infer that `mockFactory` has a `deploy` function
+  // that returns the same type than the successful promise type of the `deploy` on type `F`...
+  const mock = await (mockFactory as MockContractFactory<any>).deploy();
+  await setupDiamondFacet(diamond, mock, facet, FacetCutAction.Replace);
+  // More or less solved here... But needing `any` two lines ago isn't great.
+  return mock as MockContract<ThenArg<ReturnType<F['deploy']>>>;
+};

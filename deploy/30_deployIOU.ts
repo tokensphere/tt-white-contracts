@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployFast } from '../tasks/fast';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { ethers, getNamedAccounts } = hre;
   const { spcMember } = await getNamedAccounts();
   const spcMemberSigner = await ethers.getSigner(spcMember);

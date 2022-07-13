@@ -39,24 +39,6 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   // This represents how much Eth we provision new members with.
   uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
 
-  // Initializers.
-
-  function initializeAccessFacet(address payable governor)
-      external
-      onlyDiamondFacet {
-    // Grab our storage.
-    LibFastAccess.Data storage s = LibFastAccess.data();
-    // Make sure we haven't initialized yet.
-    require(s.version < LibFastAccess.STORAGE_VERSION, 'Already initialized');
-    // Initialize access storage.
-    s.version = LibFastAccess.STORAGE_VERSION;
-
-    // Add the governor.
-    s.governorSet.add(governor, false);
-    // Emit!
-    emit IHasGovernors.GovernorAdded(governor);
-  }
-
   // Governorship related stuff.
 
   /**
@@ -102,7 +84,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     }
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasGovernors.GovernorAdded(governor);
+    emit GovernorAdded(governor);
   }
 
   /**
@@ -115,7 +97,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasGovernors.GovernorRemoved(governor);
+    emit GovernorRemoved(governor);
   }
 
   /// Membership related stuff.
@@ -165,7 +147,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     ExchangeAccessFacet(LibFast.data().exchange).memberAddedToFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasMembers.MemberAdded(member);
+    emit MemberAdded(member);
   }
 
   /**
@@ -182,7 +164,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit IHasMembers.MemberRemoved(member);
+    emit MemberRemoved(member);
   }
 
   /// Flags.

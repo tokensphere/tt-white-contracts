@@ -40,8 +40,7 @@ const EXCHANGE_FACETS = [
   'ExchangeAccessFacet'
 ];
 
-async function deployExchange(hre: HardhatRuntimeEnvironment, spcAddr: string)
-  : Promise<Exchange> {
+const deployExchange = async (hre: HardhatRuntimeEnvironment, spcAddr: string): Promise<Exchange> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
   const { deployer } = await getNamedAccounts();

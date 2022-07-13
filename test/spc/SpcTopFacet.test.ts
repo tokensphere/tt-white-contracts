@@ -3,47 +3,20 @@ import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Spc, FastTokenFacet, SpcInitFacet, SpcAccessFacet } from '../../typechain';
-import { deploymentSalt, toHexString, ZERO_ADDRESS } from '../../src/utils';
+import { Spc, FastTokenFacet, SpcTopFacet } from '../../typechain';
+import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
+import { toHexString, ZERO_ADDRESS } from '../../src/utils';
 import {
   DUPLICATE_ENTRY,
   MISSING_ATTACHED_ETH,
   negNine, negOneHundred, negTen, negTwo, negTwoHundredFifty, negTwoHundredForty,
   nine, ninety, one, oneHundred, oneMillion, REQUIRES_SPC_MEMBERSHIP, ten, two, twoHundredFifty, twoHundredForty
 } from '../utils';
-import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { ContractTransaction } from 'ethers';
+import { spcFixtureFunc } from '../fixtures/spc';
 chai.use(solidity);
 chai.use(smock.matchers);
 
-interface SpcFixtureOpts {
-  // Ops variables.
-  deployer: string;
-  // Config.
-  member: string;
-}
-
-const SPC_FACETS = ['SpcAccessFacet', 'SpcTopFacet'];
-
-const spcDeployFixture = deployments.createFixture(async (hre, uOpts) => {
-  const initOpts = uOpts as SpcFixtureOpts;
-  const { deployer, ...initFacetOpts } = initOpts;
-  // Deploy the diamond.
-  const deploy = await deployments.diamond.deploy('Spc', {
-    from: initOpts.deployer,
-    owner: initOpts.deployer,
-    facets: [...SPC_FACETS, 'SpcInitFacet'],
-    deterministicSalt: deploymentSalt(hre)
-  });
-
-  // Initialize the diamond. We are doing it in two steps, because the SPC member is different
-  // in each environment, and this would make our deployment transaction different in each and
-  // therefore defeat the deterministic deployment strategy.
-  const init = await ethers.getContractAt('SpcInitFacet', deploy.address) as SpcInitFacet;
-  const initTx = await init.initialize(initFacetOpts);
-
-  return { deploy, initTx };
-});
 
 describe('SpcTopFacet', () => {
   let
@@ -53,7 +26,10 @@ describe('SpcTopFacet', () => {
     alice: SignerWithAddress;
   let spc: Spc,
     spcMemberSpc: Spc,
-    initTx: ContractTransaction;
+    top: SpcTopFacet,
+    spcMemberTop: SpcTopFacet;
+
+  const spcDeployFixture = deployments.createFixture(spcFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
@@ -61,31 +37,20 @@ describe('SpcTopFacet', () => {
   });
 
   beforeEach(async () => {
-    const initOpts: SpcFixtureOpts = {
-      deployer: deployer.address,
-      member: spcMember.address,
-    };
-    const res = await spcDeployFixture(initOpts);
-    initTx = res.initTx;
-
-    spc = await ethers.getContractAt('Spc', res.deploy.address) as Spc;
-    spcMemberSpc = spc.connect(spcMember);
-
-    // Provision the SPC with a load of eth.
-    await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneMillion)]);
-  });
-
-  describe('initialize', async () => {
-    it('adds the given member when deployed', async () => {
-      const subject = await spc.isMember(spcMember.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('emits a MemberAdded event', async () => {
-      const access = await ethers.getContractAt<SpcAccessFacet>('SpcAccessFacet', spc.address);
-      await expect(initTx).to
-        .emit(access, 'MemberAdded')
-        .withArgs(spcMember.address);
+    await spcDeployFixture({
+      opts: {
+        name: 'SpcTopFixture',
+        deployer: deployer.address,
+        afterDeploy: async (args) => {
+          ({ spc } = args)
+          spcMemberSpc = spc.connect(spcMember);
+          top = await ethers.getContractAt<SpcTopFacet>('SpcTopFacet', spc.address);
+          spcMemberTop = top.connect(spcMember);
+        }
+      },
+      initWith: {
+        member: spcMember.address
+      }
     });
   });
 
@@ -93,20 +58,20 @@ describe('SpcTopFacet', () => {
 
   describe('provisionWithEth', async () => {
     it('reverts when no Eth is attached', async () => {
-      const subject = spc.provisionWithEth();
+      const subject = top.provisionWithEth();
       await expect(subject).to.be
         .revertedWith(MISSING_ATTACHED_ETH);
     });
 
     it('is payable and keeps the attached Eth', async () => {
-      const subject = async () => await spc.provisionWithEth({ value: ninety });
-      await expect(subject).to.have.changeEtherBalance(spc, ninety);
+      const subject = async () => await top.provisionWithEth({ value: ninety });
+      await expect(subject).to.have.changeEtherBalance(top, ninety);
     });
   });
 
   describe('drainEth', async () => {
     it('requires SPC membership', async () => {
-      const subject = spc.drainEth();
+      const subject = top.drainEth();
       await expect(subject).to.be
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
@@ -114,13 +79,12 @@ describe('SpcTopFacet', () => {
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the SPC account with a lot of Eth.
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
-      // Do it!
-      const subject = async () => await spcMemberSpc.drainEth();
+      const subject = async () => await spcMemberTop.drainEth();
       await expect(subject).to.changeEtherBalances([spc, spcMember], [negOneHundred, oneHundred]);
     });
 
     it('emits a EthReceived event', async () => {
-      const subject = spc.provisionWithEth({ value: ninety });
+      const subject = top.provisionWithEth({ value: ninety });
       await expect(subject).to
         .emit(spc, 'EthReceived')
         .withArgs(deployer.address, ninety)
@@ -129,132 +93,10 @@ describe('SpcTopFacet', () => {
     it('emits a EthDrained event', async () => {
       // Provision the SPC account with 1_000_000 Eth.
       await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
-      // Do it!
       const subject = spcMemberSpc.drainEth();
       await expect(subject).to
         .emit(spc, 'EthDrained')
         .withArgs(spcMember.address, oneHundred);
-    });
-  });
-
-  /// Membership management.
-
-  describe('memberCount', async () => {
-    beforeEach(async () => {
-      await spc.connect(spcMember).addMember(bob.address)
-    });
-
-    it('correctly counts members', async () => {
-      const subject = await spc.memberCount();
-      expect(subject).to.eq(2);
-    });
-  });
-
-  describe('paginateMembers', async () => {
-    it('returns pages of members', async () => {
-      await spcMemberSpc.addMember(bob.address);
-      await spcMemberSpc.addMember(alice.address);
-
-      const [[g1, g2, g3],] = await spc.paginateMembers(0, 3);
-
-      expect(g1).to.eq(spcMember.address);
-      expect(g2).to.eq(bob.address);
-      expect(g3).to.eq(alice.address);
-    });
-  });
-
-  describe('isMember', async () => {
-    it('returns true when the candidate is a member', async () => {
-      const subject = await spc.isMember(spcMember.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('returns false when the candidate is not a member', async () => {
-      const subject = await spc.isMember(bob.address);
-      expect(subject).to.eq(false);
-    });
-  });
-
-  describe('addMember', async () => {
-    it('requires that the sender is a member', async () => {
-      const subject = spc.addMember(alice.address);
-      await expect(subject).to.be
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-    });
-
-    it('adds the member to the list', async () => {
-      await spcMemberSpc.addMember(bob.address);
-      const subject = await spc.isMember(bob.address);
-      expect(subject).to.eq(true);
-    });
-
-    it('does not add the same member twice', async () => {
-      const subject = spcMemberSpc.addMember(spcMember.address);
-      await expect(subject).to.be
-        .revertedWith('Address already in set');
-    });
-
-    it('provisions the member with 10 Eth', async () => {
-      await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
-      // Do it!
-      const subject = async () => await spcMemberSpc.addMember(bob.address);
-      // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, bob], [negTen, ten]);
-    });
-
-    it('only tops-up the member if they already have eth', async () => {
-      await ethers.provider.send("hardhat_setBalance", [bob.address, toHexString(one)]);
-      // Do it!
-      const subject = async () => await spcMemberSpc.addMember(bob.address);
-      // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, bob], [negNine, nine]);
-    });
-
-    it('only provisions the member up to the available balance', async () => {
-      await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
-      await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
-      // Do it!
-      const subject = async () => await spcMemberSpc.addMember(bob.address);
-      // Check balances.
-      await expect(subject).to.changeEtherBalances([spc, bob], [negTwo, two]);
-    });
-
-    it('emits a MemberAdded event', async () => {
-      const subject = spcMemberSpc.addMember(bob.address);
-      await expect(subject).to
-        .emit(spc, 'MemberAdded')
-        .withArgs(bob.address);
-    });
-  });
-
-  describe('removeMember', async () => {
-    beforeEach(async () => {
-      await spcMemberSpc.addMember(bob.address);
-    });
-
-    it('requires that the sender is a member', async () => {
-      const subject = spc.removeMember(bob.address);
-      await expect(subject).to.be
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-    });
-
-    it('removes the member from the list', async () => {
-      await spcMemberSpc.removeMember(bob.address);
-      const subject = await spc.isMember(bob.address);
-      expect(subject).to.eq(false);
-    });
-
-    it('reverts if the member is not in the list', async () => {
-      const subject = spcMemberSpc.removeMember(alice.address);
-      await expect(subject).to.be
-        .revertedWith('Address does not exist in set');
-    });
-
-    it('emits a MemberRemoved event', async () => {
-      const subject = spcMemberSpc.removeMember(bob.address);
-      await expect(subject).to
-        .emit(spc, 'MemberRemoved')
-        .withArgs(bob.address);
     });
   });
 
@@ -273,12 +115,12 @@ describe('SpcTopFacet', () => {
 
     it('returns false when the FAST symbol is unknown', async () => {
       const [notAContract] = await ethers.getSigners()
-      const subject = await spc.isFastRegistered(notAContract.address);
+      const subject = await top.isFastRegistered(notAContract.address);
       expect(subject).to.eq(false);
     });
 
     it('returns true when the FAST symbol is registered', async () => {
-      const subject = await spc.isFastRegistered(fast.address);
+      const subject = await top.isFastRegistered(fast.address);
       expect(subject).to.eq(true);
     });
   });
@@ -295,12 +137,12 @@ describe('SpcTopFacet', () => {
     });
 
     it('returns the zero address when the FAST symbol is unknown', async () => {
-      const subject = await spc.fastBySymbol('UKN');
+      const subject = await top.fastBySymbol('UKN');
       expect(subject).to.eq(ZERO_ADDRESS);
     });
 
     it('returns the FAST address when the FAST symbol is registered', async () => {
-      const subject = await spc.fastBySymbol('FST');
+      const subject = await top.fastBySymbol('FST');
       expect(subject).to.eq(fast.address);
     });
   });
@@ -315,7 +157,7 @@ describe('SpcTopFacet', () => {
     });
 
     it('requires SPC membership', async () => {
-      const subject = spc.registerFast(fast.address);
+      const subject = top.registerFast(fast.address);
       await expect(subject).to.have
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
