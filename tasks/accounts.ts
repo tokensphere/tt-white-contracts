@@ -25,10 +25,8 @@ task('faucet', 'Sends ETH towards a given account')
 
 // Reusable functions.
 
-async function provisionEth({ ethers }: HardhatRuntimeEnvironment, account: string) {
+const provisionEth = async ({ ethers }: HardhatRuntimeEnvironment, account: string) => {
   const [sender] = await ethers.getSigners();
   const ethTx = await sender.sendTransaction({ to: account, value: ethers.constants.WeiPerEther, })
   return ethTx.wait();
 }
-
-export { provisionEth };

@@ -10,7 +10,6 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/IFast.sol';
 import './lib/AFastFacet.sol';
-import './lib/LibFastEvents.sol';
 import './lib/LibFastToken.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
@@ -43,7 +42,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit LibFastEvents.Minted(amount, ref);
+    emit Minted(amount, ref);
   }
 
   function burn(uint256 amount, string calldata ref)
@@ -62,7 +61,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit LibFastEvents.Burnt(amount, ref);
+    emit Burnt(amount, ref);
   }
 
   // Tranfer Credit management.
@@ -78,7 +77,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.data().transferCredits += amount;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit LibFastEvents.TransferCreditsAdded(msg.sender, amount);
+    emit TransferCreditsAdded(msg.sender, amount);
   }
 
   function drainTransferCredits()
@@ -86,7 +85,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       onlySpcMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // Emit!
-    emit LibFastEvents.TransferCreditsDrained(msg.sender, s.transferCredits);
+    emit TransferCreditsDrained(msg.sender, s.transferCredits);
     // Drain credits.
     s.transferCredits = 0;
     // Emit!
@@ -335,7 +334,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
 
     // Emit!
-    emit LibFastEvents.Transfer(p.from, p.to, p.amount);
+    emit Transfer(p.from, p.to, p.amount);
   }
 
   function performApproval(address from, address spender, uint256 amount)
@@ -351,7 +350,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].add(from, true);
 
     // Emit!
-    emit LibFastEvents.Approval(from, spender, amount);
+    emit Approval(from, spender, amount);
   }
 
   function performDisapproval(address from, address spender)
@@ -365,7 +364,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     s.allowancesBySpender[spender].remove(from, false);
 
     // Emit!
-    emit LibFastEvents.Disapproval(from, spender);
+    emit Disapproval(from, spender);
   }
 
   // WARNING: This function contains two loops. We know that this should never

@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
-import './lib/LibFastEvents.sol';
 import './lib/LibFastAccess.sol';
 import './lib/LibFastToken.sol';
 
@@ -42,7 +41,7 @@ contract FastFrontendFacet is AFastFacet {
       external onlyDiamondFacet {
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     LibFastToken.Data storage tokenData = LibFastToken.data();
-    emit LibFastEvents.DetailsChanged({
+    emit DetailsChanged({
       memberCount: accessData.memberSet.values.length,
       governorCount: accessData.governorSet.values.length,
       totalSupply: tokenData.totalSupply,

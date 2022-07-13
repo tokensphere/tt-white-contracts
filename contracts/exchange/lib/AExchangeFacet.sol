@@ -7,13 +7,14 @@ import '../lib/LibExchange.sol';
 import '../lib/LibExchangeAccess.sol';
 import '../../interfaces/IERC173.sol';
 import '../../interfaces/IHasMembers.sol';
+import './IExchangeEvents.sol';
 
 
 /**
 * @dev This contract is a group of modifiers that can be used by any Exchange facets to guard against
 *       certain permissions.
 */
-abstract contract AExchangeFacet {
+abstract contract AExchangeFacet is IExchangeEvents {
   using LibAddressSet for LibAddressSet.Data;
 
   // Modifiers.

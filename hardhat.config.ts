@@ -5,7 +5,7 @@ import 'hardhat-deploy-ethers';
 import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
-import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl } from './src/utils';
+import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl, abiFilter } from './src/utils';
 import { SPC_FACETS } from './tasks/spc';
 import { EXCHANGE_FACETS } from './tasks/exchange';
 import { FAST_FACETS } from './tasks/fast';
@@ -15,7 +15,6 @@ import './tasks/accounts';
 import './tasks/spc';
 import './tasks/exchange';
 import './tasks/fast';
-
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -30,6 +29,13 @@ const config: HardhatUserConfig = {
   },
   diamondAbi: [{
     name: 'Spc',
+    filter: abiFilter([
+      ['Facet$', 'EthDrained(address,uint256)'],
+      ['Facet$', 'EthReceived(address,uint256)'],
+      ['Facet$', 'FastRegistered(address)'],
+      ['Facet$', 'MemberAdded(address)'],
+      ['Facet$', 'MemberRemoved(address)']
+    ]),
     include: [
       'IERC173',
       'IDiamondCut',
@@ -39,6 +45,10 @@ const config: HardhatUserConfig = {
     ]
   }, {
     name: 'Exchange',
+    filter: abiFilter([
+      ['Facet$', 'MemberAdded(address)'],
+      ['Facet$', 'MemberRemoved(address)']
+    ]),
     include: [
       'IERC173',
       'IDiamondCut',
@@ -48,6 +58,22 @@ const config: HardhatUserConfig = {
     ]
   }, {
     name: 'Fast',
+    filter: abiFilter([
+      ['Facet$', 'EthDrained(address,uint256)'],
+      ['Facet$', 'EthReceived(address,uint256)'],
+      ['Facet$', 'MemberAdded(address)'],
+      ['Facet$', 'MemberRemoved(address)'],
+      ['Facet$', 'GovernorAdded(address)'],
+      ['Facet$', 'GovernorRemoved(address)'],
+      ['Facet$', 'Minted(uint256,string)'],
+      ['Facet$', 'Burnt(uint256,string)'],
+      ['Facet$', 'TransferCreditsAdded(address,uint256)'],
+      ['Facet$', 'TransferCreditsDrained(address,uint256)'],
+      ['Facet$', 'Transfer(address,address,uint256)'],
+      ['Facet$', 'Approval(address,address,uint256)'],
+      ['Facet$', 'Disapproval(address,address)'],
+      ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)']
+    ]),
     include: [
       'IERC173',
       'IDiamondCut',

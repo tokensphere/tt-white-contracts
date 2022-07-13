@@ -13,7 +13,6 @@ import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../exchange/ExchangeTopFacet.sol';
 import './lib/AFastFacet.sol';
-import './lib/LibFastEvents.sol';
 
 
 /**
@@ -74,7 +73,7 @@ contract FastInitFacet is AFastFacet {
     accessData.version = LibFastAccess.STORAGE_VERSION;
     // Add the governor and emit.
     accessData.governorSet.add(params.governor, false);
-    emit LibFastEvents.GovernorAdded(params.governor);
+    emit GovernorAdded(params.governor);
 
     // ------------------------------------- //
 

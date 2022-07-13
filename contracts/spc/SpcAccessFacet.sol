@@ -7,7 +7,6 @@ import '../lib/LibHelpers.sol';
 import '../interfaces/IHasMembers.sol';
 import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
-import './lib/LibSpcEvents.sol';
 import './lib/ASpcFacet.sol';
 import './lib/LibSpcAccess.sol';
 
@@ -67,7 +66,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
     if (amount != 0) { member.transfer(amount); }
 
     // Emit!
-    emit LibSpcEvents.MemberAdded(member);
+    emit MemberAdded(member);
   }
 
   /** @dev Removes a member from this SPC.
@@ -83,6 +82,6 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
     // Remove the member from the set.
     LibSpcAccess.data().memberSet.remove(member, false);
     // Emit!
-    emit LibSpcEvents.MemberRemoved(member);
+    emit MemberRemoved(member);
   }
 }

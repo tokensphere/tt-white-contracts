@@ -8,7 +8,6 @@ import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
 import './lib/ASpcFacet.sol';
 import './lib/LibSpc.sol';
-import './lib/LibSpcEvents.sol';
 
 
 contract SpcTopFacet is ASpcFacet {
@@ -28,7 +27,7 @@ contract SpcTopFacet is ASpcFacet {
   function provisionWithEth()
       external payable {
     require(msg.value > 0, LibConstants.MISSING_ATTACHED_ETH);
-    emit LibSpcEvents.EthReceived(msg.sender, msg.value);
+    emit EthReceived(msg.sender, msg.value);
   }
 
   /** @dev A function that alllows draining this SPC from its Eth.
@@ -40,7 +39,7 @@ contract SpcTopFacet is ASpcFacet {
       onlyMember(msg.sender) {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
-    emit LibSpcEvents.EthDrained(msg.sender, amount);
+    emit EthDrained(msg.sender, amount);
   }
 
   // FAST management related methods.
@@ -87,7 +86,7 @@ contract SpcTopFacet is ASpcFacet {
       FastTopFacet(fast).provisionWithEth{ value: amount }();
     }
     // Emit!
-    emit LibSpcEvents.FastRegistered(fast);
+    emit FastRegistered(fast);
   }
 
   /** @dev Counts the number of FAST diamonds registered with this SPC.

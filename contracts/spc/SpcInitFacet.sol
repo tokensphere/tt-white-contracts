@@ -6,13 +6,10 @@ import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasMembers.sol';   // Membership management.
-
 import '../lib/LibConstants.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
-
 import './lib/ASpcFacet.sol';
-import './lib/LibSpcEvents.sol';
 import './lib/LibSpc.sol';
 import './lib/LibSpcAccess.sol';
 
@@ -60,6 +57,6 @@ contract SpcInitFacet is ASpcFacet {
     s.version = LibSpcAccess.STORAGE_VERSION;
     // Add the member and emit.
     s.memberSet.add(params.member, false);
-    emit LibSpcEvents.MemberAdded(params.member);
+    emit MemberAdded(params.member);
   }
 }

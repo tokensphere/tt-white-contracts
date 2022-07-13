@@ -42,8 +42,7 @@ const SPC_FACETS = [
   'SpcFrontendFacet'
 ];
 
-async function deploySpc(hre: HardhatRuntimeEnvironment, spcMember: string)
-  : Promise<Spc> {
+const deploySpc = async (hre: HardhatRuntimeEnvironment, spcMember: string): Promise<Spc> => {
   const { ethers, deployments, getNamedAccounts, deployments: { diamond } } = hre;
   const { deployer } = await getNamedAccounts();
 
