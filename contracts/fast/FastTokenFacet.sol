@@ -291,12 +291,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
       // If the from account isn't the zero address...
       if (p.from != address(0)) {
-        // Make sure enough credits exist.
-        require(
-          s.transferCredits >= p.amount,
-          LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-        );
-
         // Decrease allowance.
         uint256 newAllowance = s.allowances[p.from][p.spender] -= p.amount;
         // If the allowance reached zero, we want to remove that allowance from
@@ -314,6 +308,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
+      // Make sure enough credits exist.
+      require(
+        s.transferCredits >= p.amount,
+        LibConstants.INSUFFICIENT_TRANSFER_CREDITS
+      );
       s.transferCredits -= p.amount;
     }
 
