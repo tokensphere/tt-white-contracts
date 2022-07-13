@@ -25,7 +25,7 @@ import {
   REQUIRES_SPC_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
   DEFAULT_TRANSFER_REFERENCE,
-  impersonateDiamond
+  impersonateContract
 } from '../utils';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
@@ -963,7 +963,7 @@ describe('FastTokenFacet', () => {
         ]);
 
         // Impersonate the diamond.
-        tokenAsItself = await impersonateDiamond(token);
+        tokenAsItself = await impersonateContract(token);
       });
 
       afterEach(async () => {

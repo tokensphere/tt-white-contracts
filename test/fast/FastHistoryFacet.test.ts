@@ -6,7 +6,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
-import { INTERNAL_METHOD, impersonateDiamond, structToObj } from '../utils';
+import { INTERNAL_METHOD, impersonateContract, structToObj } from '../utils';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -74,7 +74,7 @@ describe('FastHistoryFacet', () => {
       let tokenAsItself: FastHistoryFacet;
 
       beforeEach(async () => {
-        tokenAsItself = await impersonateDiamond(history);
+        tokenAsItself = await impersonateContract(history);
       });
 
       afterEach(async () => {
@@ -108,7 +108,7 @@ describe('FastHistoryFacet', () => {
       let tokenAsItself: FastHistoryFacet;
 
       beforeEach(async () => {
-        tokenAsItself = await impersonateDiamond(history);
+        tokenAsItself = await impersonateContract(history);
       });
 
       afterEach(async () => {
@@ -130,7 +130,7 @@ describe('FastHistoryFacet', () => {
     let tokenAsItself: FastHistoryFacet;
 
     beforeEach(async () => {
-      tokenAsItself = await impersonateDiamond(history);
+      tokenAsItself = await impersonateContract(history);
 
       // Add a bunch of supply proofs.
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
@@ -152,7 +152,7 @@ describe('FastHistoryFacet', () => {
     let tokenAsItself: FastHistoryFacet;
 
     beforeEach(async () => {
-      tokenAsItself = await impersonateDiamond(history);
+      tokenAsItself = await impersonateContract(history);
 
       // Add a bunch of supply proofs.
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
@@ -208,7 +208,7 @@ describe('FastHistoryFacet', () => {
       let tokenAsItself: FastHistoryFacet;
 
       beforeEach(async () => {
-        tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+        tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
         // Add a bunch of supply proofs.
         await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
@@ -237,7 +237,7 @@ describe('FastHistoryFacet', () => {
     let tokenAsItself: FastHistoryFacet;
 
     beforeEach(async () => {
-      tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+      tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
       // Add a bunch of transfer proofs.
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
@@ -257,7 +257,7 @@ describe('FastHistoryFacet', () => {
 
   describe('paginateTransferProofs', async () => {
     beforeEach(async () => {
-      let tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+      let tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
       // Add a bunch of transfer proofs.
       await Promise.all(['One', 'Two', 'Three'].map((value, index) => {
@@ -296,7 +296,7 @@ describe('FastHistoryFacet', () => {
     let blockNumber = 0;
 
     beforeEach(async () => {
-      let tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+      let tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
       // Snapshot the current block number.
       blockNumber = await ethers.provider.getBlockNumber();
@@ -379,7 +379,7 @@ describe('FastHistoryFacet', () => {
 
   describe('paginateTransferProofIndicesByInvolvee', async () => {
     beforeEach(async () => {
-      let tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+      let tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
       // Add three transfers from bob to john performed by alice.
       await Promise.all(['A1', 'A2', 'A3'].map((value, index) => {
@@ -407,7 +407,7 @@ describe('FastHistoryFacet', () => {
 
   describe('transferProofByInvolveeCount', async () => {
     beforeEach(async () => {
-      let tokenAsItself = await impersonateDiamond<FastHistoryFacet>(history);
+      let tokenAsItself = await impersonateContract<FastHistoryFacet>(history);
 
       // Add three transfers from bob to john performed by alice.
       await Promise.all(['A1', 'A2'].map((value) => {

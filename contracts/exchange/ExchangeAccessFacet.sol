@@ -92,7 +92,10 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
   function memberAddedToFast(address member) 
       external {
     // Verify that the given address is in fact a registered FAST contract.
-    require(SpcTopFacet(LibExchange.data().spc).isFastRegistered(msg.sender), LibConstants.REQUIRES_FAST_CONTRACT_CALLER);
+    require(
+      SpcTopFacet(LibExchange.data().spc).isFastRegistered(msg.sender),
+      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
+    );
     // Keep track of the member's FAST membership.
     LibAddressSet.Data storage memberFasts = LibExchangeAccess.data().fastMemberships[member];
     memberFasts.add(msg.sender, false);
@@ -103,7 +106,10 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
    */
   function memberRemovedFromFast(address member)
       external {
-    require(SpcTopFacet(LibExchange.data().spc).isFastRegistered(msg.sender), LibConstants.REQUIRES_FAST_CONTRACT_CALLER);
+    require(
+      SpcTopFacet(LibExchange.data().spc).isFastRegistered(msg.sender),
+      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
+    );
     // Remove the tracked membership.
     LibAddressSet.Data storage memberFasts = LibExchangeAccess.data().fastMemberships[member];
     memberFasts.remove(msg.sender, false);

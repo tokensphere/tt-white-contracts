@@ -13,7 +13,7 @@ import {
   UNSUPPORTED_OPERATION,
   MISSING_ATTACHED_ETH,
   INTERNAL_METHOD,
-  impersonateDiamond
+  impersonateContract
 } from '../utils';
 import { toHexString, ZERO_ADDRESS } from '../../src/utils';
 import { Spc, Exchange, FastTopFacet, Fast } from '../../typechain';
@@ -170,7 +170,7 @@ describe('FastTopFacet', () => {
 
       beforeEach(async () => {
         // Impersonate the diamond.
-        tokenAsItself = await impersonateDiamond(token);
+        tokenAsItself = await impersonateContract(token);
       });
 
       afterEach(async () => {

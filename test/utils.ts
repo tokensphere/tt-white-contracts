@@ -64,12 +64,10 @@ export const structToObj = (struct: {}) => {
   return Object.fromEntries(entries.slice(start));
 };
 
-export const impersonateDiamond =
-  async <T extends BaseContract>(
-    contract: T
-  ): Promise<T> => {
+export const impersonateContract =
+  async <T extends BaseContract>(contract: T): Promise<T> => {
     // Provision the fast with some ETH.
-    await ethers.provider.send('hardhat_setBalance', [contract.address, oneMillion.toHexString()]);
+    await ethers.provider.send('hardhat_setBalance', [contract.address, one.toHexString()]);
     // Allow to impersonate the FAST.
     await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
     return contract.connect(await ethers.getSigner(contract.address)) as T;
