@@ -42,7 +42,8 @@ export const spcFixtureFunc: FixtureFunc<SpcFixtureResult, SpcFixtureFuncArgs> =
       from: deployer,
       owner: deployer,
       facets: [...SPC_FACETS, 'SpcInitFacet'],
-      deterministicSalt: deploymentSalt(hre)
+      // TODO: Find why this crashes.
+      // deterministicSalt: deploymentSalt(hre)
     });
 
     // Provision the SPC with a load of eth.
