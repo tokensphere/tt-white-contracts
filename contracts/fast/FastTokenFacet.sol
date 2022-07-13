@@ -280,6 +280,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       s.balances[p.from] >= p.amount,
       LibConstants.INSUFFICIENT_FUNDS
     );
+    require(
+      p.amount > 0,
+      LibConstants.UNSUPPORTED_OPERATION
+    );
 
     // If this is an allowance transfer...
     if (p.spender != p.from) {
