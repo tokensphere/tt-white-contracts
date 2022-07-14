@@ -15,6 +15,7 @@ import {
   INSUFFICIENT_TRANSFER_CREDITS_CODE,
   REQUIRES_CONTINUOUS_SUPPLY,
   INTERNAL_METHOD,
+  REQUIRES_EXCHANGE_ACTIVE_MEMBER,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE,
   REQUIRES_EXCHANGE_MEMBERSHIP,
@@ -101,6 +102,7 @@ describe('FastTokenFacet', () => {
     // Set the defaults when querying the SPC or Exchange fakes.
     spc.isMember.returns(false);
     exchange.isMember.returns(false);
+    exchange.isMemberActive.returns(true);
 
     topMock.hasFixedSupply.reset();
     topMock.hasFixedSupply.returns(true);
@@ -614,6 +616,27 @@ describe('FastTokenFacet', () => {
         expect(tokenMock.performTransfer).to.have.been
           .calledOnceWith(args)
           .delegatedFrom(token.address);
+      });
+
+      describe('when member deactivated', async () => {
+        beforeEach(async () => {
+          exchange.isMemberActive.reset();
+          // Alice will be deactivated on the exchange.
+          exchange.isMemberActive.whenCalledWith(alice.address).returns(false);
+          exchange.isMemberActive.returns(true);
+        });
+
+        it('requires active member when transferring from address (at the Exchange level)', async () => {
+          const subject = token.connect(alice).transferFromWithRef(alice.address, bob.address, 100, 'ref');
+          await expect(subject).to.have
+            .revertedWith(REQUIRES_EXCHANGE_ACTIVE_MEMBER);
+        });
+
+        it('allows transfer to a deactived member (at the Exchange level)', async () => {
+          const subject = () => token.connect(bob).transferFromWithRef(bob.address, alice.address, 100, 'One');
+          await expect(subject).to
+            .changeTokenBalances(token, [bob, alice], [-100, 100]);
+        });
       });
 
       describe('when semi-public', async () => {

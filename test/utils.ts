@@ -38,6 +38,8 @@ export const REQUIRES_DIAMOND_OWNERSHIP = 'Requires diamond ownership';
 
 export const REQUIRES_SPC_MEMBERSHIP = 'Requires SPC membership';
 export const REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
+export const REQUIRES_EXCHANGE_ACTIVE_MEMBER = 'Requires active Exchange member';
+export const REQUIRES_EXCHANGE_DEACTIVATED_MEMBER = 'Requires a deactivated Exchange member';
 export const REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
 export const REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
 export const DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';

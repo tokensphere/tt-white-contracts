@@ -7,4 +7,8 @@ interface IExchangeEvents {
 
   event MemberAdded(address indexed governor);
   event MemberRemoved(address indexed governor);
+
+  // IHasActiveMembers.
+  event MemberActivated(address indexed member);
+  event MemberDeactivated(address indexed member);
 }

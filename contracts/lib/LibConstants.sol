@@ -13,6 +13,8 @@ library LibConstants {
 
   string internal constant REQUIRES_SPC_MEMBERSHIP = 'Requires SPC membership';
   string internal constant REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
+  string internal constant REQUIRES_EXCHANGE_ACTIVE_MEMBER = 'Requires active Exchange member';
+  string internal constant REQUIRES_EXCHANGE_DEACTIVATED_MEMBER = 'Requires a deactivated Exchange member';
 
   string internal constant REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
   string internal constant REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
