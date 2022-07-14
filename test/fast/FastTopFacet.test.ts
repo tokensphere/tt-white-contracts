@@ -140,6 +140,8 @@ describe('FastTopFacet', () => {
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
+    it('requires that the caller is not a contract');
+
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the FAST with a lot of Eth.
       await ethers.provider.send("hardhat_setBalance", [token.address, toUnpaddedHexString(oneHundred)]);

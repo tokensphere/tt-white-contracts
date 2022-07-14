@@ -107,6 +107,8 @@ describe('SpcAccessFacet', () => {
           .revertedWith('Address already in set');
       });
 
+      it('does not provision the member if it is a contract');
+
       it('provisions the member with 10 Eth', async () => {
         await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
         // Do it!

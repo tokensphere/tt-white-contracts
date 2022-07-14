@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import '../../lib/LibConstants.sol';
+import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IERC173.sol';
 import '../lib/LibSpcAccess.sol';
@@ -31,6 +32,17 @@ abstract contract ASpcFacet is ISpcEvents {
     require(
       msg.sender == IERC173(address(this)).owner(),
       LibConstants.REQUIRES_DIAMOND_OWNERSHIP
+    );
+    _;
+  }
+
+  /** @dev Ensures that the given address is **not** a contract.
+   *  @param candidate The address to check.
+   */
+  modifier nonContract(address candidate) {
+    require(
+      !LibHelpers.isContract(candidate),
+      LibConstants.REQUIRES_NON_CONTRACT_ADDR
     );
     _;
   }

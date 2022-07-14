@@ -63,7 +63,9 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
 
     // Provision the member with some Eth.
     uint256 amount = LibHelpers.upTo(member, MEMBER_ETH_PROVISION);
-    if (amount != 0) { member.transfer(amount); }
+    if (amount != 0 && !LibHelpers.isContract(member)) {
+      member.transfer(amount);
+    }
 
     // Emit!
     emit MemberAdded(member);
