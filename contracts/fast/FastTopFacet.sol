@@ -41,6 +41,8 @@ contract FastTopFacet is AFastFacet {
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
     require(!this.isSemiPublic() || this.isSemiPublic() == flag, LibConstants.UNSUPPORTED_OPERATION);
     s.isSemiPublic = flag;
+    // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   // Provisioning functions.
