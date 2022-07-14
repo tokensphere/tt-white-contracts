@@ -5,7 +5,14 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Fast, ExchangeAccessFacet, Exchange } from '../../typechain';
-import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, one } from '../utils';
+import {
+  REQUIRES_SPC_MEMBERSHIP,
+  REQUIRES_NO_FAST_MEMBERSHIPS,
+  REQUIRES_FAST_CONTRACT_CALLER,
+  REQUIRES_EXCHANGE_ACTIVE_MEMBER,
+  REQUIRES_EXCHANGE_DEACTIVATED_MEMBER,
+  one
+} from '../utils';
 import { exchangeFixtureFunc } from '../fixtures/exchange';
 import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
@@ -239,5 +246,86 @@ describe('ExchangeAccessFacet', () => {
     });
 
     it('removes the FAST contract from the list of Fast members');
+  });
+
+  describe('isMemberActive', async () => {
+    beforeEach(async () => {
+      // Deactivate Alice.
+      await spcMemberAccess.deactivateMember(alice.address);
+    });
+
+    it('returns true when a member is active', async () => {
+      const subject = await access.isMemberActive(bob.address);
+      expect(subject).to.eq(true);
+    });
+
+    it('returns false when a member is deactived', async () => {
+      const subject = await access.isMemberActive(alice.address);
+      expect(subject).to.eq(false);
+    });
+  });
+
+  describe('deactivateMember', async () => {
+    it('requires the caller to be an SPC member', async () => {
+      const subject = access.deactivateMember(alice.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('adds the FAST member to the list of deactivated members', async () => {
+      await spcMemberAccess.deactivateMember(alice.address);
+      const subject = await access.isMemberActive(alice.address);
+      expect(subject).to.eq(false);
+    });
+
+    it('emits a MemberDeactivated event', async () => {
+      const subject = await spcMemberAccess.deactivateMember(alice.address);
+      expect(subject).to
+        .emit(access, 'MemberDeactivated')
+        .withArgs(alice.address);
+    });
+
+    it('requires that a given member is not already deactivated', async () => {
+      // Deactivate Alice.
+      await spcMemberAccess.deactivateMember(alice.address);
+
+      // Attempt to re-deactivate Alice.
+      const subject = spcMemberAccess.deactivateMember(alice.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_EXCHANGE_ACTIVE_MEMBER);
+    });
+  });
+
+  describe('activateMember', async () => {
+    beforeEach(async () => {
+      // Deactivate Alice.
+      await spcMemberAccess.deactivateMember(alice.address);
+    });
+
+    it('requires the caller to be an SPC member', async () => {
+      const subject = access.activateMember(alice.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('removes the FAST member from the list of deactivated members', async () => {
+      await spcMemberAccess.activateMember(alice.address);
+      const subject = await access.isMemberActive(alice.address);
+      expect(subject).to.eq(true);
+    });
+
+    it('emits a MemberActivated event', async () => {
+      const subject = await spcMemberAccess.activateMember(alice.address);
+      expect(subject).to
+        .emit(access, 'MemberActivated')
+        .withArgs(alice.address);
+    });
+
+    it('requires that a given member is currently deactivated', async () => {
+      // Attempt to activate an already active member.
+      const subject = spcMemberAccess.activateMember(bob.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_EXCHANGE_DEACTIVATED_MEMBER);
+    });
   });
 });

@@ -6,6 +6,7 @@ import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../interfaces/IHasMembers.sol';
 import '../../interfaces/IHasGovernors.sol';
+import '../../interfaces/IHasActiveMembers.sol';
 import '../../interfaces/IERC173.sol';
 import '../lib/LibFast.sol';
 import './IFastEvents.sol';
@@ -69,6 +70,17 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
+  /** @dev Ensures a candidate is active.
+   *  @param candidate The address to check activation status on.
+   */
+  modifier onlyExchangeActiveMember(address candidate) {
+    require(
+      IHasActiveMembers(LibFast.data().exchange).isMemberActive(candidate),
+      LibConstants.REQUIRES_EXCHANGE_ACTIVE_MEMBER
+    );
+    _;
+  }
+
   /** @dev Ensures that the message sender is a member of the SPC.
    */
   modifier onlySpcMember() {
@@ -98,6 +110,15 @@ abstract contract AFastFacet is IFastEvents {
       IHasMembers(address(this)).isMember(candidate),
       LibConstants.REQUIRES_FAST_MEMBERSHIP
     );
+    _;
+  }
+
+  /** @dev Ensures address a is different from address b.
+   *  @param a Address a
+   *  @param b Address b
+   */
+  modifier differentAddresses(address a, address b) {
+    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
     _;
   }
 }

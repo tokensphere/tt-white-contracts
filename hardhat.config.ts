@@ -47,7 +47,9 @@ const config: HardhatUserConfig = {
     name: 'Exchange',
     filter: abiFilter([
       ['Facet$', 'MemberAdded(address)'],
-      ['Facet$', 'MemberRemoved(address)']
+      ['Facet$', 'MemberRemoved(address)'],
+      ['Facet$', 'MemberActivated(address)'],
+      ['Facet$', 'MemberDeactivated(address)']
     ]),
     include: [
       'IERC173',

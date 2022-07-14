@@ -5,6 +5,7 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../spc/SpcTopFacet.sol';
 import '../interfaces/IHasMembers.sol';
+import '../interfaces/IHasActiveMembers.sol';
 import './lib/LibExchangeAccess.sol';
 import './lib/AExchangeFacet.sol';
 
@@ -12,7 +13,7 @@ import './lib/AExchangeFacet.sol';
 /** @title The Exchange Smart Contract.
  *  @dev The Exchange Access facet is in charge of keeping track of exchange members.
  */
-contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
+contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
   using LibAddressSet for LibAddressSet.Data;
 
   // Membership management.
@@ -113,5 +114,52 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers {
     // Remove the tracked membership.
     LibAddressSet.Data storage memberFasts = LibExchangeAccess.data().fastMemberships[member];
     memberFasts.remove(msg.sender, false);
+  }
+
+  /** @dev Given a member returns it's activation status.
+   *  @param member The member to check activation status on.
+   */
+  function isMemberActive(address member) external override view returns(bool) {
+    return !LibExchangeAccess.data().deactivatedMemberSet.contains(member);
+  }
+
+  /** @dev Activates a member at the Exchange level.
+   *  @param member The member to remove from the deactivation member set.
+   */
+  function activateMember(address member)
+    external
+    override
+    onlySpcMember {
+    // Guard against attempting to activate an already active member.
+    require(
+      !this.isMemberActive(member),
+      LibConstants.REQUIRES_EXCHANGE_DEACTIVATED_MEMBER
+    );
+
+    // Remove the member from the deactivated members list.
+    LibExchangeAccess.data().deactivatedMemberSet.remove(member, false);
+
+    // Emit!
+    emit MemberActivated(member);
+  }
+
+  /** @dev Deactivates a member at the Exchange level.
+   *  @param member The member to add to the deactivation member set.
+   */
+  function deactivateMember(address payable member)
+    external
+    override
+    onlySpcMember {
+    // Guard against attempting to deactivate an already deactivated member.
+    require(
+      this.isMemberActive(member),
+      LibConstants.REQUIRES_EXCHANGE_ACTIVE_MEMBER
+    );
+
+    // Add the member to the deactivated members list.
+    LibExchangeAccess.data().deactivatedMemberSet.add(member, false);
+
+    // Emit!
+    emit MemberDeactivated(member);
   }
 }

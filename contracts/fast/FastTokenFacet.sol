@@ -8,9 +8,9 @@ import '../interfaces/IHasGovernors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import './lib/IFast.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
+import './lib/IFast.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
@@ -272,6 +272,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external onlyDiamondFacet
       differentAddresses(p.from, p.to)
       onlyTokenHolder(p.from)
+      onlyExchangeActiveMember(p.from)
       onlyTokenHolder(p.to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -396,11 +397,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   // Modifiers.
-
-  modifier differentAddresses(address a, address b) {
-    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
-    _;
-  }
 
   /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
    *  @param candidate The address to check.

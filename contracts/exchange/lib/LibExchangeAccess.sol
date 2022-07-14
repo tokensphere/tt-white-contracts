@@ -17,6 +17,8 @@ library LibExchangeAccess {
     LibAddressSet.Data memberSet;
     /// @dev This is where we keep track of our member FAST memberships.
     mapping(address => LibAddressSet.Data) fastMemberships;
+    /// @dev This is where we keep track of our deactivated memberships.
+    LibAddressSet.Data deactivatedMemberSet;
   }
 
   function data()
