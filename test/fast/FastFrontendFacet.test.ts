@@ -61,6 +61,11 @@ describe('FastFrontendFacet', () => {
     });
   });
 
+  describe('emitDetailsChanged', async () => {
+    it('requires tha the caller is the diamond');
+    it('emits a DetailsChanged event with all the correct information');
+  });
+
   describe('details', async () => {
     it('returns a populated details struct', async () => {
       await ethers.provider.send("hardhat_setBalance", [frontend.address, toUnpaddedHexString(oneHundred)]);
@@ -85,7 +90,7 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('detailedMember', async () => {
-    it('returns MemberDetails populated struct', async () => {
+    it('returns a MemberDetails struct with the correct information', async () => {
       const subject = await frontend.detailedMember(spcMember.address);
       const memberObj = structToObj(subject);
 
