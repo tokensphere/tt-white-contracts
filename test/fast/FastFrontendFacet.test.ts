@@ -8,7 +8,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { zero, tenThousand, structToObj, oneHundred } from '../utils';
 import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -63,7 +63,7 @@ describe('FastFrontendFacet', () => {
 
   describe('details', async () => {
     it('returns a populated details struct', async () => {
-      await ethers.provider.send("hardhat_setBalance", [frontend.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [frontend.address, toUnpaddedHexString(oneHundred)]);
       const subject = await frontend.details();
       const subjectObj = structToObj(subject);
 

@@ -15,7 +15,7 @@ import {
   INTERNAL_METHOD,
   impersonateContract
 } from '../utils';
-import { toHexString, ZERO_ADDRESS } from '../../src/utils';
+import { toUnpaddedHexString, ZERO_ADDRESS } from '../../src/utils';
 import { Spc, Exchange, FastTopFacet, Fast } from '../../typechain';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
@@ -142,7 +142,7 @@ describe('FastTopFacet', () => {
 
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the FAST with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [token.address, toUnpaddedHexString(oneHundred)]);
       // Drain the FAST.
       const subject = async () => await spcMemberToken.drainEth();
       await expect(subject).to.changeEtherBalances([token, spcMember], [negOneHundred, oneHundred]);
@@ -150,7 +150,7 @@ describe('FastTopFacet', () => {
 
     it('emits a EthDrained event', async () => {
       // Provision the FAST with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [token.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [token.address, toUnpaddedHexString(oneHundred)]);
       // Drain the FAST.
       const subject = await spcMemberToken.drainEth();
       await expect(subject).to

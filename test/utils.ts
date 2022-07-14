@@ -3,7 +3,7 @@ import { BaseContract, ContractFactory } from "ethers";
 import { FunctionFragment, Interface } from "ethers/lib/utils";
 import { artifacts, ethers } from "hardhat";
 import { FacetCutAction } from "hardhat-deploy/dist/types";
-import { toHexString } from "../src/utils";
+import { toUnpaddedHexString } from "../src/utils";
 import { IDiamondCut } from "../typechain";
 
 export const zero = ethers.utils.parseEther('0.0');
@@ -68,7 +68,7 @@ export const structToObj = (struct: {}) => {
 export const impersonateContract =
   async <T extends BaseContract>(contract: T): Promise<T> => {
     // Provision the fast with some ETH.
-    await ethers.provider.send('hardhat_setBalance', [contract.address, toHexString(one)]);
+    await ethers.provider.send('hardhat_setBalance', [contract.address, toUnpaddedHexString(one)]);
     // Allow to impersonate the FAST.
     await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
     return contract.connect(await ethers.getSigner(contract.address)) as T;

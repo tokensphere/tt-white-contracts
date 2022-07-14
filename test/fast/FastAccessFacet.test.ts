@@ -5,7 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, Fast } from '../../typechain';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
@@ -251,7 +251,7 @@ describe('FastAccessFacet', () => {
 
       it('provisions the member with Eth', async () => {
         // Add eth to the FAST contract.
-        await ethers.provider.send("hardhat_setBalance", [access.address, toHexString(oneMillion)]);
+        await ethers.provider.send("hardhat_setBalance", [access.address, toUnpaddedHexString(oneMillion)]);
         // Make sure alice doesn't have eth.
         await ethers.provider.send("hardhat_setBalance", [alice.address, '0x0']);
         const subject = async () => await governedAccess.addMember(alice.address);

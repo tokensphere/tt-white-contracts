@@ -7,7 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Fast, ExchangeAccessFacet, Exchange } from '../../typechain';
 import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, one } from '../utils';
 import { exchangeFixtureFunc } from '../fixtures/exchange';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -190,7 +190,7 @@ describe('ExchangeAccessFacet', () => {
       });
 
       it('requires that the given member has no FAST memberships', async () => {
-        await ethers.provider.send('hardhat_setBalance', [fast.address, toHexString(one)]);
+        await ethers.provider.send('hardhat_setBalance', [fast.address, toUnpaddedHexString(one)]);
         await exchange
           .connect(await ethers.getSigner(fast.address))
           .memberAddedToFast(alice.address);

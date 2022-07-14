@@ -5,7 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { smock } from '@defi-wonderland/smock';
 import { Spc, SpcAccessFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 import {
   negNine, negTen, negTwo, nine, one, REQUIRES_SPC_MEMBERSHIP, ten, two
 } from '../utils';
@@ -116,7 +116,7 @@ describe('SpcAccessFacet', () => {
       });
 
       it('only tops-up the member if they already have eth', async () => {
-        await ethers.provider.send("hardhat_setBalance", [bob.address, toHexString(one)]);
+        await ethers.provider.send("hardhat_setBalance", [bob.address, toUnpaddedHexString(one)]);
         // Do it!
         const subject = async () => await spcMemberAccess.addMember(bob.address);
         // Check balances.
@@ -124,7 +124,7 @@ describe('SpcAccessFacet', () => {
       });
 
       it('only provisions the member up to the available balance', async () => {
-        await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
+        await ethers.provider.send("hardhat_setBalance", [spc.address, toUnpaddedHexString(two)]);
         await ethers.provider.send("hardhat_setBalance", [bob.address, '0x0']);
         // Do it!
         const subject = async () => await spcMemberAccess.addMember(bob.address);

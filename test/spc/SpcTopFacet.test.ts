@@ -5,7 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Fast, Spc, SpcTopFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { toHexString, ZERO_ADDRESS } from '../../src/utils';
+import { toUnpaddedHexString, ZERO_ADDRESS } from '../../src/utils';
 import {
   DUPLICATE_ENTRY,
   MISSING_ATTACHED_ETH,
@@ -75,7 +75,7 @@ describe('SpcTopFacet', () => {
 
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the SPC account with a lot of Eth.
-      await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [spc.address, toUnpaddedHexString(oneHundred)]);
       const subject = async () => await spcMemberTop.drainEth();
       await expect(subject).to
         .changeEtherBalances([spc, spcMember], [negOneHundred, oneHundred]);
@@ -83,7 +83,7 @@ describe('SpcTopFacet', () => {
 
     it('emits a EthDrained event', async () => {
       // Provision the SPC account with 1_000_000 Eth.
-      await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [spc.address, toUnpaddedHexString(oneHundred)]);
       const subject = spcMemberSpc.drainEth();
       await expect(subject).to
         .emit(spc, 'EthDrained')
@@ -170,8 +170,8 @@ describe('SpcTopFacet', () => {
       });
 
       it('only tops-up the FAST if it already has Eth', async () => {
-        await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(tenThousand)]);
-        await ethers.provider.send("hardhat_setBalance", [f03.address, toHexString(ten)]);
+        await ethers.provider.send("hardhat_setBalance", [spc.address, toUnpaddedHexString(tenThousand)]);
+        await ethers.provider.send("hardhat_setBalance", [f03.address, toUnpaddedHexString(ten)]);
         // Do it!
         const subject = async () => await spcMemberSpc.registerFast(f03.address);
         // Check balances.
@@ -179,7 +179,7 @@ describe('SpcTopFacet', () => {
       });
 
       it('only provisions the FAST up to the available balance', async () => {
-        await ethers.provider.send("hardhat_setBalance", [spc.address, toHexString(two)]);
+        await ethers.provider.send("hardhat_setBalance", [spc.address, toUnpaddedHexString(two)]);
         await ethers.provider.send("hardhat_setBalance", [f03.address, '0x0']);
         // Do it!
         const subject = async () => await spcMemberSpc.registerFast(f03.address);
