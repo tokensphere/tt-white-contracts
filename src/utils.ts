@@ -93,7 +93,7 @@ export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: Big
   return BigNumber.from(wei.toString());
 }
 
-export const toHexString = (amount: BigNumber) =>
+export const toUnpaddedHexString = (amount: BigNumber) =>
   amount.toHexString().replace(/0x0+/, '0x')
 
 // =================================================== //

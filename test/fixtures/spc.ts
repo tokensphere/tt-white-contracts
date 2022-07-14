@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { ContractTransaction } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
-import { deploymentSalt, toHexString, ZERO_ADDRESS } from "../../src/utils";
+import { deploymentSalt, toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock, oneMillion } from "../utils";
 import {
   Spc, SpcInitFacet, SpcTopFacet, SpcAccessFacet, SpcFrontendFacet,
@@ -47,7 +47,7 @@ export const spcFixtureFunc: FixtureFunc<SpcFixtureResult, SpcFixtureFuncArgs> =
     });
 
     // Provision the SPC with a load of eth.
-    await ethers.provider.send("hardhat_setBalance", [spcAddr, toHexString(oneMillion)]);
+    await ethers.provider.send("hardhat_setBalance", [spcAddr, toUnpaddedHexString(oneMillion)]);
 
     // Get a SPC typed pointer.
     const spc = await ethers.getContractAt<Spc>('Spc', spcAddr);

@@ -22,19 +22,28 @@ abstract contract AFastFacet is IFastEvents {
 
   /// @dev Ensures that a method can only be called by another facet of the same diamond.
   modifier onlyDiamondFacet() {
-    require(msg.sender == address(this), LibConstants.INTERNAL_METHOD);
+    require(
+      msg.sender == address(this),
+      LibConstants.INTERNAL_METHOD
+    );
     _;
   }
 
   /// @dev Ensures that a method can only be called by the owner of this diamond.
   modifier onlyDiamondOwner() {
-    require(msg.sender == IERC173(address(this)).owner(), LibConstants.REQUIRES_DIAMOND_OWNERSHIP);
+    require(
+      msg.sender == IERC173(address(this)).owner(),
+      LibConstants.REQUIRES_DIAMOND_OWNERSHIP
+    );
     _;
   }
 
   /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() {
-    require(msg.sender == LibConstants.DEPLOYER_CONTRACT, LibConstants.INTERNAL_METHOD);
+    require(
+      msg.sender == LibConstants.DEPLOYER_CONTRACT,
+      LibConstants.INTERNAL_METHOD
+    );
     _;
   }
 
@@ -42,7 +51,10 @@ abstract contract AFastFacet is IFastEvents {
    *  @param candidate The address to check.
    */
   modifier nonContract(address candidate) {
-    require(!LibHelpers.isContract(candidate), LibConstants.REQUIRES_NON_CONTRACT_ADDR);
+    require(
+      !LibHelpers.isContract(candidate),
+      LibConstants.REQUIRES_NON_CONTRACT_ADDR
+    );
     _;
   }
 

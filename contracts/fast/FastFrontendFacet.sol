@@ -68,7 +68,7 @@ contract FastFrontendFacet is AFastFacet {
       isSemiPublic: topStorage.isSemiPublic,
       hasFixedSupply: topStorage.hasFixedSupply,
       reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],
-      ethBalance: address(this).balance,
+      ethBalance: payable(address(this)).balance,
       memberCount: accessStorage.memberSet.values.length,
       governorCount: accessStorage.governorSet.values.length
     });

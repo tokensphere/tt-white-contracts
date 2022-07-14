@@ -5,7 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, Fast } from '../../typechain';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
@@ -25,10 +25,10 @@ describe('FastAccessFacet', () => {
     exchange: FakeContract<Exchange>,
     fast: Fast,
     access: FastAccessFacet,
-    topMock: MockContract<FastTopFacet>,
-    tokenMock: MockContract<FastTokenFacet>,
     governedAccess: FastAccessFacet,
-    spcMemberAccess: FastAccessFacet;
+    spcMemberAccess: FastAccessFacet,
+    topMock: MockContract<FastTopFacet>,
+    tokenMock: MockContract<FastTokenFacet>;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -73,87 +73,6 @@ describe('FastAccessFacet', () => {
   /// Governorship related stuff.
 
   describe('IHasGovernors implementation', async () => {
-    describe('addGovernor', async () => {
-      it('requires SPC membership (anonymous)', async () => {
-        const subject = access.addGovernor(alice.address);
-        // Check that the registry
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires SPC membership (governor)', async () => {
-        const subject = access.addGovernor(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires that the address is not a governor yet', async () => {
-        await spcMemberAccess.addGovernor(alice.address)
-        const subject = spcMemberAccess.addGovernor(alice.address);
-        await expect(subject).to.be
-          .revertedWith('Address already in set');
-      });
-
-      it('adds the given address as a governor', async () => {
-        await spcMemberAccess.addGovernor(alice.address);
-        const subject = await access.isGovernor(alice.address);
-        expect(subject).to.eq(true);
-      });
-
-      it('delegates provisioning Eth to the governor to the diamond', async () => {
-        topMock.payUpTo.reset();
-        await spcMemberAccess.addGovernor(alice.address);
-        expect(topMock.payUpTo).to.be
-          .calledOnceWith(alice.address, ten)
-          .delegatedFrom(fast.address);
-      });
-
-      it('emits a GovernorAdded event', async () => {
-        const subject = await spcMemberAccess.addGovernor(alice.address);
-        await expect(subject).to
-          .emit(fast, 'GovernorAdded')
-          .withArgs(alice.address);
-      });
-    });
-
-    describe('removeGovernor', async () => {
-      beforeEach(async () => {
-        // We want alice to be a governor for these tests.
-        await spcMemberAccess.addGovernor(alice.address);
-      });
-
-      it('requires SPC membership (anonymous)', async () => {
-        const subject = access.removeGovernor(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires SPC membership (governor)', async () => {
-        const subject = governedAccess.removeGovernor(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires that the address is an existing governor', async () => {
-        const subject = spcMemberAccess.removeGovernor(bob.address);
-        await expect(subject).to.be
-          .revertedWith('Address does not exist in set');
-      });
-
-      it('removes the given address as a governor', async () => {
-        await spcMemberAccess.removeGovernor(alice.address);
-        const subject = await access.isGovernor(alice.address);
-        expect(subject).to.eq(false);
-      });
-
-      it('emits a GovernorRemoved event', async () => {
-        const subject = await spcMemberAccess.removeGovernor(alice.address);
-        await expect(subject).to
-          .emit(fast, 'GovernorRemoved')
-          .withArgs(alice.address);
-      });
-    });
-
     describe('isGovernor', async () => {
       beforeEach(async () => {
         await spcMemberAccess.addGovernor(alice.address);
@@ -214,108 +133,102 @@ describe('FastAccessFacet', () => {
           ]);
       });
     });
+
+    describe('addGovernor', async () => {
+      it('requires SPC membership (anonymous)', async () => {
+        const subject = access.addGovernor(alice.address);
+        // Check that the registry
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('requires SPC membership (governor)', async () => {
+        const subject = access.addGovernor(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('delegates to the SPC for permission checking');
+
+      it('requires that the address is not a governor yet', async () => {
+        await spcMemberAccess.addGovernor(alice.address)
+        const subject = spcMemberAccess.addGovernor(alice.address);
+        await expect(subject).to.be
+          .revertedWith('Address already in set');
+      });
+
+      it('adds the given address as a governor', async () => {
+        await spcMemberAccess.addGovernor(alice.address);
+        const subject = await access.isGovernor(alice.address);
+        expect(subject).to.eq(true);
+      });
+
+      it('delegates provisioning Eth to the governor to the diamond', async () => {
+        topMock.payUpTo.reset();
+        await spcMemberAccess.addGovernor(alice.address);
+        expect(topMock.payUpTo).to.be
+          .calledOnceWith(alice.address, ten)
+          .delegatedFrom(fast.address);
+      });
+
+      it('does not provision if the passed address is a contract');
+
+      it('calls FastFrontendFacet.emitDetailsChanged');
+
+      it('emits a GovernorAdded event', async () => {
+        const subject = await spcMemberAccess.addGovernor(alice.address);
+        await expect(subject).to
+          .emit(fast, 'GovernorAdded')
+          .withArgs(alice.address);
+      });
+    });
+
+    describe('removeGovernor', async () => {
+      beforeEach(async () => {
+        // We want alice to be a governor for these tests.
+        await spcMemberAccess.addGovernor(alice.address);
+      });
+
+      it('requires SPC membership (anonymous)', async () => {
+        const subject = access.removeGovernor(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('requires SPC membership (governor)', async () => {
+        const subject = governedAccess.removeGovernor(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('delegates to the SPC for permission check');
+
+      it('requires that the address is an existing governor', async () => {
+        const subject = spcMemberAccess.removeGovernor(bob.address);
+        await expect(subject).to.be
+          .revertedWith('Address does not exist in set');
+      });
+
+      it('removes the given address as a governor', async () => {
+        await spcMemberAccess.removeGovernor(alice.address);
+        const subject = await access.isGovernor(alice.address);
+        expect(subject).to.eq(false);
+      });
+
+      it('calls FastFrontendFacet.emitDetailsChanged');
+
+      it('emits a GovernorRemoved event', async () => {
+        const subject = await spcMemberAccess.removeGovernor(alice.address);
+        await expect(subject).to
+          .emit(fast, 'GovernorRemoved')
+          .withArgs(alice.address);
+      });
+    });
   });
 
   /// Membership related stuff.
 
   describe('IHasMembers', async () => {
-    describe('addMember', async () => {
-      it('requires governance (anonymous)', async () => {
-        const subject = access.addMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
-      });
-
-      it('requires governance (SPC governor)', async () => {
-        const subject = spcMemberAccess.addMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
-      });
-
-      it('requires that the address is already a member of the Exchange');
-
-      it('requires that the address is not a member yet', async () => {
-        await governedAccess.addMember(alice.address)
-        const subject = governedAccess.addMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith('Address already in set');
-      });
-
-      it('adds the given address as a member', async () => {
-        await governedAccess.addMember(alice.address);
-        const subject = await access.isMember(alice.address);
-        expect(subject).to.eq(true);
-      });
-
-      it('delegates to the Exchange contract to signal the membership addition');
-
-      it('provisions the member with Eth', async () => {
-        // Add eth to the FAST contract.
-        await ethers.provider.send("hardhat_setBalance", [access.address, toHexString(oneMillion)]);
-        // Make sure alice doesn't have eth.
-        await ethers.provider.send("hardhat_setBalance", [alice.address, '0x0']);
-        const subject = async () => await governedAccess.addMember(alice.address);
-        // Since we use the diamond pattern, we can't mock anymore :(
-        // So... We test cross-facet functionality.
-        await expect(subject).to.changeEtherBalances([access, alice], [negOne, one]);
-      });
-
-      it('emits a MemberAdded event', async () => {
-        const subject = await governedAccess.addMember(alice.address);
-        await expect(subject).to
-          .emit(fast, 'MemberAdded')
-          .withArgs(alice.address);
-      });
-    });
-
-    describe('removeMember', async () => {
-      beforeEach(async () => {
-        // We want alice to be a member for these tests.
-        await governedAccess.addMember(alice.address);
-      });
-
-      it('requires governance (anonymous)', async () => {
-        const subject = access.removeMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
-      });
-
-      it('requires governance (SPC governor)', async () => {
-        const subject = spcMemberAccess.removeMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
-      });
-
-      it('requires that the address is an existing member', async () => {
-        const subject = governedAccess.removeMember(bob.address);
-        await expect(subject).to.be
-          .revertedWith('Address does not exist in set');
-      });
-
-      it('removes the given address as a member', async () => {
-        await governedAccess.removeMember(alice.address);
-        const subject = await access.isMember(alice.address);
-        expect(subject).to.eq(false);
-      });
-
-      it('delegates to the token contract', async () => {
-        tokenMock.beforeRemovingMember.reset();
-        await governedAccess.removeMember(alice.address);
-        expect(tokenMock.beforeRemovingMember).to.be
-          .calledOnceWith(alice.address)
-          .delegatedFrom(fast.address);
-      });
-
-      it('delegates to the Exchange contract to signal the membership addition');
-
-      it('emits a MemberRemoved event', async () => {
-        const subject = await governedAccess.removeMember(alice.address);
-        await expect(subject).to
-          .emit(fast, 'MemberRemoved')
-          .withArgs(alice.address);
-      });
-    });
-
     describe('isMember', async () => {
       beforeEach(async () => {
         await governedAccess.addMember(alice.address);
@@ -374,6 +287,107 @@ describe('FastAccessFacet', () => {
             rob.address,
             john.address
           ]);
+      });
+    });
+
+    describe('addMember', async () => {
+      it('requires governance (anonymous)', async () => {
+        const subject = access.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+      });
+
+      it('requires governance (SPC governor)', async () => {
+        const subject = spcMemberAccess.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+      });
+
+      it('requires that the address is an Exchange member');
+
+      it('requires that the address is not a member yet', async () => {
+        await governedAccess.addMember(alice.address)
+        const subject = governedAccess.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith('Address already in set');
+      });
+
+      it('adds the given address as a member', async () => {
+        await governedAccess.addMember(alice.address);
+        const subject = await access.isMember(alice.address);
+        expect(subject).to.eq(true);
+      });
+
+      it('delegates to the Exchange contract to signal the membership addition');
+
+      it('provisions the member with Eth', async () => {
+        // Add eth to the FAST contract.
+        await ethers.provider.send("hardhat_setBalance", [access.address, toUnpaddedHexString(oneMillion)]);
+        // Make sure alice doesn't have eth.
+        await ethers.provider.send("hardhat_setBalance", [alice.address, '0x0']);
+        const subject = async () => await governedAccess.addMember(alice.address);
+        // Since we use the diamond pattern, we can't mock anymore :(
+        // So... We test cross-facet functionality.
+        await expect(subject).to.changeEtherBalances([access, alice], [negOne, one]);
+      });
+
+      it('calls FastFrontendFacet.emitDetailsChanged');
+
+      it('emits a MemberAdded event', async () => {
+        const subject = await governedAccess.addMember(alice.address);
+        await expect(subject).to
+          .emit(fast, 'MemberAdded')
+          .withArgs(alice.address);
+      });
+    });
+
+    describe('removeMember', async () => {
+      beforeEach(async () => {
+        // We want alice to be a member for these tests.
+        await governedAccess.addMember(alice.address);
+      });
+
+      it('requires governance (anonymous)', async () => {
+        const subject = access.removeMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+      });
+
+      it('requires governance (SPC governor)', async () => {
+        const subject = spcMemberAccess.removeMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
+      });
+
+      it('requires that the address is an existing member', async () => {
+        const subject = governedAccess.removeMember(bob.address);
+        await expect(subject).to.be
+          .revertedWith('Address does not exist in set');
+      });
+
+      it('removes the given address as a member', async () => {
+        await governedAccess.removeMember(alice.address);
+        const subject = await access.isMember(alice.address);
+        expect(subject).to.eq(false);
+      });
+
+      it('delegates to the token contract', async () => {
+        tokenMock.beforeRemovingMember.reset();
+        await governedAccess.removeMember(alice.address);
+        expect(tokenMock.beforeRemovingMember).to.be
+          .calledOnceWith(alice.address)
+          .delegatedFrom(fast.address);
+      });
+
+      it('delegates to the Exchange contract to signal the membership addition');
+
+      it('calls FastFrontendFacet.emitDetailsChanged');
+
+      it('emits a MemberRemoved event', async () => {
+        const subject = await governedAccess.removeMember(alice.address);
+        await expect(subject).to
+          .emit(fast, 'MemberRemoved')
+          .withArgs(alice.address);
       });
     });
   });

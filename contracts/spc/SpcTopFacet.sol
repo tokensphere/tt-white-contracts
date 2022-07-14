@@ -35,8 +35,8 @@ contract SpcTopFacet is ASpcFacet {
    *  @notice Emits a `EthDrained` event.
    */
   function drainEth()
-      external
-      onlyMember(msg.sender) {
+      onlyMember(msg.sender) nonContract(msg.sender)
+      external {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);

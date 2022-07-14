@@ -3,6 +3,7 @@ import { BaseContract, ContractFactory } from "ethers";
 import { FunctionFragment, Interface } from "ethers/lib/utils";
 import { artifacts, ethers } from "hardhat";
 import { FacetCutAction } from "hardhat-deploy/dist/types";
+import { toUnpaddedHexString } from "../src/utils";
 import { IDiamondCut } from "../typechain";
 
 export const zero = ethers.utils.parseEther('0.0');
@@ -57,19 +58,15 @@ export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
 export const BALANCE_IS_POSITIVE = 'Balance is positive';
 
 // Get a POJO from a struct.
-export const structToObj = (struct: {}) => {
-  let
-    entries = Object.entries(struct),
-    start = entries.length / 2;
-  return Object.fromEntries(entries.slice(start));
+export const abiStructToObj = ({ ...struct }) => {
+  const entries = Object.entries(struct);
+  return Object.fromEntries(entries.slice(entries.length / 2));
 };
 
-export const impersonateDiamond =
-  async <T extends BaseContract>(
-    contract: T
-  ): Promise<T> => {
+export const impersonateContract =
+  async <T extends BaseContract>(contract: T): Promise<T> => {
     // Provision the fast with some ETH.
-    await ethers.provider.send('hardhat_setBalance', [contract.address, oneMillion.toHexString()]);
+    await ethers.provider.send('hardhat_setBalance', [contract.address, toUnpaddedHexString(one)]);
     // Allow to impersonate the FAST.
     await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
     return contract.connect(await ethers.getSigner(contract.address)) as T;

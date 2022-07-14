@@ -5,8 +5,9 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Fast, ExchangeAccessFacet, Exchange } from '../../typechain';
-import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, oneMillion } from '../utils';
+import { REQUIRES_SPC_MEMBERSHIP, REQUIRES_NO_FAST_MEMBERSHIPS, REQUIRES_FAST_CONTRACT_CALLER, one } from '../utils';
 import { exchangeFixtureFunc } from '../fixtures/exchange';
+import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -26,6 +27,18 @@ describe('ExchangeAccessFacet', () => {
     spcMemberAccess: ExchangeAccessFacet;
 
   const exchangeDeployFixture = deployments.createFixture(exchangeFixtureFunc);
+
+  const resetSpcMock = () => {
+    spc.isMember.reset();
+    spc.isMember.whenCalledWith(spcMember.address).returns(true);
+    spc.isMember.returns(false);
+  }
+
+  const resetFastMock = () => {
+    spc.isFastRegistered.reset();
+    spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
+    spc.isFastRegistered.returns(false);
+  }
 
   before(async () => {
     // Keep track of a few signers.
@@ -51,99 +64,11 @@ describe('ExchangeAccessFacet', () => {
       }
     });
 
-    // Reset mocks.
-    spc.isMember.reset();
-    // Setup mocks.
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    spc.isMember.returns(false);
+    resetSpcMock();
+    resetFastMock()
   });
 
   describe('IHasMembers', async () => {
-    describe('addMember', async () => {
-      it('requires governance (anonymous)', async () => {
-        const subject = access.addMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires that the address is not a member yet', async () => {
-        await spcMemberAccess.addMember(alice.address)
-        const subject = spcMemberAccess.addMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith('Address already in set');
-      });
-
-      it('adds the given address as a member', async () => {
-        await spcMemberAccess.addMember(alice.address);
-        const subject = await exchange.isMember(alice.address);
-        expect(subject).to.eq(true);
-      });
-
-      it('delegates to the SPC for permission', async () => {
-        await spcMemberAccess.addMember(alice.address);
-        expect(spc.isMember).to.be
-          .calledOnceWith(spcMember.address);
-      });
-
-      it('emits a MemberAdded event', async () => {
-        const subject = await spcMemberAccess.addMember(alice.address);
-        await expect(subject).to
-          .emit(exchange, 'MemberAdded')
-          .withArgs(alice.address);
-      });
-    });
-
-    describe('removeMember', async () => {
-      beforeEach(async () => {
-        // We want alice to be a member for these tests.
-        await spcMemberAccess.addMember(alice.address);
-      });
-
-      it('requires governance (anonymous)', async () => {
-        const subject = exchange.removeMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
-      });
-
-      it('requires that the address is an existing member - calls LibAddressSet', async () => {
-        const subject = spcMemberAccess.removeMember(bob.address);
-        await expect(subject).to.be
-          .revertedWith('Address does not exist in set');
-      });
-
-      it('requires that the address has no FAST memberships', async () => {
-        // The fake FAST is registered.
-        spc.isFastRegistered.reset();
-        spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
-        spc.isFastRegistered.returns(false);
-
-        // Add Alice to a fast via memberAddedToFast callback.
-        await ethers
-          .provider
-          .send('hardhat_setBalance', [fast.address, oneMillion.toHexString()]);
-        await exchange
-          .connect(await ethers.getSigner(fast.address))
-          .memberAddedToFast(alice.address);
-
-        const subject = spcMemberAccess.removeMember(alice.address);
-        await expect(subject).to.be
-          .revertedWith(REQUIRES_NO_FAST_MEMBERSHIPS);
-      });
-
-      it('removes the given address as a member', async () => {
-        await spcMemberAccess.removeMember(alice.address);
-        const subject = await exchange.isMember(alice.address);
-        expect(subject).to.eq(false);
-      });
-
-      it('emits a MemberRemoved event', async () => {
-        const subject = await spcMemberAccess.removeMember(alice.address);
-        await expect(subject).to
-          .emit(exchange, 'MemberRemoved')
-          .withArgs(alice.address);
-      });
-    });
-
     describe('isMember', async () => {
       beforeEach(async () => {
         await spcMemberAccess.addMember(alice.address);
@@ -204,37 +129,114 @@ describe('ExchangeAccessFacet', () => {
           ]);
       });
     });
+
+    describe('addMember', async () => {
+      it('requires SPC membership (anonymous)', async () => {
+        const subject = access.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('delegates to the SPC for permission', async () => {
+        await spcMemberAccess.addMember(alice.address);
+        expect(spc.isMember).to.be
+          .calledOnceWith(spcMember.address);
+      });
+
+      it('requires that the address is not a member yet', async () => {
+        await spcMemberAccess.addMember(alice.address)
+        const subject = spcMemberAccess.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith('Address already in set');
+      });
+
+      it('adds the given address as a member', async () => {
+        await spcMemberAccess.addMember(alice.address);
+        const subject = await exchange.isMember(alice.address);
+        expect(subject).to.eq(true);
+      });
+
+      it('emits a MemberAdded event', async () => {
+        const subject = await spcMemberAccess.addMember(alice.address);
+        await expect(subject).to
+          .emit(exchange, 'MemberAdded')
+          .withArgs(alice.address);
+      });
+    });
+
+    describe('removeMember', async () => {
+      beforeEach(async () => {
+        // We want alice to be a member for these tests.
+        await spcMemberAccess.addMember(alice.address);
+        resetSpcMock();
+      });
+
+      it('requires SPC membership (anonymous)', async () => {
+        const subject = exchange.removeMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+      });
+
+      it('delegates to the SPC for permission', async () => {
+        await spcMemberAccess.removeMember(alice.address);
+        expect(spc.isMember).to.be
+          .calledOnceWith(spcMember.address);
+      });
+
+      it('requires that the address is an existing member - calls LibAddressSet', async () => {
+        const subject = spcMemberAccess.removeMember(bob.address);
+        await expect(subject).to.be
+          .revertedWith('Address does not exist in set');
+      });
+
+      it('requires that the given member has no FAST memberships', async () => {
+        await ethers.provider.send('hardhat_setBalance', [fast.address, toUnpaddedHexString(one)]);
+        await exchange
+          .connect(await ethers.getSigner(fast.address))
+          .memberAddedToFast(alice.address);
+
+        const subject = spcMemberAccess.removeMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_NO_FAST_MEMBERSHIPS);
+      });
+
+      it('removes the given address as a member', async () => {
+        await spcMemberAccess.removeMember(alice.address);
+        const subject = await exchange.isMember(alice.address);
+        expect(subject).to.eq(false);
+      });
+
+      it('emits a MemberRemoved event', async () => {
+        const subject = await spcMemberAccess.removeMember(alice.address);
+        await expect(subject).to
+          .emit(exchange, 'MemberRemoved')
+          .withArgs(alice.address);
+      });
+    });
   });
 
   // This should delegate to LibPaginate.addresses().
   describe('fastMemberships', async () => {
-    it('returns an array of addresses with a cursor');
+    it('returns an array of FASTs a given user belongs to along with a cursor');
+    it('does not return FASTs the given user does not belong to');
   });
 
   describe('memberAddedToFast', async () => {
-    beforeEach(async () => {
-      // The fake FAST is not registered.
-      spc.isFastRegistered.reset();
-      spc.isFastRegistered.returns(false);
-    });
-
-    it('requires the calling FAST contract to be FastRegistered', async () => {
-      // Override the balance for the FAST contract.
-      await ethers.provider.send('hardhat_setBalance', [fast.address, oneMillion.toHexString()]);
-      // Connect up.
-      const exchangeAsFast = exchange.connect(await ethers.getSigner(fast.address));
-
-      // Hit the memberAddedToFast callback.
-      const subject = exchangeAsFast.memberAddedToFast(alice.address);
+    it('requires the caller to be a registered FAST', async () => {
+      const subject = exchange.memberAddedToFast(alice.address);
       await expect(subject).to.have.been
         .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
     });
 
-    it('adds the calling FAST contract to the member list of the Fast');
+    it('adds the given member to the FAST membership tracking data structure');
   });
 
   describe('memberRemovedFromFast', async () => {
-    it('requires the calling FAST contract to be FastRegistered');
+    it('requires the caller to be a registered FAST', async () => {
+      const subject = exchange.memberRemovedFromFast(alice.address);
+      await expect(subject).to.have.been
+        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+    });
 
     it('removes the FAST contract from the list of Fast members');
   });

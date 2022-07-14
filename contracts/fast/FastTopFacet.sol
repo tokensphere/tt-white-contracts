@@ -41,6 +41,8 @@ contract FastTopFacet is AFastFacet {
     // Someone is trying to toggle back to private?... No can do!isSemiPublic
     require(!this.isSemiPublic() || this.isSemiPublic() == flag, LibConstants.UNSUPPORTED_OPERATION);
     s.isSemiPublic = flag;
+    // Emit!
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   // Provisioning functions.
@@ -53,8 +55,8 @@ contract FastTopFacet is AFastFacet {
   }
 
   function drainEth()
-      external
-      onlySpcMember {
+      onlySpcMember nonContract(msg.sender)
+      external {
     uint256 amount = payable(address(this)).balance;
     payable(msg.sender).transfer(amount);
     emit EthDrained(msg.sender, amount);
@@ -66,8 +68,12 @@ contract FastTopFacet is AFastFacet {
   * provisioning to arbitrary addresses.
   */
   function payUpTo(address payable recipient, uint256 amount)
-      external onlyDiamondFacet() {
-    require(recipient != address(0), LibConstants.REQUIRES_NON_ZERO_ADDRESS);
+      nonContract(recipient)
+      external onlyDiamondFacet {
+    require(
+      recipient != address(0),
+      LibConstants.REQUIRES_NON_ZERO_ADDRESS
+    );
     amount = LibHelpers.upTo(recipient, amount);
     // Transfer some eth!
     if (amount != 0) { recipient.transfer(amount); }

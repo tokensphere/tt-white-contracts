@@ -5,10 +5,10 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { zero, tenThousand, structToObj, oneHundred } from '../utils';
+import { zero, tenThousand, abiStructToObj, oneHundred } from '../utils';
 import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
-import { toHexString } from '../../src/utils';
+import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -61,11 +61,16 @@ describe('FastFrontendFacet', () => {
     });
   });
 
+  describe('emitDetailsChanged', async () => {
+    it('requires tha the caller is the diamond');
+    it('emits a DetailsChanged event with all the correct information');
+  });
+
   describe('details', async () => {
     it('returns a populated details struct', async () => {
-      await ethers.provider.send("hardhat_setBalance", [frontend.address, toHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [frontend.address, toUnpaddedHexString(oneHundred)]);
       const subject = await frontend.details();
-      const subjectObj = structToObj(subject);
+      const subjectObj = abiStructToObj(subject);
 
       expect(subjectObj).to.eql({
         addr: frontend.address,
@@ -85,9 +90,9 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('detailedMember', async () => {
-    it('returns MemberDetails populated struct', async () => {
+    it('returns a MemberDetails struct with the correct information', async () => {
       const subject = await frontend.detailedMember(spcMember.address);
-      const memberObj = structToObj(subject);
+      const memberObj = abiStructToObj(subject);
 
       expect(memberObj).to.eql({
         addr: spcMember.address,
@@ -102,7 +107,7 @@ describe('FastFrontendFacet', () => {
     it('returns member details with next cursor', async () => {
       const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
       // Convert the structs to objects.
-      const [memberAObj, memberBObj] = members.map(structToObj);
+      const [memberAObj, memberBObj] = members.map(abiStructToObj);
 
       // Member A details.
       expect(memberAObj).to.eql({
@@ -128,7 +133,7 @@ describe('FastFrontendFacet', () => {
       // Fetch details of Member passing 1 as an offset index.
       const [members, /*nextCursor*/] = await frontend.paginateDetailedMembers(1, 2);
       // Convert the structs to objects.
-      const [memberAObj] = members.map(structToObj);
+      const [memberAObj] = members.map(abiStructToObj);
 
       // Expect Member B.
       expect(memberAObj).to.eql({
