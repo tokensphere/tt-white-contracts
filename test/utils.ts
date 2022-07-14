@@ -58,11 +58,9 @@ export const UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';
 export const BALANCE_IS_POSITIVE = 'Balance is positive';
 
 // Get a POJO from a struct.
-export const structToObj = (struct: {}) => {
-  let
-    entries = Object.entries(struct),
-    start = entries.length / 2;
-  return Object.fromEntries(entries.slice(start));
+export const abiStructToObj = ({ ...struct }) => {
+  const entries = Object.entries(struct);
+  return Object.fromEntries(entries.slice(entries.length / 2));
 };
 
 export const impersonateContract =

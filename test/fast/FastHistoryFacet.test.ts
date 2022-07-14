@@ -6,7 +6,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
-import { INTERNAL_METHOD, impersonateContract, structToObj } from '../utils';
+import { INTERNAL_METHOD, impersonateContract, abiStructToObj } from '../utils';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
