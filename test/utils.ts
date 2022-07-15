@@ -35,6 +35,7 @@ export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;
 // Revert messages.
 export const INTERNAL_METHOD = 'Internal method';
 export const REQUIRES_DIAMOND_OWNERSHIP = 'Requires diamond ownership';
+export const ALREADY_INITIALIZED = 'Already initialized';
 
 export const REQUIRES_SPC_MEMBERSHIP = 'Requires SPC membership';
 export const REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
@@ -46,6 +47,7 @@ export const DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
 export const REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';
 export const REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
 export const REQUIRES_NON_ZERO_ADDRESS = 'Requires non-zero address';
+export const REQUIRES_NON_CONTRACT_ADDR = 'Address cannot be a contract';
 
 export const DUPLICATE_ENTRY = 'Duplicate entry';
 export const UNSUPPORTED_OPERATION = 'Unsupported operation';
@@ -66,12 +68,14 @@ export const abiStructToObj = ({ ...struct }) => {
 };
 
 export const impersonateContract =
-  async <T extends BaseContract>(contract: T): Promise<T> => {
+  async <T extends BaseContract>(contract: T, called_by?: string | null): Promise<T> => {
+    // Are we switching _who_ is calling this contract?
+    const caller_address = (called_by) ? called_by : contract.address;
     // Provision the fast with some ETH.
-    await ethers.provider.send('hardhat_setBalance', [contract.address, toUnpaddedHexString(one)]);
+    await ethers.provider.send('hardhat_setBalance', [caller_address, toUnpaddedHexString(one)]);
     // Allow to impersonate the FAST.
-    await ethers.provider.send("hardhat_impersonateAccount", [contract.address]);
-    return contract.connect(await ethers.getSigner(contract.address)) as T;
+    await ethers.provider.send("hardhat_impersonateAccount", [caller_address]);
+    return contract.connect(await ethers.getSigner(caller_address)) as T;
   };
 
 const setupDiamondFacet =

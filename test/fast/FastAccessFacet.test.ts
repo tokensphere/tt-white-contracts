@@ -4,9 +4,9 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { negOne, one, oneMillion, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
+import { negOne, one, oneMillion, REQUIRES_EXCHANGE_MEMBERSHIP, REQUIRES_FAST_GOVERNORSHIP, REQUIRES_SPC_MEMBERSHIP, ten } from '../utils';
 import { toUnpaddedHexString } from '../../src/utils';
-import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, Fast } from '../../typechain';
+import { Spc, Exchange, FastAccessFacet, FastTokenFacet, FastTopFacet, FastFrontendFacet, Fast } from '../../typechain';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -28,7 +28,8 @@ describe('FastAccessFacet', () => {
     governedAccess: FastAccessFacet,
     spcMemberAccess: FastAccessFacet,
     topMock: MockContract<FastTopFacet>,
-    tokenMock: MockContract<FastTokenFacet>;
+    tokenMock: MockContract<FastTokenFacet>,
+    frontendMock: MockContract<FastFrontendFacet>;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -39,24 +40,26 @@ describe('FastAccessFacet', () => {
     spc = await smock.fake('Spc');
     exchange = await smock.fake('Exchange');
     exchange.spcAddress.returns(spc.address);
-    await Promise.all(
-      [alice, bob, rob, john].map(
-        async ({ address }) => exchange.isMember.whenCalledWith(address).returns(true)
-      )
-    );
-
   });
 
   beforeEach(async () => {
     spc.isMember.whenCalledWith(spcMember.address).returns(true);
     spc.isMember.returns(false);
 
+    exchange.isMember.reset();
+
+    await Promise.all(
+      [alice, bob, rob, john].map(
+        async ({ address }) => exchange.isMember.whenCalledWith(address).returns(true)
+      )
+    );
+
     await fastDeployFixture({
       opts: {
         name: 'FastAccessFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast, topMock, tokenMock } = args);
+          ({ fast, topMock, tokenMock, frontendMock } = args);
           access = await ethers.getContractAt<FastAccessFacet>('FastAccessFacet', fast.address);
           governedAccess = access.connect(governor);
           spcMemberAccess = access.connect(spcMember);
@@ -148,7 +151,13 @@ describe('FastAccessFacet', () => {
           .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
-      it('delegates to the SPC for permission checking');
+      it('delegates to the SPC for permission checking', async () => {
+        spc.isMember.reset();
+        spc.isMember.whenCalledWith(spcMember.address).returns(true);
+        await spcMemberAccess.addGovernor(alice.address);
+        expect(spc.isMember).to.be
+          .calledOnceWith(spcMember.address);
+      });
 
       it('requires that the address is not a governor yet', async () => {
         await spcMemberAccess.addGovernor(alice.address)
@@ -171,9 +180,21 @@ describe('FastAccessFacet', () => {
           .delegatedFrom(fast.address);
       });
 
-      it('does not provision if the passed address is a contract');
+      it('does not provision if the passed address is a contract', async () => {
+        topMock.payUpTo.reset();
+        // Calling addGovernor with the contract address should not call payUpTo.
+        await spcMemberAccess.addGovernor(fast.address);
+        expect(topMock.payUpTo).to.not.be
+          .calledOnceWith(fast.address, ten)
+          .delegatedFrom(fast.address);
+      });
 
-      it('calls FastFrontendFacet.emitDetailsChanged');
+      // This is actually called twice... one from addGovernor then from payUpTo.
+      it('calls FastFrontendFacet.emitDetailsChanged', async () => {
+        frontendMock.emitDetailsChanged.reset();
+        await spcMemberAccess.addGovernor(alice.address);
+        expect(frontendMock.emitDetailsChanged).to.be.calledTwice;
+      });
 
       it('emits a GovernorAdded event', async () => {
         const subject = await spcMemberAccess.addGovernor(alice.address);
@@ -201,7 +222,13 @@ describe('FastAccessFacet', () => {
           .revertedWith(REQUIRES_SPC_MEMBERSHIP);
       });
 
-      it('delegates to the SPC for permission check');
+      it('delegates to the SPC for permission checking', async () => {
+        spc.isMember.reset();
+        spc.isMember.whenCalledWith(spcMember.address).returns(true);
+        await spcMemberAccess.removeGovernor(alice.address);
+        expect(spc.isMember).to.be
+          .calledOnceWith(spcMember.address);
+      });
 
       it('requires that the address is an existing governor', async () => {
         const subject = spcMemberAccess.removeGovernor(bob.address);
@@ -215,7 +242,11 @@ describe('FastAccessFacet', () => {
         expect(subject).to.eq(false);
       });
 
-      it('calls FastFrontendFacet.emitDetailsChanged');
+      it('calls FastFrontendFacet.emitDetailsChanged', async () => {
+        frontendMock.emitDetailsChanged.reset();
+        await spcMemberAccess.removeGovernor(alice.address);
+        expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+      });
 
       it('emits a GovernorRemoved event', async () => {
         const subject = await spcMemberAccess.removeGovernor(alice.address);
@@ -303,7 +334,12 @@ describe('FastAccessFacet', () => {
           .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
 
-      it('requires that the address is an Exchange member');
+      it('requires that the address is an Exchange member', async () => {
+        exchange.isMember.whenCalledWith(alice.address).returns(false);
+        const subject = governedAccess.addMember(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+      });
 
       it('requires that the address is not a member yet', async () => {
         await governedAccess.addMember(alice.address)
@@ -318,7 +354,12 @@ describe('FastAccessFacet', () => {
         expect(subject).to.eq(true);
       });
 
-      it('delegates to the Exchange contract to signal the membership addition');
+      it('delegates to the Exchange contract to signal the membership addition', async () => {
+        exchange.memberAddedToFast.reset();
+        await governedAccess.addMember(alice.address);
+        expect(exchange.memberAddedToFast).to.be
+          .calledOnceWith(alice.address);
+      });
 
       it('provisions the member with Eth', async () => {
         // Add eth to the FAST contract.
@@ -331,7 +372,12 @@ describe('FastAccessFacet', () => {
         await expect(subject).to.changeEtherBalances([access, alice], [negOne, one]);
       });
 
-      it('calls FastFrontendFacet.emitDetailsChanged');
+      // TODO: This is calling twice, same issue above, it's in the function + called payUpTo function.
+      it('calls FastFrontendFacet.emitDetailsChanged', async () => {
+        frontendMock.emitDetailsChanged.reset();
+        await governedAccess.addMember(alice.address);
+        expect(frontendMock.emitDetailsChanged).to.be.calledTwice;
+      });
 
       it('emits a MemberAdded event', async () => {
         const subject = await governedAccess.addMember(alice.address);
@@ -379,9 +425,18 @@ describe('FastAccessFacet', () => {
           .delegatedFrom(fast.address);
       });
 
-      it('delegates to the Exchange contract to signal the membership addition');
+      it('delegates to the Exchange contract to signal the membership addition', async () => {
+        exchange.memberRemovedFromFast.reset();
+        await governedAccess.removeMember(alice.address);
+        expect(exchange.memberRemovedFromFast).to.be
+          .calledOnceWith(alice.address);
+      });
 
-      it('calls FastFrontendFacet.emitDetailsChanged');
+      it('calls FastFrontendFacet.emitDetailsChanged', async () => {
+        frontendMock.emitDetailsChanged.reset();
+        await governedAccess.removeMember(alice.address);
+        expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+      });
 
       it('emits a MemberRemoved event', async () => {
         const subject = await governedAccess.removeMember(alice.address);

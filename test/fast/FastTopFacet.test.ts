@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
-import { FakeContract, smock } from '@defi-wonderland/smock';
+import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import {
   negOneHundred,
@@ -10,13 +10,14 @@ import {
   ninety,
   REQUIRES_SPC_MEMBERSHIP,
   REQUIRES_NON_ZERO_ADDRESS,
+  REQUIRES_NON_CONTRACT_ADDR,
   UNSUPPORTED_OPERATION,
   MISSING_ATTACHED_ETH,
   INTERNAL_METHOD,
   impersonateContract
 } from '../utils';
 import { toUnpaddedHexString, ZERO_ADDRESS } from '../../src/utils';
-import { Spc, Exchange, FastTopFacet, Fast } from '../../typechain';
+import { Spc, Exchange, FastTopFacet, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -32,6 +33,7 @@ describe('FastTopFacet', () => {
     exchange: FakeContract<Exchange>,
     fast: Fast,
     top: FastTopFacet,
+    frontendMock: MockContract<FastFrontendFacet>,
     spcMemberTop: FastTopFacet,
     topAsItself: FastTopFacet;
 
@@ -52,7 +54,7 @@ describe('FastTopFacet', () => {
         name: 'FastTopFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast } = args);
+          ({ fast, frontendMock } = args);
           top = await ethers.getContractAt<FastTopFacet>('FastTopFacet', fast.address);
           spcMemberTop = top.connect(spcMember);
         }
@@ -64,7 +66,7 @@ describe('FastTopFacet', () => {
       }
     });
 
-    topAsItself = await impersonateContract(top)
+    topAsItself = await impersonateContract(top);
 
     // Set the SPC member.
     spc.isMember.reset();
@@ -115,7 +117,13 @@ describe('FastTopFacet', () => {
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
-    it('delegates to the SPC for permission check');
+    it('delegates to the SPC for permission check', async () => {
+      spc.isMember.reset();
+      spc.isMember.whenCalledWith(spcMember.address).returns(true);
+      await spcMemberTop.setIsSemiPublic(true);
+      expect(spc.isMember).to.be
+        .calledOnceWith(spcMember.address);
+    });
 
     it('cannot revert an SPC to non-semi public once set', async () => {
       // Set as semi public.
@@ -131,7 +139,11 @@ describe('FastTopFacet', () => {
       expect(await spcMemberTop.isSemiPublic()).to.be.true;
     });
 
-    it('delegates to FastFrontendFacet.emitDetailsChanged');
+    it('delegates to FastFrontendFacet.emitDetailsChanged', async () => {
+      frontendMock.emitDetailsChanged.reset();
+      await spcMemberTop.setIsSemiPublic(true);
+      expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+    });
   });
 
   // Provisioning functions.
@@ -150,7 +162,11 @@ describe('FastTopFacet', () => {
         .withArgs(spcMember.address, ninety)
     });
 
-    it('delegates to FastFrontendFacet.emitDetailsChanged');
+    it('delegates to FastFrontendFacet.emitDetailsChanged', async () => {
+      frontendMock.emitDetailsChanged.reset();
+      await spcMemberTop.provisionWithEth({ value: ninety });
+      expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+    });
   });
 
   describe('drainEth', async () => {
@@ -160,9 +176,21 @@ describe('FastTopFacet', () => {
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
     });
 
-    it('delegates to the SPC for permission check');
+    it('delegates to the SPC for permission check', async () => {
+      spc.isMember.reset();
+      spc.isMember.whenCalledWith(spcMember.address).returns(true);
+      await spcMemberTop.drainEth();
+      expect(spc.isMember).to.be
+        .calledOnceWith(spcMember.address);
+    });
 
-    it('requires that the caller is not a contract');
+    it('requires that the caller is not a contract', async () => {
+      spc.isMember.reset();
+      spc.isMember.whenCalledWith(top.address).returns(true);
+      const subject = topAsItself.drainEth();
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_NON_CONTRACT_ADDR);
+    });
 
     it('transfers all the locked Eth to the caller', async () => {
       // Provision the FAST with a lot of Eth.
@@ -182,7 +210,11 @@ describe('FastTopFacet', () => {
         .withArgs(spcMember.address, oneHundred);
     });
 
-    it('delegates to FastFrontendFacet.emitDetailsChanged');
+    it('delegates to FastFrontendFacet.emitDetailsChanged', async () => {
+      frontendMock.emitDetailsChanged.reset();
+      await spcMemberTop.drainEth();
+      expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+    });
   });
 
   describe('payUpTo', async () => {
@@ -191,7 +223,11 @@ describe('FastTopFacet', () => {
         .revertedWith(INTERNAL_METHOD);
     });
 
-    it('requires that the caller is not a contract');
+    it('requires that the caller is not a contract', async () => {
+      const subject = topAsItself.payUpTo(fast.address, ninety);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_NON_CONTRACT_ADDR);
+    });
 
     it('requires the recipient to be non-zero address', async () => {
       const subject = topAsItself.payUpTo(ZERO_ADDRESS, ninety);

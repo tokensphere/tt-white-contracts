@@ -39,7 +39,7 @@ export const exchangeFixtureFunc: FixtureFunc<ExchangeFixtureResult, ExchangeFix
     const { address: exchangeAddr } = await hre.deployments.diamond.deploy(name, {
       from: deployer,
       owner: deployer,
-      facets: EXCHANGE_FACETS,
+      facets: [...EXCHANGE_FACETS, 'ExchangeInitFacet'],
       execute: {
         contract: 'ExchangeInitFacet',
         methodName: 'initialize',
