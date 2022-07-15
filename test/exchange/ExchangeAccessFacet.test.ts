@@ -13,6 +13,7 @@ import {
   REQUIRES_EXCHANGE_DEACTIVATED_MEMBER,
   REQUIRES_EXCHANGE_MEMBERSHIP,
   one,
+  impersonateContract
 } from '../utils';
 import { exchangeFixtureFunc } from '../fixtures/exchange';
 import { toUnpaddedHexString } from '../../src/utils';
@@ -31,6 +32,7 @@ describe('ExchangeAccessFacet', () => {
   let spc: FakeContract<Spc>,
     fast: FakeContract<Fast>,
     exchange: Exchange,
+    exchangeAsItself: Exchange,
     access: ExchangeAccessFacet,
     spcMemberAccess: ExchangeAccessFacet;
 
@@ -72,11 +74,14 @@ describe('ExchangeAccessFacet', () => {
       }
     });
 
+    exchangeAsItself = await impersonateContract(exchange);
+
     resetSpcMock();
     resetFastMock()
   });
 
   describe('IHasMembers', async () => {
+
     describe('isMember', async () => {
       beforeEach(async () => {
         await spcMemberAccess.addMember(alice.address);
@@ -223,10 +228,30 @@ describe('ExchangeAccessFacet', () => {
     });
   });
 
-  // This should delegate to LibPaginate.addresses().
   describe('fastMemberships', async () => {
-    it('returns an array of FASTs a given user belongs to along with a cursor');
-    it('does not return FASTs the given user does not belong to');
+    beforeEach(async () => {
+      // This FAST is registered.
+      spc.isFastRegistered.reset();
+      spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
+
+      // Add calling FAST to the list of FASTs a member belongs to.
+      const exchangeAsFast = await impersonateContract(exchange, fast.address);
+      await exchangeAsFast.memberAddedToFast(alice.address);
+    });
+
+    it('returns an array of FASTs a given user belongs to along with a cursor', async () => {
+      // Check which FASTs Alice belongs to, expect membership of 1 FAST.
+      const [[memberFast], nextCursor] = await exchange.fastMemberships(alice.address, 0, 10);
+      expect(memberFast).to.be.eq(fast.address);
+      expect(nextCursor).to.be.eq(1);
+    });
+
+    it('does not return FASTs the given user does not belong to', async () => {
+      // Check fast memberships for Bob, expect there to be none.
+      const [fastMemberships, nextCursor] = await exchange.fastMemberships(bob.address, 0, 10);
+      expect(fastMemberships).to.be.empty;
+      expect(nextCursor).to.be.eq(0);
+    });
   });
 
   describe('memberAddedToFast', async () => {
@@ -236,7 +261,19 @@ describe('ExchangeAccessFacet', () => {
         .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
     });
 
-    it('adds the given member to the FAST membership tracking data structure');
+    it('adds the given member to the FAST membership tracking data structure', async () => {
+      // This FAST is registered.
+      spc.isFastRegistered.reset();
+      spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
+
+      // Call memberAddedToFast on the Exchange contract, as the FAST contract.
+      const exchangeAsFast = await impersonateContract(exchange, fast.address);
+      exchangeAsFast.memberAddedToFast(alice.address);
+
+      // Expecting the FAST address to be included in FASTs Alice belongs to.
+      const [[memberFast], /* nextCursor */] = await exchange.fastMemberships(alice.address, 0, 10);
+      expect(memberFast).to.be.eq(fast.address);
+    });
   });
 
   describe('memberRemovedFromFast', async () => {
@@ -246,7 +283,21 @@ describe('ExchangeAccessFacet', () => {
         .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
     });
 
-    it('removes the FAST contract from the list of Fast members');
+    it('removes the FAST contract from the list of Fast members', async () => {
+      // This FAST is registered.
+      spc.isFastRegistered.reset();
+      spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
+
+      const exchangeAsFast = await impersonateContract(exchange, fast.address);
+
+      // Add, then remove Alice.
+      await exchangeAsFast.memberAddedToFast(alice.address);
+      await exchangeAsFast.memberRemovedFromFast(alice.address);
+
+      // Expecting the FAST address to no longer be included in FASTs Alice belongs to.
+      const [fastMemberships, /* nextCursor */] = await exchange.fastMemberships(alice.address, 0, 10);
+      expect(fastMemberships).to.be.empty;
+    });
   });
 
   describe('isMemberActive', async () => {

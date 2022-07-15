@@ -5,8 +5,8 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { zero, tenThousand, abiStructToObj, oneHundred } from '../utils';
-import { Spc, Exchange, FastFrontendFacet } from '../../typechain';
+import { zero, tenThousand, abiStructToObj, oneHundred, INTERNAL_METHOD, impersonateContract } from '../utils';
+import { Spc, Exchange, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
@@ -21,7 +21,8 @@ describe('FastFrontendFacet', () => {
     member: SignerWithAddress;
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
-    frontend: FastFrontendFacet;
+    frontend: FastFrontendFacet,
+    governedFast: Fast;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -48,7 +49,7 @@ describe('FastFrontendFacet', () => {
         afterDeploy: async ({ fast }) => {
           frontend = await ethers.getContractAt<FastFrontendFacet>('FastFrontendFacet', fast.address);
           // Add members.
-          const governedFast = fast.connect(governor);
+          governedFast = fast.connect(governor);
           await governedFast.addMember(member.address);
           await governedFast.addMember(governor.address);
         }
@@ -62,8 +63,32 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('emitDetailsChanged', async () => {
-    it('requires tha the caller is the diamond');
-    it('emits a DetailsChanged event with all the correct information');
+    it('requires tha the caller is the diamond', async () => {
+      const subject = frontend.emitDetailsChanged();
+      await expect(subject).to.have.been
+        .revertedWith(INTERNAL_METHOD);
+    });
+
+    it('emits a DetailsChanged event with all the correct information', async () => {
+      const frontendAsItself = await impersonateContract(frontend);
+
+      // Fire off the events but wait for the transaction.
+      const subject = frontendAsItself.emitDetailsChanged();
+
+      // Get the other details from a standard `details` function call.
+      const detailsObj = abiStructToObj(await frontend.details());
+
+      await expect(subject).to
+        .emit(frontend, 'DetailsChanged')
+        .withArgs(
+          detailsObj.memberCount,
+          detailsObj.governorCount,
+          detailsObj.totalSupply,
+          detailsObj.transferCredits,
+          detailsObj.reserveBalance,
+          BigNumber.isBigNumber /* the balance from detailsObj.ethBalance will not be correct */
+        );
+    });
   });
 
   describe('details', async () => {
