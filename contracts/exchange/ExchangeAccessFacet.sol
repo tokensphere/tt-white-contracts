@@ -129,7 +129,8 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
   function activateMember(address member)
     external
     override
-    onlySpcMember {
+    onlySpcMember
+    onlyMember(member) {
     // Guard against attempting to activate an already active member.
     require(
       !this.isMemberActive(member),
@@ -149,7 +150,8 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
   function deactivateMember(address payable member)
     external
     override
-    onlySpcMember {
+    onlySpcMember
+    onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
     require(
       this.isMemberActive(member),
