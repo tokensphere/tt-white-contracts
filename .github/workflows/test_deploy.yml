@@ -1,0 +1,37 @@
+name: 'Test deploying'
+
+# Triggers the workflow on push.
+on: push
+
+jobs:
+  test-deploy:
+    name: Tests deployment to a Geth node
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v3
+
+    - name: Setup Nodejs
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Install deps
+      run: |
+        . ./.env
+        yarn
+
+    - name: Run geth node
+      run: |
+        # Remove the period to speed up deployment from the genesis.json file.
+        sed -i '/period/d' geth-local-poa-chain/genesis.json
+        docker-compose up -d
+
+    - name: Deploy to the dev network
+      run: |
+        . ./.env
+        # TODO: Fix this... it's to wait for the node to come up.
+        sleep 5
+        # Ok, attempt to deploy...
+        yarn hardhat deploy --network dev
