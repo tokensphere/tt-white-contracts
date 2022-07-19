@@ -28,6 +28,6 @@ interface ISpcEvents {
 
   // IHasMembers.
 
-  event MemberAdded(address indexed governor);
-  event MemberRemoved(address indexed governor);
+  event MemberAdded(address indexed member);
+  event MemberRemoved(address indexed member);
 }

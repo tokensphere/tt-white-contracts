@@ -5,8 +5,8 @@ pragma solidity ^0.8.4;
 interface IExchangeEvents {
   // IHasMembers.
 
-  event MemberAdded(address indexed governor);
-  event MemberRemoved(address indexed governor);
+  event MemberAdded(address indexed member);
+  event MemberRemoved(address indexed member);
 
   // IHasActiveMembers.
   event MemberActivated(address indexed member);

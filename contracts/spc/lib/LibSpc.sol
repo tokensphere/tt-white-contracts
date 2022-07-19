@@ -5,9 +5,6 @@ import '../../lib/LibAddressSet.sol';
 
 
 library LibSpc {
-  // These are from IHasMembers.
-  event MemberAdded(address indexed member);
-
   // The current version of the storage.
   uint16 internal constant STORAGE_VERSION = 1;
   // This is keccak256('Spc.storage'):
