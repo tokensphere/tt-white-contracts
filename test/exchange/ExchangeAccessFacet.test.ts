@@ -11,7 +11,8 @@ import {
   REQUIRES_FAST_CONTRACT_CALLER,
   REQUIRES_EXCHANGE_ACTIVE_MEMBER,
   REQUIRES_EXCHANGE_DEACTIVATED_MEMBER,
-  one
+  REQUIRES_EXCHANGE_MEMBERSHIP,
+  one,
 } from '../utils';
 import { exchangeFixtureFunc } from '../fixtures/exchange';
 import { toUnpaddedHexString } from '../../src/utils';
@@ -250,6 +251,8 @@ describe('ExchangeAccessFacet', () => {
 
   describe('isMemberActive', async () => {
     beforeEach(async () => {
+      // Add Alice as an Exchange member.
+      await spcMemberAccess.addMember(alice.address);
       // Deactivate Alice.
       await spcMemberAccess.deactivateMember(alice.address);
     });
@@ -266,10 +269,21 @@ describe('ExchangeAccessFacet', () => {
   });
 
   describe('deactivateMember', async () => {
+    beforeEach(async () => {
+      // Add Alice as an Exchange member.
+      await spcMemberAccess.addMember(alice.address);
+    });
+
     it('requires the caller to be an SPC member', async () => {
       const subject = access.deactivateMember(alice.address);
       await expect(subject).to.be
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('requires the member to deactivate is an Exchange member', async () => {
+      const subject = spcMemberAccess.deactivateMember(bob.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
     });
 
     it('adds the FAST member to the list of deactivated members', async () => {
@@ -298,6 +312,8 @@ describe('ExchangeAccessFacet', () => {
 
   describe('activateMember', async () => {
     beforeEach(async () => {
+      // Add Alice as an Exchange member.
+      await spcMemberAccess.addMember(alice.address);
       // Deactivate Alice.
       await spcMemberAccess.deactivateMember(alice.address);
     });
@@ -306,6 +322,12 @@ describe('ExchangeAccessFacet', () => {
       const subject = access.activateMember(alice.address);
       await expect(subject).to.be
         .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+    });
+
+    it('requires the member to activate is an Exchange member', async () => {
+      const subject = spcMemberAccess.activateMember(bob.address);
+      await expect(subject).to.be
+        .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
     });
 
     it('removes the FAST member from the list of deactivated members', async () => {
@@ -322,6 +344,8 @@ describe('ExchangeAccessFacet', () => {
     });
 
     it('requires that a given member is currently deactivated', async () => {
+      // Add Bob as an Exchange member.
+      await spcMemberAccess.addMember(bob.address);
       // Attempt to activate an already active member.
       const subject = spcMemberAccess.activateMember(bob.address);
       await expect(subject).to.be

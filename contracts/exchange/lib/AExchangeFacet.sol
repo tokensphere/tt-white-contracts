@@ -44,7 +44,7 @@ abstract contract AExchangeFacet is IExchangeEvents {
   modifier onlyMember(address candidate) {
     require(
       LibExchangeAccess.data().memberSet.contains(candidate),
-      LibConstants.REQUIRES_FAST_MEMBERSHIP
+      LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
     );
     _;
   }
