@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 
 interface IHasActiveMembers {
-  function isMemberActive(address a) external view returns(bool);
-  function deactivateMember(address payable a) external;
-  function activateMember(address a) external;
+  function isMemberActive(address member) external view returns(bool);
+  function deactivateMember(address payable member) external;
+  function activateMember(address member) external;
 }
