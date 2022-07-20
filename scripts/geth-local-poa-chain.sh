@@ -18,7 +18,6 @@ geth init \
 
 # Run geth in dev mode (poa, sealing enabled).
 geth --dev \
-  --ipcdisable \
   --datadir "$DATADIR" \
   --miner.etherbase "0x53df057d9468b50702f5705a420031a059d71a87" \
   --http \
