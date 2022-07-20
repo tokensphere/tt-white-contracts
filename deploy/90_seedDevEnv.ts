@@ -26,8 +26,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   console.log('Adding user[1-10] to the Exchange as members...');
   for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10]) {
-    console.log(`  ${addr}...`);
-    await (await spcMemberExchange.addMember(addr)).wait();
+    if (!(await exchange.isMember(addr))) {
+      console.log(`  ${addr}...`);
+      await (await spcMemberExchange.addMember(addr)).wait();
+    }
   }
 
   console.log('Minting 1_000_000 IOU...');

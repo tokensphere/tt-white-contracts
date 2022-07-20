@@ -95,6 +95,7 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
     if (!fast) { throw (`No FAST registry can be found for symbol ${params.symbol}!`); }
     const spcMemberFast = fast.connect(spcMemberSigner);
 
+    console.log(`Minting ${params.amount} for FAST ${params.symbol}...`);
     const { decimals, baseAmount } = await fastMint(spcMemberFast, params.amount, params.ref);
     console.log(`Minted ${params.symbol}: `);
     console.log(`  In base unit: = ${baseAmount} `);
