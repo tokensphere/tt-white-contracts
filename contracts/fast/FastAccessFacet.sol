@@ -74,7 +74,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function addGovernor(address payable governor)
       external override
-      onlySpcMember {
+      onlySpcMember
+      onlyExchangeMember(governor) {
     // Add governor to list.
     LibFastAccess.data().governorSet.add(governor, false);
     // If the address is a regular wallet...
