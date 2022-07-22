@@ -159,8 +159,15 @@ describe('FastAccessFacet', () => {
           .calledOnceWith(spcMember.address);
       });
 
+      it('requires that the address is an Exchange member', async () => {
+        exchange.isMember.reset();
+        const subject = spcMemberAccess.addGovernor(alice.address);
+        await expect(subject).to.be
+          .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+      });
+
       it('requires that the address is not a governor yet', async () => {
-        await spcMemberAccess.addGovernor(alice.address)
+        await spcMemberAccess.addGovernor(alice.address);
         const subject = spcMemberAccess.addGovernor(alice.address);
         await expect(subject).to.be
           .revertedWith('Address already in set');
@@ -182,6 +189,8 @@ describe('FastAccessFacet', () => {
 
       it('does not provision if the passed address is a contract', async () => {
         topMock.payUpTo.reset();
+        exchange.isMember.reset();
+        exchange.isMember.whenCalledWith(fast.address).returns(true);
         // Calling addGovernor with the contract address should not call payUpTo.
         await spcMemberAccess.addGovernor(fast.address);
         expect(topMock.payUpTo).to.not.be
