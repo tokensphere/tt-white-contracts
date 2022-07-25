@@ -73,8 +73,8 @@ yarn hardhat fast-deploy \
               --decimals 18 \
               --has-fixed-supply false \
               --is-semi-public true \
-              --mint 1000000 \
-              --tx-credits 1000000
+              --tx-credits 1000000 \
+              --mint 1000000
 ```
 
 This task automatically deploys a full FAST diamond including its initialization facet. It then calls the
