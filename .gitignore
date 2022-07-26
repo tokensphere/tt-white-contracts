@@ -16,6 +16,7 @@ deployments/localhost
 # Private data that should not be visible publicly.
 conf/keys.staging.json
 conf/keys.production.json
+conf/keys.mumbai.json
 .env.secret
 
 # Geth local chain state.

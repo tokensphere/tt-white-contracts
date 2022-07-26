@@ -8,7 +8,9 @@ import { ZERO_ADDRESS } from '../src/utils';
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
   const { name: netName } = hre.network;
-  if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev' && netName != 'staging') { return; }
+  console.log(netName);
+  if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev'
+    && netName != 'staging' && netName != 'mumbai') { return; }
 
   const { fastGovernor, spcMember } = await getNamedAccounts();
   // Grab various accounts.

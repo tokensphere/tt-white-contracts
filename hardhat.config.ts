@@ -85,9 +85,11 @@ const config: HardhatUserConfig = {
     ]
   }],
   networks: {
+    // Built-in for tests etc.
     hardhat: {
       saveDeployments: false
     },
+    // Typically a Geth local dev net.
     dev: {
       live: true,
       saveDeployments: true,
@@ -95,6 +97,7 @@ const config: HardhatUserConfig = {
       chainId: 18021980,
       accounts: accounts('dev')
     },
+    // Live stuff.
     staging: {
       live: true,
       saveDeployments: true,
@@ -108,6 +111,13 @@ const config: HardhatUserConfig = {
       url: nodeUrl('production'),
       chainId: 18021982,
       accounts: accounts('production')
+    },
+    // Polygon stuff.
+    mumbai: {
+      live: true,
+      saveDeployments: true,
+      url: 'https://rpc-mumbai.maticvigil.com',
+      accounts: accounts('mumbai')
     }
   },
   namedAccounts: {
@@ -159,15 +169,25 @@ const config: HardhatUserConfig = {
       ...DEPLOYER_FACTORY_COMMON,
       signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdba01590b43af70aef60a9342a33eaf1536b07df9ba36e96f0e5102485b4f23f7720a01e6266145487736a1809cf67cbc0a86d9eee3438cc97e0bd523694f3f3e9e1cb',
     },
-    // Staging.
+    // CV Testnet.
     18021981: {
       ...DEPLOYER_FACTORY_COMMON,
       signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdea06ad52d72e9acaacd578c2c0582df2f9793dfba35f20bf7a36e5c3ff36b81dba5a07f4012aa24648095dc422bb1aff8918cad962c367c1ab4643f04dff97fdee941',
     },
-    // Production.
+    // CV Mainnet.
     18021982: {
       ...DEPLOYER_FACTORY_COMMON,
       signedTx: '0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdfa008e1c44962bf042ecfc8957cbe4becaef17ef447c04b7307fefdc88f5deff596a0549894bfc3037be469ad6784c988110fb8ae8d3f8a5258d1180fd965890b7267',
+    },
+    // Polygon Testnet.
+    80001: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a88085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf383027125a05f9ad6b5fd17d50ec5b92745a600a89fe389f8d4bae2f06189efe0543374acb2a0570b22388a260bc0d2ace93767114ab9a4f7776177778b2293c1233118c725b5',
+    },
+    // Polygon Testnet.
+    137: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx: '0xf8a78085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3820135a005875581598a4bb6ff0dffadc18a9ef60b5829b031d5f744834da3ac508e744ca05f114c384908df349ba3200e308ee8862872dd42ce7252118174b5844fbcc661',
     }
   },
   typechain: {
