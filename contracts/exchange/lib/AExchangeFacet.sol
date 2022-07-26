@@ -5,6 +5,7 @@ import '../../lib/LibConstants.sol';
 import '../../lib/LibAddressSet.sol';
 import '../lib/LibExchange.sol';
 import '../lib/LibExchangeAccess.sol';
+import '../lib/LibExchangeTokenHolders.sol';
 import '../../interfaces/IERC173.sol';
 import '../../interfaces/IHasMembers.sol';
 import './IExchangeEvents.sol';

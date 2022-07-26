@@ -37,7 +37,8 @@ task('exchange-update-facets', 'Updates facets of our SPC')
 const EXCHANGE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
   'ExchangeTopFacet',
-  'ExchangeAccessFacet'
+  'ExchangeAccessFacet',
+  'ExchangeTokenHoldersFacet'
 ];
 
 const deployExchange = async (hre: HardhatRuntimeEnvironment, spcAddr: string): Promise<Exchange> => {

@@ -1,12 +1,11 @@
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Exchange, ExchangeTopFacet, ExchangeAccessFacet, ExchangeInitFacet,
-  ExchangeTopFacet__factory, ExchangeAccessFacet__factory,
+  Exchange, ExchangeTopFacet, ExchangeAccessFacet, ExchangeInitFacet, ExchangeTokenHoldersFacet,
+  ExchangeTopFacet__factory, ExchangeAccessFacet__factory, ExchangeTokenHoldersFacet__factory
 } from "../../typechain";
 import { EXCHANGE_FACETS } from "../../tasks/exchange";
 
@@ -28,6 +27,7 @@ interface ExchangeFixtureResult {
   exchange: Exchange;
   topMock: MockContract<ExchangeTopFacet>;
   accessMock: MockContract<ExchangeAccessFacet>;
+  tokenHoldersMock: MockContract<ExchangeTokenHoldersFacet>;
 }
 
 export const exchangeFixtureFunc: FixtureFunc<ExchangeFixtureResult, ExchangeFixtureFuncArgs> =
@@ -55,6 +55,7 @@ export const exchangeFixtureFunc: FixtureFunc<ExchangeFixtureResult, ExchangeFix
       exchange,
       topMock: await facetMock<ExchangeTopFacet__factory>(exchange, 'ExchangeTopFacet'),
       accessMock: await facetMock<ExchangeAccessFacet__factory>(exchange, 'ExchangeAccessFacet'),
+      tokenHoldersMock: await facetMock<ExchangeTokenHoldersFacet__factory>(exchange, 'ExchangeTokenHoldersFacet'),
     };
     // Callback!
     await afterDeploy.apply(this, [result]);

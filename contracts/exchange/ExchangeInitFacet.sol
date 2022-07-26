@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import '../interfaces/IERC165.sol';       // Interface Support.
-import '../interfaces/IERC173.sol';       // Ownership.
-import '../interfaces/IDiamondCut.sol';   // Facet management.
-import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
-import '../interfaces/IHasMembers.sol';   // Membership management.
+import '../interfaces/IERC165.sol';        // Interface Support.
+import '../interfaces/IERC173.sol';        // Ownership.
+import '../interfaces/IDiamondCut.sol';    // Facet management.
+import '../interfaces/IDiamondLoupe.sol';  // Facet introspection.
+import '../interfaces/IHasMembers.sol';    // Membership management.
+import '../interfaces/ITokenHoldings.sol'; // Token holdings.
 import '../lib/LibConstants.sol';
 import '../lib/LibDiamond.sol';
 import './lib/AExchangeFacet.sol';
@@ -31,6 +32,7 @@ contract ExchangeInitFacet is AExchangeFacet {
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
     ds.supportedInterfaces[type(IHasMembers).interfaceId] = true;
+    ds.supportedInterfaces[type(ITokenHoldings).interfaceId] = true;
 
     // ------------------------------------- //
 
@@ -44,5 +46,11 @@ contract ExchangeInitFacet is AExchangeFacet {
     // Initialize access storage.
     LibExchangeAccess.Data storage accessData = LibExchangeAccess.data();
     accessData.version = LibExchangeAccess.STORAGE_VERSION;
+
+    // ------------------------------------- //
+
+    // Initialize token holders storage.
+    LibExchangeTokenHolders.Data storage tokenHoldersData = LibExchangeTokenHolders.data();
+    tokenHoldersData.version = LibExchangeTokenHolders.STORAGE_VERSION;
   }
 }

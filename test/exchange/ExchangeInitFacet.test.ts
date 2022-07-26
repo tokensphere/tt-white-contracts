@@ -75,12 +75,14 @@ describe('ExchangeInitFacet', () => {
         IDiamondCut: await exchange.supportsInterface('0x1f931c1c'),
         IDiamondLoupe: await exchange.supportsInterface('0x48e2b093'),
         IHasMembers: await exchange.supportsInterface('0xb4bb4f46'),
+        ITokenHoldings: await exchange.supportsInterface('0xc1da5b0c')
       }).to.be.eql({
         IERC165: true,
         IERC173: true,
         IDiamondCut: true,
         IDiamondLoupe: true,
-        IHasMembers: true
+        IHasMembers: true,
+        ITokenHoldings: true
       })
     });
 

@@ -750,6 +750,13 @@ describe('FastTokenFacet', () => {
           .delegatedFrom(token.address)
       });
 
+      it('delegates to the ExchangeTokenHoldersFacet contract', async () => {
+        exchange.holdingUpdated.reset();
+        await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
+        expect(exchange.holdingUpdated).to.have.been
+          .calledTwice;
+      });
+
       it('decreases total supply when transferring to the zero address', async () => {
         // Keep total supply.
         const supplyBefore = await token.totalSupply();

@@ -5,6 +5,7 @@ import '../interfaces/IERC20.sol';
 import '../interfaces/IERC1404.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
+import '../interfaces/ITokenHoldings.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
@@ -310,6 +311,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // Keep track of the balances - `from` spends, `to` receives.
     s.balances[p.from] -= p.amount;
     s.balances[p.to] += p.amount;
+
+    // Keep track of who has what FAST.
+    LibFast.Data storage d = LibFast.data();
+    ITokenHoldings(d.exchange).holdingUpdated(p.from, address(this));
+    ITokenHoldings(d.exchange).holdingUpdated(p.to, address(this));
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
