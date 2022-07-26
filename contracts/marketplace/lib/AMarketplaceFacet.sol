@@ -5,6 +5,7 @@ import '../../lib/LibConstants.sol';
 import '../../lib/LibAddressSet.sol';
 import '../lib/LibMarketplace.sol';
 import '../lib/LibMarketplaceAccess.sol';
+import '../lib/LibMarketplaceTokenHolders.sol';
 import '../../interfaces/IERC173.sol';
 import '../../interfaces/IHasMembers.sol';
 import './IMarketplaceEvents.sol';

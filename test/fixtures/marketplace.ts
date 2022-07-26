@@ -4,8 +4,8 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Marketplace, MarketplaceTopFacet, MarketplaceAccessFacet, MarketplaceInitFacet,
-  MarketplaceTopFacet__factory, MarketplaceAccessFacet__factory,
+  Marketplace, MarketplaceTopFacet, MarketplaceAccessFacet, MarketplaceInitFacet, MarketplaceTokenHoldersFacet,
+  MarketplaceTopFacet__factory, MarketplaceAccessFacet__factory, MarketplaceTokenHoldersFacet__factory
 } from "../../typechain";
 import { MARKETPLACE_FACETS } from "../../tasks/marketplace";
 
@@ -27,6 +27,7 @@ interface MarketplaceFixtureResult {
   marketplace: Marketplace;
   topMock: MockContract<MarketplaceTopFacet>;
   accessMock: MockContract<MarketplaceAccessFacet>;
+  tokenHoldersMock: MockContract<MarketplaceTokenHoldersFacet>;
 }
 
 export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, MarketplaceFixtureFuncArgs> =
@@ -54,6 +55,7 @@ export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, Marke
       marketplace,
       topMock: await facetMock<MarketplaceTopFacet__factory>(marketplace, 'MarketplaceTopFacet'),
       accessMock: await facetMock<MarketplaceAccessFacet__factory>(marketplace, 'MarketplaceAccessFacet'),
+      tokenHoldersMock: await facetMock<MarketplaceTokenHoldersFacet__factory>(marketplace, 'MarketplaceTokenHoldersFacet')
     };
     // Callback!
     await afterDeploy.apply(this, [result]);

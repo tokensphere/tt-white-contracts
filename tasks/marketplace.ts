@@ -37,7 +37,8 @@ task('marketplace-update-facets', 'Updates facets of our Marketplace')
 const MARKETPLACE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
   'MarketplaceTopFacet',
-  'MarketplaceAccessFacet'
+  'MarketplaceAccessFacet',
+  'MarketplaceTokenHoldersFacet'
 ];
 
 const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: string): Promise<Marketplace> => {
