@@ -128,6 +128,10 @@ describe('FastFrontendFacet', () => {
     });
   });
 
+  describe('detailedGovernor', async () => {
+    it('returns a GovernorDetails struct with the correct information');
+  });
+
   describe('paginateDetailedMembers', async () => {
     it('returns member details with next cursor', async () => {
       const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
@@ -168,5 +172,10 @@ describe('FastFrontendFacet', () => {
         isGovernor: true
       });
     });
+  });
+
+  describe('paginateDetailedGovernors', async () => {
+    it('returns governor details with next cursor');
+    it('handles an offset index cursor');
   });
 });

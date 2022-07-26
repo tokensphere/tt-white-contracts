@@ -35,6 +35,11 @@ contract FastFrontendFacet is AFastFacet {
     bool isGovernor;
   }
 
+  struct GovernorDetails {
+    address addr;
+    uint256 ethBalance;
+    bool isMember;
+  }
   // Emitters.
 
   function emitDetailsChanged()
@@ -86,6 +91,16 @@ contract FastFrontendFacet is AFastFacet {
     });
   }
 
+  function detailedGovernor(address governor)
+      public view returns(GovernorDetails memory) {
+    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
+    return GovernorDetails({
+      addr: governor,
+      ethBalance: governor.balance,
+      isMember: accessStorage.memberSet.contains(governor)
+    });
+  }
+
   function paginateDetailedMembers(uint256 index, uint256 perPage)
       external view returns(MemberDetails[] memory, uint256) {
     LibFastAccess.Data storage accessStorage = LibFastAccess.data();
@@ -94,6 +109,18 @@ contract FastFrontendFacet is AFastFacet {
     MemberDetails[] memory values = new MemberDetails[](members.length);
     for (uint256 i = 0; i < members.length; ++i) {
       values[i] = detailedMember(members[i]);
+    }
+    return (values, nextCursor);
+  }
+
+  function paginateDetailedGovernors(uint256 index, uint256 perPage)
+      external view returns(GovernorDetails[] memory, uint256) {
+    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
+    (address[] memory governors, uint256 nextCursor) =
+      LibPaginate.addresses(accessStorage.governorSet.values, index, perPage);
+    GovernorDetails[] memory values = new GovernorDetails[](governors.length);
+    for (uint256 i = 0; i < governors.length; ++i) {
+      values[i] = detailedGovernor(governors[i]);
     }
     return (values, nextCursor);
   }
