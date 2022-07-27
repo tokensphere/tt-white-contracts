@@ -41,6 +41,8 @@ library LibFastToken {
     mapping(address => mapping(address => uint256)) allowances;
     mapping(address => LibAddressSet.Data) allowancesByOwner;
     mapping(address => LibAddressSet.Data) allowancesBySpender;
+    // Token holders
+    LibAddressSet.Data tokenHolders;
   }
 
   function data()

@@ -765,6 +765,16 @@ describe('FastTokenFacet', () => {
           .calledTwice;
       });
 
+      it('updates who holds this token', async () => {
+        await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five');
+
+        const subject = await token.holders();
+        expect(subject).to.be.eql([
+          alice.address,
+          bob.address
+        ]);
+      });
+
       it('decreases total supply when transferring to the zero address', async () => {
         // Keep total supply.
         const supplyBefore = await token.totalSupply();
