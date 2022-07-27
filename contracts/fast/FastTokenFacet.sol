@@ -317,6 +317,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     ITokenHoldings(d.marketplace).holdingUpdated(p.from, address(this));
     ITokenHoldings(d.marketplace).holdingUpdated(p.to, address(this));
 
+    // Keep track of who holds this token.
+    holdingUpdated(p.from);
+    holdingUpdated(p.to);
+
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
       // Make sure enough credits exist.
@@ -399,6 +403,31 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     while (raData.length > 0) {
       // Make sure the call is performed externally so that we can mock.
       this.performDisapproval(raData[0], member);
+    }
+  }
+
+  function holders()
+      external view
+      returns(address[] memory) {
+    LibFastToken.Data storage s = LibFastToken.data();
+    return s.tokenHolders.values;
+  }
+
+  function holdingUpdated(address holder)
+      private {
+    // TODO: What about the zero address? Do we want to have it in this list?
+
+    LibFastToken.Data storage s = LibFastToken.data();
+    uint256 balance = this.balanceOf(holder);
+
+    // If this is a positive balance and it doesn't already exist in the set, add address.
+    if (balance > 0 && !s.tokenHolders.contains(holder)) {
+      s.tokenHolders.add(holder, false);
+    }
+
+    // If the balance is 0 and it exists in the set, remove it.
+    if (balance == 0 && s.tokenHolders.contains(holder)) {
+      s.tokenHolders.remove(holder, false);
     }
   }
 
