@@ -15,11 +15,11 @@ library LibAddressSet {
    * @param d is the internal data storage to use.
    * @param key is the address to be added.
    */
-  function add(Data storage d, address key, bool noThrow)
+  function add(Data storage d, address key, bool noThrow) // `noThrow` negation, it's confusing!
       internal {
     bool exists = contains(d, key);
     if (noThrow && exists) { return; }
-    require(!exists, 'Address already in set');
+    require(!exists, 'Address already in set'); // Message is not a const.
     d.indices[key] = d.values.length;
     d.values.push(key);
   }
@@ -34,7 +34,7 @@ library LibAddressSet {
       internal {
     bool exists = contains(d, key);
     if (noThrow && !exists) { return; }
-    require(exists, 'Address does not exist in set');
+    require(exists, 'Address does not exist in set'); // Message is not a const.
     uint256 lastIndex = d.values.length - 1;
     address keyToMove = d.values[lastIndex];
     uint256 idxToReplace = d.indices[key];

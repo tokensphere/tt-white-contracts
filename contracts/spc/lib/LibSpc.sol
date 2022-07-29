@@ -13,6 +13,7 @@ library LibSpc {
   // Data structures.
 
   struct Data {
+    // "intializer" typo?
     /// @dev The latest intializer version that was called.
     uint16 version;
     // This is where we keep our list of deployed fast FASTs.

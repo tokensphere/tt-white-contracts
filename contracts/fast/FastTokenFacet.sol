@@ -174,6 +174,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     this.performDisapproval(msg.sender, spender);
   }
 
+  // Does this cost more gas then needed because it doesn't call `this.performTransfer` directly? Save the planet, spend less gas! :)
   function transferFrom(address from, address to, uint256 amount)
       external override returns(bool) {
     transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
@@ -234,7 +235,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     } else if (!FastAccessFacet(address(this)).isMember(from) ||
                !FastAccessFacet(address(this)).isMember(to)) {
       return FastTopFacet(address(this)).isSemiPublic()
-        ? LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE
+        ? LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE // Is this assumption right? We didn't check if `from` and `to` are exchange members
         : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (from == to) {
       return LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
@@ -377,10 +378,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   // - It can only be called by a governor.
   function beforeRemovingMember(address member)
       external onlyDiamondFacet() {
-    require(balanceOf(member) == 0, 'Balance is positive');
+    require(balanceOf(member) == 0, 'Balance is positive'); // Message is not a const.
 
     LibFastToken.Data storage s = LibFastToken.data();
 
+    // Are we shooting ourselves in the foot by trying to store too much data on chain for the sake of UI/UX?
+    // I'm not sure, but this can either br very expensive for us/governors on a public network or exploitable on
+    // a private network (where someone could potentially create so many allowances that this would always fail). 
+    // However if we keep only `s.allowances`, a traditional backend could keep track of `allowancesByOwner` and
+    // `allowancesBySpender` in real time , and all this function would need to do is `s.allowances[member] = empty mapping`. WDYT?
+    
     // Remove all given allowances.
     address[] storage gaData = s.allowancesByOwner[member].values;
     while (gaData.length > 0) {
@@ -407,7 +414,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
       if (IFast(address(this)).isSemiPublic()) {
         require(
-          IHasMembers(LibFast.data().exchange).isMember(candidate),
+          IHasMembers(LibFast.data().exchange).isMember(candidate), // does it need to be activated? 
           LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
         );
       }

@@ -51,7 +51,7 @@ abstract contract AFastFacet is IFastEvents {
   /** @dev Ensures that the given address is **not** a contract.
    *  @param candidate The address to check.
    */
-  modifier nonContract(address candidate) {
+  modifier nonContract(address candidate) { // Exploitable, see LibHelpers.isContract
     require(
       !LibHelpers.isContract(candidate),
       LibConstants.REQUIRES_NON_CONTRACT_ADDR

@@ -65,6 +65,9 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
    *  @notice Requires that the caller is a member of the linked SPC.
    *  @notice Emits a `IHasMembers.MemberRemoved` event.
    */
+   // This function seems buged right now: being a governor requires Exchange membership, however being added as governor
+   // doesn't call `memberAddedToFast` so a governor is never added to `s.fastMemberships` and it will be possible to remove
+   // an address from the Exchange that is still a fast governor.
   function removeMember(address member)
       external override
       onlySpcMember {
@@ -72,7 +75,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
     // Ensure that member doesn't have any FAST membership.
     require(s.fastMemberships[member].values.length == 0, LibConstants.REQUIRES_NO_FAST_MEMBERSHIPS);
     // Remove member.
-    s.memberSet.remove(member, false);
+    s.memberSet.remove(member, false); // Also remove the member from the deactivated members list?
     // Emit!
     emit MemberRemoved(member);
   }
@@ -87,6 +90,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
     return LibPaginate.addresses(LibExchangeAccess.data().fastMemberships[member].values, cursor, perPage);
   }
 
+  // Maybe the fastMemberships mapping needs to be reviewed since a fast membership might be defined by either being a member or governor, or none.
   /** @dev Callback from FAST contracts allowing the Exchange contract to keep track of FAST memberships.
    *  @param member The member for which a new FAST membership has been added.
    */
@@ -110,7 +114,7 @@ contract ExchangeAccessFacet is AExchangeFacet, IHasMembers, IHasActiveMembers {
     require(
       SpcTopFacet(LibExchange.data().spc).isFastRegistered(msg.sender),
       LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    ); // create a modifier for this require statement since it's used both here and `memberAddedToFast`?
     // Remove the tracked membership.
     LibAddressSet.Data storage memberFasts = LibExchangeAccess.data().fastMemberships[member];
     memberFasts.remove(msg.sender, false);

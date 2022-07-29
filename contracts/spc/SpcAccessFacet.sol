@@ -18,7 +18,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
   // This represents how much Eth we provision new SPC members with.
   uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
   // This represents how much Eth new FASTs are provisioned with.
-  uint256 constant private FAST_ETH_PROVISION = 250 ether;
+  uint256 constant private FAST_ETH_PROVISION = 250 ether; // Not used?
 
   // Membership management.
 
@@ -63,8 +63,8 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
 
     // Provision the member with some Eth.
     uint256 amount = LibHelpers.upTo(member, MEMBER_ETH_PROVISION);
-    if (amount != 0 && !LibHelpers.isContract(member)) {
-      member.transfer(amount);
+    if (amount != 0 && !LibHelpers.isContract(member)) { // checking reasoning: contracts can be members they just can't be provisioned with ether?
+      member.transfer(amount); // use `.call` instead of `.transfer`?
     }
 
     // Emit!
@@ -80,7 +80,7 @@ contract SpcAccessFacet is ASpcFacet, IHasMembers {
       external override
       onlyMember(msg.sender) {
     // No suicide allowed.
-    require(msg.sender != member, 'Cannot remove self');
+    require(msg.sender != member, 'Cannot remove self'); // Message is not a const.
     // Remove the member from the set.
     LibSpcAccess.data().memberSet.remove(member, false);
     // Emit!

@@ -15,12 +15,12 @@ contract SpcTopFacet is ASpcFacet {
   // Constants.
 
   // This represents how much Eth we provision new SPC members with.
-  uint256 constant private MEMBER_ETH_PROVISION = 10 ether;
+  uint256 constant private MEMBER_ETH_PROVISION = 10 ether; // Not used?
   // This represents how much Eth new FASTs are provisioned with.
   uint256 constant private FAST_ETH_PROVISION = 250 ether;
 
   // Eth provisioning stuff.
-
+// should we use receive() instead of this custom function that isn't called everytime ether is received? https://blog.soliditylang.org/2020/03/26/fallback-receive-split/
   /** @dev A function that alllows provisioning this SPC with Eth.
    *  @notice Emits a `EthReceived` event.
    */
@@ -38,7 +38,7 @@ contract SpcTopFacet is ASpcFacet {
       onlyMember(msg.sender) nonContract(msg.sender)
       external {
     uint256 amount = payable(address(this)).balance;
-    payable(msg.sender).transfer(amount);
+    payable(msg.sender).transfer(amount); // use `.call` instead of `.transfer`?
     emit EthDrained(msg.sender, amount);
   }
 

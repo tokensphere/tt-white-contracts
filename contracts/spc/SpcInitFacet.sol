@@ -31,7 +31,7 @@ contract SpcInitFacet is ASpcFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      onlyDiamondOwner {
+      onlyDiamondOwner { // Just double checking the reasoning: the spc `initialize` has the `onlyDiamondOwner` modifier, but the Exchange and Fast `initialize` have `onlyDeployer`. 
     // Grab our top-level storage.
     // Make sure we haven't initialized yet.
     require(LibSpc.data().version < LibSpc.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);

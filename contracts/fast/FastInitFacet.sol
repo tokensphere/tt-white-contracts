@@ -34,16 +34,16 @@ contract FastInitFacet is AFastFacet {
     // Token stuff.
     string name;
     string symbol;
-    uint256 decimals;
+    uint256 decimals; // uint8 more suitable? good example here https://medium.com/cementdao/fixed-point-math-in-solidity-616f4508c6e8
     bool hasFixedSupply;
     bool isSemiPublic;
   }
 
-  function initialize(InitializerParams calldata params)
+  function initialize(InitializerParams calldata params) // Validate some of the params with `require`?
       external
       onlyDeployer {
     // Make sure we haven't initialized yet.
-    require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized');
+    require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized'); // Message is not a const.
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();

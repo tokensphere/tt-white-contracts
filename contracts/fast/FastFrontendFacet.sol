@@ -17,7 +17,7 @@ contract FastFrontendFacet is AFastFacet {
     address addr;
     string name;
     string symbol;
-    uint256 decimals;
+    uint256 decimals; // change to uint8? 
     uint256 totalSupply;
     uint256 transferCredits;
     bool isSemiPublic;

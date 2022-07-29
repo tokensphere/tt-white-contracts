@@ -47,7 +47,7 @@ contract FastTopFacet is AFastFacet {
 
   // Provisioning functions.
 
-  function provisionWithEth()
+  function provisionWithEth() // should we use receive() instead?
       external payable {
     require(msg.value > 0, LibConstants.MISSING_ATTACHED_ETH);
     emit EthReceived(msg.sender, msg.value);
@@ -58,7 +58,7 @@ contract FastTopFacet is AFastFacet {
       onlySpcMember nonContract(msg.sender)
       external {
     uint256 amount = payable(address(this)).balance;
-    payable(msg.sender).transfer(amount);
+    payable(msg.sender).transfer(amount); // use `.call` instead of `.transfer`? see https://solidity-by-example.org/sending-ether/ and https://blockchain-academy.hs-mittweida.de/courses/solidity-coding-beginners-to-intermediate/lessons/solidity-2-sending-ether-receiving-ether-emitting-events/topic/sending-ether-send-vs-transfer-vs-call/
     emit EthDrained(msg.sender, amount);
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
@@ -76,7 +76,7 @@ contract FastTopFacet is AFastFacet {
     );
     amount = LibHelpers.upTo(recipient, amount);
     // Transfer some eth!
-    if (amount != 0) { recipient.transfer(amount); }
+    if (amount != 0) { recipient.transfer(amount); } // use `.call` instead of `.transfer`?
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 }

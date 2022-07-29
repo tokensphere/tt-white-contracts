@@ -16,6 +16,11 @@ library LibHelpers {
     return amount;
   }
 
+  // Exploitable: https://ethereum.stackexchange.com/questions/14015/iscontract-function-using-evm-assembly-to-get-the-address-code-size/14016#14016
+  // The reddit post on the stackexchange answer above describes the exploit, and it's quite interesting!
+  // Also consider this https://docs.ethhub.io/ethereum-roadmap/ethereum-2.0/account-abstraction/ coming in the future, I've read a few opinions
+  // and it seems developers shouldn't care what type of account is calling and should instead safeguard against reentrancy.
+  // On the plus side all the places that use this helper function have other guards that block exploits (from what I could tell!).
   function isContract(address target)
       internal view returns (bool) {
     uint32 size;

@@ -28,7 +28,7 @@ library LibFastToken {
     // ERC20 related properties for this FAST Token.
     string name;
     string symbol;
-    uint256 decimals;
+    uint256 decimals; // uint8
     uint256 totalSupply;
     // Every time a transfer is executed, the credit decreases by the amount
     // of said transfer.

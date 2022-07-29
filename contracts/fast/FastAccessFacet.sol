@@ -75,11 +75,11 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   function addGovernor(address payable governor)
       external override
       onlySpcMember
-      onlyExchangeMember(governor) {
+      onlyExchangeMember(governor) { // Double checking reasoning: there's `onlyExchangeMember` amd `onlyExchangeActiveMember`, which one applies here?
     // Add governor to list.
     LibFastAccess.data().governorSet.add(governor, false);
     // If the address is a regular wallet...
-    if (!LibHelpers.isContract(governor)) {
+    if (!LibHelpers.isContract(governor)) { 
       // Provision the new governor with Eth if possible.
       FastTopFacet(payable(address(this))).payUpTo(governor, GOVERNOR_ETH_PROVISION);
     }
@@ -136,7 +136,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function addMember(address payable member)
       external override 
-      onlyGovernor(msg.sender) onlyExchangeMember(member) {
+      onlyGovernor(msg.sender) onlyExchangeMember(member) { // Double checking reasoning: there's `onlyExchangeMember` amd `onlyExchangeActiveMember`, which one applies here?
     // Add the member.
     LibFastAccess.data().memberSet.add(member, false);
     // If the address is a regular wallet...
