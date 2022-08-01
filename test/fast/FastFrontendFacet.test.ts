@@ -9,6 +9,7 @@ import { zero, tenThousand, abiStructToObj, oneHundred, INTERNAL_METHOD, imperso
 import { Spc, Exchange, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 import { toUnpaddedHexString } from '../../src/utils';
+import { fast } from '../../typechain/contracts';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -22,7 +23,8 @@ describe('FastFrontendFacet', () => {
   let spc: FakeContract<Spc>,
     exchange: FakeContract<Exchange>,
     frontend: FastFrontendFacet,
-    governedFast: Fast;
+    governedFast: Fast,
+    spcMemberFast: Fast;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -50,6 +52,7 @@ describe('FastFrontendFacet', () => {
           frontend = await ethers.getContractAt<FastFrontendFacet>('FastFrontendFacet', fast.address);
           // Add members.
           governedFast = fast.connect(governor);
+          spcMemberFast = fast.connect(spcMember);
           await governedFast.addMember(member.address);
           await governedFast.addMember(governor.address);
         }
@@ -63,7 +66,7 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('emitDetailsChanged', async () => {
-    it('requires tha the caller is the diamond', async () => {
+    it('requires that the caller is the diamond', async () => {
       const subject = frontend.emitDetailsChanged();
       await expect(subject).to.have.been
         .revertedWith(INTERNAL_METHOD);
@@ -129,7 +132,18 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('detailedGovernor', async () => {
-    it('returns a GovernorDetails struct with the correct information');
+    beforeEach(async () => {
+      await spcMemberFast.addGovernor(member.address);
+    });
+
+    it('returns a GovernorDetails struct with the correct information', async () => {
+      const subject = await frontend.detailedGovernor(member.address);
+      expect(abiStructToObj(subject)).to.eql({
+        addr: member.address,
+        ethBalance: await ethers.provider.getBalance(member.address),
+        isMember: true
+      });
+    });
   });
 
   describe('paginateDetailedMembers', async () => {
@@ -175,7 +189,21 @@ describe('FastFrontendFacet', () => {
   });
 
   describe('paginateDetailedGovernors', async () => {
-    it('returns governor details with next cursor');
-    it('handles an offset index cursor');
+    beforeEach(async () => {
+      await spcMemberFast.addGovernor(member.address);
+    });
+
+    it('returns governor details with next cursor', async () => {
+      const [[/*defaultGovernor*/, subject], nextCursor] = await frontend.paginateDetailedGovernors(0, 2);
+
+      expect(abiStructToObj(subject)).to.eql({
+        addr: member.address,
+        ethBalance: await ethers.provider.getBalance(member.address),
+        isMember: true
+      });
+
+      // Next cursor.
+      expect(nextCursor).to.eq(2);
+    });
   });
 });
