@@ -12,9 +12,9 @@
     "istanbulBlock": 0,
     "muirGlacierBlock": 0,
     "berlinBlock": 0,
-    "londonBlock": 60,
-    "arrowGlacierBlock": 61,
-    "grayGlacierBlock": 62,
+    "londonBlock": null,
+    "arrowGlacierBlock": null,
+    "grayGlacierBlock": null,
     "clique": {
       "period": 1,
       "epoch": 30000
