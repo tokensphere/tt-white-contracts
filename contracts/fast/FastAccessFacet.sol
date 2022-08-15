@@ -5,7 +5,7 @@ import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import '../exchange/ExchangeAccessFacet.sol';
+import '../marketplace/MarketplaceAccessFacet.sol';
 import './FastTokenFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
@@ -31,13 +31,6 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     bool isGovernor;
     bool isMember;
   }
-
-  // Constants.
-
-  // This represents how much Eth we provision new governors with.
-  uint256 constant private GOVERNOR_ETH_PROVISION = 10 ether;
-  // This represents how much Eth we provision new members with.
-  uint256 constant private MEMBER_ETH_PROVISION = 1 ether;
 
   // Governorship related stuff.
 
@@ -74,15 +67,10 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function addGovernor(address payable governor)
       external override
-      onlySpcMember
-      onlyExchangeMember(governor) {
+      onlyIssuerMember
+      onlyMarketplaceMember(governor) {
     // Add governor to list.
     LibFastAccess.data().governorSet.add(governor, false);
-    // If the address is a regular wallet...
-    if (!LibHelpers.isContract(governor)) {
-      // Provision the new governor with Eth if possible.
-      FastTopFacet(payable(address(this))).payUpTo(governor, GOVERNOR_ETH_PROVISION);
-    }
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
     emit GovernorAdded(governor);
@@ -93,7 +81,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function removeGovernor(address governor)
       external override
-      onlySpcMember {
+      onlyIssuerMember {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(governor, false);
     // Emit!
@@ -136,16 +124,11 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function addMember(address payable member)
       external override 
-      onlyGovernor(msg.sender) onlyExchangeMember(member) {
+      onlyGovernor(msg.sender) onlyMarketplaceMember(member) {
     // Add the member.
     LibFastAccess.data().memberSet.add(member, false);
-    // If the address is a regular wallet...
-    if (!LibHelpers.isContract(member)) {
-      // Provision the new member with Eth if possible.
-      FastTopFacet(payable(address(this))).payUpTo(member, MEMBER_ETH_PROVISION);
-    }
-    // Notify exchange that this member was added to this FAST.
-    ExchangeAccessFacet(LibFast.data().exchange).memberAddedToFast(member);
+    // Notify marketplace that this member was added to this FAST.
+    MarketplaceAccessFacet(LibFast.data().marketplace).memberAddedToFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
     emit MemberAdded(member);
@@ -161,8 +144,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     LibFastAccess.data().memberSet.remove(member, false);
     // Notify token facet that this member was removed.
     FastTokenFacet(address(this)).beforeRemovingMember(member);
-    // Notify exchange that this member was removed from this FAST.
-    ExchangeAccessFacet(LibFast.data().exchange).memberRemovedFromFast(member);
+    // Notify marketplace that this member was removed from this FAST.
+    MarketplaceAccessFacet(LibFast.data().marketplace).memberRemovedFromFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
     emit MemberRemoved(member);

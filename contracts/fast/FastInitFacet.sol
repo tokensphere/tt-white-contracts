@@ -11,7 +11,7 @@ import '../interfaces/IHasGovernors.sol'; // Governorship management.
 import '../interfaces/IHasMembers.sol';   // Membership management.
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
-import '../exchange/ExchangeTopFacet.sol';
+import '../marketplace/MarketplaceTopFacet.sol';
 import './lib/AFastFacet.sol';
 
 
@@ -27,14 +27,14 @@ contract FastInitFacet is AFastFacet {
 
   struct InitializerParams {
     // Top-level stuff.
-    address spc;
-    address exchange;
+    address issuer;
+    address marketplace;
     // Access stuff.
     address payable governor;
     // Token stuff.
     string name;
     string symbol;
-    uint256 decimals;
+    uint8 decimals;
     bool hasFixedSupply;
     bool isSemiPublic;
   }
@@ -61,8 +61,8 @@ contract FastInitFacet is AFastFacet {
     // Initialize top-level storage.
     LibFast.Data storage topData = LibFast.data();
     topData.version = LibFast.STORAGE_VERSION;
-    topData.spc = params.spc;
-    topData.exchange = params.exchange;
+    topData.issuer = params.issuer;
+    topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
     topData.isSemiPublic = params.isSemiPublic;
 

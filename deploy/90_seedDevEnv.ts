@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { ethers, getNamedAccounts } from 'hardhat';
 import { fastMint } from '../tasks/fast';
-import { Exchange, Fast } from '../typechain';
+import { Marketplace, Fast } from '../typechain';
 import { toBaseUnit, ZERO_ADDRESS } from '../src/utils';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
@@ -11,24 +11,24 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev') { return; }
 
   const {
-    fastGovernor, spcMember,
+    fastGovernor, issuerMember,
     user1, user2, user3, user4, user5, user6, user7, user8, user9, user10
   } = await getNamedAccounts();
   // Grab various accounts.
-  const spcMemberSigner = await ethers.getSigner(spcMember);
+  const issuerMemberSigner = await ethers.getSigner(issuerMember);
   const fastGovernorSigner = await ethers.getSigner(fastGovernor);
-  // Grab handles to the Exchange.
-  const exchange = await ethers.getContract<Exchange>('Exchange');
-  const spcMemberExchange = exchange.connect(spcMemberSigner);
+  // Grab handles to the Marketplace.
+  const marketplace = await ethers.getContract<Marketplace>('Marketplace');
+  const issuerMemberMarketplace = marketplace.connect(issuerMemberSigner);
   // Grab handles to the IOU FAST.
   const iou = await ethers.getContract<Fast>('FastIOU');
-  const governedIOU = iou.connect(spcMemberSigner);
+  const governedIOU = iou.connect(issuerMemberSigner);
 
-  console.log('Adding user[1-10] to the Exchange as members...');
+  console.log('Adding user[1-10] to the Marketplace as members...');
   for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10]) {
-    if (!(await exchange.isMember(addr))) {
+    if (!(await marketplace.isMember(addr))) {
       console.log(`  ${addr}...`);
-      await (await spcMemberExchange.addMember(addr)).wait();
+      await (await issuerMemberMarketplace.addMember(addr)).wait();
     }
   }
 

@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployments, ethers, getNamedAccounts } from 'hardhat';
 import { deployFast, fastMint } from '../tasks/fast';
-import { Exchange, Fast } from '../typechain';
+import { Marketplace, Fast } from '../typechain';
 import { ZERO_ADDRESS } from '../src/utils';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
@@ -12,14 +12,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev'
     && netName != 'staging' && netName != 'mumbai') { return; }
 
-  const { fastGovernor, spcMember } = await getNamedAccounts();
+  const { fastGovernor, issuerMember } = await getNamedAccounts();
   // Grab various accounts.
-  const spcMemberSigner = await ethers.getSigner(spcMember);
-  // Grab handles to the Exchange.
-  const exchange = await ethers.getContract<Exchange>('Exchange');
+  const issuerMemberSigner = await ethers.getSigner(issuerMember);
+  // Grab handles to the Marketplace.
+  const marketplace = await ethers.getContract<Marketplace>('Marketplace');
   // Grab handles to the IOU FAST.
   const iou = await ethers.getContract<Fast>('FastIOU');
-  const governedIOU = iou.connect(spcMemberSigner);
+  const governedIOU = iou.connect(issuerMemberSigner);
 
   const zeroAddrBalance = await iou.balanceOf(ZERO_ADDRESS);
   const totalSupply = await iou.totalSupply();
@@ -46,7 +46,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         isSemiPublic: true
       });
       console.log('Minting 500_000 F01...');
-      await fastMint(f01.connect(spcMemberSigner), 500_000, 'Whatever');
+      await fastMint(f01.connect(issuerMemberSigner), 500_000, 'Whatever');
     }
   }
 
@@ -65,7 +65,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         isSemiPublic: false
       });
       console.log('Minting 5_000_000 F02...');
-      await fastMint(f02.connect(spcMemberSigner), 5_000_000, 'Whatever');
+      await fastMint(f02.connect(issuerMemberSigner), 5_000_000, 'Whatever');
     }
   }
 
@@ -84,7 +84,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         isSemiPublic: true
       });
       console.log('Minting 5_000_000 F03...');
-      await fastMint(f03.connect(spcMemberSigner), 5_000_000, 'Whatever');
+      await fastMint(f03.connect(issuerMemberSigner), 5_000_000, 'Whatever');
     }
   }
 
@@ -103,7 +103,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         isSemiPublic: true
       });
       console.log('Minting 5_000_000 F04...');
-      await fastMint(f04.connect(spcMemberSigner), 5_000_000, 'Whatever');
+      await fastMint(f04.connect(issuerMemberSigner), 5_000_000, 'Whatever');
     }
   }
 };

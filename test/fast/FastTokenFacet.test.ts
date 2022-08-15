@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Spc, Exchange, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet } from '../../typechain';
+import { Issuer, Marketplace, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
 import {
   BALANCE_IS_POSITIVE,
@@ -15,15 +15,15 @@ import {
   INSUFFICIENT_TRANSFER_CREDITS_CODE,
   REQUIRES_CONTINUOUS_SUPPLY,
   INTERNAL_METHOD,
-  REQUIRES_EXCHANGE_ACTIVE_MEMBER,
+  REQUIRES_MARKETPLACE_ACTIVE_MEMBER,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT,
   REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE,
-  REQUIRES_EXCHANGE_MEMBERSHIP,
-  REQUIRES_EXCHANGE_MEMBERSHIP_CODE,
+  REQUIRES_MARKETPLACE_MEMBERSHIP,
+  REQUIRES_MARKETPLACE_MEMBERSHIP_CODE,
   REQUIRES_FAST_GOVERNORSHIP,
   REQUIRES_FAST_MEMBERSHIP,
   REQUIRES_FAST_MEMBERSHIP_CODE,
-  REQUIRES_SPC_MEMBERSHIP,
+  REQUIRES_ISSUER_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
   DEFAULT_TRANSFER_REFERENCE,
   impersonateContract
@@ -36,16 +36,16 @@ chai.use(smock.matchers);
 describe('FastTokenFacet', () => {
   let
     deployer: SignerWithAddress,
-    spcMember: SignerWithAddress,
+    issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
-    exchangeMember: SignerWithAddress,
+    marketplaceMember: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress,
     anonymous: SignerWithAddress;
   let
-    spc: FakeContract<Spc>,
-    exchange: FakeContract<Exchange>,
+    issuer: FakeContract<Issuer>,
+    marketplace: FakeContract<Marketplace>,
     fast: Fast,
     token: FastTokenFacet,
     tokenMock: MockContract<FastTokenFacet>,
@@ -53,17 +53,17 @@ describe('FastTokenFacet', () => {
     accessMock: MockContract<FastAccessFacet>,
     historyMock: MockContract<FastHistoryFacet>,
     governedToken: FastTokenFacet,
-    spcMemberToken: FastTokenFacet;
+    issuerMemberToken: FastTokenFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor, exchangeMember, alice, bob, john, anonymous] = await ethers.getSigners();
-    // Mock an SPC and an Exchange contract.
-    spc = await smock.fake('Spc');
-    exchange = await smock.fake('Exchange');
-    exchange.spcAddress.returns(spc.address);
+    [deployer, issuerMember, governor, marketplaceMember, alice, bob, john, anonymous] = await ethers.getSigners();
+    // Mock an ISSUER and an Marketplace contract.
+    issuer = await smock.fake('Issuer');
+    marketplace = await smock.fake('Marketplace');
+    marketplace.issuerAddress.returns(issuer.address);
   });
 
   beforeEach(async () => {
@@ -75,34 +75,34 @@ describe('FastTokenFacet', () => {
           ({ fast, accessMock, topMock, tokenMock, historyMock } = args);
           token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fast.address);
           governedToken = token.connect(governor);
-          spcMemberToken = token.connect(spcMember);
+          issuerMemberToken = token.connect(issuerMember);
         }
       },
       initWith: {
-        spc: spc.address,
-        exchange: exchange.address,
+        issuer: issuer.address,
+        marketplace: marketplace.address,
         governor: governor.address
       }
     });
 
     // Reset expected returns.
-    spc.isMember.reset();
-    exchange.isMember.reset();
+    issuer.isMember.reset();
+    marketplace.isMember.reset();
     accessMock.isMember.reset();
 
-    // Add an extra member to the exchange.
-    exchange.isMember.whenCalledWith(exchangeMember.address).returns(true);
-    // Add a few Exchange and FAST members.
+    // Add an extra member to the marketplace.
+    marketplace.isMember.whenCalledWith(marketplaceMember.address).returns(true);
+    // Add a few Marketplace and FAST members.
     for (const { address } of [alice, bob, john]) {
-      exchange.isMember.whenCalledWith(address).returns(true);
+      marketplace.isMember.whenCalledWith(address).returns(true);
       accessMock.isMember.whenCalledWith(address).returns(true);
     }
-    // Set the SPC member.
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    // Set the defaults when querying the SPC or Exchange fakes.
-    spc.isMember.returns(false);
-    exchange.isMember.returns(false);
-    exchange.isMemberActive.returns(true);
+    // Set the Issuer member.
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    // Set the defaults when querying the Issuer or Marketplace fakes.
+    issuer.isMember.returns(false);
+    marketplace.isMember.returns(false);
+    marketplace.isMemberActive.returns(true);
 
     topMock.hasFixedSupply.reset();
     topMock.hasFixedSupply.returns(true);
@@ -166,28 +166,28 @@ describe('FastTokenFacet', () => {
   });
 
   describe('mint', async () => {
-    it('requires SPC membership (anonymous)', async () => {
+    it('requires Issuer membership (anonymous)', async () => {
       const subject = token.mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (member)', async () => {
+    it('requires Issuer membership (member)', async () => {
       const subject = token.connect(alice).mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (governor)', async () => {
+    it('requires Issuer membership (governor)', async () => {
       const subject = governedToken.mint(5_000, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
     describe('with fixed supply', async () => {
       it('is allowed only once', async () => {
-        await spcMemberToken.mint(1_000_000, 'Attempt 1');
-        const subject = spcMemberToken.mint(1_000_000, 'Attempt 2');
+        await issuerMemberToken.mint(1_000_000, 'Attempt 1');
+        const subject = issuerMemberToken.mint(1_000_000, 'Attempt 2');
         await expect(subject).to.have
           .revertedWith(REQUIRES_CONTINUOUS_SUPPLY);
       });
@@ -200,8 +200,8 @@ describe('FastTokenFacet', () => {
 
       it('is allowed more than once', async () => {
         const subject = () => Promise.all([
-          spcMemberToken.mint(1_000_000, 'Attempt 1'),
-          spcMemberToken.mint(1_000_000, 'Attempt 2')
+          issuerMemberToken.mint(1_000_000, 'Attempt 1'),
+          issuerMemberToken.mint(1_000_000, 'Attempt 2')
         ]);
         await expect(subject).to
           .changeTokenBalance(token, ZERO_ACCOUNT_MOCK, 2_000_000);
@@ -210,26 +210,26 @@ describe('FastTokenFacet', () => {
 
     it('delegates to the history contract', async () => {
       historyMock.minted.reset();
-      await spcMemberToken.mint(5_000, 'Attempt 1');
+      await issuerMemberToken.mint(5_000, 'Attempt 1');
       expect(historyMock.minted).to.have.been
         .calledOnceWith(5_000, 'Attempt 1')
         .delegatedFrom(token.address);
     });
 
     it('adds the minted tokens to the zero address', async () => {
-      await spcMemberToken.mint(3_000, 'Attempt 1');
+      await issuerMemberToken.mint(3_000, 'Attempt 1');
       const subject = await token.balanceOf(ZERO_ADDRESS);
       expect(subject).to.eq(3_000);
     });
 
     it('does not impact total supply', async () => {
-      await spcMemberToken.mint(3_000, 'Attempt 1');
+      await issuerMemberToken.mint(3_000, 'Attempt 1');
       const subject = await token.totalSupply();
       expect(subject).to.eq(0);
     });
 
     it('emits a Minted event', async () => {
-      const subject = await spcMemberToken.mint(3_000, 'Attempt 1');
+      const subject = await issuerMemberToken.mint(3_000, 'Attempt 1');
       await expect(subject).to
         .emit(fast, 'Minted')
         .withArgs(3_000, 'Attempt 1');
@@ -239,63 +239,63 @@ describe('FastTokenFacet', () => {
   describe('burn', async () => {
     beforeEach(async () => {
       topMock.hasFixedSupply.returns(false);
-      await spcMemberToken.mint(100, 'A hundred mints');
+      await issuerMemberToken.mint(100, 'A hundred mints');
     });
 
-    it('requires SPC membership (anonymous)', async () => {
+    it('requires Issuer membership (anonymous)', async () => {
       const subject = token.burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (member)', async () => {
+    it('requires Issuer membership (member)', async () => {
       const subject = token.connect(alice).burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (governor)', async () => {
+    it('requires Issuer membership (governor)', async () => {
       const subject = governedToken.burn(5, 'Burn baby burn');
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
     it('requires that the supply is continuous', async () => {
       topMock.hasFixedSupply.returns(true);
-      const subject = spcMemberToken.burn(5, 'Burn baby burn')
+      const subject = issuerMemberToken.burn(5, 'Burn baby burn')
       await expect(subject).to.have
         .revertedWith(REQUIRES_CONTINUOUS_SUPPLY);
     });
 
     it('requires that the zero address has enough funds', async () => {
-      const subject = spcMemberToken.burn(101, 'Burn baby burn')
+      const subject = issuerMemberToken.burn(101, 'Burn baby burn')
       await expect(subject).to.have
         .revertedWith(INSUFFICIENT_FUNDS);
     });
 
     it('removes tokens from the zero address', async () => {
-      const subject = async () => spcMemberToken.burn(30, 'Burn baby burn')
+      const subject = async () => issuerMemberToken.burn(30, 'Burn baby burn')
       await expect(subject).to
         .changeTokenBalance(token, ZERO_ACCOUNT_MOCK, -30)
     });
 
     it('does not impact total supply', async () => {
       const totalSupplyBefore = await token.totalSupply();
-      await spcMemberToken.burn(100, 'Burnidy burn');
+      await issuerMemberToken.burn(100, 'Burnidy burn');
       const subject = await token.totalSupply();
       expect(subject).to.eq(totalSupplyBefore);
     });
 
     it('delegates to the history contract', async () => {
       historyMock.burnt.reset();
-      await spcMemberToken.burn(50, 'It is hot');
+      await issuerMemberToken.burn(50, 'It is hot');
       expect(historyMock.burnt).to.have.been
         .calledOnceWith(50, 'It is hot')
         .delegatedFrom(token.address);
     });
 
     it('emits a Burnt event', async () => {
-      const subject = await spcMemberToken.burn(50, 'Feel the burn');
+      const subject = await issuerMemberToken.burn(50, 'Feel the burn');
       await expect(subject).to
         .emit(fast, 'Burnt')
         .withArgs(50, 'Feel the burn');
@@ -305,70 +305,70 @@ describe('FastTokenFacet', () => {
   /// Tranfer Credit management.
 
   describe('addTransferCredits', async () => {
-    it('requires SPC membership (anonymous)', async () => {
+    it('requires Issuer membership (anonymous)', async () => {
       const subject = token.addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (member)', async () => {
+    it('requires Issuer membership (member)', async () => {
       const subject = token.connect(alice).addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (governor)', async () => {
+    it('requires Issuer membership (governor)', async () => {
       const subject = governedToken.addTransferCredits(10);
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
     it('accumulates the credits to the existing transfer credits', async () => {
       await Promise.all([10, 20, 30, 40].map(async (value) =>
-        spcMemberToken.addTransferCredits(value)
+        issuerMemberToken.addTransferCredits(value)
       ));
       expect(await token.transferCredits()).to.eq(100);
     });
 
     it('emits a TransferCreditsAdded event', async () => {
-      const subject = await spcMemberToken.addTransferCredits(50);
+      const subject = await issuerMemberToken.addTransferCredits(50);
       await expect(subject).to
         .emit(fast, 'TransferCreditsAdded')
-        .withArgs(spcMember.address, 50);
+        .withArgs(issuerMember.address, 50);
     });
   });
 
   describe('drainTransferCredits', async () => {
-    it('requires SPC membership (anonymous)', async () => {
+    it('requires Issuer membership (anonymous)', async () => {
       const subject = token.drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (member)', async () => {
+    it('requires Issuer membership (member)', async () => {
       const subject = token.connect(alice).drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
-    it('requires SPC membership (governor)', async () => {
+    it('requires Issuer membership (governor)', async () => {
       const subject = governedToken.drainTransferCredits();
       await expect(subject).to.have
-        .revertedWith(REQUIRES_SPC_MEMBERSHIP);
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
     });
 
     it('sets the credit amount to zero', async () => {
-      await spcMemberToken.addTransferCredits(100);
-      await spcMemberToken.drainTransferCredits();
+      await issuerMemberToken.addTransferCredits(100);
+      await issuerMemberToken.drainTransferCredits();
       expect(await token.transferCredits()).to.eq(0);
     });
 
     it('emits a TransferCreditsDrained event', async () => {
       const creditsBefore = await token.transferCredits();
-      const subject = await spcMemberToken.drainTransferCredits();
+      const subject = await issuerMemberToken.drainTransferCredits();
       await expect(subject).to
         .emit(fast, 'TransferCreditsDrained')
-        .withArgs(spcMember.address, creditsBefore);
+        .withArgs(issuerMember.address, creditsBefore);
     });
   });
 
@@ -378,8 +378,8 @@ describe('FastTokenFacet', () => {
     beforeEach(async () => {
       // Mint a few tokens and raise the transfer credits.
       await Promise.all([
-        spcMemberToken.mint(1_000_000, 'ERC20 Tests'),
-        spcMemberToken.addTransferCredits(1_000_000)
+        issuerMemberToken.mint(1_000_000, 'ERC20 Tests'),
+        issuerMemberToken.addTransferCredits(1_000_000)
       ]);
       // Transfer tokens from address zero to alice and bob.
       await Promise.all([alice, bob].map(
@@ -452,7 +452,7 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(allocated);
 
         // Mint some more.
-        spcMemberToken.mint(50, 'Adding some more');
+        issuerMemberToken.mint(50, 'Adding some more');
         subject = await token.allowance(ZERO_ADDRESS, governor.address);
         expect(subject).to.eq(allocated.add(50));
 
@@ -620,19 +620,19 @@ describe('FastTokenFacet', () => {
 
       describe('when member deactivated', async () => {
         beforeEach(async () => {
-          exchange.isMemberActive.reset();
-          // Alice will be deactivated on the exchange.
-          exchange.isMemberActive.whenCalledWith(alice.address).returns(false);
-          exchange.isMemberActive.returns(true);
+          marketplace.isMemberActive.reset();
+          // Alice will be deactivated on the marketplace.
+          marketplace.isMemberActive.whenCalledWith(alice.address).returns(false);
+          marketplace.isMemberActive.returns(true);
         });
 
-        it('requires active member when transferring from address (at the Exchange level)', async () => {
+        it('requires active member when transferring from address (at the Marketplace level)', async () => {
           const subject = token.connect(alice).transferFromWithRef(alice.address, bob.address, 100, 'ref');
           await expect(subject).to.have
-            .revertedWith(REQUIRES_EXCHANGE_ACTIVE_MEMBER);
+            .revertedWith(REQUIRES_MARKETPLACE_ACTIVE_MEMBER);
         });
 
-        it('allows transfer to a deactived member (at the Exchange level)', async () => {
+        it('allows transfer to a deactived member (at the Marketplace level)', async () => {
           const subject = () => token.connect(bob).transferFromWithRef(bob.address, alice.address, 100, 'One');
           await expect(subject).to
             .changeTokenBalances(token, [bob, alice], [-100, 100]);
@@ -644,34 +644,34 @@ describe('FastTokenFacet', () => {
           topMock.isSemiPublic.returns(true);
         });
 
-        it('requires sender membership (Exchange membership)', async () => {
-          exchange.isMember.reset();
-          // Only Bob will be an exchange member.
-          exchange.isMember.whenCalledWith(bob.address).returns(true);
-          exchange.isMember.returns(false);
+        it('requires sender membership (Marketplace membership)', async () => {
+          marketplace.isMember.reset();
+          // Only Bob will be an marketplace member.
+          marketplace.isMember.whenCalledWith(bob.address).returns(true);
+          marketplace.isMember.returns(false);
 
           const subject = token.connect(alice).transferFromWithRef(john.address, bob.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+            .revertedWith(REQUIRES_MARKETPLACE_MEMBERSHIP);
         });
 
-        it('requires recipient membership (Exchange membership)', async () => {
-          exchange.isMember.reset();
-          // Only Bob will be an exchange member.
-          exchange.isMember.whenCalledWith(bob.address).returns(true);
-          exchange.isMember.returns(false);
+        it('requires recipient membership (Marketplace membership)', async () => {
+          marketplace.isMember.reset();
+          // Only Bob will be an marketplace member.
+          marketplace.isMember.whenCalledWith(bob.address).returns(true);
+          marketplace.isMember.returns(false);
 
           const subject = token.connect(alice).transferFromWithRef(bob.address, john.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(REQUIRES_EXCHANGE_MEMBERSHIP);
+            .revertedWith(REQUIRES_MARKETPLACE_MEMBERSHIP);
         });
 
-        it('allows exchange members to transact', async () => {
-          exchange.isMember.reset();
-          // Bob and John will be exchange members.
-          exchange.isMember.whenCalledWith(bob.address).returns(true);
-          exchange.isMember.whenCalledWith(john.address).returns(true);
-          exchange.isMember.returns(false);
+        it('allows marketplace members to transact', async () => {
+          marketplace.isMember.reset();
+          // Bob and John will be marketplace members.
+          marketplace.isMember.whenCalledWith(bob.address).returns(true);
+          marketplace.isMember.whenCalledWith(john.address).returns(true);
+          marketplace.isMember.returns(false);
 
           // Let bob give allowance to alice.
           await token.connect(bob).approve(alice.address, 100);
@@ -707,9 +707,9 @@ describe('FastTokenFacet', () => {
         const transferAmount = 100;
 
         // Snapshot the transfer tokens before, transfer then check balance after.
-        const creditsBefore = await spcMemberToken.transferCredits();
+        const creditsBefore = await issuerMemberToken.transferCredits();
         await token.connect(john).transferFromWithRef(bob.address, alice.address, transferAmount, 'No!');
-        const creditsAfter = await spcMemberToken.transferCredits();
+        const creditsAfter = await issuerMemberToken.transferCredits();
 
         expect(creditsAfter).to.be.eql(creditsBefore.sub(transferAmount));
       });
@@ -728,8 +728,8 @@ describe('FastTokenFacet', () => {
 
       it('requires sufficient transfer credits', async () => {
         // Drain all credits, and provision some more.
-        await spcMemberToken.drainTransferCredits();
-        await spcMemberToken.addTransferCredits(90);
+        await issuerMemberToken.drainTransferCredits();
+        await issuerMemberToken.addTransferCredits(90);
         // Do it!
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 100, 'Three');
         await expect(subject).to.be
@@ -792,8 +792,8 @@ describe('FastTokenFacet', () => {
         expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
       });
 
-      it('requires that zero address can only be spent from as a governor (SPC member)', async () => {
-        const subject = spcMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
+      it('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
+        const subject = issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
           .revertedWith(REQUIRES_FAST_GOVERNORSHIP);
       });
@@ -817,14 +817,14 @@ describe('FastTokenFacet', () => {
       });
 
       it('does not require transfer credits when drawing from the zero address', async () => {
-        await spcMemberToken.drainTransferCredits();
+        await issuerMemberToken.drainTransferCredits();
         const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Ten');
         await expect(subject).to
           .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
 
       it('does not impact transfer credits when drawing from the zero address', async () => {
-        await spcMemberToken.addTransferCredits(1000);
+        await issuerMemberToken.addTransferCredits(1000);
         const creditsBefore = await token.transferCredits();
         await governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Eleven');
         const subject = await token.transferCredits();
@@ -909,25 +909,25 @@ describe('FastTokenFacet', () => {
       });
 
       it('the lack of sender membership', async () => {
-        await spcMemberToken.addTransferCredits(1);
+        await issuerMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(anonymous.address, alice.address, 1);
         expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
       });
 
       it('the lack of recipient membership', async () => {
-        await spcMemberToken.addTransferCredits(1);
+        await issuerMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, anonymous.address, 1);
         expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
       });
 
       it('sender and recipient being identical', async () => {
-        await spcMemberToken.addTransferCredits(1);
+        await issuerMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, bob.address, 1);
         expect(subject).to.eq(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE);
       });
 
       it('returns zero when the transfer is possible', async () => {
-        await spcMemberToken.addTransferCredits(1);
+        await issuerMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
         expect(subject).to.eq(0);
       });
@@ -939,9 +939,9 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(INSUFFICIENT_TRANSFER_CREDITS);
       });
 
-      it('exchange membership required', async () => {
-        const subject = await token.messageForTransferRestriction(REQUIRES_EXCHANGE_MEMBERSHIP_CODE);
-        expect(subject).to.eq(REQUIRES_EXCHANGE_MEMBERSHIP);
+      it('marketplace membership required', async () => {
+        const subject = await token.messageForTransferRestriction(REQUIRES_MARKETPLACE_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_MARKETPLACE_MEMBERSHIP);
       });
 
       it('the lack of FAST membership', async () => {
@@ -964,7 +964,7 @@ describe('FastTokenFacet', () => {
 
   describe('beforeRemovingMember', async () => {
     beforeEach(async () => {
-      await spcMemberToken.mint(1_000, 'Give me the money');
+      await issuerMemberToken.mint(1_000, 'Give me the money');
     });
 
     it('cannot be called directly', async () => {
@@ -978,7 +978,7 @@ describe('FastTokenFacet', () => {
 
       beforeEach(async () => {
         // Add transfer credits to the token contract.
-        await spcMemberToken.addTransferCredits(1_000);
+        await issuerMemberToken.addTransferCredits(1_000);
         // Let alice give allowance to bob, and john give allowance to alice.
         await Promise.all([
           token.connect(alice).approve(bob.address, 500),
