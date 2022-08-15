@@ -14,7 +14,7 @@ chai.use(smock.matchers);
 describe('MarketplaceTokenHoldersFacet', () => {
   let deployer: SignerWithAddress,
     alice: SignerWithAddress;
-  let spc: FakeContract<Spc>,
+  let issuer: FakeContract<Issuer>,
     fast: FakeContract<Fast>,
     marketplace: Marketplace,
     tokenHolders: MarketplaceTokenHoldersFacet,
@@ -24,9 +24,9 @@ describe('MarketplaceTokenHoldersFacet', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, /* spcMember */, alice] = await ethers.getSigners();
-    // Mock an SPC and FAST contract.
-    spc = await smock.fake('Spc');
+    [deployer, /* issuerMember */, alice] = await ethers.getSigners();
+    // Mock an Issuer and FAST contract.
+    issuer = await smock.fake('Issuer');
     fast = await smock.fake('Fast');
   });
 
@@ -41,7 +41,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
         }
       },
       initWith: {
-        spc: spc.address
+        issuer: issuer.address
       }
     });
 
@@ -54,9 +54,9 @@ describe('MarketplaceTokenHoldersFacet', () => {
     fast.balanceOf.returns(zero);
 
     // The FAST is registered.
-    spc.isFastRegistered.reset();
-    spc.isFastRegistered.whenCalledWith(fast.address).returns(true);
-    spc.isFastRegistered.returns(false);
+    issuer.isFastRegistered.reset();
+    issuer.isFastRegistered.whenCalledWith(fast.address).returns(true);
+    issuer.isFastRegistered.returns(false);
   });
 
   afterEach(async () => {
