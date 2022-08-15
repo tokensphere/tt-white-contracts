@@ -5,14 +5,8 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Fast, Issuer, IssuerTopFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { toUnpaddedHexString, ZERO_ADDRESS } from '../../src/utils';
-import {
-  DUPLICATE_ENTRY,
-  MISSING_ATTACHED_ETH,
-  REQUIRES_ISSUER_MEMBERSHIP,
-  negOneHundred, negTwo, negTwoHundredFifty, negTwoHundredForty,
-  ninety, oneHundred, ten, tenThousand, two, twoHundredFifty, twoHundredForty
-} from '../utils';
+import { ZERO_ADDRESS } from '../../src/utils';
+import { DUPLICATE_ENTRY, REQUIRES_ISSUER_MEMBERSHIP } from '../utils';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);
 chai.use(smock.matchers);

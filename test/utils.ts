@@ -52,7 +52,6 @@ export const REQUIRES_NON_CONTRACT_ADDR = 'Address cannot be a contract';
 export const DUPLICATE_ENTRY = 'Duplicate entry';
 export const UNSUPPORTED_OPERATION = 'Unsupported operation';
 
-export const MISSING_ATTACHED_ETH = 'Missing attached ETH';
 export const REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';
 export const INSUFFICIENT_FUNDS = 'Insufficient token balance';
 export const INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';

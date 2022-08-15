@@ -5,10 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { smock } from '@defi-wonderland/smock';
 import { Issuer, IssuerAccessFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { toUnpaddedHexString } from '../../src/utils';
-import {
-  negNine, negTen, negTwo, nine, one, REQUIRES_ISSUER_MEMBERSHIP, ten, two
-} from '../utils';
+import { REQUIRES_ISSUER_MEMBERSHIP } from '../utils';
 import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);

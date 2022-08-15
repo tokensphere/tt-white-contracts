@@ -4,19 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import {
-  negOneHundred,
-  oneHundred,
-  ninety,
-  REQUIRES_ISSUER_MEMBERSHIP,
-  REQUIRES_NON_ZERO_ADDRESS,
-  REQUIRES_NON_CONTRACT_ADDR,
-  UNSUPPORTED_OPERATION,
-  MISSING_ATTACHED_ETH,
-  INTERNAL_METHOD,
-  impersonateContract
-} from '../utils';
-import { toUnpaddedHexString, ZERO_ADDRESS } from '../../src/utils';
+import { REQUIRES_ISSUER_MEMBERSHIP, UNSUPPORTED_OPERATION, impersonateContract } from '../utils';
 import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);

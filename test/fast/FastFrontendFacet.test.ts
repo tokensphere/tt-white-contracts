@@ -9,7 +9,6 @@ import { zero, tenThousand, abiStructToObj, oneHundred, INTERNAL_METHOD, imperso
 import { Issuer, Marketplace, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 import { toUnpaddedHexString } from '../../src/utils';
-import { fast } from '../../typechain/contracts';
 chai.use(solidity);
 chai.use(smock.matchers);
 

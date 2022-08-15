@@ -25,8 +25,6 @@ library LibConstants {
   string internal constant REQUIRES_NON_ZERO_ADDRESS = 'Requires non-zero address';
   string internal constant REQUIRES_NON_CONTRACT_ADDR = 'Address cannot be a contract';
 
-  string internal constant MISSING_ATTACHED_ETH = 'Missing attached ETH';
-
   string internal constant REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';
   string internal constant INSUFFICIENT_FUNDS = 'Insufficient token balance';
   string internal constant INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
