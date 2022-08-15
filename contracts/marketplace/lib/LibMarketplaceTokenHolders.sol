@@ -7,8 +7,8 @@ import '../../lib/LibAddressSet.sol';
 library LibMarketplaceTokenHolders {
   // The current version of the storage.
   uint16 internal constant STORAGE_VERSION = 1;
-  // This is keccak256('ExchangeTokenHolders.storage'):
-  bytes32 internal constant STORAGE_SLOT = 0xae3f81e6561b0a186d5e2c7e6688ebe85f414da57650ce54e5553211cc0c627a;
+  // This is keccak256('Marketplace.TokenHolders.storage'):
+  bytes32 internal constant STORAGE_SLOT = 0xecf50453542504034bd40d376fb1408ada3025f2fe86ca1b9b4b1440b8d4a2f4;
 
   struct Data {
     /// @dev The latest intializer version that was called.
