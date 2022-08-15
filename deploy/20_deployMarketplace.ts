@@ -1,10 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
+import { deployMarketplace } from '../tasks/marketplace';
+import { deployments } from 'hardhat';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  // We only want to do this in local development nodes.
-  const { network: { name: netName } } = hre;
-  if (netName != 'hardhat' && netName != 'localhost') { return; }
+  await deployMarketplace(hre, (await deployments.get('Issuer')).address);
 };
-func.tags = ['FundIssuer'];
+func.tags = ['DeployMarketplace'];
 export default func;

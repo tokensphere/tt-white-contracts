@@ -11,10 +11,10 @@ library LibConstants {
   string internal constant REQUIRES_DIAMOND_OWNERSHIP = 'Requires diamond ownership';
   string internal constant REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
 
-  string internal constant REQUIRES_SPC_MEMBERSHIP = 'Requires SPC membership';
-  string internal constant REQUIRES_EXCHANGE_MEMBERSHIP = 'Requires Exchange membership';
-  string internal constant REQUIRES_EXCHANGE_ACTIVE_MEMBER = 'Requires active Exchange member';
-  string internal constant REQUIRES_EXCHANGE_DEACTIVATED_MEMBER = 'Requires a deactivated Exchange member';
+  string internal constant REQUIRES_ISSUER_MEMBERSHIP = 'Requires Issuer membership';
+  string internal constant REQUIRES_MARKETPLACE_MEMBERSHIP = 'Requires Marketplace membership';
+  string internal constant REQUIRES_MARKETPLACE_ACTIVE_MEMBER = 'Requires active Marketplace member';
+  string internal constant REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER = 'Requires a deactivated Marketplace member';
 
   string internal constant REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
   string internal constant REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';

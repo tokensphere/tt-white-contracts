@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Spc, Exchange, FastHistoryFacet } from '../../typechain';
+import { Issuer, Marketplace, FastHistoryFacet } from '../../typechain';
 import { INTERNAL_METHOD, impersonateContract, abiStructToObj } from '../utils';
 import { fastFixtureFunc } from '../fixtures/fast';
 chai.use(solidity);
@@ -15,14 +15,14 @@ chai.use(smock.matchers);
 describe('FastHistoryFacet', () => {
   let
     deployer: SignerWithAddress,
-    spcMember: SignerWithAddress,
+    issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress,
     rob: SignerWithAddress;
-  let spc: FakeContract<Spc>,
-    exchange: FakeContract<Exchange>,
+  let issuer: FakeContract<Issuer>,
+    marketplace: FakeContract<Marketplace>,
     history: FastHistoryFacet,
     historyAsItself: FastHistoryFacet,
     governedHistory: FastHistoryFacet;
@@ -44,11 +44,11 @@ describe('FastHistoryFacet', () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor, alice, bob, john, rob] = await ethers.getSigners();
-    // Mock an SPC and an Exchange contract.
-    spc = await smock.fake('Spc');
-    exchange = await smock.fake('Exchange');
-    exchange.spcAddress.returns(spc.address);
+    [deployer, issuerMember, governor, alice, bob, john, rob] = await ethers.getSigners();
+    // Mock an Issuer and an Marketplace contract.
+    issuer = await smock.fake('Issuer');
+    marketplace = await smock.fake('Marketplace');
+    marketplace.issuerAddress.returns(issuer.address);
   });
 
   beforeEach(async () => {
@@ -62,8 +62,8 @@ describe('FastHistoryFacet', () => {
         }
       },
       initWith: {
-        spc: spc.address,
-        exchange: exchange.address,
+        issuer: issuer.address,
+        marketplace: marketplace.address,
         governor: governor.address
       }
     });

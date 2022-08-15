@@ -1,11 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { deploySpc } from '../tasks/spc';
+import { deployIssuer } from '../tasks/issuer';
 import { getNamedAccounts } from 'hardhat';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  const { spcMember } = await getNamedAccounts();
-  await deploySpc(hre, spcMember);
+  const { issuerMember } = await getNamedAccounts();
+  await deployIssuer(hre, issuerMember);
 };
-func.tags = ['DeploySpc'];
+func.tags = ['DeployIssuer'];
 export default func;

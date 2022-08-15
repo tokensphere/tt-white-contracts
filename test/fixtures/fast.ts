@@ -13,12 +13,12 @@ import { FAST_FACETS } from "../../tasks/fast";
 
 
 export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
-  exchange: ZERO_ADDRESS,
-  spc: ZERO_ADDRESS,
+  marketplace: ZERO_ADDRESS,
+  issuer: ZERO_ADDRESS,
   governor: ZERO_ADDRESS,
   name: 'Random FAST Token',
   symbol: 'RFT',
-  decimals: BigNumber.from(18),
+  decimals: 18,
   hasFixedSupply: true,
   isSemiPublic: false
 };

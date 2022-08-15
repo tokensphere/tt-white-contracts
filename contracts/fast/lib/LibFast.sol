@@ -13,10 +13,10 @@ library LibFast {
   struct Data {
     /// @dev The latest intializer version that was called.
     uint16 version;
-    /// @dev The internal pointer to the SPC contract.
-    address spc;
-    /// @dev The internal pointer to the Exchange contract.
-    address exchange;
+    /// @dev The internal pointer to the Issuer contract.
+    address issuer;
+    /// @dev The internal pointer to the Marketplace contract.
+    address marketplace;
     /// @dev We have to track whether the token facet provides continuous minting or fixed supply.
     bool hasFixedSupply;
     /// @dev Whether or not this FAST requires to be a member to hold tokens.

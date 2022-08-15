@@ -24,7 +24,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function mint(uint256 amount, string calldata ref)
       external
-      onlySpcMember {
+      onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
@@ -47,7 +47,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function burn(uint256 amount, string calldata ref)
       external
-      onlySpcMember {
+      onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
 
     require(!FastTopFacet(address(this)).hasFixedSupply(), LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
@@ -73,7 +73,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function addTransferCredits(uint256 amount)
       external
-      onlySpcMember {
+      onlyIssuerMember {
     LibFastToken.data().transferCredits += amount;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
@@ -82,7 +82,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function drainTransferCredits()
       external
-      onlySpcMember {
+      onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // Emit!
     emit TransferCreditsDrained(msg.sender, s.transferCredits);
@@ -234,7 +234,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     } else if (!FastAccessFacet(address(this)).isMember(from) ||
                !FastAccessFacet(address(this)).isMember(to)) {
       return FastTopFacet(address(this)).isSemiPublic()
-        ? LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE
+        ? LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE
         : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
     } else if (from == to) {
       return LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
@@ -246,8 +246,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external override pure returns(string memory) {
     if (restrictionCode == LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE) {
       return LibConstants.INSUFFICIENT_TRANSFER_CREDITS;
-    } else if (restrictionCode == LibFastToken.REQUIRES_EXCHANGE_MEMBERSHIP_CODE) {
-      return LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP;
+    } else if (restrictionCode == LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE) {
+      return LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP;
     } else if (restrictionCode == LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE) {
       return LibConstants.REQUIRES_FAST_MEMBERSHIP;
     } else if (restrictionCode == LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
@@ -272,7 +272,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external onlyDiamondFacet
       differentAddresses(p.from, p.to)
       onlyTokenHolder(p.from)
-      onlyExchangeActiveMember(p.from)
+      onlyMarketplaceActiveMember(p.from)
       onlyTokenHolder(p.to) {
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -404,11 +404,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   modifier onlyTokenHolder(address candidate) {
     // Only perform checks if the address is non-zero.
     if (candidate != address(0)) {
-    // FAST is semi-public - the only requirement to hold tokens is to be an exchange member.
+    // FAST is semi-public - the only requirement to hold tokens is to be an marketplace member.
       if (IFast(address(this)).isSemiPublic()) {
         require(
-          IHasMembers(LibFast.data().exchange).isMember(candidate),
-          LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
+          IHasMembers(LibFast.data().marketplace).isMember(candidate),
+          LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
         );
       }
       // FAST is private, the requirement to hold tokens is to be a member of that FAST.

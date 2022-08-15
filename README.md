@@ -10,7 +10,7 @@ This means that regardless of the network you're using (local, staging, producti
 Here is an overview of the layout of the `contracts` folder:
 
 - `lib/` and `interfaces/` are commonly used across the project, and aren't specific to any domain.
-- The `Spc/`, `Exchange/` and `Fast` folders are diamond definitions. Each contains:
+- The `issuer/`, `marketplace/` and `fast/` folders are diamond definitions. Each contains:
   - Top-level facets for each diamond.
   - A `lib/` folder containing abstractions and storage libraries for each facet.
 
@@ -20,13 +20,13 @@ For development systems, we use local signers (Eg `ethers.getSigners()`). In the
 
 - `zero_address` is `0x0000000000000000000000000000000000000000`.
 - `deployer` is the very first signer from the signers list.
-- `spcMember` is the second signer from the signers list.
+- `issuerMember` is the second signer from the signers list.
 - `governor` is the third signer from the signers list.
 - `member` is the fourth signer from the signers list.
 - `random` is a random - non-signer at address `0xF7e5800E52318834E8689c37dCCCD2230427a905`.
 
 Before starting a node, it is recommended to clean your local deployment folder (`rm -rf deployments/localhost`).
-Then, you can run `yarn hardhat node`. You'll notice that both the SPC and Exchange contracts are being deployed automatically.
+Then, you can run `yarn hardhat node`. You'll notice that both the Issuer and Marketplace contracts are being deployed automatically.
 
 You then probably might want to jump directly to the `fast-deploy` task of this document to get started.
 
@@ -47,12 +47,12 @@ yarn hardhat make-us-rich \
               --network localhost
 ```
 
-## Top-Level Tasks (See `src/tasks/spc.ts`)
+## Top-Level Tasks (See `src/tasks/issuer.ts`)
 
-Although the local node you're running should already have an SPC and an Exchange diamond automatically deployed, you could deploy one yourself if running on a completely clean chain:
+Although the local node you're running should already have an Issuer and an Marketplace diamond automatically deployed, you could deploy one yourself if running on a completely clean chain:
 
 ```shell
-yarn hardhat spc-deploy \
+yarn hardhat issuer-deploy \
               --network localhost \
               --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```

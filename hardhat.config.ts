@@ -6,14 +6,14 @@ import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl, abiFilter } from './src/utils';
-import { SPC_FACETS } from './tasks/spc';
-import { EXCHANGE_FACETS } from './tasks/exchange';
+import { ISSUER_FACETS } from './tasks/issuer';
+import { MARKETPLACE_FACETS } from './tasks/marketplace';
 import { FAST_FACETS } from './tasks/fast';
 
 // Import all of our tasks here!
 import './tasks/accounts';
-import './tasks/spc';
-import './tasks/exchange';
+import './tasks/issuer';
+import './tasks/marketplace';
 import './tasks/fast';
 
 const config: HardhatUserConfig = {
@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
     }
   },
   diamondAbi: [{
-    name: 'Spc',
+    name: 'Issuer',
     filter: abiFilter([
       ['Facet$', 'EthDrained(address,uint256)'],
       ['Facet$', 'EthReceived(address,uint256)'],
@@ -40,11 +40,11 @@ const config: HardhatUserConfig = {
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
-      'ISpcEvents',
-      ...SPC_FACETS
+      'IIssuerEvents',
+      ...ISSUER_FACETS
     ]
   }, {
-    name: 'Exchange',
+    name: 'Marketplace',
     filter: abiFilter([
       ['Facet$', 'MemberAdded(address)'],
       ['Facet$', 'MemberRemoved(address)'],
@@ -55,8 +55,8 @@ const config: HardhatUserConfig = {
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
-      'IExchangeEvents',
-      ...EXCHANGE_FACETS
+      'IMarketplaceEvents',
+      ...MARKETPLACE_FACETS
     ]
   }, {
     name: 'Fast',
@@ -127,8 +127,8 @@ const config: HardhatUserConfig = {
       staging: '0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE',
       production: '0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE'
     },
-    // The account who will be the first member of the SPC contract.
-    spcMember: {
+    // The account who will be the first member of the ISSUER contract.
+    issuerMember: {
       default: 1,
       staging: '0xd786f085c53E1674afFcEe9252Bb3E7044698267',
       production: '0xb1004872B989ec8894F8Dd07da85437Dff9ddb37',

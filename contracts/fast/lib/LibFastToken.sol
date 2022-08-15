@@ -15,7 +15,7 @@ library LibFastToken {
   // ERC1404 Restriction codes.
   uint8 internal constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 1;
   uint8 internal constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;
-  uint8 internal constant REQUIRES_EXCHANGE_MEMBERSHIP_CODE = 3;
+  uint8 internal constant REQUIRES_MARKETPLACE_MEMBERSHIP_CODE = 3;
   uint8 internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;
 
   string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
@@ -28,12 +28,12 @@ library LibFastToken {
     // ERC20 related properties for this FAST Token.
     string name;
     string symbol;
-    uint256 decimals;
+    uint8 decimals;
     uint256 totalSupply;
     // Every time a transfer is executed, the credit decreases by the amount
     // of said transfer.
     // It becomes impossible to transact once it reaches zero, and must
-    // be provisioned by an SPC governor.
+    // be provisioned by an Issuer member.
     uint256 transferCredits;
     // Our members balances are held here.
     mapping(address => uint256) balances;

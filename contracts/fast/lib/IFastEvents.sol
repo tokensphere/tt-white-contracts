@@ -5,12 +5,12 @@ pragma solidity ^0.8.4;
 interface IFastEvents {
   // ETH provisioning events.
 
-  /** @dev Emited when someone provisions this SPC with Eth.
+  /** @dev Emited when someone provisions this Issuer with Eth.
    *  @param from The sender of the Eth.
    *  @param amount The quantity of Eth, expressed in Wei.
    */
   event EthReceived(address indexed from, uint256 amount);
-  /** @dev Emited when Eth is drained from this SPC.
+  /** @dev Emited when Eth is drained from this Issuer.
    *  @param to The caller and recipient of the drained Eth.
    *  @param amount The quantity of Eth that was drained, expressed in Wei.
    */
@@ -33,8 +33,8 @@ interface IFastEvents {
   event Burnt(uint256 indexed amount, string indexed ref);
 
   // Transfer credits related events.
-  event TransferCreditsAdded(address indexed spcMember, uint256 amount);
-  event TransferCreditsDrained(address indexed spcMember, uint256 amount);
+  event TransferCreditsAdded(address indexed issuerMember, uint256 amount);
+  event TransferCreditsDrained(address indexed issuerMember, uint256 amount);
 
   // ERC20 stuff.
   event Transfer(address indexed from, address indexed to, uint256 value);

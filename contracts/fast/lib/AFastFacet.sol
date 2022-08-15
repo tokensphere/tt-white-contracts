@@ -48,45 +48,34 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures that the given address is **not** a contract.
+  /** @dev Ensures that the given address is a member of the Marketplace.
    *  @param candidate The address to check.
    */
-  modifier nonContract(address candidate) {
+  modifier onlyMarketplaceMember(address candidate) {
     require(
-      !LibHelpers.isContract(candidate),
-      LibConstants.REQUIRES_NON_CONTRACT_ADDR
+      IHasMembers(LibFast.data().marketplace).isMember(candidate),
+      LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
     );
     _;
   }
 
-  /** @dev Ensures that the given address is a member of the Exchange.
-   *  @param candidate The address to check.
-   */
-  modifier onlyExchangeMember(address candidate) {
-    require(
-      IHasMembers(LibFast.data().exchange).isMember(candidate),
-      LibConstants.REQUIRES_EXCHANGE_MEMBERSHIP
-    );
-    _;
-  }
-
-  /** @dev Ensures a candidate is active.
+  /** @dev Ensures a candidate is active in the Marketplace.
    *  @param candidate The address to check activation status on.
    */
-  modifier onlyExchangeActiveMember(address candidate) {
+  modifier onlyMarketplaceActiveMember(address candidate) {
     require(
-      IHasActiveMembers(LibFast.data().exchange).isMemberActive(candidate),
-      LibConstants.REQUIRES_EXCHANGE_ACTIVE_MEMBER
+      IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate),
+      LibConstants.REQUIRES_MARKETPLACE_ACTIVE_MEMBER
     );
     _;
   }
 
-  /** @dev Ensures that the message sender is a member of the SPC.
+  /** @dev Ensures that the message sender is a member of the ISSUER.
    */
-  modifier onlySpcMember() {
+  modifier onlyIssuerMember() {
     require(
-      IHasMembers(LibFast.data().spc).isMember(msg.sender),
-      LibConstants.REQUIRES_SPC_MEMBERSHIP
+      IHasMembers(LibFast.data().issuer).isMember(msg.sender),
+      LibConstants.REQUIRES_ISSUER_MEMBERSHIP
     );
     _;
   }

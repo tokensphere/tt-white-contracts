@@ -6,7 +6,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { zero, tenThousand, abiStructToObj, oneHundred, INTERNAL_METHOD, impersonateContract } from '../utils';
-import { Spc, Exchange, Fast, FastFrontendFacet } from '../../typechain';
+import { Issuer, Marketplace, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 import { toUnpaddedHexString } from '../../src/utils';
 import { fast } from '../../typechain/contracts';
@@ -17,30 +17,30 @@ chai.use(smock.matchers);
 describe('FastFrontendFacet', () => {
   let
     deployer: SignerWithAddress,
-    spcMember: SignerWithAddress,
+    issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
     member: SignerWithAddress;
-  let spc: FakeContract<Spc>,
-    exchange: FakeContract<Exchange>,
+  let issuer: FakeContract<Issuer>,
+    marketplace: FakeContract<Marketplace>,
     frontend: FastFrontendFacet,
     governedFast: Fast,
-    spcMemberFast: Fast;
+    issuerMemberFast: Fast;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, spcMember, governor, member] = await ethers.getSigners();
-    // Mock an SPC and an Exchange contract.
-    spc = await smock.fake('Spc');
-    exchange = await smock.fake('Exchange');
-    // Stub isMember, spcAddress calls.
-    spc.isMember.whenCalledWith(spcMember.address).returns(true);
-    spc.isMember.returns(false);
-    exchange.spcAddress.returns(spc.address);
-    exchange.isMember.whenCalledWith(member.address).returns(true);
-    exchange.isMember.whenCalledWith(governor.address).returns(true);
-    exchange.isMember.returns(false);
+    [deployer, issuerMember, governor, member] = await ethers.getSigners();
+    // Mock an Issuer and an Marketplace contract.
+    issuer = await smock.fake('Issuer');
+    marketplace = await smock.fake('Marketplace');
+    // Stub isMember, issuerAddress calls.
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    issuer.isMember.returns(false);
+    marketplace.issuerAddress.returns(issuer.address);
+    marketplace.isMember.whenCalledWith(member.address).returns(true);
+    marketplace.isMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isMember.returns(false);
   });
 
   beforeEach(async () => {
@@ -52,14 +52,14 @@ describe('FastFrontendFacet', () => {
           frontend = await ethers.getContractAt<FastFrontendFacet>('FastFrontendFacet', fast.address);
           // Add members.
           governedFast = fast.connect(governor);
-          spcMemberFast = fast.connect(spcMember);
+          issuerMemberFast = fast.connect(issuerMember);
           await governedFast.addMember(member.address);
           await governedFast.addMember(governor.address);
         }
       },
       initWith: {
-        spc: spc.address,
-        exchange: exchange.address,
+        issuer: issuer.address,
+        marketplace: marketplace.address,
         governor: governor.address,
       }
     });
@@ -119,13 +119,13 @@ describe('FastFrontendFacet', () => {
 
   describe('detailedMember', async () => {
     it('returns a MemberDetails struct with the correct information', async () => {
-      const subject = await frontend.detailedMember(spcMember.address);
+      const subject = await frontend.detailedMember(issuerMember.address);
       const memberObj = abiStructToObj(subject);
 
       expect(memberObj).to.eql({
-        addr: spcMember.address,
+        addr: issuerMember.address,
         balance: zero,
-        ethBalance: (await spcMember.getBalance()),
+        ethBalance: (await issuerMember.getBalance()),
         isGovernor: false
       });
     });
@@ -133,7 +133,7 @@ describe('FastFrontendFacet', () => {
 
   describe('detailedGovernor', async () => {
     beforeEach(async () => {
-      await spcMemberFast.addGovernor(member.address);
+      await issuerMemberFast.addGovernor(member.address);
     });
 
     it('returns a GovernorDetails struct with the correct information', async () => {
@@ -190,7 +190,7 @@ describe('FastFrontendFacet', () => {
 
   describe('paginateDetailedGovernors', async () => {
     beforeEach(async () => {
-      await spcMemberFast.addGovernor(member.address);
+      await issuerMemberFast.addGovernor(member.address);
     });
 
     it('returns governor details with next cursor', async () => {
