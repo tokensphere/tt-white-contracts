@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import './lib/AMarketplaceFacet.sol';
-import '../spc/SpcTopFacet.sol';
+import '../issuer/IssuerTopFacet.sol';
 import '../interfaces/IERC20.sol';
 import '../interfaces/ITokenHoldings.sol';
 
@@ -17,7 +17,7 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
     external override {
     // Verify that the given address is in fact a registered FAST contract.
     require(
-      SpcTopFacet(LibMarketplace.data().spc).isFastRegistered(msg.sender),
+      IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender),
       LibConstants.REQUIRES_FAST_CONTRACT_CALLER
     );
 
