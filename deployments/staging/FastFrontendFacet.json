@@ -1,0 +1,575 @@
+{
+  "address": "0x5970586260e584670A9E85A9875BD7d1a8Fe4F70",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
+        }
+      ],
+      "name": "Burnt",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "memberCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "governorCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalSupply",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "transferCredits",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "reserveBalance",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ethBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "DetailsChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        }
+      ],
+      "name": "Disapproval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EthDrained",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EthReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "governor",
+          "type": "address"
+        }
+      ],
+      "name": "GovernorAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "governor",
+          "type": "address"
+        }
+      ],
+      "name": "GovernorRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
+        }
+      ],
+      "name": "Minted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuerMember",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TransferCreditsAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuerMember",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TransferCreditsDrained",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "governor",
+          "type": "address"
+        }
+      ],
+      "name": "detailedGovernor",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isMember",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.GovernorDetails",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "detailedMember",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isGovernor",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.MemberDetails",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "details",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint8",
+              "name": "decimals",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "transferCredits",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isSemiPublic",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasFixedSupply",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "reserveBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "memberCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "governorCount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.Details",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "emitDetailsChanged",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "perPage",
+          "type": "uint256"
+        }
+      ],
+      "name": "paginateDetailedGovernors",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isMember",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.GovernorDetails[]",
+          "name": "",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "perPage",
+          "type": "uint256"
+        }
+      ],
+      "name": "paginateDetailedMembers",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isGovernor",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.MemberDetails[]",
+          "name": "",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x1d4cce401b26e1d2f353912e0e0293a03d985002cd9e671651faab8e3514f235",
+  "receipt": {
+    "to": "0x6DF2D25d8C6FD680730ee658b530A05a99BB769a",
+    "from": "0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE",
+    "contractAddress": null,
+    "transactionIndex": 0,
+    "gasUsed": "1269368",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x678a99b7cd7f3fb10d7f54979d94998e0f7cde6bc2e00a77526cee2877a4149e",
+    "transactionHash": "0x1d4cce401b26e1d2f353912e0e0293a03d985002cd9e671651faab8e3514f235",
+    "logs": [],
+    "blockNumber": 382999,
+    "cumulativeGasUsed": "1269368",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "e9d57edbd84228ebf559b52428a576bf",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"ref\",\"type\":\"string\"}],\"name\":\"Burnt\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"memberCount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"governorCount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"transferCredits\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reserveBalance\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"}],\"name\":\"DetailsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"Disapproval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"EthDrained\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"EthReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"governor\",\"type\":\"address\"}],\"name\":\"GovernorAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"governor\",\"type\":\"address\"}],\"name\":\"GovernorRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"MemberAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"MemberRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"ref\",\"type\":\"string\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerMember\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TransferCreditsAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerMember\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TransferCreditsDrained\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"governor\",\"type\":\"address\"}],\"name\":\"detailedGovernor\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isMember\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.GovernorDetails\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"detailedMember\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isGovernor\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.MemberDetails\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"details\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"transferCredits\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isSemiPublic\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"hasFixedSupply\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"reserveBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"memberCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"governorCount\",\"type\":\"uint256\"}],\"internalType\":\"struct FastFrontendFacet.Details\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emitDetailsChanged\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"perPage\",\"type\":\"uint256\"}],\"name\":\"paginateDetailedGovernors\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isMember\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.GovernorDetails[]\",\"name\":\"\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"perPage\",\"type\":\"uint256\"}],\"name\":\"paginateDetailedMembers\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isGovernor\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.MemberDetails[]\",\"name\":\"\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/fast/FastFrontendFacet.sol\":\"FastFrontendFacet\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/fast/FastFrontendFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport './lib/AFastFacet.sol';\\nimport './lib/LibFastAccess.sol';\\nimport './lib/LibFastToken.sol';\\n\\n\\ncontract FastFrontendFacet is AFastFacet {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  // Data structures.\\n\\n  struct Details {\\n    address addr;\\n    string name;\\n    string symbol;\\n    uint8 decimals;\\n    uint256 totalSupply;\\n    uint256 transferCredits;\\n    bool isSemiPublic;\\n    bool hasFixedSupply;\\n    uint256 reserveBalance;\\n    uint256 ethBalance;\\n    uint256 memberCount;\\n    uint256 governorCount;\\n  }\\n\\n  struct MemberDetails {\\n    address addr;\\n    uint256 balance;\\n    uint256 ethBalance;\\n    bool isGovernor;\\n  }\\n\\n  struct GovernorDetails {\\n    address addr;\\n    uint256 ethBalance;\\n    bool isMember;\\n  }\\n  // Emitters.\\n\\n  function emitDetailsChanged()\\n      external onlyDiamondFacet {\\n    LibFastAccess.Data storage accessData = LibFastAccess.data();\\n    LibFastToken.Data storage tokenData = LibFastToken.data();\\n    emit DetailsChanged({\\n      memberCount: accessData.memberSet.values.length,\\n      governorCount: accessData.governorSet.values.length,\\n      totalSupply: tokenData.totalSupply,\\n      transferCredits: tokenData.transferCredits,\\n      reserveBalance: tokenData.balances[LibConstants.ZERO_ADDRESS],\\n      ethBalance: payable(address(this)).balance\\n    });\\n  }\\n\\n  // Public functions.\\n\\n  function details()\\n      public view returns(Details memory) {\\n    LibFast.Data storage topStorage = LibFast.data();\\n    LibFastAccess.Data storage accessStorage = LibFastAccess.data();\\n    LibFastToken.Data storage tokenStorage = LibFastToken.data();\\n    return Details({\\n      addr: address(this),\\n      name: tokenStorage.name,\\n      symbol: tokenStorage.symbol,\\n      decimals: tokenStorage.decimals,\\n      totalSupply: tokenStorage.totalSupply,\\n      transferCredits: tokenStorage.transferCredits,\\n      isSemiPublic: topStorage.isSemiPublic,\\n      hasFixedSupply: topStorage.hasFixedSupply,\\n      reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],\\n      ethBalance: payable(address(this)).balance,\\n      memberCount: accessStorage.memberSet.values.length,\\n      governorCount: accessStorage.governorSet.values.length\\n    });\\n  }\\n\\n  function detailedMember(address member)\\n      public view returns(MemberDetails memory) {\\n    LibFastToken.Data storage tokenStorage = LibFastToken.data();\\n    LibFastAccess.Data storage accessStorage = LibFastAccess.data();\\n    return MemberDetails({\\n      addr: member,\\n      balance: tokenStorage.balances[member],\\n      ethBalance: member.balance,\\n      isGovernor: accessStorage.governorSet.contains(member)\\n    });\\n  }\\n\\n  function detailedGovernor(address governor)\\n      public view returns(GovernorDetails memory) {\\n    LibFastAccess.Data storage accessStorage = LibFastAccess.data();\\n    return GovernorDetails({\\n      addr: governor,\\n      ethBalance: governor.balance,\\n      isMember: accessStorage.memberSet.contains(governor)\\n    });\\n  }\\n\\n  function paginateDetailedMembers(uint256 index, uint256 perPage)\\n      external view returns(MemberDetails[] memory, uint256) {\\n    LibFastAccess.Data storage accessStorage = LibFastAccess.data();\\n    (address[] memory members, uint256 nextCursor) =\\n      LibPaginate.addresses(accessStorage.memberSet.values, index, perPage);\\n    MemberDetails[] memory values = new MemberDetails[](members.length);\\n    for (uint256 i = 0; i < members.length; ++i) {\\n      values[i] = detailedMember(members[i]);\\n    }\\n    return (values, nextCursor);\\n  }\\n\\n  function paginateDetailedGovernors(uint256 index, uint256 perPage)\\n      external view returns(GovernorDetails[] memory, uint256) {\\n    LibFastAccess.Data storage accessStorage = LibFastAccess.data();\\n    (address[] memory governors, uint256 nextCursor) =\\n      LibPaginate.addresses(accessStorage.governorSet.values, index, perPage);\\n    GovernorDetails[] memory values = new GovernorDetails[](governors.length);\\n    for (uint256 i = 0; i < governors.length; ++i) {\\n      values[i] = detailedGovernor(governors[i]);\\n    }\\n    return (values, nextCursor);\\n  }\\n}\\n\",\"keccak256\":\"0x0d6a32e26b2a5c707de582658b1a9e6659cf3e3863f6a2ff1e497a8ff7427d87\",\"license\":\"MIT\"},\"contracts/fast/lib/AFastFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nimport '../../lib/LibConstants.sol';\\nimport '../../lib/LibHelpers.sol';\\nimport '../../lib/LibAddressSet.sol';\\nimport '../../interfaces/IHasMembers.sol';\\nimport '../../interfaces/IHasGovernors.sol';\\nimport '../../interfaces/IHasActiveMembers.sol';\\nimport '../../interfaces/IERC173.sol';\\nimport '../lib/LibFast.sol';\\nimport './IFastEvents.sol';\\n\\n\\n/**\\n* @dev This contract is a group of modifiers that can be used by any facets to guard against\\n*       certain permissions.\\n*/\\nabstract contract AFastFacet is IFastEvents {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Modifiers.\\n\\n  /// @dev Ensures that a method can only be called by another facet of the same diamond.\\n  modifier onlyDiamondFacet() {\\n    require(\\n      msg.sender == address(this),\\n      LibConstants.INTERNAL_METHOD\\n    );\\n    _;\\n  }\\n\\n  /// @dev Ensures that a method can only be called by the owner of this diamond.\\n  modifier onlyDiamondOwner() {\\n    require(\\n      msg.sender == IERC173(address(this)).owner(),\\n      LibConstants.REQUIRES_DIAMOND_OWNERSHIP\\n    );\\n    _;\\n  }\\n\\n  /// @dev Ensures that a method can only be called by the singleton deployer contract factory.\\n  modifier onlyDeployer() {\\n    require(\\n      msg.sender == LibConstants.DEPLOYER_CONTRACT,\\n      LibConstants.INTERNAL_METHOD\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures that the given address is a member of the Marketplace.\\n   *  @param candidate The address to check.\\n   */\\n  modifier onlyMarketplaceMember(address candidate) {\\n    require(\\n      IHasMembers(LibFast.data().marketplace).isMember(candidate),\\n      LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures a candidate is active in the Marketplace.\\n   *  @param candidate The address to check activation status on.\\n   */\\n  modifier onlyMarketplaceActiveMember(address candidate) {\\n    require(\\n      IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate),\\n      LibConstants.REQUIRES_MARKETPLACE_ACTIVE_MEMBER\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures that the message sender is a member of the ISSUER.\\n   */\\n  modifier onlyIssuerMember() {\\n    require(\\n      IHasMembers(LibFast.data().issuer).isMember(msg.sender),\\n      LibConstants.REQUIRES_ISSUER_MEMBERSHIP\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures that the given address is a governor of the FAST.\\n   *  @param candidate The address to check.\\n   */\\n  modifier onlyGovernor(address candidate) {\\n    require(\\n      IHasGovernors(address(this)).isGovernor(candidate),\\n      LibConstants.REQUIRES_FAST_GOVERNORSHIP\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures that the given address is a member of the FAST.\\n   *  @param candidate The address to check.\\n   */\\n  modifier onlyMember(address candidate) {\\n    require(\\n      IHasMembers(address(this)).isMember(candidate),\\n      LibConstants.REQUIRES_FAST_MEMBERSHIP\\n    );\\n    _;\\n  }\\n\\n  /** @dev Ensures address a is different from address b.\\n   *  @param a Address a\\n   *  @param b Address b\\n   */\\n  modifier differentAddresses(address a, address b) {\\n    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0x9daacc49f2758b6d88280646b092897371bba4b5e6136e8bb4427a2b6110cf3d\",\"license\":\"MIT\"},\"contracts/fast/lib/IFastEvents.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\ninterface IFastEvents {\\n  // ETH provisioning events.\\n\\n  /** @dev Emited when someone provisions this Issuer with Eth.\\n   *  @param from The sender of the Eth.\\n   *  @param amount The quantity of Eth, expressed in Wei.\\n   */\\n  event EthReceived(address indexed from, uint256 amount);\\n  /** @dev Emited when Eth is drained from this Issuer.\\n   *  @param to The caller and recipient of the drained Eth.\\n   *  @param amount The quantity of Eth that was drained, expressed in Wei.\\n   */\\n  event EthDrained(address indexed to, uint256 amount);\\n\\n  // IHasMembers.\\n\\n  event MemberAdded(address indexed member);\\n  event MemberRemoved(address indexed member);\\n\\n  // IHasGovernors.\\n\\n  event GovernorAdded(address indexed governor);\\n  event GovernorRemoved(address indexed governor);\\n\\n  // Token related events.\\n\\n  // Issuance related events.\\n  event Minted(uint256 indexed amount, string indexed ref);\\n  event Burnt(uint256 indexed amount, string indexed ref);\\n\\n  // Transfer credits related events.\\n  event TransferCreditsAdded(address indexed issuerMember, uint256 amount);\\n  event TransferCreditsDrained(address indexed issuerMember, uint256 amount);\\n\\n  // ERC20 stuff.\\n  event Transfer(address indexed from, address indexed to, uint256 value);\\n  event Approval(address indexed owner, address indexed spender, uint256 value);\\n  event Disapproval(address indexed owner, address indexed spender);\\n\\n  // General events.\\n\\n  // This is an event that is fired whenever any of some of the FAST parameters\\n  // change, so that the frontend can react to it and refresh the general header\\n  // for that fast as well as the baseball cards in the FASTs list.\\n  event DetailsChanged(\\n    uint256 memberCount,\\n    uint256 governorCount,\\n    uint256 totalSupply,\\n    uint256 transferCredits,\\n    uint256 reserveBalance,\\n    uint256 ethBalance\\n  );\\n}\\n\",\"keccak256\":\"0x88c78543b04186504b265ef0c9af3d2f97ea12bbe41245422c24a8fd803b3382\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFast.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\nlibrary LibFast {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Fast.storage'):\\n  bytes32 internal constant STORAGE_SLOT = 0x80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705;\\n\\n  // Data structures.\\n\\n  struct Data {\\n    /// @dev The latest intializer version that was called.\\n    uint16 version;\\n    /// @dev The internal pointer to the Issuer contract.\\n    address issuer;\\n    /// @dev The internal pointer to the Marketplace contract.\\n    address marketplace;\\n    /// @dev We have to track whether the token facet provides continuous minting or fixed supply.\\n    bool hasFixedSupply;\\n    /// @dev Whether or not this FAST requires to be a member to hold tokens.\\n    bool isSemiPublic;\\n  }\\n\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x256d4e621e78e372066e339ef7ce4933e054cb0c409e3aa1ea1fdebc71677a9d\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastAccess.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\nlibrary LibFastAccess {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Fast.storage.Access'):\\n  bytes32 internal constant STORAGE_SLOT = 0x87ed8063ac9ead3b2eb7551ed3d89b29fcbf44d6733084b5c82e95d5120ece9a;\\n\\n  struct Data {\\n    /// @dev The latest intializer version that was called.\\n    uint16 version;\\n    /// @dev We hold the list of the FAST governors in there.\\n    LibAddressSet.Data governorSet;\\n    // @dev The FAST members are held in there.\\n    LibAddressSet.Data memberSet;\\n  }\\n\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x9744c77467b854899d5b5f9beaf4665f461adc8110432d174601a97f00e594ad\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastHistory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\nlibrary LibFastHistory {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Fast.storage.History'):\\n  bytes32 internal constant STORAGE_SLOT = 0x6bc8b61a9dd5fc049ea98027492a801d74e35fdf4d80d7fecd551a16e88fdbb4;\\n\\n  // Storage structures.\\n\\n  struct Data {\\n    /// @dev The latest intializer version that was called.\\n    uint16 version;\\n    /// @dev All minting proofs are kept here.\\n    SupplyProof[] supplyProofs;\\n    /// @dev All transfer proofs are kept here.\\n    TransferProof[] transferProofs;\\n    /// @dev All transfers indices involving a given address are kept here.\\n    mapping(address => uint256[]) transferProofInvolvements;\\n  }\\n\\n  // Other structures.\\n\\n  /// @dev A minting operation could either be to mint or unmint tokens.\\n  enum SupplyOp { Mint, Burn }\\n\\n  /// @dev Minting operations are recorded for papertrail. This is the structure that keeps track of them.\\n  struct SupplyProof {\\n    SupplyOp op;\\n    uint256 amount;\\n    uint256 blockNumber;\\n    string ref;\\n  }\\n\\n  /// @dev Every transfer in is recorded. This is the structure that keeps track of them.\\n  struct TransferProof {\\n    address spender;\\n    address from;\\n    address to;\\n    uint256 amount;\\n    uint256 blockNumber;\\n    string ref;\\n  }\\n\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0xd6af0fc0867dd0259fa6e0797f2b46cffac8a36f0380bf266e3ccf778aeb724c\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastToken.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\n\\nlibrary LibFastToken {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Fast.storage.Token'):\\n  bytes32 internal constant STORAGE_SLOT = 0xb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261;\\n\\n  // Constants.\\n\\n  // ERC1404 Restriction codes.\\n  uint8 internal constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 1;\\n  uint8 internal constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;\\n  uint8 internal constant REQUIRES_MARKETPLACE_MEMBERSHIP_CODE = 3;\\n  uint8 internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;\\n\\n  string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';\\n\\n  // Data structures.\\n\\n  struct Data {\\n    /// @dev The latest intializer version that was called.\\n    uint16 version;\\n    // ERC20 related properties for this FAST Token.\\n    string name;\\n    string symbol;\\n    uint8 decimals;\\n    uint256 totalSupply;\\n    // Every time a transfer is executed, the credit decreases by the amount\\n    // of said transfer.\\n    // It becomes impossible to transact once it reaches zero, and must\\n    // be provisioned by an Issuer member.\\n    uint256 transferCredits;\\n    // Our members balances are held here.\\n    mapping(address => uint256) balances;\\n    // Allowances are stored here.\\n    mapping(address => mapping(address => uint256)) allowances;\\n    mapping(address => LibAddressSet.Data) allowancesByOwner;\\n    mapping(address => LibAddressSet.Data) allowancesBySpender;\\n  }\\n\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x34fbf2b9e5e3c6302dda7969f44f804ed21a9f08d55766d4b4b4b92de5afa5c8\",\"license\":\"MIT\"},\"contracts/interfaces/IERC173.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n/// @title ERC-173 Contract Ownership Standard\\n///  Note: the ERC-165 identifier for this interface is 0x7f5828d0\\n/* is ERC165 */\\ninterface IERC173 {\\n    /// @dev This emits when ownership of a contract changes.\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /// @notice Get the address of the owner\\n    /// @return owner_ The address of the owner.\\n    function owner() external view returns (address owner_);\\n\\n    /// @notice Set the address of the new owner of the contract\\n    /// @dev Set _newOwner to address(0) to renounce any ownership.\\n    /// @param _newOwner The address of the new owner of the contract\\n    function transferOwnership(address _newOwner) external;\\n}\\n\",\"keccak256\":\"0x6ab22e74708905d9c31867461fffbd2e24bc6ad094aa1aab39211d99e296ab32\",\"license\":\"MIT\"},\"contracts/interfaces/IHasActiveMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\ninterface IHasActiveMembers {\\n  function isMemberActive(address member) external view returns(bool);\\n  function deactivateMember(address payable member) external;\\n  function activateMember(address member) external;\\n}\\n\",\"keccak256\":\"0x59859780a1d3a37c35d1dd2516434b170d49d044ef20918aa565703ab8f4a09a\",\"license\":\"MIT\"},\"contracts/interfaces/IHasGovernors.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\ninterface IHasGovernors {\\n  function isGovernor(address governor) external view returns(bool);\\n  function governorCount() external view returns(uint256);\\n  function paginateGovernors(uint256 index, uint256 perPage) external view returns(address[] memory, uint256);\\n  function addGovernor(address payable governor) external;\\n  function removeGovernor(address governor) external;\\n}\\n\",\"keccak256\":\"0x87c9cb1f7f829c1197834d12eb05763217b0b56be530f1ab6fe0ded4500b5dd0\",\"license\":\"MIT\"},\"contracts/interfaces/IHasMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\ninterface IHasMembers {\\n  function isMember(address member) external view returns(bool);\\n  function memberCount() external view returns(uint256);\\n  function paginateMembers(uint256 index, uint256 perPage) external view returns(address[] memory, uint256);\\n  function addMember(address payable member) external;\\n  function removeMember(address member) external;\\n}\\n\",\"keccak256\":\"0x41cfdd80b0ab31a1e0a00f65cae19690aab7917b2c61faa7f7f478771e9a28ae\",\"license\":\"MIT\"},\"contracts/lib/LibAddressSet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\nlibrary LibAddressSet {\\n  /// @dev Represents a list of addresses.\\n  struct Data {\\n    mapping(address => uint256) indices;\\n    address[] values;\\n  }\\n\\n  /**\\n   * @dev Adds an item into the storage set. If the address already exists in the\\n   *      set, the function reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be added.\\n   */\\n  function add(Data storage d, address key, bool noThrow)\\n      internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && exists) { return; }\\n    require(!exists, 'Address already in set');\\n    d.indices[key] = d.values.length;\\n    d.values.push(key);\\n  }\\n\\n  /**\\n   * @dev Removes an item from the storage set. If the address does not exist in the\\n   *      set, the function reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be removed.\\n   */\\n  function remove(Data storage d, address key, bool noThrow)\\n      internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && !exists) { return; }\\n    require(exists, 'Address does not exist in set');\\n    uint256 lastIndex = d.values.length - 1;\\n    address keyToMove = d.values[lastIndex];\\n    uint256 idxToReplace = d.indices[key];\\n    d.indices[keyToMove] = idxToReplace;\\n    d.values[idxToReplace] = keyToMove;\\n    delete d.indices[key];\\n    d.values.pop();\\n  }\\n\\n  /**\\n   * @dev Tests whether or not a given item already exists in the set.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to test.\\n   * @return a boolean.\\n   */\\n  function contains(Data storage d, address key)\\n      internal view returns(bool) {\\n    return d.values.length == 0\\n      ? false\\n      : d.values[d.indices[key]] == key;\\n  }\\n}\\n\",\"keccak256\":\"0x7daf050d0864e085c227521b1157b4ea652fe75ea7e10f685027b42d6e1caf87\",\"license\":\"MIT\"},\"contracts/lib/LibConstants.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\n\\nlibrary LibConstants {\\n  address internal constant ZERO_ADDRESS = address(0);\\n  address internal constant DEPLOYER_CONTRACT = 0x6DF2D25d8C6FD680730ee658b530A05a99BB769a;\\n\\n  string internal constant ALREADY_INITIALIZED = 'Already initialized';\\n  string internal constant INTERNAL_METHOD = 'Internal method';\\n  string internal constant REQUIRES_DIAMOND_OWNERSHIP = 'Requires diamond ownership';\\n  string internal constant REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';\\n\\n  string internal constant REQUIRES_ISSUER_MEMBERSHIP = 'Requires Issuer membership';\\n  string internal constant REQUIRES_MARKETPLACE_MEMBERSHIP = 'Requires Marketplace membership';\\n  string internal constant REQUIRES_MARKETPLACE_ACTIVE_MEMBER = 'Requires active Marketplace member';\\n  string internal constant REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER = 'Requires a deactivated Marketplace member';\\n\\n  string internal constant REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';\\n  string internal constant REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';\\n  string internal constant REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';\\n\\n  string internal constant DUPLICATE_ENTRY = 'Duplicate entry';\\n  string internal constant UNSUPPORTED_OPERATION = 'Unsupported operation';\\n  string internal constant REQUIRES_NON_ZERO_ADDRESS = 'Requires non-zero address';\\n  string internal constant REQUIRES_NON_CONTRACT_ADDR = 'Address cannot be a contract';\\n\\n  string internal constant REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';\\n  string internal constant INSUFFICIENT_FUNDS = 'Insufficient token balance';\\n  string internal constant INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';\\n  string internal constant INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';\\n  string internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';\\n  string internal constant UNKNOWN_RESTRICTION_CODE = 'Unknown restriction code';\\n}\\n\",\"keccak256\":\"0x6d1434c3486841d115794d0e31d13ef5bbb7babe42bfae164c51ea0fd59753fd\",\"license\":\"MIT\"},\"contracts/lib/LibHelpers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nlibrary LibHelpers {\\n}\\n\",\"keccak256\":\"0x44e3992ae1f6a30bb38f404596fda43b2ff7a6b6d62620d14cd3656bea4b9ded\",\"license\":\"MIT\"},\"contracts/lib/LibPaginate.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.4;\\n\\nimport '../fast/lib/LibFastHistory.sol';\\n\\n\\nlibrary LibPaginate {\\n  function addresses(address[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(address[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      address[] memory values = new address[](length);\\n      for (uint256 i = 0; i < length; i++) {\\n        values[i] = collection[cursor + i];\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function uint256s(uint256[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(uint256[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      uint256[] memory values = new uint256[](length);\\n      for (uint256 i = 0; i < length; i++) {\\n        values[i] = collection[cursor + i];\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function supplyProofs(LibFastHistory.SupplyProof[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(LibFastHistory.SupplyProof[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      LibFastHistory.SupplyProof[] memory values = new LibFastHistory.SupplyProof[](length);\\n      for (uint256 i = 0; i < length; i++) {\\n        values[i] = collection[cursor + i];\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function transferProofs(LibFastHistory.TransferProof[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(LibFastHistory.TransferProof[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      LibFastHistory.TransferProof[] memory values = new LibFastHistory.TransferProof[](length);\\n      for (uint256 i = 0; i < length; i++) {\\n        values[i] = collection[cursor + i];\\n      }\\n      return (values, cursor + length);\\n  }\\n}\",\"keccak256\":\"0xedbf24531aa1b21a17a7962b2053fe1bd81ddf9e8869f508f14f7fb9087631d9\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061160c806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80634f2274c014610067578063565974d314610071578063677d9a681461008f57806388a91524146100bf57806398d55d68146100ef5780639f4c440b14610120575b600080fd5b61006f610151565b005b6100796102c9565b6040516100869190611254565b60405180910390f35b6100a960048036038101906100a49190610d8b565b61052b565b6040516100b69190611276565b60405180910390f35b6100d960048036038101906100d49190610d8b565b6105a6565b6040516100e69190611291565b60405180910390f35b61010960048036038101906101049190610db4565b610675565b6040516101179291906111d2565b60405180910390f35b61013a60048036038101906101359190610db4565b6107d7565b604051610148929190611202565b60405180910390f35b3073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146040518060400160405280600f81526020017f496e7465726e616c206d6574686f640000000000000000000000000000000000815250906101f7576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101ee9190611232565b60405180910390fd5b506000610202610939565b9050600061020e610961565b90507f3f34e05a7df519b3b9e1ab85fab4e26555d5863f50b821555768b78d8600e4af82600301600101805490508360010160010180549050836004015484600501548560060160008073ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020543073ffffffffffffffffffffffffffffffffffffffff16316040516102bd969594939291906112ac565b60405180910390a15050565b6102d1610c6a565b60006102db610989565b905060006102e7610939565b905060006102f3610961565b90506040518061018001604052803073ffffffffffffffffffffffffffffffffffffffff16815260200182600101805461032c906114be565b80601f0160208091040260200160405190810160405280929190818152602001828054610358906114be565b80156103a55780601f1061037a576101008083540402835291602001916103a5565b820191906000526020600020905b81548152906001019060200180831161038857829003601f168201915b505050505081526020018260020180546103be906114be565b80601f01602080910402602001604051908101604052809291908181526020018280546103ea906114be565b80156104375780601f1061040c57610100808354040283529160200191610437565b820191906000526020600020905b81548152906001019060200180831161041a57829003601f168201915b505050505081526020018260030160009054906101000a900460ff1660ff16815260200182600401548152602001826005015481526020018460010160159054906101000a900460ff16151581526020018460010160149054906101000a900460ff16151581526020018260060160008073ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481526020013073ffffffffffffffffffffffffffffffffffffffff16318152602001836003016001018054905081526020018360010160010180549050815250935050505090565b610533610ce8565b600061053d610939565b905060405180606001604052808473ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1631815260200161059985846003016109b190919063ffffffff16565b1515815250915050919050565b6105ae610d21565b60006105b8610961565b905060006105c4610939565b905060405180608001604052808573ffffffffffffffffffffffffffffffffffffffff1681526020018360060160008773ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481526020018573ffffffffffffffffffffffffffffffffffffffff1631815260200161066786846001016109b190919063ffffffff16565b151581525092505050919050565b6060600080610682610939565b9050600080610698836001016001018888610aa7565b915091506000825167ffffffffffffffff8111156106df577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405190808252806020026020018201604052801561071857816020015b610705610ce8565b8152602001906001900390816106fd5790505b50905060005b83518110156107c557610770848281518110610763577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001015161052b565b8282815181106107a9577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b6020026020010181905250806107be906114f0565b905061071e565b50808295509550505050509250929050565b60606000806107e4610939565b90506000806107fa836003016001018888610aa7565b915091506000825167ffffffffffffffff811115610841577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405190808252806020026020018201604052801561087a57816020015b610867610d21565b81526020019060019003908161085f5790505b50905060005b8351811015610927576108d28482815181106108c5577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60200260200101516105a6565b82828151811061090b577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001018190525080610920906114f0565b9050610880565b50808295509550505050509250929050565b60007f87ed8063ac9ead3b2eb7551ed3d89b29fcbf44d6733084b5c82e95d5120ece9a905090565b60007fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261905090565b60007f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705905090565b600080836001018054905014610a9c578173ffffffffffffffffffffffffffffffffffffffff16836001018460000160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481548110610a55577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614610a9f565b60005b905092915050565b6060600080848680549050610abc9190611402565b8411610ac85783610ad9565b848680549050610ad89190611402565b5b905060008167ffffffffffffffff811115610b1d577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051908082528060200260200182016040528015610b4b5781602001602082028036833780820191505090505b50905060005b82811015610c4e57878188610b6691906113ac565b81548110610b9d577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16828281518110610c01577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001019073ffffffffffffffffffffffffffffffffffffffff16908173ffffffffffffffffffffffffffffffffffffffff16815250508080610c46906114f0565b915050610b51565b50808287610c5c91906113ac565b935093505050935093915050565b604051806101800160405280600073ffffffffffffffffffffffffffffffffffffffff1681526020016060815260200160608152602001600060ff1681526020016000815260200160008152602001600015158152602001600015158152602001600081526020016000815260200160008152602001600081525090565b6040518060600160405280600073ffffffffffffffffffffffffffffffffffffffff168152602001600081526020016000151581525090565b6040518060800160405280600073ffffffffffffffffffffffffffffffffffffffff16815260200160008152602001600081526020016000151581525090565b600081359050610d70816115a8565b92915050565b600081359050610d85816115bf565b92915050565b600060208284031215610d9d57600080fd5b6000610dab84828501610d61565b91505092915050565b60008060408385031215610dc757600080fd5b6000610dd585828601610d76565b9250506020610de685828601610d76565b9150509250929050565b6000610dfc8383611077565b60608301905092915050565b6000610e1483836110fb565b60808301905092915050565b610e2981611436565b82525050565b6000610e3a8261132d565b610e448185611368565b9350610e4f8361130d565b8060005b83811015610e80578151610e678882610df0565b9750610e728361134e565b925050600181019050610e53565b5085935050505092915050565b6000610e9882611338565b610ea28185611379565b9350610ead8361131d565b8060005b83811015610ede578151610ec58882610e08565b9750610ed08361135b565b925050600181019050610eb1565b5085935050505092915050565b610ef481611448565b82525050565b6000610f0582611343565b610f0f818561138a565b9350610f1f81856020860161148b565b610f2881611597565b840191505092915050565b6000610f3e82611343565b610f48818561139b565b9350610f5881856020860161148b565b610f6181611597565b840191505092915050565b600061018083016000830151610f856000860182610e20565b5060208301518482036020860152610f9d8282610efa565b91505060408301518482036040860152610fb78282610efa565b9150506060830151610fcc60608601826111c3565b506080830151610fdf60808601826111a5565b5060a0830151610ff260a08601826111a5565b5060c083015161100560c0860182610eeb565b5060e083015161101860e0860182610eeb565b5061010083015161102d6101008601826111a5565b506101208301516110426101208601826111a5565b506101408301516110576101408601826111a5565b5061016083015161106c6101608601826111a5565b508091505092915050565b60608201600082015161108d6000850182610e20565b5060208201516110a060208501826111a5565b5060408201516110b36040850182610eeb565b50505050565b6060820160008201516110cf6000850182610e20565b5060208201516110e260208501826111a5565b5060408201516110f56040850182610eeb565b50505050565b6080820160008201516111116000850182610e20565b50602082015161112460208501826111a5565b50604082015161113760408501826111a5565b50606082015161114a6060850182610eeb565b50505050565b6080820160008201516111666000850182610e20565b50602082015161117960208501826111a5565b50604082015161118c60408501826111a5565b50606082015161119f6060850182610eeb565b50505050565b6111ae81611474565b82525050565b6111bd81611474565b82525050565b6111cc8161147e565b82525050565b600060408201905081810360008301526111ec8185610e2f565b90506111fb60208301846111b4565b9392505050565b6000604082019050818103600083015261121c8185610e8d565b905061122b60208301846111b4565b9392505050565b6000602082019050818103600083015261124c8184610f33565b905092915050565b6000602082019050818103600083015261126e8184610f6c565b905092915050565b600060608201905061128b60008301846110b9565b92915050565b60006080820190506112a66000830184611150565b92915050565b600060c0820190506112c160008301896111b4565b6112ce60208301886111b4565b6112db60408301876111b4565b6112e860608301866111b4565b6112f560808301856111b4565b61130260a08301846111b4565b979650505050505050565b6000819050602082019050919050565b6000819050602082019050919050565b600081519050919050565b600081519050919050565b600081519050919050565b6000602082019050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600082825260208201905092915050565b600082825260208201905092915050565b60006113b782611474565b91506113c283611474565b9250827fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff038211156113f7576113f6611539565b5b828201905092915050565b600061140d82611474565b915061141883611474565b92508282101561142b5761142a611539565b5b828203905092915050565b600061144182611454565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600060ff82169050919050565b60005b838110156114a957808201518184015260208101905061148e565b838111156114b8576000848401525b50505050565b600060028204905060018216806114d657607f821691505b602082108114156114ea576114e9611568565b5b50919050565b60006114fb82611474565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82141561152e5761152d611539565b5b600182019050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000601f19601f8301169050919050565b6115b181611436565b81146115bc57600080fd5b50565b6115c881611474565b81146115d357600080fd5b5056fea2646970667358221220592999101deb1ea8eb947cbe38eb6a1913078912f43d39439707ebcedc614d2364736f6c63430008040033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c80634f2274c014610067578063565974d314610071578063677d9a681461008f57806388a91524146100bf57806398d55d68146100ef5780639f4c440b14610120575b600080fd5b61006f610151565b005b6100796102c9565b6040516100869190611254565b60405180910390f35b6100a960048036038101906100a49190610d8b565b61052b565b6040516100b69190611276565b60405180910390f35b6100d960048036038101906100d49190610d8b565b6105a6565b6040516100e69190611291565b60405180910390f35b61010960048036038101906101049190610db4565b610675565b6040516101179291906111d2565b60405180910390f35b61013a60048036038101906101359190610db4565b6107d7565b604051610148929190611202565b60405180910390f35b3073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146040518060400160405280600f81526020017f496e7465726e616c206d6574686f640000000000000000000000000000000000815250906101f7576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101ee9190611232565b60405180910390fd5b506000610202610939565b9050600061020e610961565b90507f3f34e05a7df519b3b9e1ab85fab4e26555d5863f50b821555768b78d8600e4af82600301600101805490508360010160010180549050836004015484600501548560060160008073ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020543073ffffffffffffffffffffffffffffffffffffffff16316040516102bd969594939291906112ac565b60405180910390a15050565b6102d1610c6a565b60006102db610989565b905060006102e7610939565b905060006102f3610961565b90506040518061018001604052803073ffffffffffffffffffffffffffffffffffffffff16815260200182600101805461032c906114be565b80601f0160208091040260200160405190810160405280929190818152602001828054610358906114be565b80156103a55780601f1061037a576101008083540402835291602001916103a5565b820191906000526020600020905b81548152906001019060200180831161038857829003601f168201915b505050505081526020018260020180546103be906114be565b80601f01602080910402602001604051908101604052809291908181526020018280546103ea906114be565b80156104375780601f1061040c57610100808354040283529160200191610437565b820191906000526020600020905b81548152906001019060200180831161041a57829003601f168201915b505050505081526020018260030160009054906101000a900460ff1660ff16815260200182600401548152602001826005015481526020018460010160159054906101000a900460ff16151581526020018460010160149054906101000a900460ff16151581526020018260060160008073ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481526020013073ffffffffffffffffffffffffffffffffffffffff16318152602001836003016001018054905081526020018360010160010180549050815250935050505090565b610533610ce8565b600061053d610939565b905060405180606001604052808473ffffffffffffffffffffffffffffffffffffffff1681526020018473ffffffffffffffffffffffffffffffffffffffff1631815260200161059985846003016109b190919063ffffffff16565b1515815250915050919050565b6105ae610d21565b60006105b8610961565b905060006105c4610939565b905060405180608001604052808573ffffffffffffffffffffffffffffffffffffffff1681526020018360060160008773ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481526020018573ffffffffffffffffffffffffffffffffffffffff1631815260200161066786846001016109b190919063ffffffff16565b151581525092505050919050565b6060600080610682610939565b9050600080610698836001016001018888610aa7565b915091506000825167ffffffffffffffff8111156106df577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405190808252806020026020018201604052801561071857816020015b610705610ce8565b8152602001906001900390816106fd5790505b50905060005b83518110156107c557610770848281518110610763577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001015161052b565b8282815181106107a9577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b6020026020010181905250806107be906114f0565b905061071e565b50808295509550505050509250929050565b60606000806107e4610939565b90506000806107fa836003016001018888610aa7565b915091506000825167ffffffffffffffff811115610841577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60405190808252806020026020018201604052801561087a57816020015b610867610d21565b81526020019060019003908161085f5790505b50905060005b8351811015610927576108d28482815181106108c5577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60200260200101516105a6565b82828151811061090b577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001018190525080610920906114f0565b9050610880565b50808295509550505050509250929050565b60007f87ed8063ac9ead3b2eb7551ed3d89b29fcbf44d6733084b5c82e95d5120ece9a905090565b60007fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261905090565b60007f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705905090565b600080836001018054905014610a9c578173ffffffffffffffffffffffffffffffffffffffff16836001018460000160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205481548110610a55577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614610a9f565b60005b905092915050565b6060600080848680549050610abc9190611402565b8411610ac85783610ad9565b848680549050610ad89190611402565b5b905060008167ffffffffffffffff811115610b1d577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051908082528060200260200182016040528015610b4b5781602001602082028036833780820191505090505b50905060005b82811015610c4e57878188610b6691906113ac565b81548110610b9d577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16828281518110610c01577f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b602002602001019073ffffffffffffffffffffffffffffffffffffffff16908173ffffffffffffffffffffffffffffffffffffffff16815250508080610c46906114f0565b915050610b51565b50808287610c5c91906113ac565b935093505050935093915050565b604051806101800160405280600073ffffffffffffffffffffffffffffffffffffffff1681526020016060815260200160608152602001600060ff1681526020016000815260200160008152602001600015158152602001600015158152602001600081526020016000815260200160008152602001600081525090565b6040518060600160405280600073ffffffffffffffffffffffffffffffffffffffff168152602001600081526020016000151581525090565b6040518060800160405280600073ffffffffffffffffffffffffffffffffffffffff16815260200160008152602001600081526020016000151581525090565b600081359050610d70816115a8565b92915050565b600081359050610d85816115bf565b92915050565b600060208284031215610d9d57600080fd5b6000610dab84828501610d61565b91505092915050565b60008060408385031215610dc757600080fd5b6000610dd585828601610d76565b9250506020610de685828601610d76565b9150509250929050565b6000610dfc8383611077565b60608301905092915050565b6000610e1483836110fb565b60808301905092915050565b610e2981611436565b82525050565b6000610e3a8261132d565b610e448185611368565b9350610e4f8361130d565b8060005b83811015610e80578151610e678882610df0565b9750610e728361134e565b925050600181019050610e53565b5085935050505092915050565b6000610e9882611338565b610ea28185611379565b9350610ead8361131d565b8060005b83811015610ede578151610ec58882610e08565b9750610ed08361135b565b925050600181019050610eb1565b5085935050505092915050565b610ef481611448565b82525050565b6000610f0582611343565b610f0f818561138a565b9350610f1f81856020860161148b565b610f2881611597565b840191505092915050565b6000610f3e82611343565b610f48818561139b565b9350610f5881856020860161148b565b610f6181611597565b840191505092915050565b600061018083016000830151610f856000860182610e20565b5060208301518482036020860152610f9d8282610efa565b91505060408301518482036040860152610fb78282610efa565b9150506060830151610fcc60608601826111c3565b506080830151610fdf60808601826111a5565b5060a0830151610ff260a08601826111a5565b5060c083015161100560c0860182610eeb565b5060e083015161101860e0860182610eeb565b5061010083015161102d6101008601826111a5565b506101208301516110426101208601826111a5565b506101408301516110576101408601826111a5565b5061016083015161106c6101608601826111a5565b508091505092915050565b60608201600082015161108d6000850182610e20565b5060208201516110a060208501826111a5565b5060408201516110b36040850182610eeb565b50505050565b6060820160008201516110cf6000850182610e20565b5060208201516110e260208501826111a5565b5060408201516110f56040850182610eeb565b50505050565b6080820160008201516111116000850182610e20565b50602082015161112460208501826111a5565b50604082015161113760408501826111a5565b50606082015161114a6060850182610eeb565b50505050565b6080820160008201516111666000850182610e20565b50602082015161117960208501826111a5565b50604082015161118c60408501826111a5565b50606082015161119f6060850182610eeb565b50505050565b6111ae81611474565b82525050565b6111bd81611474565b82525050565b6111cc8161147e565b82525050565b600060408201905081810360008301526111ec8185610e2f565b90506111fb60208301846111b4565b9392505050565b6000604082019050818103600083015261121c8185610e8d565b905061122b60208301846111b4565b9392505050565b6000602082019050818103600083015261124c8184610f33565b905092915050565b6000602082019050818103600083015261126e8184610f6c565b905092915050565b600060608201905061128b60008301846110b9565b92915050565b60006080820190506112a66000830184611150565b92915050565b600060c0820190506112c160008301896111b4565b6112ce60208301886111b4565b6112db60408301876111b4565b6112e860608301866111b4565b6112f560808301856111b4565b61130260a08301846111b4565b979650505050505050565b6000819050602082019050919050565b6000819050602082019050919050565b600081519050919050565b600081519050919050565b600081519050919050565b6000602082019050919050565b6000602082019050919050565b600082825260208201905092915050565b600082825260208201905092915050565b600082825260208201905092915050565b600082825260208201905092915050565b60006113b782611474565b91506113c283611474565b9250827fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff038211156113f7576113f6611539565b5b828201905092915050565b600061140d82611474565b915061141883611474565b92508282101561142b5761142a611539565b5b828203905092915050565b600061144182611454565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600060ff82169050919050565b60005b838110156114a957808201518184015260208101905061148e565b838111156114b8576000848401525b50505050565b600060028204905060018216806114d657607f821691505b602082108114156114ea576114e9611568565b5b50919050565b60006114fb82611474565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82141561152e5761152d611539565b5b600182019050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000601f19601f8301169050919050565b6115b181611436565b81146115bc57600080fd5b50565b6115c881611474565b81146115d357600080fd5b5056fea2646970667358221220592999101deb1ea8eb947cbe38eb6a1913078912f43d39439707ebcedc614d2364736f6c63430008040033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
