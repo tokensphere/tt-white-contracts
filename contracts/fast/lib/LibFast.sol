@@ -21,6 +21,10 @@ library LibFast {
     bool hasFixedSupply;
     /// @dev Whether or not this FAST requires to be a member to hold tokens.
     bool isSemiPublic;
+    /// @dev Whether a FAST is regulated or not.
+    bool isRegulated;
+    /// @dev Whether or not transfers are blocked until a governor reviews them.
+    bool requiresTransferReview;
   }
 
   function data()

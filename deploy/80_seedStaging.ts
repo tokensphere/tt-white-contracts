@@ -39,11 +39,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F01 FAST...');
       const { fast: f01 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Fixed-supply Semi-public 18',
+        name: 'Fixed-supply Semi-public Regulated Free 18',
         symbol: 'F01',
         decimals: 18,
         hasFixedSupply: true,
-        isSemiPublic: true
+        isSemiPublic: true,
+        isRegulated: true,
+        requiresTransferReview: false
       });
       console.log('Minting 500_000 F01...');
       await fastMint(f01.connect(issuerMemberSigner), 500_000, 'Whatever');
@@ -58,11 +60,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F02 FAST...');
       const { fast: f02 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Fixed-supply Private 5',
+        name: 'Fixed-supply Private Regulated Free 5',
         symbol: 'F02',
         decimals: 5,
         hasFixedSupply: true,
-        isSemiPublic: false
+        isSemiPublic: false,
+        isRegulated: true,
+        requiresTransferReview: false,
       });
       console.log('Minting 5_000_000 F02...');
       await fastMint(f02.connect(issuerMemberSigner), 5_000_000, 'Whatever');
@@ -77,11 +81,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F03 FAST...');
       const { fast: f03 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Continuous-supply Semi-public 10',
+        name: 'Continuous-supply Semi-public Regulated Free 10',
         symbol: 'F03',
         decimals: 10,
         hasFixedSupply: false,
-        isSemiPublic: true
+        isSemiPublic: true,
+        isRegulated: true,
+        requiresTransferReview: false
       });
       console.log('Minting 5_000_000 F03...');
       await fastMint(f03.connect(issuerMemberSigner), 5_000_000, 'Whatever');
@@ -96,11 +102,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F04 FAST...');
       const { fast: f04 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Continuous-supply Private 0',
+        name: 'Continuous-supply Private Regulated Free 0',
         symbol: 'F04',
         decimals: 0,
         hasFixedSupply: false,
-        isSemiPublic: true
+        isSemiPublic: true,
+        isRegulated: true,
+        requiresTransferReview: false
       });
       console.log('Minting 5_000_000 F04...');
       await fastMint(f04.connect(issuerMemberSigner), 5_000_000, 'Whatever');

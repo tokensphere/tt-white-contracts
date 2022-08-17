@@ -21,14 +21,24 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().marketplace;
   }
 
+  function hasFixedSupply()
+      external view returns(bool) {
+    return LibFast.data().hasFixedSupply;
+  }
+
   function isSemiPublic()
       external view returns(bool) {
     return LibFast.data().isSemiPublic;
   }
 
-  function hasFixedSupply()
+  function isRegulated()
       external view returns(bool) {
-    return LibFast.data().hasFixedSupply;
+    return LibFast.data().isRegulated;
+  }
+
+  function requiresTransferReview()
+      external view returns(bool) {
+    return LibFast.data().requiresTransferReview;
   }
 
   // Setters for global flags.

@@ -37,6 +37,8 @@ contract FastInitFacet is AFastFacet {
     uint8 decimals;
     bool hasFixedSupply;
     bool isSemiPublic;
+    bool isRegulated;
+    bool requiresTransferReview;
   }
 
   function initialize(InitializerParams calldata params)
@@ -65,6 +67,8 @@ contract FastInitFacet is AFastFacet {
     topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
     topData.isSemiPublic = params.isSemiPublic;
+    topData.isRegulated = params.isRegulated;
+    topData.requiresTransferReview = params.requiresTransferReview;
 
     // ------------------------------------- //
 
