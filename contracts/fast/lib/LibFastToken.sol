@@ -12,12 +12,6 @@ library LibFastToken {
 
   // Constants.
 
-  // ERC1404 Restriction codes.
-  uint8 internal constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 1;
-  uint8 internal constant REQUIRES_FAST_MEMBERSHIP_CODE = 2;
-  uint8 internal constant REQUIRES_MARKETPLACE_MEMBERSHIP_CODE = 3;
-  uint8 internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 4;
-
   string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
 
   // Data structures.
