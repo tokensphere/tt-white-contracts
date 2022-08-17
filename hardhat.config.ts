@@ -41,6 +41,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'MemberRemoved(address)']
     ]),
     include: [
+      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
@@ -56,6 +57,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'MemberDeactivated(address)']
     ]),
     include: [
+      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
@@ -81,6 +83,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)']
     ]),
     include: [
+      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
