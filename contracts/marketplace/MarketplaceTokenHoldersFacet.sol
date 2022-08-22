@@ -15,6 +15,9 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
    */
   function holdingUpdated(address account, address fast)
     external override {
+    // Return early if this is the zero address.
+    if (account == address(0)) return;
+
     // Verify that the given address is in fact a registered FAST contract.
     require(
       IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender),

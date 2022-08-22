@@ -7,6 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, Fast, MarketplaceTokenHoldersFacet, Marketplace } from '../../typechain';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
 import { REQUIRES_FAST_CONTRACT_CALLER, ten, zero, impersonateContract } from '../utils';
+import { ZERO_ADDRESS } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -48,9 +49,10 @@ describe('MarketplaceTokenHoldersFacet', () => {
     // Impersonate the FAST.
     tokenHoldersAsFast = await impersonateContract(tokenHolders, fast.address);
 
-    // Add a balance on Alice's account.
+    // Add a balance on Alice's account and the zero address.
     fast.balanceOf.reset();
     fast.balanceOf.whenCalledWith(alice.address).returns(ten);
+    fast.balanceOf.whenCalledWith(ZERO_ADDRESS).returns(ten);
     fast.balanceOf.returns(zero);
 
     // The FAST is registered.
@@ -95,6 +97,15 @@ describe('MarketplaceTokenHoldersFacet', () => {
       // Expects that the FAST has been removed from the list.
       const subject = await tokenHolders.holdings(alice.address);
       expect(subject).to.be.empty;
+    });
+
+    it('does not track the zero address', async () => {
+      // Trigger the callback.
+      await tokenHoldersAsFast.holdingUpdated(ZERO_ADDRESS, fast.address);
+
+      // Expects that the ZERO address doesn't have an entry.
+      const subject = await tokenHolders.holdings(ZERO_ADDRESS);
+      expect(subject).to.be.eql([]);
     });
   });
 
