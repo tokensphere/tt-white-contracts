@@ -345,6 +345,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       external
       onlyDiamondFacet
       onlyTokenHolder(from) {
+    require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Store allowance...

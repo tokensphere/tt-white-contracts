@@ -27,6 +27,7 @@ library LibConstants {
 
   string internal constant REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';
   string internal constant INSUFFICIENT_FUNDS = 'Insufficient token balance';
+  string internal constant REQUIRES_NON_ZERO_AMOUNT = 'Amount cannot be zero';
   string internal constant INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
   string internal constant INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';
   string internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
