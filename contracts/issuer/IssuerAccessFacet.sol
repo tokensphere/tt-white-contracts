@@ -9,6 +9,7 @@ import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
 import './lib/AIssuerFacet.sol';
 import './lib/LibIssuerAccess.sol';
+import '../issuer/IssuerTopFacet.sol';
 
 
 contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
@@ -71,5 +72,46 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     LibIssuerAccess.data().memberSet.remove(member, false);
     // Emit!
     emit MemberRemoved(member);
+  }
+
+  /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
+   * @param governor The governor added to a FAST.
+   */
+  function governorAddedToFast(address governor)
+      external {
+    // Verify that the given address is in fact a registered FAST contract.
+    require(
+      IssuerTopFacet(address(this)).isFastRegistered(msg.sender),
+      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
+    );
+    // Keep track of the governorship.
+    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
+    governorships.add(msg.sender, false);
+  }
+
+  /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
+   * @param governor The governor removed from a FAST.
+   */
+  function governorRemovedFromFast(address governor)
+      external {
+    // Verify that the given address is in fact a registered FAST contract.
+    require(
+      IssuerTopFacet(address(this)).isFastRegistered(msg.sender),
+      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
+    );
+    // Remove the tracked governorship.
+    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
+    governorships.remove(msg.sender, false);
+  }
+
+  /** @notice Returns a list of FASTs that the passed address is a governor of.
+   * @param governor The governor to return a list of FASTs for.
+   * @return address[] A list of FAST addresses.
+   */
+  function governorshipsFor(address governor)
+      external view
+      returns (address[] memory) {
+    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
+    return governorships.values;
   }
 }

@@ -6,6 +6,7 @@ import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../marketplace/MarketplaceAccessFacet.sol';
+import '../issuer/IssuerAccessFacet.sol';
 import './FastTokenFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
@@ -71,6 +72,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       onlyMarketplaceMember(governor) {
     // Add governor to list.
     LibFastAccess.data().governorSet.add(governor, false);
+    // Notify issuer that this member was added to this FAST.
+    IssuerAccessFacet(LibFast.data().issuer).governorAddedToFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
     emit GovernorAdded(governor);
@@ -84,6 +87,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
       onlyIssuerMember {
     // Remove governor.
     LibFastAccess.data().governorSet.remove(governor, false);
+    // Notify issuer that this member was removed from this FAST.
+    IssuerAccessFacet(LibFast.data().issuer).governorRemovedFromFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
     emit GovernorRemoved(governor);

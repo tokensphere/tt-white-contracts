@@ -2,10 +2,14 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
-import { smock } from '@defi-wonderland/smock';
-import { Issuer, IssuerAccessFacet } from '../../typechain';
+import { smock, FakeContract } from '@defi-wonderland/smock';
+import { Issuer, IssuerAccessFacet, Fast } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { REQUIRES_ISSUER_MEMBERSHIP } from '../utils';
+import {
+  REQUIRES_ISSUER_MEMBERSHIP,
+  REQUIRES_FAST_CONTRACT_CALLER,
+  impersonateContract
+} from '../utils';
 import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);
@@ -19,6 +23,7 @@ describe('IssuerAccessFacet', () => {
     bob: SignerWithAddress,
     alice: SignerWithAddress;
   let issuer: Issuer,
+    fast: FakeContract<Fast>,
     issuerMemberIssuer: Issuer,
     initTx: ContractTransaction,
     access: IssuerAccessFacet,
@@ -29,6 +34,8 @@ describe('IssuerAccessFacet', () => {
   before(async () => {
     // Keep track of a few signers.
     [deployer, issuerMember, bob, alice] = await ethers.getSigners();
+    // Fake the FAST contract.
+    fast = await smock.fake('Fast');
   });
 
   beforeEach(async () => {
@@ -145,4 +152,72 @@ describe('IssuerAccessFacet', () => {
       });
     });
   });
+
+  /// Governorship tracking.
+
+  describe('governorAddedToFast', async () => {
+    it('requires the caller to be a registered FAST', async () => {
+      const subject = issuer.governorAddedToFast(alice.address);
+      await expect(subject).to.have.been
+        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+    });
+
+    it('adds the given member to the FAST governorship tracking data structure', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Call governorAddedToFast on the Issuer contract, as the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+      issuerAsFast.governorAddedToFast(alice.address);
+
+      // Expecting the FAST address to be included in FASTs Alice is a governor of.
+      const subject = await access.governorshipsFor(alice.address);
+      expect(subject).to.be.eql([
+        fast.address
+      ]);
+    });
+  });
+
+  describe('governorRemovedFromFast', async () => {
+    it('requires the caller to be a registered FAST', async () => {
+      const subject = issuer.governorAddedToFast(alice.address);
+      await expect(subject).to.have.been
+        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+    });
+
+    it('adds the given member to the FAST governorship tracking data structure', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Impersonate the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+
+      // Add then remove Alice.
+      issuerAsFast.governorAddedToFast(alice.address);
+      issuerAsFast.governorRemovedFromFast(alice.address);
+
+      // Expecting the FAST address to not be included in FASTs Alice is a governor of.
+      const subject = await access.governorshipsFor(alice.address);
+      expect(subject).to.be.empty;
+    });
+  });
+
+  describe('governorshipsFor', async () => {
+    beforeEach(async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Add Alice as a governor to the FAST.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+      await issuerAsFast.governorAddedToFast(alice.address);
+    });
+
+    it('given an address, returns the list of FASTs that it is a governor of', async () => {
+      const subject = await access.governorshipsFor(alice.address);
+      expect(subject).to.be.eql([
+        fast.address
+      ]);
+    });
+  });
+
 });

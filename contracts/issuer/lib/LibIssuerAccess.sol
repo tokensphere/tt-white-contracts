@@ -15,6 +15,8 @@ library LibIssuerAccess {
     uint16 version;
     // This is where we hold our members data.
     LibAddressSet.Data memberSet;
+    // For a given address we store list of FASTs where that address is a governor.
+    mapping(address => LibAddressSet.Data) fastGovernorships;
   }
 
   function data()
