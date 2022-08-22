@@ -416,7 +416,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   function holdingUpdated(address holder)
       private {
-    // TODO: What about the zero address? Do we want to have it in this list?
+    // Return early if this is the zero address.
+    if (holder == address(0)) return;
 
     LibFastToken.Data storage s = LibFastToken.data();
     uint256 balance = this.balanceOf(holder);
