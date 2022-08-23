@@ -3,6 +3,7 @@ node_modules
 coverage
 coverage.json
 .vscode/
+docgen/
 
 # Hardhat files.
 abi/
