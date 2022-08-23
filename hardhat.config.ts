@@ -5,7 +5,7 @@ import 'hardhat-deploy-ethers';
 import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
-import 'hardhat-docgen';
+import 'solidity-docgen';
 import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl, abiFilter } from './src/utils';
 import { ISSUER_FACETS } from './tasks/issuer';
 import { MARKETPLACE_FACETS } from './tasks/marketplace';
@@ -199,9 +199,6 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: 'typechain',
     target: 'ethers-v5',
-  },
-  docgen: {
-    runOnCompile: true
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined
