@@ -164,4 +164,26 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     // Emit!
     emit MemberDeactivated(member);
   }
+
+  // Migration functions for this Facet.
+
+  /// @notice Called by deployer to migrate underlying storage to latest version.
+  // TODO: Add better guarding when calling this.
+  function migrate()
+      external pure
+      // onlyDeployer
+      returns(bool) {
+    return true;
+  }
+
+  // Internal versioned migration functions.
+
+  // Generic guard against re-migrating the same version.
+  modifier onlyMigrateOnce() {
+    require(
+      LibMarketplaceAccess.data().version < LibMarketplaceAccess.STORAGE_VERSION,
+      LibConstants.ALREADY_MIGRATED
+    );
+    _;
+  }
 }

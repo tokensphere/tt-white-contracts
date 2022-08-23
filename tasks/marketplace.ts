@@ -32,13 +32,30 @@ task('marketplace-update-facets', 'Updates facets of our Marketplace')
     });
   });
 
+task('marketplace-migrate-storage', 'Migrates underlying storage for Marketplace contracts')
+  .setAction(async (params: {}, hre) => {
+    const { ethers, deployments, getNamedAccounts } = hre;
+    const { deployer } = await getNamedAccounts();
+
+    for (const facet of MIGRATEABLE_FACETS) {
+      const { address } = await deployments.get(facet);
+      console.log(`Migrating Marketplace storage for ${facet} at ${address}...`);
+
+      await deployments.execute(facet, { from: deployer }, 'migrate');
+    }
+  });
+
 // Reusable functions.
+
+const MIGRATEABLE_FACETS = [
+  'MarketplaceAccessFacet',
+  'MarketplaceTokenHoldersFacet'
+];
 
 const MARKETPLACE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
+  ...MIGRATEABLE_FACETS,
   'MarketplaceTopFacet',
-  'MarketplaceAccessFacet',
-  'MarketplaceTokenHoldersFacet'
 ];
 
 const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: string): Promise<Marketplace> => {
