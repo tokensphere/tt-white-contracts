@@ -54,7 +54,7 @@ export const UNSUPPORTED_OPERATION = 'Unsupported operation';
 
 export const REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';
 export const INSUFFICIENT_FUNDS = 'Insufficient token balance';
-export const REQUIRES_NON_ZERO_AMOUNT = 'Requires non-zero amount';
+export const REQUIRES_NON_ZERO_AMOUNT = 'Amount cannot be zero';
 export const INSUFFICIENT_ALLOWANCE = 'Insufficient allowance';
 export const INSUFFICIENT_TRANSFER_CREDITS = 'Insufficient transfer credits';
 export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
