@@ -11,7 +11,7 @@ contract IssuerFrontendFacet is AIssuerFacet {
 
   // Public functions.
 
-  /** @dev Paginates the FAST diamonds registered with this Issuer based on a starting cursor and
+  /** @notice Paginates the FAST diamonds registered with this Issuer based on a starting cursor and
    *        a number of records per page. It returns rich details for each FAST diamond.
    *  @param cursor The index at which to start.
    *  @param perPage How many records should be returned at most.

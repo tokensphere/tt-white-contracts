@@ -415,7 +415,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Modifiers.
 
-  /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
+  /** @notice Ensures that the given address is a member of the current FAST or the Zero Address.
    *  @param candidate The address to check.
    */
   modifier onlyTokenHolder(address candidate) {

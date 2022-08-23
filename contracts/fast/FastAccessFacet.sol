@@ -16,7 +16,7 @@ import './FastFrontendFacet.sol';
 
 
 /**
-* @dev The FAST Access Smart Contract is the source of truth when it comes to
+* @notice The FAST Access Smart Contract is the source of truth when it comes to
 * permissioning and ACLs within a given FAST network.
 */
 contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
@@ -24,7 +24,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   // Structs.
 
   /**
-   * @dev This structure isn't used anywhere in storage. Instead, it
+   * @notice This structure isn't used anywhere in storage. Instead, it
    * allows various methods of the contract to return all the flags
    * associated with a given address in one go.
    */
@@ -36,7 +36,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   // Governorship related stuff.
 
   /**
-   * @dev Queries whether a given address is a governor or not.
+   * @notice Queries whether a given address is a governor or not.
    */
   function isGovernor(address candidate)
       external view override returns(bool) {
@@ -44,7 +44,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Queries the number of governors in the governor list.
+   * @notice Queries the number of governors in the governor list.
    */
   function governorCount()
       external override view returns(uint256) {
@@ -52,7 +52,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Returns a page of governors.
+   * @notice Returns a page of governors.
    */
   function paginateGovernors(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
@@ -64,7 +64,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Adds a governor to the governor list.
+   * @notice Adds a governor to the governor list.
    */
   function addGovernor(address payable governor)
       external override
@@ -80,7 +80,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Removes a governor from the governor list.
+   * @notice Removes a governor from the governor list.
    */
   function removeGovernor(address governor)
       external override
@@ -97,7 +97,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   /// Membership related stuff.
 
   /**
-   * @dev Queries whether a given address is a member or not.
+   * @notice Queries whether a given address is a member or not.
    */
   function isMember(address candidate)
       external override view returns(bool) {
@@ -105,7 +105,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Queries the number of members in the membership list.
+   * @notice Queries the number of members in the membership list.
    */
   function memberCount()
       external override view returns(uint256) {
@@ -113,7 +113,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Returns a page of members.
+   * @notice Returns a page of members.
    */
   function paginateMembers(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
@@ -125,7 +125,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Adds a member to the membership list.
+   * @notice Adds a member to the membership list.
    */
   function addMember(address payable member)
       external override 
@@ -140,7 +140,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @dev Removes a member from the membership list.
+   * @notice Removes a member from the membership list.
    */
   function removeMember(address member)
       external override 
@@ -159,7 +159,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   /// Flags.
 
   /**
-   * @dev Retrieves flags for a given address.
+   * @notice Retrieves flags for a given address.
    */
   function flags(address a)
       external view returns(Flags memory) {

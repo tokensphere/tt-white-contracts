@@ -2,21 +2,21 @@
 pragma solidity 0.8.10;
 
 /**
- * @dev Interface of the ERC20 standard as defined in the EIP.
+ * @notice Interface of the ERC20 standard as defined in the EIP.
  */
 interface IERC20 {
   /**
-   * @dev Returns the amount of tokens in existence.
+   * @notice Returns the amount of tokens in existence.
    */
   function totalSupply() external view returns (uint256);
 
   /**
-   * @dev Returns the amount of tokens owned by `account`.
+   * @notice Returns the amount of tokens owned by `account`.
    */
   function balanceOf(address account) external view returns (uint256);
 
   /**
-   * @dev Moves `amount` tokens from the caller's account to `recipient`.
+   * @notice Moves `amount` tokens from the caller's account to `recipient`.
    *
    * Returns a boolean value indicating whether the operation succeeded.
    *
@@ -25,7 +25,7 @@ interface IERC20 {
   function transfer(address recipient, uint256 amount) external returns (bool);
 
   /**
-   * @dev Returns the remaining number of tokens that `spender` will be
+   * @notice Returns the remaining number of tokens that `spender` will be
    * allowed to spend on behalf of `owner` through {transferFrom}. This is
    * zero by default.
    *
@@ -34,7 +34,7 @@ interface IERC20 {
   function allowance(address owner, address spender) external view returns (uint256);
 
   /**
-   * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+   * @notice Sets `amount` as the allowance of `spender` over the caller's tokens.
    *
    * Returns a boolean value indicating whether the operation succeeded.
    *
@@ -50,7 +50,7 @@ interface IERC20 {
   function approve(address spender, uint256 amount) external returns (bool);
 
   /**
-   * @dev Moves `amount` tokens from `sender` to `recipient` using the
+   * @notice Moves `amount` tokens from `sender` to `recipient` using the
    * allowance mechanism. `amount` is then deducted from the caller's
    * allowance.
    *

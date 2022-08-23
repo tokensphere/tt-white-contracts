@@ -17,7 +17,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
   using LibAddressSet for LibAddressSet.Data;
   // Membership management.
 
-  /** @dev Queries whether a given address is a member of this Issuer or not.
+  /** @notice Queries whether a given address is a member of this Issuer or not.
    *  @param candidate The address to test.
    *  @return A `boolean` flag.
    */
@@ -26,7 +26,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     return LibIssuerAccess.data().memberSet.contains(candidate);
   }
 
-  /** @dev Counts the numbers of members present in this Issuer.
+  /** @notice Counts the numbers of members present in this Issuer.
    *  @return The number of members in this Issuer.
    */
   function memberCount()
@@ -34,7 +34,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     return LibIssuerAccess.data().memberSet.values.length;
   }
 
-  /** @dev Paginates the members of this Issuer based on a starting cursor and a number of records per page.
+  /** @notice Paginates the members of this Issuer based on a starting cursor and a number of records per page.
    *  @param cursor The index at which to start.
    *  @param perPage How many records should be returned at most.
    *  @return A `address[]` list of values at most `perPage` big.
@@ -45,7 +45,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     return LibPaginate.addresses(LibIssuerAccess.data().memberSet.values, cursor, perPage);
   }
 
-  /** @dev Adds a member to this Issuer member list.
+  /** @notice Adds a member to this Issuer member list.
    *  @param member The address of the member to be added.
    *  @notice Requires that the caller is a member of this Issuer.
    *  @notice Emits a `IHasMembers.MemberAdded` event.
@@ -59,7 +59,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     emit MemberAdded(member);
   }
 
-  /** @dev Removes a member from this Issuer.
+  /** @notice Removes a member from this Issuer.
    *  @param member The address of the member to be removed.
    *  @notice Requires that the caller is a member of this Issuer.
    *  @notice Emits a `IHasMembers.MemberRemoved` event.

@@ -33,7 +33,7 @@ contract FastTopFacet is AFastFacet {
 
   // Setters for global flags.
 
-  /// @dev Allows to switch from a private scheme to a semi-public scheme, but not the other way around.
+  /// @notice Allows to switch from a private scheme to a semi-public scheme, but not the other way around.
   function setIsSemiPublic(bool flag)
       external
       onlyIssuerMember {

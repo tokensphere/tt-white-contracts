@@ -13,15 +13,15 @@ import './IFastEvents.sol';
 
 
 /**
-* @dev This contract is a group of modifiers that can be used by any facets to guard against
-*       certain permissions.
+* @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against
+* certain permissions.
 */
 abstract contract AFastFacet is IFastEvents {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Modifiers.
 
-  /// @dev Ensures that a method can only be called by another facet of the same diamond.
+  /// @notice Ensures that a method can only be called by another facet of the same diamond.
   modifier onlyDiamondFacet() {
     require(
       msg.sender == address(this),
@@ -30,7 +30,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /// @dev Ensures that a method can only be called by the owner of this diamond.
+  /// @notice Ensures that a method can only be called by the owner of this diamond.
   modifier onlyDiamondOwner() {
     require(
       msg.sender == IERC173(address(this)).owner(),
@@ -39,7 +39,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
+  /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() {
     require(
       msg.sender == LibConstants.DEPLOYER_CONTRACT,
@@ -48,7 +48,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures that the given address is a member of the Marketplace.
+  /** @notice Ensures that the given address is a member of the Marketplace.
    *  @param candidate The address to check.
    */
   modifier onlyMarketplaceMember(address candidate) {
@@ -59,8 +59,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures a candidate is active in the Marketplace.
-   *  @param candidate The address to check activation status on.
+  /** @notice Ensures a candidate is an active member of the Marketplace.
+   *  @param candidate The address to check.
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
     require(
@@ -70,7 +70,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures that the message sender is a member of the ISSUER.
+  /** @notice Ensures that the message sender is a member of the Issuer.
    */
   modifier onlyIssuerMember() {
     require(
@@ -80,7 +80,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures that the given address is a governor of the FAST.
+  /** @notice Ensures that the given address is a governor of the FAST.
    *  @param candidate The address to check.
    */
   modifier onlyGovernor(address candidate) {
@@ -91,7 +91,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures that the given address is a member of the FAST.
+  /** @notice Ensures that the given address is a member of the FAST.
    *  @param candidate The address to check.
    */
   modifier onlyMember(address candidate) {
@@ -102,7 +102,7 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @dev Ensures address a is different from address b.
+  /** @notice Ensures address `a` and `b` are different.
    *  @param a Address a
    *  @param b Address b
    */

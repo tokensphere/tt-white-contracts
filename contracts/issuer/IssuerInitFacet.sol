@@ -15,7 +15,7 @@ import './lib/LibIssuerAccess.sol';
 
 
 /** @title The Issuer Smart Contract.
- *  @dev The marketplace contract is in charge of keeping track of marketplace members and has logic
+ *  @notice The marketplace contract is in charge of keeping track of marketplace members and has logic
  *  related to trading.
  *  It requires an Issuer contract instance at construct-time, as it relies on Issuer membership
  *  to permission governance functions.
