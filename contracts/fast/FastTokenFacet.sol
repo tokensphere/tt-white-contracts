@@ -338,7 +338,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
     LibFastToken.Data storage s = LibFastToken.data();
 
-    // Store allowance...
+    // Note that we are not exactly following ERC20 here - we don't want to **set** the allowance to `amount`
+    // to mitigate a possible attack.
+    // See https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#heading=h.gmr6zdg47087.
     s.allowances[from][spender] += amount;
     // Keep track of given and received allowances.
     s.allowancesByOwner[from].add(spender, true);

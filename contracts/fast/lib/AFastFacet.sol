@@ -12,7 +12,7 @@ import '../lib/LibFast.sol';
 import './IFastEvents.sol';
 
 
-/**
+/** @title Abstract FAST helper contract.
 * @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against
 * certain permissions.
 */

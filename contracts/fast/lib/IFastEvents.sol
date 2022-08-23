@@ -2,7 +2,8 @@
 pragma solidity 0.8.10;
 
 
-/** @notice An interface allowing to use events within the Diamond pattern without name colisions.
+/** @title FAST events inventory.
+ * @notice An interface allowing to use events within the Diamond pattern without name colisions.
  * @dev The idea is that as several facets can emit the same events, we don't want to have to re-declare
  * the same event several time. This interface is a per-diamond central place for such event declaration.
  */

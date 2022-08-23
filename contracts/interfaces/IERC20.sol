@@ -1,62 +1,50 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-/**
- * @notice Interface of the ERC20 standard as defined in the EIP.
- */
+/// @title ERC20 standard as defined in the EIP.
 interface IERC20 {
   /**
-   * @notice Returns the amount of tokens in existence.
+   * @notice Allows to query the total number of tokens in circulation.
+   * @return An `uint256` representing how many tokens are currently in circulation.
    */
   function totalSupply() external view returns (uint256);
 
   /**
-   * @notice Returns the amount of tokens owned by `account`.
+   * @notice Allows to query the balance of a given address.
+   * @param account is the address for which the balance shall be queried.
+   * @return An `uint256` - the balance for the given address.
    */
   function balanceOf(address account) external view returns (uint256);
 
   /**
    * @notice Moves `amount` tokens from the caller's account to `recipient`.
-   *
-   * Returns a boolean value indicating whether the operation succeeded.
-   *
-   * Emits a {Transfer} event.
+   * @param recipient is the address to which the funds should be sent to, if successful.
+   * @param amount is the amount of tokens to transfef.
+   * @return A `bool` which value is `true` when the operation was successful.
    */
   function transfer(address recipient, uint256 amount) external returns (bool);
 
   /**
-   * @notice Returns the remaining number of tokens that `spender` will be
-   * allowed to spend on behalf of `owner` through {transferFrom}. This is
-   * zero by default.
-   *
-   * This value changes when {approve} or {transferFrom} are called.
+   * @notice Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner`
+   * through `transferFrom`. This is zero by default.
+   * @dev This value changes when `approve` or `transferFrom` are called.
+   * @param owner is the owner of the funds.
+   * @param spender is the address for which the allowance should be queried.
+   * @return A `uint256` representing the remaining allowance of `spender` over `owner`'s funds.
    */
   function allowance(address owner, address spender) external view returns (uint256);
 
   /**
-   * @notice Sets `amount` as the allowance of `spender` over the caller's tokens.
-   *
-   * Returns a boolean value indicating whether the operation succeeded.
-   *
-   * IMPORTANT: Beware that changing an allowance with this method brings the risk
-   * that someone may use both the old and the new allowance by unfortunate
-   * transaction ordering. One possible solution to mitigate this race
-   * condition is to first reduce the spender's allowance to 0 and set the
-   * desired value afterwards:
-   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-   *
-   * Emits an {Approval} event.
+   * @notice Increases the allowance of `spender` by `amount`.
+   * @param spender is the address towards which the allowance should be given.
+   * @return A `bool` set to `true` when the operation was successful.
    */
   function approve(address spender, uint256 amount) external returns (bool);
 
   /**
-   * @notice Moves `amount` tokens from `sender` to `recipient` using the
-   * allowance mechanism. `amount` is then deducted from the caller's
-   * allowance.
-   *
-   * Returns a boolean value indicating whether the operation succeeded.
-   *
-   * Emits a {Transfer} event.
+   * @notice Attempts to transfer `amount` tokens from `sender` to `recipient` using the
+   * allowance mechanism. `amount` is then deducted from the caller's allowance.
+   * @return A `bool` set to `true` when the operation was successful.
    */
   function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }

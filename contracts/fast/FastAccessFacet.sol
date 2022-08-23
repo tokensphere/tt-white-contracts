@@ -16,8 +16,8 @@ import './FastFrontendFacet.sol';
 
 
 /**
-* @notice The FAST Access Smart Contract is the source of truth when it comes to
-* permissioning and ACLs within a given FAST network.
+* @notice The FAST Access facet is the source of truth when it comes to
+* permissioning and ACLs within a given FAST.
 */
 contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
@@ -29,15 +29,15 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    * associated with a given address in one go.
    */
   struct Flags {
+    /// @notice Whether or not the item in scope is considered a governor of this FAST.
     bool isGovernor;
+    /// @notice Whether or not the item in scope is considered a member of this FAST.
     bool isMember;
   }
 
   // Governorship related stuff.
 
-  /**
-   * @notice Queries whether a given address is a governor or not.
-   */
+  /// @notice See `IHasGovernors`
   function isGovernor(address candidate)
       external view override returns(bool) {
     return LibFastAccess.data().governorSet.contains(candidate);
