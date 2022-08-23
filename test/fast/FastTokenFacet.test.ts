@@ -26,8 +26,8 @@ import {
   REQUIRES_ISSUER_MEMBERSHIP,
   UNKNOWN_RESTRICTION_CODE,
   DEFAULT_TRANSFER_REFERENCE,
+  REQUIRES_NON_ZERO_AMOUNT,
   impersonateContract,
-  REQUIRES_NON_ZERO_AMOUNT
 } from '../utils';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
@@ -500,14 +500,14 @@ describe('FastTokenFacet', () => {
       });
 
       it('requires a non-zero amount', async () => {
-        // Let alice give allowance to bob. twice
+        // Let alice give allowance to bob.
         const subject = token.connect(alice).approve(bob.address, 0);
         await expect(subject).to.have
           .revertedWith(REQUIRES_NON_ZERO_AMOUNT);
       });
 
       it('stacks up new allowances', async () => {
-        // Let alice give allowance to bob. twice
+        // Let alice give allowance to bob, twice.
         await token.connect(alice).approve(bob.address, 10);
         await token.connect(alice).approve(bob.address, 20);
         const subject = await token.allowance(alice.address, bob.address);
