@@ -23,6 +23,12 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Minting methods.
 
+  /** @notice Mints an amount of FAST tokens.
+   *  A reference can be passed to identify why this happened for example.
+   *  Can only be called by an Issuer member.
+   * @param amount The number of FAST tokens to mint.
+   * @param ref A reference for this minting operation.
+   */
   function mint(uint256 amount, string calldata ref)
       external
       onlyIssuerMember {
@@ -46,6 +52,12 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Minted(amount, ref);
   }
 
+  /** @notice Burns an amount of FAST tokens.
+   *  A reference can be passed to identify why this happened for example.
+   *  Can only be called by an Issuer member.
+   * @param amount The number of FAST tokens to mint.
+   * @param ref A reference for this minting operation.
+   */
   function burn(uint256 amount, string calldata ref)
       external
       onlyIssuerMember {
