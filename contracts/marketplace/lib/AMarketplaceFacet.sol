@@ -40,7 +40,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
   }
 
   /** @notice Requires that the given address is a member of the marketplace.
-   *  @param candidate is the address to be checked.
+   * @param candidate is the address to be checked.
    */
   modifier onlyMember(address candidate) {
     require(

@@ -9,7 +9,7 @@ interface IIssuerEvents {
   // Fast registration events.
 
   /** @notice Emited when a new FAST is registered.
-   *  @param fast The address of the newly registered FAST diamond.
+   * @param fast The address of the newly registered FAST diamond.
    */
   event FastRegistered(address indexed fast);
 

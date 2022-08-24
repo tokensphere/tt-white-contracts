@@ -20,9 +20,9 @@ interface IDiamondLoupe {
     /// @return facets_ All facets and their registered selectors.
     function facets() external view returns (Facet[] memory facets_);
 
-    // @notice Gets all the function selectors supported by a specific facet.
-    // @param _facet The facet address.
-    // @return facetFunctionSelectors_ is the list of selectors for the given function.
+    /// @notice Gets all the function selectors supported by a specific facet.
+    /// @param _facet The facet address.
+    /// @return facetFunctionSelectors_ is the list of selectors for the given function.
     function facetFunctionSelectors(address _facet) external view returns (bytes4[] memory facetFunctionSelectors_);
 
     /// @notice Get all the facet addresses used by a diamond.

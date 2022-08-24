@@ -11,7 +11,7 @@ import './lib/AMarketplaceFacet.sol';
 
 
 /** @title The Marketplace Smart Contract.
- *  @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
+ * @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
  */
 contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMembers {
   using LibAddressSet for LibAddressSet.Data;
@@ -19,8 +19,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   // Membership management.
 
   /** @notice Queries whether a given address is a member of this Marketplace or not.
-   *  @param candidate is the address to test.
-   *  @return A `boolean` flag.
+   * @param candidate is the address to test.
+   * @return A `boolean` flag.
    */
   function isMember(address candidate)
       external override view returns(bool) {
@@ -28,7 +28,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Counts the numbers of members present in this Marketplace.
-   *  @return The number of members in this marketplace.
+   * @return The number of members in this marketplace.
    */
   function memberCount()
       external override view returns(uint256) {
@@ -36,10 +36,10 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Paginates the members of this Marketplace based on a starting cursor and a number of records per page.
-   *  @param cursor is the index at which to start.
-   *  @param perPage is how many records should be returned at most.
-   *  @return A `address[]` list of values at most `perPage` big.
-   *  @return A `uint256` index to the next page.
+   * @param cursor is the index at which to start.
+   * @param perPage is how many records should be returned at most.
+   * @return A `address[]` list of values at most `perPage` big.
+   * @return A `uint256` index to the next page.
    */
   function paginateMembers(uint256 cursor, uint256 perPage)
       external override view returns(address[] memory, uint256) {
@@ -47,9 +47,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Adds a member to this Marketplace member list.
-   *  @param member is the address of the member to be added.
-   *  @notice Requires that the caller is a member of the linked Issuer.
-   *  @notice Emits a `IHasMembers.MemberAdded` event.
+   * @param member is the address of the member to be added.
+   * @notice Requires that the caller is a member of the linked Issuer.
+   * @notice Emits a `IHasMembers.MemberAdded` event.
    */
   function addMember(address payable member)
       external override
@@ -61,9 +61,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Removes a member from this Marketplace.
-   *  @param member is the address of the member to be removed.
-   *  @notice Requires that the caller is a member of the linked Issuer.
-   *  @notice Emits a `IHasMembers.MemberRemoved` event.
+   * @param member is the address of the member to be removed.
+   * @notice Requires that the caller is a member of the linked Issuer.
+   * @notice Emits a `IHasMembers.MemberRemoved` event.
    */
   function removeMember(address member)
       external override
@@ -78,9 +78,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Allows to query FAST memberships for a given member address.
-   *  @param member Is the address to check.
-   *  @param cursor The index at which to start.
-   *  @param perPage How many records should be returned at most.
+   * @param member Is the address to check.
+   * @param cursor The index at which to start.
+   * @param perPage How many records should be returned at most.
    */
   function fastMemberships(address member, uint256 cursor, uint256 perPage)
       external view returns(address[] memory, uint256) {
@@ -88,7 +88,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
-   *  @param member The member for which a new FAST membership has been added.
+   * @param member The member for which a new FAST membership has been added.
    */
   function memberAddedToFast(address member) 
       external {
@@ -103,7 +103,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
-   *  @param member The member for which a FAST membership has been removed.
+   * @param member The member for which a FAST membership has been removed.
    */
   function memberRemovedFromFast(address member)
       external {
@@ -117,14 +117,14 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Given a member returns it's activation status.
-   *  @param member The member to check activation status on.
+   * @param member The member to check activation status on.
    */
   function isMemberActive(address member) external override view returns(bool) {
     return !LibMarketplaceAccess.data().deactivatedMemberSet.contains(member);
   }
 
   /** @notice Activates a member at the Marketplace level.
-   *  @param member The member to remove from the deactivation member set.
+   * @param member The member to remove from the deactivation member set.
    */
   function activateMember(address member)
     external
@@ -145,7 +145,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   }
 
   /** @notice Deactivates a member at the Marketplace level.
-   *  @param member The member to add to the deactivation member set.
+   * @param member The member to add to the deactivation member set.
    */
   function deactivateMember(address payable member)
     external

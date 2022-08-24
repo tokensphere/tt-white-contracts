@@ -37,14 +37,14 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   // Governorship related stuff.
 
-  /// @notice See `IHasGovernors`
+  /// @notice See `IHasGovernors`.
   function isGovernor(address candidate)
       external view override returns(bool) {
     return LibFastAccess.data().governorSet.contains(candidate);
   }
 
   /**
-   * @notice Queries the number of governors in the governor list.
+   * @notice See `IHasGovernors`.
    */
   function governorCount()
       external override view returns(uint256) {
@@ -52,7 +52,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Returns a page of governors.
+   * @notice See `IHasGovernors`.
    */
   function paginateGovernors(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
@@ -64,7 +64,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Adds a governor to the governor list.
+   * @notice See `IHasGovernors`.
    */
   function addGovernor(address payable governor)
       external override
@@ -80,7 +80,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Removes a governor from the governor list.
+   * @notice See `IHasGovernors`.
    */
   function removeGovernor(address governor)
       external override
@@ -97,7 +97,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   /// Membership related stuff.
 
   /**
-   * @notice Queries whether a given address is a member or not.
+   * @notice See `IHasMembers`.
    */
   function isMember(address candidate)
       external override view returns(bool) {
@@ -105,7 +105,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Queries the number of members in the membership list.
+   * @notice See `IHasMembers`.
    */
   function memberCount()
       external override view returns(uint256) {
@@ -113,7 +113,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Returns a page of members.
+   * @notice See `IHasMembers`.
    */
   function paginateMembers(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
@@ -125,7 +125,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Adds a member to the membership list.
+   * @notice See `IHasMembers`.
    */
   function addMember(address payable member)
       external override 
@@ -140,7 +140,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   }
 
   /**
-   * @notice Removes a member from the membership list.
+   * @notice See `IHasMembers`.
    */
   function removeMember(address member)
       external override 

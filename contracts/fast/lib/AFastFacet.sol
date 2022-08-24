@@ -49,7 +49,7 @@ abstract contract AFastFacet is IFastEvents {
   }
 
   /** @notice Ensures that the given address is a member of the Marketplace.
-   *  @param candidate The address to check.
+   * @param candidate The address to check.
    */
   modifier onlyMarketplaceMember(address candidate) {
     require(
@@ -60,7 +60,7 @@ abstract contract AFastFacet is IFastEvents {
   }
 
   /** @notice Ensures a candidate is an active member of the Marketplace.
-   *  @param candidate The address to check.
+   * @param candidate The address to check.
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
     require(
@@ -81,7 +81,7 @@ abstract contract AFastFacet is IFastEvents {
   }
 
   /** @notice Ensures that the given address is a governor of the FAST.
-   *  @param candidate The address to check.
+   * @param candidate The address to check.
    */
   modifier onlyGovernor(address candidate) {
     require(
@@ -92,7 +92,7 @@ abstract contract AFastFacet is IFastEvents {
   }
 
   /** @notice Ensures that the given address is a member of the FAST.
-   *  @param candidate The address to check.
+   * @param candidate The address to check.
    */
   modifier onlyMember(address candidate) {
     require(
@@ -103,8 +103,8 @@ abstract contract AFastFacet is IFastEvents {
   }
 
   /** @notice Ensures address `a` and `b` are different.
-   *  @param a Address a
-   *  @param b Address b
+   * @param a Address a
+   * @param b Address b
    */
   modifier differentAddresses(address a, address b) {
     require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);

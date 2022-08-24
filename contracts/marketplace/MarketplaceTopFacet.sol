@@ -10,7 +10,7 @@ import './lib/AMarketplaceFacet.sol';
 
 
 /** @title The Marketplace Smart Contract.
- *  @notice The Marketplace Top facet is in charge of keeping track of common parameters and provides
+ * @notice The Marketplace Top facet is in charge of keeping track of common parameters and provides
  *        generic functionality.
  */
 contract MarketplaceTopFacet is AMarketplaceFacet {
