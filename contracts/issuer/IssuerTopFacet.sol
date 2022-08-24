@@ -24,8 +24,8 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   /** @notice Allows to retrieve the address of a FAST diamond given its symbol.
-   *  @param symbol The symbol of the FAST diamond to get the address of.
-   *  @return The address of the corresponding FAST diamond, or the Zero Address if not found.
+   * @param symbol The symbol of the FAST diamond to get the address of.
+   * @return The address of the corresponding FAST diamond, or the Zero Address if not found.
    */
   function fastBySymbol(string calldata symbol)
       external view returns(address) {
@@ -33,9 +33,9 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   /** @notice Allows the registration of a given FAST diamond with this Issuer.
-   *  @param fast The address of the FAST diamond to be registered.
-   *  @notice Requires that the caller is a member of this Issuer.
-   *  @notice Emits a `FastRegistered` event.
+   * @param fast The address of the FAST diamond to be registered.
+   * @notice Requires that the caller is a member of this Issuer.
+   * @notice Emits a `FastRegistered` event.
    */
   function registerFast(address fast)
       external
@@ -54,7 +54,7 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   /** @notice Counts the number of FAST diamonds registered with this Issuer.
-   *  @return The number of FAST diamonds registered with this Issuer.
+   * @return The number of FAST diamonds registered with this Issuer.
    */
   function fastCount()
       external view returns(uint256) {
@@ -62,10 +62,10 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   /** @notice Paginates the FAST diamonds registered with this Issuer based on a starting cursor and a number of records per page.
-   *  @param cursor The index at which to start.
-   *  @param perPage How many records should be returned at most.
-   *  @return A `address[]` list of values at most `perPage` big.
-   *  @return A `uint256` index to the next page.
+   * @param cursor The index at which to start.
+   * @param perPage How many records should be returned at most.
+   * @return A `address[]` list of values at most `perPage` big.
+   * @return A `uint256` index to the next page.
    */
   function paginateFasts(uint256 cursor, uint256 perPage)
       external view

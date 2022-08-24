@@ -12,7 +12,7 @@ interface IHasGovernors {
   function isGovernor(address candidate) external view returns(bool);
 
   /** @notice Queries the number of governors.
-   *  @return An `uint256`.
+   * @return An `uint256`.
    */
   function governorCount() external view returns(uint256);
 

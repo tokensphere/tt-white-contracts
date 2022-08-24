@@ -13,10 +13,10 @@ contract IssuerFrontendFacet is AIssuerFacet {
 
   /** @notice Paginates the FAST diamonds registered with this Issuer based on a starting cursor and
    *        a number of records per page. It returns rich details for each FAST diamond.
-   *  @param cursor The index at which to start.
-   *  @param perPage How many records should be returned at most.
-   *  @return A `address[]` list of values at most `perPage` big.
-   *  @return A `uint256` index to the next page.
+   * @param cursor The index at which to start.
+   * @param perPage How many records should be returned at most.
+   * @return A `address[]` list of values at most `perPage` big.
+   * @return A `uint256` index to the next page.
    */
   function paginateDetailedFasts(uint256 cursor, uint256 perPage)
       external view

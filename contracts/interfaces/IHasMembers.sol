@@ -4,15 +4,14 @@ pragma solidity 0.8.10;
 
 /// @title An interface signifying that the inheriting contract implements the concept of membership ACLs.
 interface IHasMembers {
-  /**
-   * @notice Queries whether a given address is a member or not.
+  /** @notice Queries whether a given address is a member or not.
    * @param candidate is the address to test.
    * @return A `bool` equal to `true` when `candidate` is a member.
    */
   function isMember(address candidate) external view returns(bool);
 
   /** @notice Queries the number of members.
-   *  @return An `uint256`.
+   * @return An `uint256`.
    */
   function memberCount() external view returns(uint256);
 

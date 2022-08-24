@@ -67,11 +67,15 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Tranfer Credit management.
 
+  /** @notice Get the current `transferCredits` for this FAST.
+   * @return Number of transfer credits remaining.
+   */
   function transferCredits()
       external view returns(uint256) {
     return LibFastToken.data().transferCredits;
   }
 
+  /// @notice Adds `amount` of transfer credits to this FAST.
   function addTransferCredits(uint256 amount)
       external
       onlyIssuerMember {
@@ -81,6 +85,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit TransferCreditsAdded(msg.sender, amount);
   }
 
+  /// @notice Drains the transfer credits from this FAST.
   function drainTransferCredits()
       external
       onlyIssuerMember {
@@ -95,26 +100,42 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // ERC20 implementation and transfer related methods.
 
+  /** @notice The name of this FAST (ERC20 standard).
+   * @return string Name of the FAST.
+   */
   function name()
       external view returns(string memory) {
     return LibFastToken.data().name;
   }
 
+  /** @notice The symbol of this FAST (ERC20 standard).
+   * @return string Symbol of the FAST.
+   */
   function symbol()
       external view returns(string memory) {
     return LibFastToken.data().symbol;
   }
 
+  /** @notice The `decimals` of this FAST (ERC20 standard).
+   * @return uint256 Number of decimals the FAST has.
+   */
   function decimals()
       external view returns(uint256) {
     return LibFastToken.data().decimals;
   }
 
+  /** @notice The total supply of the FAST (ERC20 standard).
+   * @return uint256 Total supply of the FAST.
+   */
   function totalSupply()
       external override view returns(uint256) {
     return LibFastToken.data().totalSupply;
   }
 
+  /** @notice The balance of the passed owner (ERC20 standard).
+   * @param owner The owners address to get the balance of.
+   * @return uint256 The current balance of this owner's account.
+   */
   function balanceOf(address owner)
       public view override returns(uint256) {
     return LibFastToken.data().balances[owner];
