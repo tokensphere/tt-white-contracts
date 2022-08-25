@@ -105,13 +105,15 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
   }
 
   /** @notice Returns a list of FASTs that the passed address is a governor of.
-   * @param governor The governor to return a list of FASTs for.
-   * @return address[] A list of FAST addresses.
+   * @param governor is the address to check governorships of.
+   * @param cursor is the index at which to start.
+   * @param perPage is how many records should be returned at most.
+   * @return A `address[]` list of values at most `perPage` big.
+   * @return A `uint256` index to the next page.
    */
-  function governorshipsFor(address governor)
+  function paginateGovernorships(address governor, uint256 cursor, uint256 perPage)
       external view
-      returns (address[] memory) {
-    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
-    return governorships.values;
+      returns(address[] memory, uint256) {
+    return LibPaginate.addresses(LibIssuerAccess.data().fastGovernorships[governor].values, cursor, perPage);
   }
 }
