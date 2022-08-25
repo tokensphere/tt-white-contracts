@@ -171,7 +171,7 @@ describe('IssuerAccessFacet', () => {
       issuerAsFast.governorAddedToFast(alice.address);
 
       // Expecting the FAST address to be included in FASTs Alice is a governor of.
-      const subject = await access.governorshipsFor(alice.address);
+      const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
       expect(subject).to.be.eql([
         fast.address
       ]);
@@ -197,12 +197,12 @@ describe('IssuerAccessFacet', () => {
       issuerAsFast.governorRemovedFromFast(alice.address);
 
       // Expecting the FAST address to not be included in FASTs Alice is a governor of.
-      const subject = await access.governorshipsFor(alice.address);
+      const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
       expect(subject).to.be.empty;
     });
   });
 
-  describe('governorshipsFor', async () => {
+  describe('paginateGovernorships', async () => {
     beforeEach(async () => {
       // This FAST is registered.
       await issuerMemberIssuer.registerFast(fast.address);
@@ -213,11 +213,10 @@ describe('IssuerAccessFacet', () => {
     });
 
     it('given an address, returns the list of FASTs that it is a governor of', async () => {
-      const subject = await access.governorshipsFor(alice.address);
+      const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10)
       expect(subject).to.be.eql([
         fast.address
       ]);
     });
   });
-
 });
