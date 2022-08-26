@@ -22,9 +22,7 @@ const config: HardhatUserConfig = {
     version: '0.8.10',
     settings: {
       outputSelection: {
-        '*': {
-          '*': ['storageLayout']
-        }
+        '*': { '*': ['storageLayout'] }
       }
     }
   },
@@ -200,6 +198,7 @@ const config: HardhatUserConfig = {
     outDir: 'typechain',
     target: 'ethers-v5',
   },
+  docgen: { pages: 'items' },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined
   }
