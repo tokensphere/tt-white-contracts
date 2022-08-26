@@ -46,7 +46,6 @@ const config: HardhatUserConfig = {
   }, {
     name: 'Marketplace',
     filter: abiFilter([
-      ['Facet$', 'migrate()'],
       ['Facet$', 'MemberAdded(address)'],
       ['Facet$', 'MemberRemoved(address)'],
       ['Facet$', 'MemberActivated(address)'],

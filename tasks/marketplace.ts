@@ -37,25 +37,20 @@ task('marketplace-migrate-storage', 'Migrates underlying storage for Marketplace
     const { ethers, deployments, getNamedAccounts } = hre;
     const { deployer } = await getNamedAccounts();
 
-    for (const facet of MIGRATEABLE_FACETS) {
-      const { address } = await deployments.get(facet);
-      console.log(`Migrating Marketplace storage for ${facet} at ${address}...`);
+    const { address } = await deployments.get('MarketplaceMigrationsFacet');
+    console.log(`Migrating Marketplace storage at ${address}...`);
 
-      await deployments.execute(facet, { from: deployer }, 'migrate');
-    }
+    await deployments.execute('MarketplaceMigrationsFacet', { from: deployer }, 'migrate');
   });
 
 // Reusable functions.
 
-const MIGRATEABLE_FACETS = [
-  'MarketplaceAccessFacet',
-  'MarketplaceTokenHoldersFacet'
-];
-
 const MARKETPLACE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
-  ...MIGRATEABLE_FACETS,
   'MarketplaceTopFacet',
+  'MarketplaceAccessFacet',
+  'MarketplaceTokenHoldersFacet',
+  'MarketplaceMigrationsFacet'
 ];
 
 const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: string): Promise<Marketplace> => {

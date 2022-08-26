@@ -48,43 +48,4 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
     LibMarketplaceTokenHolders.Data storage s = LibMarketplaceTokenHolders.data();
     return s.fastHoldings[account].values;
   }
-
-  // Migration functions for this Facet.
-
-  /// @notice Called by deployer to migrate underlying storage to latest version.
-  // TODO: Add better guarding when calling this.
-  function migrate()
-      external
-      // onlyDeployer
-      returns(bool) {
-    return migrateV1();
-  }
-
-  // Internal versioned migration functions.
-
-  // Perform v1 migrations.
-  function migrateV1()
-      internal
-      onlyMigrateOnce
-      returns(bool) {
-    // Update interfaces.
-    LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-    ds.supportedInterfaces[type(ITokenHoldings).interfaceId] = true;
-
-    // Initialize the new storage version.
-    LibMarketplaceTokenHolders.Data storage tokenHoldersData = LibMarketplaceTokenHolders.data();
-    tokenHoldersData.version = LibMarketplaceTokenHolders.STORAGE_VERSION;
-
-    // ??
-    return true;
-  }
-
-  // Generic guard against re-migrating the same version.
-  modifier onlyMigrateOnce() {
-    require(
-      LibMarketplaceTokenHolders.data().version < LibMarketplaceTokenHolders.STORAGE_VERSION,
-      LibConstants.ALREADY_MIGRATED
-    );
-    _;
-  }
 }
