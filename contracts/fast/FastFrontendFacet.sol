@@ -78,7 +78,8 @@ contract FastFrontendFacet is AFastFacet {
 
   /**
    * @notice Called by diamond facets, signals that FAST details may have changed.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Modifiers:
    *   - Requires the caller to be another facet of the diamond.
    * Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`

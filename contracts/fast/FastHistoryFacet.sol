@@ -16,7 +16,8 @@ contract FastHistoryFacet is AFastFacet {
 
   /**
    * @notice This method is a callback for other facets to signal whenever new tokens are minted.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Requires that the caller must be another facet.
    * - Adds a supply proof item of type `LibFastHistory.SupplyOp.Mint` on top of the stack.
    */
@@ -35,7 +36,8 @@ contract FastHistoryFacet is AFastFacet {
 
   /**
    * @notice This method is a callback for other facets to signal whenever new tokens are burnt.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Requires that the caller must be another facet.
    * - Adds a supply proof item of type `LibFastHistory.SupplyOp.Burn` on top of the stack.
    */
@@ -76,7 +78,8 @@ contract FastHistoryFacet is AFastFacet {
 
   /**
    * @notice This method is a callback for other facets to signal whenever a transfer has completed successfuly.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Requires that the caller must be another facet.
    * - Keeps track of the operation in various tracking structures, so that it can be queried later by `sender` and `recipient`.
    * - Pushes a transfer proof to the main transfer proof tracking stack.

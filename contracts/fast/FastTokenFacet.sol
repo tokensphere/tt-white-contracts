@@ -26,7 +26,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice Mints an amount of FAST tokens.
    *  A reference can be passed to identify why this happened for example.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
    * - Requires that either the token has continuous supply, or that no tokens have been minted yet.
@@ -117,7 +118,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Drains the transfer credits from this FAST.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
    * - Emits a `TransferCreditsDrained(caller, previousTransferCredits)`.
@@ -330,7 +332,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice This is the internal method that gets called whenever a transfer is initiated. Both `transfer`,
    * `transferWithRef`, and their variants internally call this function.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
    *   - Requires that `from` and `to` addresses are different.
@@ -443,7 +446,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Increases the allowance given by `from` to `spender` by `amount`.
-   * @dev Business logic:
+   * 
+   * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
    *   - Requires that `onlyTokenHolder` passes for the `from` address.
@@ -543,7 +547,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
-   * @dev Business logic:
+   * 
+   * Business logic:
    *  - If the candidate is not the reserve,
    *    - If the fast is semi-public,
    *      - We require that candidate is a member of the Marketplace contract.
