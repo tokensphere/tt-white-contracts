@@ -14,7 +14,8 @@ contract IssuerTopFacet is AIssuerFacet {
   using LibAddressSet for LibAddressSet.Data;
   // FAST management related methods.
 
-  /** @notice Queries whether a given address is a known and registered FAST contract.
+  /**
+   * @notice Queries whether a given address is a known and registered FAST contract.
    * @param fast The address of the contract to check.
    * @return A boolean.
    */
@@ -23,7 +24,8 @@ contract IssuerTopFacet is AIssuerFacet {
     return LibIssuer.data().fastSet.contains(fast);
   }
 
-  /** @notice Allows to retrieve the address of a FAST diamond given its symbol.
+  /**
+   * @notice Allows to retrieve the address of a FAST diamond given its symbol.
    * @param symbol The symbol of the FAST diamond to get the address of.
    * @return The address of the corresponding FAST diamond, or the Zero Address if not found.
    */
@@ -32,7 +34,8 @@ contract IssuerTopFacet is AIssuerFacet {
     return LibIssuer.data().fastSymbols[symbol];
   }
 
-  /** @notice Allows the registration of a given FAST diamond with this Issuer.
+  /**
+   * @notice Allows the registration of a given FAST diamond with this Issuer.
    * @param fast The address of the FAST diamond to be registered.
    * @notice Requires that the caller is a member of this Issuer.
    * @notice Emits a `FastRegistered` event.
@@ -53,7 +56,8 @@ contract IssuerTopFacet is AIssuerFacet {
     emit FastRegistered(fast);
   }
 
-  /** @notice Counts the number of FAST diamonds registered with this Issuer.
+  /**
+   * @notice Counts the number of FAST diamonds registered with this Issuer.
    * @return The number of FAST diamonds registered with this Issuer.
    */
   function fastCount()
@@ -61,7 +65,8 @@ contract IssuerTopFacet is AIssuerFacet {
     return LibIssuer.data().fastSet.values.length;
   }
 
-  /** @notice Paginates the FAST diamonds registered with this Issuer based on a starting cursor and a number of records per page.
+  /**
+   * @notice Paginates the FAST diamonds registered with this Issuer based on a starting cursor and a number of records per page.
    * @param cursor The index at which to start.
    * @param perPage How many records should be returned at most.
    * @return A `address[]` list of values at most `perPage` big.

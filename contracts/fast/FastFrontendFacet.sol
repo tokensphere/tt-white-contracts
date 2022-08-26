@@ -8,12 +8,19 @@ import './lib/LibFastAccess.sol';
 import './lib/LibFastToken.sol';
 
 
+/**
+ * @notice A facet dedicated to view / UI only methods. This facet should never hold any method that
+ * is not either `pure` or `view`, except to emit events.
+ */
 contract FastFrontendFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
   // Data structures.
 
-  /// @notice This struct groups the common attributes of a FAST.
+  /**
+   * @notice This struct groups the common attributes of a FAST.
+   * @dev This struct shouldn't be used in internal storage.
+   */
   struct Details {
     /// @notice The `address` of the FAST.
     address addr;
@@ -41,7 +48,10 @@ contract FastFrontendFacet is AFastFacet {
     uint256 governorCount;
   }
 
-  /// @notice Member level details.
+  /**
+   * @notice Member level details.
+   * @dev This struct shouldn't be used in internal storage.
+   */
   struct MemberDetails {
     /// @notice The Member's address.
     address addr;
@@ -52,7 +62,10 @@ contract FastFrontendFacet is AFastFacet {
     bool isGovernor;
   }
 
-  /// @notice Governor level details.
+  /**
+   * @notice Governor level details.
+   * @dev Note that **this struct shouldn't be used in internal storage**.
+   */
   struct GovernorDetails {
     /// @notice The Governor's address.
     address addr;
@@ -63,11 +76,12 @@ contract FastFrontendFacet is AFastFacet {
 
   // Emitters.
 
-  /** @notice Called by diamond facets, signals that FAST details may have changed.
-   * Business logic:
+  /**
+   * @notice Called by diamond facets, signals that FAST details may have changed.
+   * @dev Business logic:
    * - Modifiers:
    *   - Requires the caller to be another facet of the diamond.
-   * Emits `DetailsChanged` - see: `IFastEvents.DetailsChanged`
+   * Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`
    */
   function emitDetailsChanged()
       external onlyDiamondFacet {
@@ -85,8 +99,9 @@ contract FastFrontendFacet is AFastFacet {
 
   // Public functions.
 
-  /** @notice Gets the details of a FAST.
-   * @return Details See: `Details`.
+  /**
+   * @notice Gets the details of a FAST.
+   * @return The details for the current FAST, see `Details`.
    */
   function details()
       public view returns(Details memory) {
@@ -109,8 +124,9 @@ contract FastFrontendFacet is AFastFacet {
     });
   }
 
-  /** @notice Gets detailed member details.
-   * @return MemberDetails See: `MemberDetails`.
+  /**
+   * @notice Gets detailed member details.
+   * @return A FAST member's details, see `MemberDetails`.
    */
   function detailedMember(address member)
       public view returns(MemberDetails memory) {
@@ -124,7 +140,8 @@ contract FastFrontendFacet is AFastFacet {
     });
   }
 
-  /** @notice Gets detailed governor details.
+  /**
+   * @notice Gets detailed governor details.
    * @return GovernorDetails See: `GovernorDetails`.
    */
   function detailedGovernor(address governor)

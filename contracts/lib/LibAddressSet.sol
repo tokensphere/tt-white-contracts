@@ -10,8 +10,7 @@ library LibAddressSet {
   }
 
   /**
-   * @notice Adds an item into the storage set. If the address already exists in the
-   *      set, the function reverts.
+   * @notice Adds an item into the storage set. If the address already exists in the set, the method reverts.
    * @param d is the internal data storage to use.
    * @param key is the address to be added.
    */
@@ -25,8 +24,7 @@ library LibAddressSet {
   }
 
   /**
-   * @notice Removes an item from the storage set. If the address does not exist in the
-   *      set, the function reverts.
+   * @notice Removes an item from the storage set. If the address does not exist in the set, the method reverts.
    * @param d is the internal data storage to use.
    * @param key is the address to be removed.
    */

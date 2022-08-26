@@ -11,7 +11,8 @@ import './FastFrontendFacet.sol';
 contract FastTopFacet is AFastFacet {
   // Getters and setters for global flags.
 
-  /** @notice Get the Issuer address.
+  /**
+   * @notice Get the Issuer address.
    * @return Address of Issuer.
    */
   function issuerAddress()
@@ -19,7 +20,8 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().issuer;
   }
 
-  /** @notice Get the Marketplace address.
+  /**
+   * @notice Get the Marketplace address.
    * @return address Address of Marketplace.
    */
   function marketplaceAddress()
@@ -27,7 +29,8 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().marketplace;
   }
 
-  /** @notice Is this FAST a semi public FAST?
+  /**
+   * @notice Is this FAST a semi public FAST?
    * @return bool Yes/no semi public.
    */
   function isSemiPublic()
@@ -35,7 +38,8 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().isSemiPublic;
   }
 
-  /** @notice Is this FAST a fixed supply FAST?
+  /**
+   * @notice Is this FAST a fixed supply FAST?
    * @return bool Yes/no fixed supply.
    */
   function hasFixedSupply()
@@ -45,7 +49,8 @@ contract FastTopFacet is AFastFacet {
 
   // Setters for global flags.
 
-  /** @notice Allows to switch from a private scheme to a semi-public scheme,
+  /**
+   * @notice Allows to switch from a private scheme to a semi-public scheme,
    *  but not the other way around.
    * @param flag Set the semi public flag to true/false.
    */

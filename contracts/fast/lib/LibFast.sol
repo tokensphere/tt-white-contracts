@@ -2,9 +2,10 @@
 pragma solidity 0.8.10;
 
 
-/** @notice Top-level shared functionality for FAST diamonds.
- * @dev Note that if you feel like a function should be created inside this library, you might want to really consider
- * whether or not it is the right place for it. Any facet using a function from internal libraries see their bytecode
+/**
+ * @notice Top-level shared functionality for FAST diamonds.
+ * @dev Note that if you feel like a method should be created inside this library, you might want to really consider
+ * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode
  * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. 
  */
 library LibFast {
@@ -15,7 +16,8 @@ library LibFast {
 
   // Data structures.
 
-  /** @notice The top-level data structure required for operating any given FAST diamond.
+  /**
+   * @notice The top-level data structure required for operating any given FAST diamond.
    * @dev The `version` field is used to ensure that storage is at a known version during upgrades.
    */
   struct Data {
@@ -31,7 +33,8 @@ library LibFast {
     bool isSemiPublic;
   }
 
-  /** @notice Returns the top-level storage for the calling FAST.
+  /**
+   * @notice Returns the top-level storage for the calling FAST.
    * @return s a struct pointer for top-level FAST data storage.
    */
   function data()

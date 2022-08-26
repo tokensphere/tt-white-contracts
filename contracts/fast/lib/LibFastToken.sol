@@ -4,9 +4,10 @@ pragma solidity 0.8.10;
 import '../../lib/LibAddressSet.sol';
 
 
-/** @notice This library centralises shared functionality between FAST diamonds facets that have to do with token related logic.
- * @dev Note that if you feel like a function should be created inside this library, you might want to really consider
- * whether or not it is the right place for it. Any facet using a function from internal libraries see their bytecode
+/**
+ * @notice This library centralises shared functionality between FAST diamonds facets that have to do with token related logic.
+ * @dev Note that if you feel like a method should be created inside this library, you might want to really consider
+ * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode
  * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. 
  */
 library LibFastToken {
@@ -21,7 +22,8 @@ library LibFastToken {
 
   // Data structures.
 
-  /** @notice The token data structure required for operating any given FAST diamond.
+  /**
+   * @notice The token data structure required for operating any given FAST diamond.
    * @dev The `version` field is used to ensure that storage is at a known version during upgrades.
    */
   struct Data {
@@ -36,7 +38,8 @@ library LibFastToken {
     uint8 decimals;
     /// @notice The amount of tokens in circulation.
     uint256 totalSupply;
-    /** @notice Every time a transfer is executed, the credit decreases by the amount of said transfer.
+    /**
+   * @notice Every time a transfer is executed, the credit decreases by the amount of said transfer.
      * It becomes impossible to transact once it reaches zero, and must be provisioned by an Issuer member.
     */
     uint256 transferCredits;
@@ -53,7 +56,8 @@ library LibFastToken {
     LibAddressSet.Data tokenHolders;
   }
 
-  /** @notice Returns the token storage for the calling FAST.
+  /**
+   * @notice Returns the token storage for the calling FAST.
    * @return s a struct pointer for token FAST data storage.
    */
   function data()

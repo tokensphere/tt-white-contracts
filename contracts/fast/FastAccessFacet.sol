@@ -16,9 +16,9 @@ import './FastFrontendFacet.sol';
 
 
 /**
-* @notice The FAST Access facet is the source of truth when it comes to
-* permissioning and ACLs within a given FAST.
-*/
+ * @notice The FAST Access facet is the source of truth when it comes to
+ * permissioning and ACLs within a given FAST.
+ */
 contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
   // Structs.
@@ -43,17 +43,13 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     return LibFastAccess.data().governorSet.contains(candidate);
   }
 
-  /**
-   * @notice See `IHasGovernors`.
-   */
+   /// @notice See `IHasGovernors`.
   function governorCount()
       external override view returns(uint256) {
     return LibFastAccess.data().governorSet.values.length;
   }
 
-  /**
-   * @notice See `IHasGovernors`.
-   */
+   /// @notice See `IHasGovernors`.
   function paginateGovernors(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
     return LibPaginate.addresses(LibFastAccess.
@@ -63,9 +59,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     );
   }
 
-  /**
-   * @notice See `IHasGovernors`.
-   */
+   /// @notice See `IHasGovernors`.
   function addGovernor(address payable governor)
       external override
       onlyIssuerMember
@@ -79,9 +73,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     emit GovernorAdded(governor);
   }
 
-  /**
-   * @notice See `IHasGovernors`.
-   */
+   /// @notice See `IHasGovernors`.
   function removeGovernor(address governor)
       external override
       onlyIssuerMember {
@@ -96,25 +88,19 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   /// Membership related stuff.
 
-  /**
-   * @notice See `IHasMembers`.
-   */
+   /// @notice See `IHasMembers`.
   function isMember(address candidate)
       external override view returns(bool) {
     return LibFastAccess.data().memberSet.contains(candidate);
   }
 
-  /**
-   * @notice See `IHasMembers`.
-   */
+   /// @notice See `IHasMembers`.
   function memberCount()
       external override view returns(uint256) {
     return LibFastAccess.data().memberSet.values.length;
   }
 
-  /**
-   * @notice See `IHasMembers`.
-   */
+   /// @notice See `IHasMembers`.
   function paginateMembers(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
     return LibPaginate.addresses(
@@ -124,9 +110,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     );
   }
 
-  /**
-   * @notice See `IHasMembers`.
-   */
+   /// @notice See `IHasMembers`.
   function addMember(address payable member)
       external override 
       onlyGovernor(msg.sender) onlyMarketplaceMember(member) {
@@ -139,9 +123,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     emit MemberAdded(member);
   }
 
-  /**
-   * @notice See `IHasMembers`.
-   */
+   /// @notice See `IHasMembers`.
   function removeMember(address member)
       external override 
       onlyGovernor(msg.sender) {
@@ -160,6 +142,8 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   /**
    * @notice Retrieves flags for a given address.
+   * @param a is the address to retrieve flags for.
+   * @return A `Flags` struct.
    */
   function flags(address a)
       external view returns(Flags memory) {

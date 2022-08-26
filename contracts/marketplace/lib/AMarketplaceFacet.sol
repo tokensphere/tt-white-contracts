@@ -29,7 +29,8 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
     _;
   }
 
-  /** @notice Requires that the message sender is a member of the linked Issuer.
+  /**
+   * @notice Requires that the message sender is a member of the linked Issuer.
    */
   modifier onlyIssuerMember() {
     require(
@@ -39,7 +40,8 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
     _;
   }
 
-  /** @notice Requires that the given address is a member of the marketplace.
+  /**
+   * @notice Requires that the given address is a member of the marketplace.
    * @param candidate is the address to be checked.
    */
   modifier onlyMember(address candidate) {

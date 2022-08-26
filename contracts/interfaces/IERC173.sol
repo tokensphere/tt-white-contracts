@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-/** @title ERC173 Contract Ownership Standard
+/**
+ * @title ERC173 Contract Ownership Standard
  * @dev The ERC165 identifier for this interface is 0x7f5828d0.
  */
 interface IERC173 {

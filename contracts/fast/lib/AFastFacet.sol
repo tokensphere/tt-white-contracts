@@ -12,10 +12,11 @@ import '../lib/LibFast.sol';
 import './IFastEvents.sol';
 
 
-/** @title Abstract FAST helper contract.
-* @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against
-* certain permissions.
-*/
+/**
+ * @title Abstract FAST helper contract.
+ * @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against
+ * certain permissions.
+ */
 abstract contract AFastFacet is IFastEvents {
   using LibAddressSet for LibAddressSet.Data;
 
@@ -48,7 +49,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures that the given address is a member of the Marketplace.
+  /**
+   * @notice Ensures that the given address is a member of the Marketplace.
    * @param candidate The address to check.
    */
   modifier onlyMarketplaceMember(address candidate) {
@@ -59,7 +61,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures a candidate is an active member of the Marketplace.
+  /**
+   * @notice Ensures a candidate is an active member of the Marketplace.
    * @param candidate The address to check.
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
@@ -70,7 +73,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures that the message sender is a member of the Issuer.
+  /**
+   * @notice Ensures that the message sender is a member of the Issuer.
    */
   modifier onlyIssuerMember() {
     require(
@@ -80,7 +84,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures that the given address is a governor of the FAST.
+  /**
+   * @notice Ensures that the given address is a governor of the FAST.
    * @param candidate The address to check.
    */
   modifier onlyGovernor(address candidate) {
@@ -91,7 +96,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures that the given address is a member of the FAST.
+  /**
+   * @notice Ensures that the given address is a member of the FAST.
    * @param candidate The address to check.
    */
   modifier onlyMember(address candidate) {
@@ -102,7 +108,8 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
-  /** @notice Ensures address `a` and `b` are different.
+  /**
+   * @notice Ensures address `a` and `b` are different.
    * @param a Address a
    * @param b Address b
    */

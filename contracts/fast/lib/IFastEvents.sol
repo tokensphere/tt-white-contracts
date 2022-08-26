@@ -2,7 +2,8 @@
 pragma solidity 0.8.10;
 
 
-/** @title FAST events inventory.
+/**
+ * @title FAST events inventory.
  * @notice An interface allowing to use events within the Diamond pattern without name colisions.
  * @dev The idea is that as several facets can emit the same events, we don't want to have to re-declare
  * the same event several time. This interface is a per-diamond central place for such event declaration.
@@ -10,45 +11,53 @@ pragma solidity 0.8.10;
 interface IFastEvents {
   // IHasMembers.
 
-  /** @notice Emited when a member is added to the implementing contract.
+  /**
+   * @notice Emited when a member is added to the implementing contract.
    * @param member is the address of the added member.
    */
   event MemberAdded(address indexed member);
-  /** @notice Emited when a member is removed to the implementing contract.
+  /**
+   * @notice Emited when a member is removed to the implementing contract.
    * @param member is the address of the removed member.
    */
   event MemberRemoved(address indexed member);
 
   // IHasGovernors.
 
-  /** @notice Emited when a governor is added to the implementing contract.
+  /**
+   * @notice Emited when a governor is added to the implementing contract.
    * @param governor is the address of the added governor.
    */
   event GovernorAdded(address indexed governor);
-  /** @notice Emited when a governor is removed to the implementing contract.
+  /**
+   * @notice Emited when a governor is removed to the implementing contract.
    * @param governor is the address of the removed member.
    */
   event GovernorRemoved(address indexed governor);
 
   // Issuance related events.
-  /** @notice Emited whenever an issuance happens in a FAST.
+  /**
+   * @notice Emited whenever an issuance happens in a FAST.
    * @param amount is the amount of tokens that have been minted.
    * @param ref is the reference associated with the minting operation.
    */
   event Minted(uint256 indexed amount, string indexed ref);
-  /** @notice Emited whenever an burning happens in a FAST.
+  /**
+   * @notice Emited whenever an burning happens in a FAST.
    * @param amount is the amount of tokens that have been burnt.
    * @param ref is the reference associated with the burning operation.
    */
   event Burnt(uint256 indexed amount, string indexed ref);
 
   // Transfer credits related events.
-  /** @notice Emited whenever transfer credits increase inside a FAST.
+  /**
+   * @notice Emited whenever transfer credits increase inside a FAST.
    * @param issuerMember is the address of the Issuer member who performed the operation.
    * @param amount is the number of issued transfer credits.
    */
   event TransferCreditsAdded(address indexed issuerMember, uint256 amount);
-  /** @notice Emited whenever transfer credits are drained inside a FAST.
+  /**
+   * @notice Emited whenever transfer credits are drained inside a FAST.
    * @param issuerMember is the address of the Issuer member who performed the operation.
    * @param amount is the number of drained transfer credits.
    */
@@ -65,7 +74,8 @@ interface IFastEvents {
 
   // General events.
 
-  /** @notice This is an event that is fired whenever any of some of the FAST parameters
+  /**
+   * @notice This is an event that is fired whenever any of some of the FAST parameters
    * change, so that the frontend can react to it and refresh the general header
    * for that fast as well as the baseball cards in the FASTs list.
    * @param memberCount is the number of members in the FAST.

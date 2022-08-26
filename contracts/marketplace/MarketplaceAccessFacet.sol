@@ -10,7 +10,8 @@ import './lib/LibMarketplaceAccess.sol';
 import './lib/AMarketplaceFacet.sol';
 
 
-/** @title The Marketplace Smart Contract.
+/**
+ * @title The Marketplace Smart Contract.
  * @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
  */
 contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMembers {
@@ -18,7 +19,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
 
   // Membership management.
 
-  /** @notice Queries whether a given address is a member of this Marketplace or not.
+  /**
+   * @notice Queries whether a given address is a member of this Marketplace or not.
    * @param candidate is the address to test.
    * @return A `boolean` flag.
    */
@@ -27,7 +29,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     return LibMarketplaceAccess.data().memberSet.contains(candidate);
   }
 
-  /** @notice Counts the numbers of members present in this Marketplace.
+  /**
+   * @notice Counts the numbers of members present in this Marketplace.
    * @return The number of members in this marketplace.
    */
   function memberCount()
@@ -35,7 +38,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     return LibMarketplaceAccess.data().memberSet.values.length;
   }
 
-  /** @notice Paginates the members of this Marketplace based on a starting cursor and a number of records per page.
+  /**
+   * @notice Paginates the members of this Marketplace based on a starting cursor and a number of records per page.
    * @param cursor is the index at which to start.
    * @param perPage is how many records should be returned at most.
    * @return A `address[]` list of values at most `perPage` big.
@@ -46,7 +50,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     return LibPaginate.addresses(LibMarketplaceAccess.data().memberSet.values, cursor, perPage);
   }
 
-  /** @notice Adds a member to this Marketplace member list.
+  /**
+   * @notice Adds a member to this Marketplace member list.
    * @param member is the address of the member to be added.
    * @notice Requires that the caller is a member of the linked Issuer.
    * @notice Emits a `IHasMembers.MemberAdded` event.
@@ -60,7 +65,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     emit MemberAdded(member);
   }
 
-  /** @notice Removes a member from this Marketplace.
+  /**
+   * @notice Removes a member from this Marketplace.
    * @param member is the address of the member to be removed.
    * @notice Requires that the caller is a member of the linked Issuer.
    * @notice Emits a `IHasMembers.MemberRemoved` event.
@@ -77,7 +83,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     emit MemberRemoved(member);
   }
 
-  /** @notice Allows to query FAST memberships for a given member address.
+  /**
+   * @notice Allows to query FAST memberships for a given member address.
    * @param member Is the address to check.
    * @param cursor The index at which to start.
    * @param perPage How many records should be returned at most.
@@ -87,7 +94,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     return LibPaginate.addresses(LibMarketplaceAccess.data().fastMemberships[member].values, cursor, perPage);
   }
 
-  /** @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
+  /**
+   * @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
    * @param member The member for which a new FAST membership has been added.
    */
   function memberAddedToFast(address member) 
@@ -102,7 +110,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     memberFasts.add(msg.sender, false);
   }
 
-  /** @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
+  /**
+   * @notice Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
    * @param member The member for which a FAST membership has been removed.
    */
   function memberRemovedFromFast(address member)
@@ -116,14 +125,16 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     memberFasts.remove(msg.sender, false);
   }
 
-  /** @notice Given a member returns it's activation status.
+  /**
+   * @notice Given a member returns it's activation status.
    * @param member The member to check activation status on.
    */
   function isMemberActive(address member) external override view returns(bool) {
     return !LibMarketplaceAccess.data().deactivatedMemberSet.contains(member);
   }
 
-  /** @notice Activates a member at the Marketplace level.
+  /**
+   * @notice Activates a member at the Marketplace level.
    * @param member The member to remove from the deactivation member set.
    */
   function activateMember(address member)
@@ -144,7 +155,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     emit MemberActivated(member);
   }
 
-  /** @notice Deactivates a member at the Marketplace level.
+  /**
+   * @notice Deactivates a member at the Marketplace level.
    * @param member The member to add to the deactivation member set.
    */
   function deactivateMember(address payable member)
