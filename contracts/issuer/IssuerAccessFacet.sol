@@ -85,8 +85,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       LibConstants.REQUIRES_FAST_CONTRACT_CALLER
     );
     // Keep track of the governorship.
-    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
-    governorships.add(msg.sender, false);
+    LibIssuerAccess.data().fastGovernorships[governor].add(msg.sender, false);
   }
 
   /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
@@ -100,8 +99,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       LibConstants.REQUIRES_FAST_CONTRACT_CALLER
     );
     // Remove the tracked governorship.
-    LibAddressSet.Data storage governorships = LibIssuerAccess.data().fastGovernorships[governor];
-    governorships.remove(msg.sender, false);
+    LibIssuerAccess.data().fastGovernorships[governor].remove(msg.sender, false);
   }
 
   /** @notice Returns a list of FASTs that the passed address is a governor of.
