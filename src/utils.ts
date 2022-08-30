@@ -13,9 +13,7 @@ export const DEPLOYER_FACTORY_COMMON = {
   funding: '10000000000000000'
 }
 
-export const COMMON_DIAMOND_FACETS = [
-  'ERC165Facet'
-];
+export const COMMON_DIAMOND_FACETS = [];
 
 export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
   // Staging or production environments.

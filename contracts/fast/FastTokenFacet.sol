@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.10;
 
 import '../interfaces/IERC20.sol';
 import '../interfaces/IERC1404.sol';
@@ -227,33 +227,13 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // ERC1404 implementation.
 
-  function detectTransferRestriction(address from, address to, uint256 amount)
-      external view override returns(uint8) {
-    LibFastToken.Data storage s = LibFastToken.data();
-    if (s.transferCredits < amount) {
-      return LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE;
-    } else if (!FastAccessFacet(address(this)).isMember(from) ||
-               !FastAccessFacet(address(this)).isMember(to)) {
-      return FastTopFacet(address(this)).isSemiPublic()
-        ? LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE
-        : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
-    } else if (from == to) {
-      return LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
-    }
+  function detectTransferRestriction(address, address, uint256)
+      external pure override returns(uint8) {
     return 0;
   }
 
-  function messageForTransferRestriction(uint8 restrictionCode)
+  function messageForTransferRestriction(uint8)
       external override pure returns(string memory) {
-    if (restrictionCode == LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE) {
-      return LibConstants.INSUFFICIENT_TRANSFER_CREDITS;
-    } else if (restrictionCode == LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE) {
-      return LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP;
-    } else if (restrictionCode == LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE) {
-      return LibConstants.REQUIRES_FAST_MEMBERSHIP;
-    } else if (restrictionCode == LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
-      return LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT;
-    }
     revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
   }
 
