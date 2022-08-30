@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity 0.8.9;
 
 import '../interfaces/IERC20.sol';        // Token.
 import '../interfaces/IERC165.sol';       // Interface Support.
@@ -37,8 +37,6 @@ contract FastInitFacet is AFastFacet {
     uint8 decimals;
     bool hasFixedSupply;
     bool isSemiPublic;
-    bool isRegulated;
-    bool requiresTransferReview;
   }
 
   function initialize(InitializerParams calldata params)
@@ -67,8 +65,6 @@ contract FastInitFacet is AFastFacet {
     topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
     topData.isSemiPublic = params.isSemiPublic;
-    topData.isRegulated = params.isRegulated;
-    topData.requiresTransferReview = params.requiresTransferReview;
 
     // ------------------------------------- //
 

@@ -28,9 +28,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         symbol: 'F01',
         decimals: 18,
         hasFixedSupply: true,
-        isSemiPublic: true,
-        isRegulated: true,
-        requiresTransferReview: false
+        isSemiPublic: true
       });
       console.log('Minting 500_000 F01...');
       await fastMint(f01.connect(issuerMemberSigner), 500_000, 'Whatever');
@@ -49,9 +47,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         symbol: 'F02',
         decimals: 5,
         hasFixedSupply: true,
-        isSemiPublic: false,
-        isRegulated: true,
-        requiresTransferReview: false,
+        isSemiPublic: false
       });
       console.log('Minting 5_000_000 F02...');
       await fastMint(f02.connect(issuerMemberSigner), 5_000_000, 'Whatever');
@@ -70,9 +66,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         symbol: 'F03',
         decimals: 10,
         hasFixedSupply: false,
-        isSemiPublic: true,
-        isRegulated: true,
-        requiresTransferReview: false
+        isSemiPublic: true
       });
       console.log('Minting 5_000_000 F03...');
       await fastMint(f03.connect(issuerMemberSigner), 5_000_000, 'Whatever');
@@ -91,9 +85,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         symbol: 'F04',
         decimals: 0,
         hasFixedSupply: false,
-        isSemiPublic: true,
-        isRegulated: true,
-        requiresTransferReview: false
+        isSemiPublic: true
       });
       console.log('Minting 5_000_000 F04...');
       await fastMint(f04.connect(issuerMemberSigner), 5_000_000, 'Whatever');

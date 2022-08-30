@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity 0.8.9;
 
 import '../lib/LibConstants.sol';
 import '../lib/LibHelpers.sol';
@@ -29,16 +29,6 @@ contract FastTopFacet is AFastFacet {
   function isSemiPublic()
       external view returns(bool) {
     return LibFast.data().isSemiPublic;
-  }
-
-  function isRegulated()
-      external view returns(bool) {
-    return LibFast.data().isRegulated;
-  }
-
-  function requiresTransferReview()
-      external view returns(bool) {
-    return LibFast.data().requiresTransferReview;
   }
 
   // Setters for global flags.

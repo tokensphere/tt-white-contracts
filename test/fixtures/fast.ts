@@ -19,9 +19,7 @@ export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
   symbol: 'RFT',
   decimals: 18,
   hasFixedSupply: true,
-  isSemiPublic: false,
-  isRegulated: true,
-  requiresTransferReview: false
+  isSemiPublic: false
 };
 
 interface FastFixtureOpts {

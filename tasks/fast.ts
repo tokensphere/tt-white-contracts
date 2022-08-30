@@ -15,8 +15,6 @@ interface FastDeployTaskParams {
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
-  readonly isRegulated: boolean;
-  readonly requiresTransferReview: boolean;
   readonly txCredits: number;
   readonly mint?: number;
 };
@@ -28,8 +26,6 @@ task('fast-deploy', 'Deploys a FAST')
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addParam('hasFixedSupply', 'The minting scheme for the new FAST', undefined, types.boolean)
   .addParam('isSemiPublic', 'Whether or not this FAST should be semi-public', undefined, types.boolean)
-  .addParam('isRegulated', 'Whether or not this FAST should be regulated', undefined, types.boolean)
-  .addParam('requiresTransferReview', 'Whether or not transfers are moderated', undefined, types.boolean)
   .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
   .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
   .setAction(async (params: FastDeployTaskParams, hre: HardhatRuntimeEnvironment) => {
@@ -166,8 +162,6 @@ interface FastDeployParams {
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
-  readonly isRegulated: boolean;
-  readonly requiresTransferReview: boolean;
 };
 
 const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployParams)
@@ -204,9 +198,7 @@ const deployFast = async (hre: HardhatRuntimeEnvironment, params: FastDeployPara
           symbol: params.symbol,
           decimals: params.decimals,
           hasFixedSupply: params.hasFixedSupply,
-          isSemiPublic: params.isSemiPublic,
-          isRegulated: params.isRegulated,
-          requiresTransferReview: params.requiresTransferReview
+          isSemiPublic: params.isSemiPublic
         }]
       },
       deterministicSalt,
