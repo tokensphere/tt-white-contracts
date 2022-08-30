@@ -15,21 +15,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { fastGovernor, issuerMember } = await getNamedAccounts();
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
-  // Grab handles to the Marketplace.
-  const marketplace = await ethers.getContract<Marketplace>('Marketplace');
-  // Grab handles to the IOU FAST.
-  const iou = await ethers.getContract<Fast>('FastIOU');
-  const governedIOU = iou.connect(issuerMemberSigner);
-
-  const zeroAddrBalance = await iou.balanceOf(ZERO_ADDRESS);
-  const totalSupply = await iou.totalSupply();
-
-  if (!zeroAddrBalance.add(totalSupply).isZero()) {
-    console.log('IOU already minted, skipping minting.');
-  } else {
-    console.log('Minting 1_000_000 IOU...');
-    await fastMint(governedIOU, 1_000_000, 'Initial mint');
-  }
 
   {
     const deploy = await deployments.getOrNull('FastF01');
