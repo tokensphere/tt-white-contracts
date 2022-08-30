@@ -18,12 +18,8 @@ import './tasks/fast';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.8.9',
+    version: '0.8.4',
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 500
-      },
       outputSelection: {
         '*': {
           '*': ['storageLayout']
@@ -43,7 +39,6 @@ const config: HardhatUserConfig = {
       ['Facet$', 'GovernorshipRemoved(address,address)']
     ]),
     include: [
-      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
@@ -59,7 +54,6 @@ const config: HardhatUserConfig = {
       ['Facet$', 'MemberDeactivated(address)']
     ]),
     include: [
-      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',
@@ -85,7 +79,6 @@ const config: HardhatUserConfig = {
       ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)']
     ]),
     include: [
-      'IERC165',
       'IERC173',
       'IDiamondCut',
       'IDiamondLoupe',

@@ -14,6 +14,7 @@ export const DEPLOYER_FACTORY_COMMON = {
 }
 
 export const COMMON_DIAMOND_FACETS = [
+  'ERC165Facet'
 ];
 
 export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {

@@ -73,8 +73,6 @@ yarn hardhat fast-deploy \
               --decimals 18 \
               --has-fixed-supply false \
               --is-semi-public true \
-              --is-regulated true \
-              --requires-transfer-review false \
               --tx-credits 1000000 \
               --mint 1000000
 ```

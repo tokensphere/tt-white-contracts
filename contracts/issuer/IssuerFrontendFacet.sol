@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity ^0.8.4;
 
 import '../lib/LibPaginate.sol';
 import '../fast/FastFrontendFacet.sol';

@@ -928,6 +928,29 @@ describe('FastTokenFacet', () => {
   /// ERC1404 implementation.
   describe('ERC1404', async () => {
     describe('detectTransferRestriction has codes for', async () => {
+      it('the lack of transfer credits', async () => {
+        const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
+        expect(subject).to.eq(INSUFFICIENT_TRANSFER_CREDITS_CODE);
+      });
+
+      it('the lack of sender membership', async () => {
+        await issuerMemberToken.addTransferCredits(1);
+        const subject = await token.detectTransferRestriction(anonymous.address, alice.address, 1);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
+      });
+
+      it('the lack of recipient membership', async () => {
+        await issuerMemberToken.addTransferCredits(1);
+        const subject = await token.detectTransferRestriction(bob.address, anonymous.address, 1);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP_CODE);
+      });
+
+      it('sender and recipient being identical', async () => {
+        await issuerMemberToken.addTransferCredits(1);
+        const subject = await token.detectTransferRestriction(bob.address, bob.address, 1);
+        expect(subject).to.eq(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE);
+      });
+
       it('returns zero when the transfer is possible', async () => {
         await issuerMemberToken.addTransferCredits(1);
         const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
@@ -936,8 +959,28 @@ describe('FastTokenFacet', () => {
     });
 
     describe('messageForTransferRestriction has a message for', async () => {
+      it('the lack of transfer credits', async () => {
+        const subject = await token.messageForTransferRestriction(INSUFFICIENT_TRANSFER_CREDITS_CODE);
+        expect(subject).to.eq(INSUFFICIENT_TRANSFER_CREDITS);
+      });
+
+      it('marketplace membership required', async () => {
+        const subject = await token.messageForTransferRestriction(REQUIRES_MARKETPLACE_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_MARKETPLACE_MEMBERSHIP);
+      });
+
+      it('the lack of FAST membership', async () => {
+        const subject = await token.messageForTransferRestriction(REQUIRES_FAST_MEMBERSHIP_CODE);
+        expect(subject).to.eq(REQUIRES_FAST_MEMBERSHIP);
+      });
+
+      it('sender and recipient being identical', async () => {
+        const subject = await token.messageForTransferRestriction(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE);
+        expect(subject).to.eq(REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
+      });
+
       it('errors when the restriction code is unknown', async () => {
-        const subject = token.messageForTransferRestriction(1);
+        const subject = token.messageForTransferRestriction(5);
         await expect(subject).to.have
           .revertedWith(UNKNOWN_RESTRICTION_CODE);
       })

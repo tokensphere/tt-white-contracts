@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity ^0.8.4;
 
 import '../interfaces/IERC20.sol';
 import '../interfaces/IERC1404.sol';
@@ -227,14 +227,33 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // ERC1404 implementation.
 
-  // TODO: Find a good way to factor transfer restrictions in a single place.
   function detectTransferRestriction(address from, address to, uint256 amount)
       external view override returns(uint8) {
+    LibFastToken.Data storage s = LibFastToken.data();
+    if (s.transferCredits < amount) {
+      return LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE;
+    } else if (!FastAccessFacet(address(this)).isMember(from) ||
+               !FastAccessFacet(address(this)).isMember(to)) {
+      return FastTopFacet(address(this)).isSemiPublic()
+        ? LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE
+        : LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE;
+    } else if (from == to) {
+      return LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
+    }
     return 0;
   }
 
   function messageForTransferRestriction(uint8 restrictionCode)
       external override pure returns(string memory) {
+    if (restrictionCode == LibFastToken.INSUFFICIENT_TRANSFER_CREDITS_CODE) {
+      return LibConstants.INSUFFICIENT_TRANSFER_CREDITS;
+    } else if (restrictionCode == LibFastToken.REQUIRES_MARKETPLACE_MEMBERSHIP_CODE) {
+      return LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP;
+    } else if (restrictionCode == LibFastToken.REQUIRES_FAST_MEMBERSHIP_CODE) {
+      return LibConstants.REQUIRES_FAST_MEMBERSHIP;
+    } else if (restrictionCode == LibFastToken.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE) {
+      return LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT;
+    }
     revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
   }
 
@@ -250,8 +269,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     string ref;
   }
 
-  // TODO: Once detectTransferRestriction is properly implemented, rely on it here
-  // rather than doing all tests again.
   function performTransfer(TransferArgs calldata p)
       external onlyDiamondFacet
       differentAddresses(p.from, p.to)
