@@ -123,30 +123,29 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function transfer(address to, uint256 amount)
       external override returns(bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performTransfer(
+    return this.performTransfer(
       TransferArgs({
         spender: msg.sender,
         from: msg.sender,
         to: to,
         amount: amount,
         ref: LibFastToken.DEFAULT_TRANSFER_REFERENCE
-      })
-    );
-    return true;
+      }), false
+    ) == 0;
   }
 
   function transferWithRef(address to, uint256 amount, string calldata ref)
-      external {
+      external returns(bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performTransfer(
+    return this.performTransfer(
       TransferArgs({
         spender: msg.sender,
         from: msg.sender,
         to: to,
         amount: amount,
         ref: ref
-      })
-    );
+      }), false
+    ) == 0;
   }
 
   function allowance(address owner, address spender)
@@ -164,35 +163,34 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function approve(address spender, uint256 amount)
       external override returns(bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performApproval(msg.sender, spender, amount);
-    return true;
+    return this.performApproval(msg.sender, spender, amount);
   }
 
   function disapprove(address spender)
       external
-      onlyMember(msg.sender) {
+      onlyMember(msg.sender)
+      returns(bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performDisapproval(msg.sender, spender);
+    return this.performDisapproval(msg.sender, spender);
   }
 
   function transferFrom(address from, address to, uint256 amount)
       external override returns(bool) {
-    transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
-    return true;
+    return transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
   }
 
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      public {
+      public returns(bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performTransfer(
+    return this.performTransfer(
       TransferArgs({
         spender: msg.sender,
         from: from,
         to: to,
         amount: amount,
         ref: ref
-      })
-    );
+      }), false
+    ) == 0;
   }
 
   // Allowances query operations.
@@ -249,92 +247,112 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     string ref;
   }
 
-  function performTransfer(TransferArgs calldata p)
-      external onlyDiamondFacet
-      differentAddresses(p.from, p.to)
-      onlyTokenHolder(p.from)
-      onlyMarketplaceActiveMember(p.from)
-      onlyTokenHolder(p.to) {
-    LibFastToken.Data storage s = LibFastToken.data();
+  uint8 internal constant INTERNAL_METHOD_CODE = 1;
+  uint8 internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE = 2;
+  uint8 internal constant REQUIRES_VALID_TOKEN_HOLDER_CODE = 3;
+  uint8 internal constant REQUIRES_VALID_TOKEN_HOLDER_SENDER_CODE = 4;
+  uint8 internal constant REQUIRES_MARKETPLACE_ACTIVE_USER_SENDER_CODE = 5;
+  uint8 internal constant REQUIRES_VALID_TOKEN_HOLDER_RECIPIENT_CODE = 6;
+  uint8 internal constant INSUFFICIENT_ALLOWANCE_CODE = 7;
+  uint8 internal constant INSUFFICIENT_TRANSFER_CREDITS_CODE = 8; 
 
-    // Make sure that there's enough funds.
-    require(
-      s.balances[p.from] >= p.amount,
-      LibConstants.INSUFFICIENT_FUNDS
-    );
-    require(
-      p.amount > 0,
-      LibConstants.UNSUPPORTED_OPERATION
-    );
+  function performTransfer(TransferArgs calldata p, bool dryRun)
+      external returns(uint8) {
+    if (!isDiamondFacet()) {
+      return INTERNAL_METHOD_CODE;
+    } else if (p.from == p.to) {
+      return REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT_CODE;
+    } else if (!isValidTokenHolder(p.from)) {
+      return REQUIRES_VALID_TOKEN_HOLDER_SENDER_CODE;
+    } else if (!isMarketplaceActiveMember(p.from)) {
+      return REQUIRES_MARKETPLACE_ACTIVE_USER_SENDER_CODE;
+    } else if (!isValidTokenHolder(p.to)) {
+      return REQUIRES_VALID_TOKEN_HOLDER_RECIPIENT_CODE;
+    }
+
+    LibFastToken.Data storage s = LibFastToken.data();
 
     // If this is an allowance transfer...
     if (p.spender != p.from) {
       // Make sure that the spender has enough allowance.
-      require(
-        FastTokenFacet(address(this)).allowance(p.from, p.spender) >= p.amount,
-        LibConstants.INSUFFICIENT_ALLOWANCE
-      );
+      if (FastTokenFacet(address(this)).allowance(p.from, p.spender) < p.amount) {
+        return INSUFFICIENT_ALLOWANCE_CODE;
+      }
 
-      // If the from account isn't the zero address...
-      if (p.from != address(0)) {
-        // Decrease allowance.
-        uint256 newAllowance = s.allowances[p.from][p.spender] -= p.amount;
-        // If the allowance reached zero, we want to remove that allowance from
-        // the various other places where we keep track of it.
-        if (newAllowance == 0) {
-          s.allowancesByOwner[p.from].remove(p.spender, true);
-          s.allowancesBySpender[p.spender].remove(p.from, true);
+      // Unless we're in dry-run mode, update state.
+      if (!dryRun) {
+        // If the from account isn't the zero address...
+        if (p.from != address(0)) {
+          // Decrease allowance.
+          uint256 newAllowance = s.allowances[p.from][p.spender] -= p.amount;
+          // If the allowance reached zero, we want to remove that allowance from
+          // the various other places where we keep track of it.
+          if (newAllowance == 0) {
+            s.allowancesByOwner[p.from].remove(p.spender, true);
+            s.allowancesBySpender[p.spender].remove(p.from, true);
+          }
         }
       }
     }
 
-    // Keep track of the balances - `from` spends, `to` receives.
-    s.balances[p.from] -= p.amount;
-    s.balances[p.to] += p.amount;
+    // Unless we're in dry-run mode, update state.
+    if (!dryRun) {
+      // Keep track of the balances - `from` spends, `to` receives.
+      s.balances[p.from] -= p.amount;
+      s.balances[p.to] += p.amount;
 
-    // Keep track of who has what FAST.
-    LibFast.Data storage d = LibFast.data();
-    ITokenHoldings(d.marketplace).holdingUpdated(p.from, address(this));
-    ITokenHoldings(d.marketplace).holdingUpdated(p.to, address(this));
+      // Keep track of who has what FAST.
+      LibFast.Data storage d = LibFast.data();
+      ITokenHoldings(d.marketplace).holdingUpdated(p.from, address(this));
+      ITokenHoldings(d.marketplace).holdingUpdated(p.to, address(this));
 
-    // Keep track of who holds this token.
-    holdingUpdated(p.from);
-    holdingUpdated(p.to);
+      // Keep track of who holds this token.
+      holdingUpdated(p.from);
+      holdingUpdated(p.to);
+    }
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
       // Make sure enough credits exist.
-      require(
-        s.transferCredits >= p.amount,
-        LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-      );
-      s.transferCredits -= p.amount;
+      if (s.transferCredits < p.amount) {
+        return INSUFFICIENT_TRANSFER_CREDITS_CODE;
+      }
+      // Unless we're in dry-run mode, update state.
+      if (!dryRun) {
+        s.transferCredits -= p.amount;
+      }
     }
 
-    // If the funds are going to the ZERO address, decrease total supply.
-    if (p.to == address(0)) {
-      s.totalSupply -= p.amount;
-      // If funds at address zero changed, we can emit a top-level details change event.
-      FastFrontendFacet(address(this)).emitDetailsChanged();
-    }
-    // If the funds are moving from the zero address, increase total supply.
-    else if (p.from == address(0)) {
-      s.totalSupply += p.amount;
-      // If funds at address zero changed, we can emit a top-level details change event.
-      FastFrontendFacet(address(this)).emitDetailsChanged();
+    // Unless we're in dry-run mode, update state.
+    if (!dryRun) {
+      // If the funds are going to the ZERO address, decrease total supply.
+      if (p.to == address(0)) {
+        s.totalSupply -= p.amount;
+        // If funds at address zero changed, we can emit a top-level details change event.
+        FastFrontendFacet(address(this)).emitDetailsChanged();
+      }
+      // If the funds are moving from the zero address, increase total supply.
+      else if (p.from == address(0)) {
+        s.totalSupply += p.amount;
+        // If funds at address zero changed, we can emit a top-level details change event.
+        FastFrontendFacet(address(this)).emitDetailsChanged();
+      }
+
+      // Keep track of the transfer in the history facet.
+      FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
+
+      // Emit!
+      emit Transfer(p.from, p.to, p.amount);
     }
 
-    // Keep track of the transfer in the history facet.
-    FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
-
-    // Emit!
-    emit Transfer(p.from, p.to, p.amount);
+    return 0;
   }
 
   function performApproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet
-      onlyTokenHolder(from) {
+      onlyTokenHolder(from)
+      returns(bool) {
     require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -346,11 +364,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     emit Approval(from, spender, amount);
+
+    return true;
   }
 
   function performDisapproval(address from, address spender)
       external
-      onlyDiamondFacet {
+      onlyDiamondFacet
+      returns(bool) {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Remove allowance.
@@ -360,6 +381,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
     // Emit!
     emit Disapproval(from, spender);
+
+    return true;
   }
 
   // WARNING: This function contains two loops. We know that this should never
@@ -415,27 +438,30 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Modifiers.
 
+  function isValidTokenHolder(address candidate)
+      internal view returns(bool) {
+    // Only perform checks if the address is non-zero.
+    if (candidate != address(0)) {
+    // FAST is semi-public - the only requirement to hold tokens is to be an marketplace member.
+      if (IFast(address(this)).isSemiPublic() && !isMarketplaceActiveMember(candidate)) {
+        return false;
+      }
+      // FAST is private, the requirement to hold tokens is to be a member of that FAST.
+      else if (!IHasMembers(address(this)).isMember(candidate)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
    *  @param candidate The address to check.
    */
   modifier onlyTokenHolder(address candidate) {
-    // Only perform checks if the address is non-zero.
-    if (candidate != address(0)) {
-    // FAST is semi-public - the only requirement to hold tokens is to be an marketplace member.
-      if (IFast(address(this)).isSemiPublic()) {
-        require(
-          IHasMembers(LibFast.data().marketplace).isMember(candidate),
-          LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
-        );
-      }
-      // FAST is private, the requirement to hold tokens is to be a member of that FAST.
-      else {
-        require(
-          IHasMembers(address(this)).isMember(candidate),
-          LibConstants.REQUIRES_FAST_MEMBERSHIP
-        );
-      }
-    }
+    require(
+      isValidTokenHolder(candidate),
+      'For now, blah'
+    );
     _;
   }
 }

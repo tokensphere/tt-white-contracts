@@ -19,14 +19,42 @@ import './IFastEvents.sol';
 abstract contract AFastFacet is IFastEvents {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// Functions.
+
+  /**
+   * @notice Checks whether the caller is another facet of the same diamond.
+   * @return bool set to `true` when the caller is the diamond, `false` otherwise.
+   */
+  function isDiamondFacet()
+      internal view returns(bool) {
+    return msg.sender == address(this);
+  }
+
+  /**
+   * @notice Queries whether a given address is a member (maybe de-activated) of the Marketplace.
+   * @param candidate is the address to check.
+   * @return bool set to `true` if `candidate` is a member of the Marketplace, `false` otherwise.
+   */
+  function isMarketplaceMember(address candidate)
+      internal view returns(bool) {
+    return IHasMembers(LibFast.data().marketplace).isMember(candidate);
+  }
+
+  /**
+   * @notice Queries whether a given address is an active member of the Marketplace.
+   * @param candidate is the address to check.
+   * @return bool set to `true` whether `candidate` is both a member of the Marketplace and flagged as active.
+   */
+  function isMarketplaceActiveMember(address candidate)
+      internal view returns(bool) {
+    IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate);
+  }
+
   /// Modifiers.
 
   /// @dev Ensures that a method can only be called by another facet of the same diamond.
   modifier onlyDiamondFacet() {
-    require(
-      msg.sender == address(this),
-      LibConstants.INTERNAL_METHOD
-    );
+    require(isDiamondFacet(), LibConstants.INTERNAL_METHOD);
     _;
   }
 
@@ -53,7 +81,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyMarketplaceMember(address candidate) {
     require(
-      IHasMembers(LibFast.data().marketplace).isMember(candidate),
+      isMarketplaceMember(candidate),
       LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
     );
     _;
@@ -64,7 +92,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
     require(
-      IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate),
+      isMarketplaceActiveMember(candidate),
       LibConstants.REQUIRES_MARKETPLACE_ACTIVE_MEMBER
     );
     _;
@@ -107,7 +135,7 @@ abstract contract AFastFacet is IFastEvents {
    *  @param b Address b
    */
   modifier differentAddresses(address a, address b) {
-    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
+    require(a == b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
     _;
   }
 }
