@@ -30,4 +30,9 @@ interface IIssuerEvents {
 
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
+
+  // Governors.
+
+  event GovernorshipRemoved(address indexed fast, address indexed governor);
+  event GovernorshipAdded(address indexed fast, address indexed governor);
 }

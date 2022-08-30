@@ -9,6 +9,7 @@ import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
 import './lib/AIssuerFacet.sol';
 import './lib/LibIssuerAccess.sol';
+import './lib/IIssuerEvents.sol';
 import '../issuer/IssuerTopFacet.sol';
 
 
@@ -67,7 +68,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       external override
       onlyMember(msg.sender) {
     // No suicide allowed.
-    require(msg.sender != member, 'Cannot remove self');
+    require(msg.sender != member, LibConstants.CANNOT_REMOVE_SELF);
     // Remove the member from the set.
     LibIssuerAccess.data().memberSet.remove(member, false);
     // Emit!
@@ -86,6 +87,8 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     );
     // Keep track of the governorship.
     LibIssuerAccess.data().fastGovernorships[governor].add(msg.sender, false);
+
+    emit GovernorshipAdded(msg.sender, governor);
   }
 
   /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
@@ -100,6 +103,8 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
     );
     // Remove the tracked governorship.
     LibIssuerAccess.data().fastGovernorships[governor].remove(msg.sender, false);
+
+    emit GovernorshipRemoved(msg.sender, governor);
   }
 
   /** @notice Returns a list of FASTs that the passed address is a governor of.

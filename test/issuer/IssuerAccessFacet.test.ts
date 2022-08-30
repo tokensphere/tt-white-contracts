@@ -8,7 +8,8 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import {
   REQUIRES_ISSUER_MEMBERSHIP,
   REQUIRES_FAST_CONTRACT_CALLER,
-  impersonateContract
+  impersonateContract,
+  CANNOT_REMOVE_SELF
 } from '../utils';
 import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
@@ -130,7 +131,11 @@ describe('IssuerAccessFacet', () => {
           .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
       });
 
-      it('reverts when a member tries to removes themselves');
+      it('reverts when a member tries to removes themselves', async () => {
+        const subject = issuerMemberAccess.removeMember(issuerMember.address);
+        await expect(subject).to.be
+          .revertedWith(CANNOT_REMOVE_SELF);
+      });
 
       it('removes the member from the list', async () => {
         await issuerMemberAccess.removeMember(bob.address);
@@ -176,6 +181,21 @@ describe('IssuerAccessFacet', () => {
         fast.address
       ]);
     });
+
+    it('emits GovernorshipAdded event', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Impersonate the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+
+      // Add then remove Alice.
+      const subject = issuerAsFast.governorAddedToFast(alice.address);
+
+      await expect(subject).to
+        .emit(issuer, 'GovernorshipAdded')
+        .withArgs(fast.address, alice.address);
+    });
   });
 
   describe('governorRemovedFromFast', async () => {
@@ -193,12 +213,28 @@ describe('IssuerAccessFacet', () => {
       const issuerAsFast = await impersonateContract(issuer, fast.address);
 
       // Add then remove Alice.
-      issuerAsFast.governorAddedToFast(alice.address);
-      issuerAsFast.governorRemovedFromFast(alice.address);
+      await issuerAsFast.governorAddedToFast(alice.address);
+      await issuerAsFast.governorRemovedFromFast(alice.address);
 
       // Expecting the FAST address to not be included in FASTs Alice is a governor of.
       const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
       expect(subject).to.be.empty;
+    });
+
+    it('emits GovernorshipRemoved event', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Impersonate the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+
+      // Add then remove Alice.
+      await issuerAsFast.governorAddedToFast(alice.address);
+      const subject = issuerAsFast.governorRemovedFromFast(alice.address);
+
+      await expect(subject).to
+        .emit(issuer, 'GovernorshipRemoved')
+        .withArgs(fast.address, alice.address);
     });
   });
 

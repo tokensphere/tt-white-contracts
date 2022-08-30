@@ -34,7 +34,9 @@ const config: HardhatUserConfig = {
       ['Facet$', 'EthReceived(address,uint256)'],
       ['Facet$', 'FastRegistered(address)'],
       ['Facet$', 'MemberAdded(address)'],
-      ['Facet$', 'MemberRemoved(address)']
+      ['Facet$', 'MemberRemoved(address)'],
+      ['Facet$', 'GovernorshipAdded(address,address)'],
+      ['Facet$', 'GovernorshipRemoved(address,address)']
     ]),
     include: [
       'IERC173',
