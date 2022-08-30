@@ -19,6 +19,7 @@ library LibConstants {
   string internal constant REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
   string internal constant REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
   string internal constant REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';
+  string internal constant  CANNOT_REMOVE_SELF = 'Cannot remove self';
 
   string internal constant DUPLICATE_ENTRY = 'Duplicate entry';
   string internal constant UNSUPPORTED_OPERATION = 'Unsupported operation';

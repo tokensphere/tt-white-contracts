@@ -8,7 +8,8 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import {
   REQUIRES_ISSUER_MEMBERSHIP,
   REQUIRES_FAST_CONTRACT_CALLER,
-  impersonateContract
+  impersonateContract,
+  CANNOT_REMOVE_SELF
 } from '../utils';
 import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
@@ -130,7 +131,11 @@ describe('IssuerAccessFacet', () => {
           .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
       });
 
-      it('reverts when a member tries to removes themselves');
+      it('reverts when a member tries to removes themselves', async () => {
+        const subject = issuerMemberAccess.removeMember(issuerMember.address);
+        await expect(subject).to.be
+          .revertedWith(CANNOT_REMOVE_SELF);
+      });
 
       it('removes the member from the list', async () => {
         await issuerMemberAccess.removeMember(bob.address);

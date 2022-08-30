@@ -68,7 +68,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       external override
       onlyMember(msg.sender) {
     // No suicide allowed.
-    require(msg.sender != member, 'Cannot remove self');
+    require(msg.sender != member, LibConstants.CANNOT_REMOVE_SELF);
     // Remove the member from the set.
     LibIssuerAccess.data().memberSet.remove(member, false);
     // Emit!

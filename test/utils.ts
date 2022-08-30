@@ -43,6 +43,7 @@ export const REQUIRES_MARKETPLACE_ACTIVE_MEMBER = 'Requires active Marketplace m
 export const REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER = 'Requires a deactivated Marketplace member';
 export const REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
 export const REQUIRES_FAST_GOVERNORSHIP = 'Requires FAST governorship';
+export const CANNOT_REMOVE_SELF = 'Cannot remove self';
 export const DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
 export const REQUIRES_NO_FAST_MEMBERSHIPS = 'Member still part of at least one FAST';
 export const REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
