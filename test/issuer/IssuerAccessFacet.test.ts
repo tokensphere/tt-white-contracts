@@ -176,6 +176,21 @@ describe('IssuerAccessFacet', () => {
         fast.address
       ]);
     });
+
+    it('emits GovernorshipAdded event', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Impersonate the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+
+      // Add then remove Alice.
+      const subject = issuerAsFast.governorAddedToFast(alice.address);
+
+      await expect(subject).to
+        .emit(issuer, 'GovernorshipAdded')
+        .withArgs(fast.address, alice.address);
+    });
   });
 
   describe('governorRemovedFromFast', async () => {
@@ -193,12 +208,28 @@ describe('IssuerAccessFacet', () => {
       const issuerAsFast = await impersonateContract(issuer, fast.address);
 
       // Add then remove Alice.
-      issuerAsFast.governorAddedToFast(alice.address);
-      issuerAsFast.governorRemovedFromFast(alice.address);
+      await issuerAsFast.governorAddedToFast(alice.address);
+      await issuerAsFast.governorRemovedFromFast(alice.address);
 
       // Expecting the FAST address to not be included in FASTs Alice is a governor of.
       const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
       expect(subject).to.be.empty;
+    });
+
+    it('emits GovernorshipRemoved event', async () => {
+      // This FAST is registered.
+      await issuerMemberIssuer.registerFast(fast.address);
+
+      // Impersonate the FAST contract.
+      const issuerAsFast = await impersonateContract(issuer, fast.address);
+
+      // Add then remove Alice.
+      await issuerAsFast.governorAddedToFast(alice.address);
+      const subject = issuerAsFast.governorRemovedFromFast(alice.address);
+
+      await expect(subject).to
+        .emit(issuer, 'GovernorshipRemoved')
+        .withArgs(fast.address, alice.address);
     });
   });
 
