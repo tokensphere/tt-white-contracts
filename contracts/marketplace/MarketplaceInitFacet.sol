@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.10;
 
 import '../interfaces/IERC165.sol';        // Interface Support.
 import '../interfaces/IERC173.sol';        // Ownership.

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.10;
 
 import './lib/AMarketplaceFacet.sol';
 import '../issuer/IssuerTopFacet.sol';
