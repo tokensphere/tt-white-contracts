@@ -20,9 +20,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // Grab handles to the Marketplace.
   const marketplace = await ethers.getContract<Marketplace>('Marketplace');
   const issuerMemberMarketplace = marketplace.connect(issuerMemberSigner);
-  // Grab handles to the IOU FAST.
-  const iou = await ethers.getContract<Fast>('FastIOU');
-  const governedIOU = iou.connect(issuerMemberSigner);
 
   console.log('Adding user[1-10] to the Marketplace as members...');
   for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10]) {
@@ -30,15 +27,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log(`  ${addr}...`);
       await (await issuerMemberMarketplace.addMember(addr)).wait();
     }
-  }
-
-  console.log('Minting 1_000_000 IOU...');
-  await fastMint(governedIOU, 1_000_000, 'Initial mint');
-
-  console.log('Provisioning user[1, 4, 5, 8, 9] with some IOU...');
-  for (const addr of [user1, user4, user5, user8, user9]) {
-    console.log(`  ${addr}...`);
-    await (await governedIOU.transferFrom(ZERO_ADDRESS, addr, toBaseUnit(1_000, 18))).wait();
   }
 
   const governedF01 = (await ethers.getContract('FastF01')).connect(fastGovernorSigner);

@@ -15,21 +15,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { fastGovernor, issuerMember } = await getNamedAccounts();
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
-  // Grab handles to the Marketplace.
-  const marketplace = await ethers.getContract<Marketplace>('Marketplace');
-  // Grab handles to the IOU FAST.
-  const iou = await ethers.getContract<Fast>('FastIOU');
-  const governedIOU = iou.connect(issuerMemberSigner);
-
-  const zeroAddrBalance = await iou.balanceOf(ZERO_ADDRESS);
-  const totalSupply = await iou.totalSupply();
-
-  if (!zeroAddrBalance.add(totalSupply).isZero()) {
-    console.log('IOU already minted, skipping minting.');
-  } else {
-    console.log('Minting 1_000_000 IOU...');
-    await fastMint(governedIOU, 1_000_000, 'Initial mint');
-  }
 
   {
     const deploy = await deployments.getOrNull('FastF01');
@@ -39,7 +24,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F01 FAST...');
       const { fast: f01 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Fixed-supply Semi-public 18',
+        name: 'Fixed-supply Semi-public Regulated Free 18',
         symbol: 'F01',
         decimals: 18,
         hasFixedSupply: true,
@@ -58,7 +43,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F02 FAST...');
       const { fast: f02 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Fixed-supply Private 5',
+        name: 'Fixed-supply Private Regulated Free 5',
         symbol: 'F02',
         decimals: 5,
         hasFixedSupply: true,
@@ -77,7 +62,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F03 FAST...');
       const { fast: f03 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Continuous-supply Semi-public 10',
+        name: 'Continuous-supply Semi-public Regulated Free 10',
         symbol: 'F03',
         decimals: 10,
         hasFixedSupply: false,
@@ -96,7 +81,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log('Deploying F04 FAST...');
       const { fast: f04 } = await deployFast(hre, {
         governor: fastGovernor,
-        name: 'Continuous-supply Private 0',
+        name: 'Continuous-supply Private Regulated Free 0',
         symbol: 'F04',
         decimals: 0,
         hasFixedSupply: false,
