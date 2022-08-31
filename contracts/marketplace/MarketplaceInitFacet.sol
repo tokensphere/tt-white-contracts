@@ -12,8 +12,7 @@ import '../lib/LibDiamond.sol';
 import './lib/AMarketplaceFacet.sol';
 
 
-/** @dev The Marketplace initialization facet.
- */
+/// @notice The Marketplace initialization facet.
 contract MarketplaceInitFacet is AMarketplaceFacet {
   struct InitializerParams {
     address issuer;

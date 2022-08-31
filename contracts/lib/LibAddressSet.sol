@@ -3,15 +3,14 @@ pragma solidity 0.8.10;
 
 
 library LibAddressSet {
-  /// @dev Represents a list of addresses.
+  /// @notice Represents a list of addresses.
   struct Data {
     mapping(address => uint256) indices;
     address[] values;
   }
 
   /**
-   * @dev Adds an item into the storage set. If the address already exists in the
-   *      set, the function reverts.
+   * @notice Adds an item into the storage set. If the address already exists in the set, the method reverts.
    * @param d is the internal data storage to use.
    * @param key is the address to be added.
    */
@@ -25,8 +24,7 @@ library LibAddressSet {
   }
 
   /**
-   * @dev Removes an item from the storage set. If the address does not exist in the
-   *      set, the function reverts.
+   * @notice Removes an item from the storage set. If the address does not exist in the set, the method reverts.
    * @param d is the internal data storage to use.
    * @param key is the address to be removed.
    */
@@ -45,7 +43,7 @@ library LibAddressSet {
   }
 
   /**
-   * @dev Tests whether or not a given item already exists in the set.
+   * @notice Tests whether or not a given item already exists in the set.
    * @param d is the internal data storage to use.
    * @param key is the address to test.
    * @return a boolean.

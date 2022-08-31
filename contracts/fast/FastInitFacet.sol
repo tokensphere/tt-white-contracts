@@ -16,10 +16,10 @@ import './lib/AFastFacet.sol';
 
 
 /**
-* @dev Note that although this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all
-*       methods are in fact implemented by the underlaying Diamond proxy. It is therefore safe to
-*       perform casts directly on the current contract address into these interfaces.
-*/ 
+ * @notice NotAlthough this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all
+ * methods are in fact implemented by the underlaying Diamond proxy. It is therefore safe to
+ * perform casts directly on the current contract address into these interfaces.
+ */ 
 contract FastInitFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 

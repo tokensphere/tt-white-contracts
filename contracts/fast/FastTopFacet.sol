@@ -11,21 +11,37 @@ import './FastFrontendFacet.sol';
 contract FastTopFacet is AFastFacet {
   // Getters and setters for global flags.
 
+  /**
+   * @notice Get the Issuer address.
+   * @return Address of Issuer.
+   */
   function issuerAddress()
       external view returns(address) {
     return LibFast.data().issuer;
   }
 
+  /**
+   * @notice Get the Marketplace address.
+   * @return address Address of Marketplace.
+   */
   function marketplaceAddress()
       external view returns(address) {
     return LibFast.data().marketplace;
   }
 
+  /**
+   * @notice Is this FAST a semi public FAST?
+   * @return bool Yes/no semi public.
+   */
   function isSemiPublic()
       external view returns(bool) {
     return LibFast.data().isSemiPublic;
   }
 
+  /**
+   * @notice Is this FAST a fixed supply FAST?
+   * @return bool Yes/no fixed supply.
+   */
   function hasFixedSupply()
       external view returns(bool) {
     return LibFast.data().hasFixedSupply;
@@ -33,12 +49,16 @@ contract FastTopFacet is AFastFacet {
 
   // Setters for global flags.
 
-  /// @dev Allows to switch from a private scheme to a semi-public scheme, but not the other way around.
+  /**
+   * @notice Allows to switch from a private scheme to a semi-public scheme,
+   *  but not the other way around.
+   * @param flag Set the semi public flag to true/false.
+   */
   function setIsSemiPublic(bool flag)
       external
       onlyIssuerMember {
     LibFast.Data storage s = LibFast.data();
-    // Someone is trying to toggle back to private?... No can do!isSemiPublic
+    // Someone is trying to toggle back to private?... No can do!
     require(!this.isSemiPublic() || this.isSemiPublic() == flag, LibConstants.UNSUPPORTED_OPERATION);
     s.isSemiPublic = flag;
     // Emit!

@@ -12,7 +12,7 @@ import './IMarketplaceEvents.sol';
 
 
 /**
-* @dev This contract is a group of modifiers that can be used by any Marketplace facets to guard against
+* @notice This contract is a group of modifiers that can be used by any Marketplace facets to guard against
 *       certain permissions.
 */
 abstract contract AMarketplaceFacet is IMarketplaceEvents {
@@ -20,7 +20,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
 
   // Modifiers.
 
-  /// @dev Ensures that a method can only be called by the singleton deployer contract factory.
+  /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() {
     require(
       msg.sender == LibConstants.DEPLOYER_CONTRACT,
@@ -29,7 +29,8 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
     _;
   }
 
-  /** @dev Requires that the message sender is a member of the linked Issuer.
+  /**
+   * @notice Requires that the message sender is a member of the linked Issuer.
    */
   modifier onlyIssuerMember() {
     require(
@@ -39,8 +40,9 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
     _;
   }
 
-  /** @dev Requires that the given address is a member of the marketplace.
-   *  @param candidate is the address to be checked.
+  /**
+   * @notice Requires that the given address is a member of the marketplace.
+   * @param candidate is the address to be checked.
    */
   modifier onlyMember(address candidate) {
     require(

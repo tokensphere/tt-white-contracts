@@ -16,44 +16,40 @@ import './FastFrontendFacet.sol';
 
 
 /**
-* @dev The FAST Access Smart Contract is the source of truth when it comes to
-* permissioning and ACLs within a given FAST network.
-*/
+ * @notice The FAST Access facet is the source of truth when it comes to
+ * permissioning and ACLs within a given FAST.
+ */
 contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
   // Structs.
 
   /**
-   * @dev This structure isn't used anywhere in storage. Instead, it
+   * @notice This structure isn't used anywhere in storage. Instead, it
    * allows various methods of the contract to return all the flags
    * associated with a given address in one go.
    */
   struct Flags {
+    /// @notice Whether or not the item in scope is considered a governor of this FAST.
     bool isGovernor;
+    /// @notice Whether or not the item in scope is considered a member of this FAST.
     bool isMember;
   }
 
   // Governorship related stuff.
 
-  /**
-   * @dev Queries whether a given address is a governor or not.
-   */
+  /// @notice See `IHasGovernors`.
   function isGovernor(address candidate)
       external view override returns(bool) {
     return LibFastAccess.data().governorSet.contains(candidate);
   }
 
-  /**
-   * @dev Queries the number of governors in the governor list.
-   */
+   /// @notice See `IHasGovernors`.
   function governorCount()
       external override view returns(uint256) {
     return LibFastAccess.data().governorSet.values.length;
   }
 
-  /**
-   * @dev Returns a page of governors.
-   */
+   /// @notice See `IHasGovernors`.
   function paginateGovernors(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
     return LibPaginate.addresses(LibFastAccess.
@@ -63,9 +59,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     );
   }
 
-  /**
-   * @dev Adds a governor to the governor list.
-   */
+   /// @notice See `IHasGovernors`.
   function addGovernor(address payable governor)
       external override
       onlyIssuerMember
@@ -79,9 +73,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     emit GovernorAdded(governor);
   }
 
-  /**
-   * @dev Removes a governor from the governor list.
-   */
+   /// @notice See `IHasGovernors`.
   function removeGovernor(address governor)
       external override
       onlyIssuerMember {
@@ -96,25 +88,19 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
 
   /// Membership related stuff.
 
-  /**
-   * @dev Queries whether a given address is a member or not.
-   */
+   /// @notice See `IHasMembers`.
   function isMember(address candidate)
       external override view returns(bool) {
     return LibFastAccess.data().memberSet.contains(candidate);
   }
 
-  /**
-   * @dev Queries the number of members in the membership list.
-   */
+   /// @notice See `IHasMembers`.
   function memberCount()
       external override view returns(uint256) {
     return LibFastAccess.data().memberSet.values.length;
   }
 
-  /**
-   * @dev Returns a page of members.
-   */
+   /// @notice See `IHasMembers`.
   function paginateMembers(uint256 index, uint256 perPage)
       external override view returns(address[] memory, uint256) {
     return LibPaginate.addresses(
@@ -124,9 +110,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     );
   }
 
-  /**
-   * @dev Adds a member to the membership list.
-   */
+   /// @notice See `IHasMembers`.
   function addMember(address payable member)
       external override 
       onlyGovernor(msg.sender) onlyMarketplaceMember(member) {
@@ -139,9 +123,7 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     emit MemberAdded(member);
   }
 
-  /**
-   * @dev Removes a member from the membership list.
-   */
+   /// @notice See `IHasMembers`.
   function removeMember(address member)
       external override 
       onlyGovernor(msg.sender) {
@@ -159,7 +141,9 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
   /// Flags.
 
   /**
-   * @dev Retrieves flags for a given address.
+   * @notice Retrieves flags for a given address.
+   * @param a is the address to retrieve flags for.
+   * @return A `Flags` struct.
    */
   function flags(address a)
       external view returns(Flags memory) {

@@ -6,6 +6,7 @@ pragma solidity 0.8.10;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
+/// @title A facet providing diamond cut mechanisms.
 interface IDiamondCut {
     enum FacetCutAction {Add, Replace, Remove}
     // Add=0, Replace=1, Remove=2
@@ -17,11 +18,11 @@ interface IDiamondCut {
     }
 
     /// @notice Add/replace/remove any number of functions and optionally execute
-    ///         a function with delegatecall
+    /// a method with `delegatecall`.
     /// @param _diamondCut Contains the facet addresses and function selectors
     /// @param _init The address of the contract or facet to execute _calldata
     /// @param _calldata A function call, including function selector and arguments
-    ///                  _calldata is executed with delegatecall on _init
+    /// _calldata is executed with delegatecall on _init
     function diamondCut(
         FacetCut[] calldata _diamondCut,
         address _init,

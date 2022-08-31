@@ -10,15 +10,15 @@ import './IIssuerEvents.sol';
 
 
 /**
-* @dev This contract is a group of modifiers that can be used by any facets to guard against
-*       certain permissions.
+* @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against
+* certain permissions.
 */
 abstract contract AIssuerFacet is IIssuerEvents {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Modifiers.
 
-  /// @dev Ensures that a method can only be called by another facet of the same diamond.
+  /// @notice Ensures that a method can only be called by another facet of the same diamond.
   modifier onlyDiamondFacet() {
     require(
       msg.sender == address(this),
@@ -27,7 +27,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
     _;
   }
 
-  /// @dev Ensures that a method can only be called by the owner of this diamond.
+  /// @notice Ensures that a method can only be called by the owner of this diamond.
   modifier onlyDiamondOwner() {
     require(
       msg.sender == IERC173(address(this)).owner(),
@@ -36,7 +36,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
     _;
   }
 
-  /// @dev Ensures that the given address is a member of the current FAST.
+  /// @notice Ensures that the given address is a member of the current FAST.
   modifier onlyMember(address candidate) {
     require(
       LibIssuerAccess.data().memberSet.contains(candidate),

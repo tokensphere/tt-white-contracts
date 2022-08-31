@@ -5,6 +5,7 @@ import 'hardhat-deploy-ethers';
 import 'hardhat-diamond-abi';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
+import 'solidity-docgen';
 import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl, abiFilter } from './src/utils';
 import { ISSUER_FACETS } from './tasks/issuer';
 import { MARKETPLACE_FACETS } from './tasks/marketplace';
@@ -21,9 +22,7 @@ const config: HardhatUserConfig = {
     version: '0.8.10',
     settings: {
       outputSelection: {
-        '*': {
-          '*': ['storageLayout']
-        }
+        '*': { '*': ['storageLayout'] }
       }
     }
   },
@@ -199,6 +198,7 @@ const config: HardhatUserConfig = {
     outDir: 'typechain',
     target: 'ethers-v5',
   },
+  docgen: { pages: 'items' },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined
   }

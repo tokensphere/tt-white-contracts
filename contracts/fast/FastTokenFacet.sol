@@ -23,6 +23,21 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Minting methods.
 
+  /**
+   * @notice Mints an amount of FAST tokens.
+   *  A reference can be passed to identify why this happened for example.
+   * 
+   * Business logic:
+   * - Modifiers:
+   *   - Requires the caller to be a member of the Issuer contract.
+   * - Requires that either the token has continuous supply, or that no tokens have been minted yet.
+   * - Increases the reserve balance by `amount`.
+   * - Calls `FastHistoryFacet.minted`.
+   * - Calls `FastFrontendFacet.emitDetailsChanged`.
+   * - Emits a `Minted(amount, ref)` event.
+   * @param amount The number of FAST tokens to mint.
+   * @param ref A reference for this minting operation.
+   */
   function mint(uint256 amount, string calldata ref)
       external
       onlyIssuerMember {
@@ -46,6 +61,21 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Minted(amount, ref);
   }
 
+  /**
+   * @notice Burns an amount of FAST tokens.
+   *  A reference can be passed to identify why this happened for example.
+   *  Can only be called by an Issuer member. Business logic.
+   * - Modifiers:
+   *   - Requires the caller to be a member of the Issuer contract.
+   * - Requires that either the token has continuous supply.
+   * - Requires that there are enough funds in the reserve to cover for `amount` being burnt.
+   * - Decreases the reserve balance by `amount`.
+   * - Calls `FastHistoryFacet.burnt(amount, ref)`.
+   * - Calls `FastFrontendFacet.emitDetailsChanged`.
+   * - Emits a `Burnt(amount, ref)`.
+   * @param amount The number of FAST tokens to mint.
+   * @param ref A reference for this minting operation.
+   */
   function burn(uint256 amount, string calldata ref)
       external
       onlyIssuerMember {
@@ -67,11 +97,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Tranfer Credit management.
 
+  /**
+   * @notice Get the current `transferCredits` for this FAST.
+   * @return Number of transfer credits remaining.
+   */
   function transferCredits()
       external view returns(uint256) {
     return LibFastToken.data().transferCredits;
   }
 
+  /// @notice Adds `amount` of transfer credits to this FAST.
   function addTransferCredits(uint256 amount)
       external
       onlyIssuerMember {
@@ -81,6 +116,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit TransferCreditsAdded(msg.sender, amount);
   }
 
+  /**
+   * @notice Drains the transfer credits from this FAST.
+   * 
+   * Business logic:
+   * - Modifiers:
+   *   - Requires the caller to be a member of the Issuer contract.
+   * - Emits a `TransferCreditsDrained(caller, previousTransferCredits)`.
+   * - Sets transfer credits to zero.
+   * - Calls `FastFrontendFacet.emitDetailsChanged`
+   */
   function drainTransferCredits()
       external
       onlyIssuerMember {
@@ -95,31 +140,54 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // ERC20 implementation and transfer related methods.
 
+  /**
+   * @notice The name of this FAST (ERC20 standard).
+   * @return string Name of the FAST.
+   */
   function name()
       external view returns(string memory) {
     return LibFastToken.data().name;
   }
 
+  /**
+   * @notice The symbol of this FAST (ERC20 standard).
+   * @return string Symbol of the FAST.
+   */
   function symbol()
       external view returns(string memory) {
     return LibFastToken.data().symbol;
   }
 
+  /**
+   * @notice The `decimals` of this FAST (ERC20 standard).
+   * @return uint256 Number of decimals the FAST has.
+   */
   function decimals()
       external view returns(uint256) {
     return LibFastToken.data().decimals;
   }
 
+  /**
+   * @notice The total supply of the FAST (ERC20 standard).
+   * @return uint256 Total supply of the FAST.
+   */
   function totalSupply()
       external override view returns(uint256) {
     return LibFastToken.data().totalSupply;
   }
 
+  /**
+   * @notice The balance of the passed owner (ERC20 standard).
+   * @param owner The owners address to get the balance of.
+   * @return uint256 The current balance of this owner's account.
+   */
   function balanceOf(address owner)
       public view override returns(uint256) {
     return LibFastToken.data().balances[owner];
   }
 
+  /**
+   * @notice See `performTransfer`, the spender will be equal to the `owner`, and the `ref` will be defauted. */
   function transfer(address to, uint256 amount)
       external override returns(bool) {
     // Make sure the call is performed externally so that we can mock.
@@ -135,6 +203,8 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     return true;
   }
 
+  /**
+   * @notice See `performTransfer`, the spender will be equal to the `owner`. */
   function transferWithRef(address to, uint256 amount, string calldata ref)
       external {
     // Make sure the call is performed externally so that we can mock.
@@ -161,6 +231,12 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     return s.allowances[owner][spender];
   }
 
+  /**
+   * @notice This method directly calls `performApproval`, setting its `from` paramter to the sender of
+   * the transaction.
+   * @param spender is the address to allow spending from the caller's wallet.
+   * @param amount is how much to **increase** the allowance.
+   */
   function approve(address spender, uint256 amount)
       external override returns(bool) {
     // Make sure the call is performed externally so that we can mock.
@@ -175,12 +251,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     this.performDisapproval(msg.sender, spender);
   }
 
+  /**
+   * @notice See `performTransfer`, the `ref` will be defaulted. */
   function transferFrom(address from, address to, uint256 amount)
       external override returns(bool) {
     transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
     return true;
   }
 
+  /**
+   * @notice See `performTransfer`. */
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public {
     // Make sure the call is performed externally so that we can mock.
@@ -249,6 +329,39 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     string ref;
   }
 
+  /**
+   * @notice This is the internal method that gets called whenever a transfer is initiated. Both `transfer`,
+   * `transferWithRef`, and their variants internally call this function.
+   * 
+   * Business logic:
+   * - Modifiers:
+   *   - Only facets of the current diamond should be able to call this.
+   *   - Requires that `from` and `to` addresses are different.
+   *   - Requires that `onlyTokenHolder` passes for the `from` address.
+   *   - Requires that the `from` address is an active Marketplace contract member.
+   *   - Requires that `onlyTokenHolder` passes for the `to` address.
+   * - Requires that the `from` address has enough funds to cover for `amount`.
+   * - Requires that the amount is a positive value.
+   * - If the transfer is an allowance - e.g. the `spender` is not the same as the `from` address,
+   *   - The allowance given by the `from` address to the `spender` covers for the `amount`.
+   *     - If we are **not** transfering **from** the reserve,
+   *       - Decreases the allowance given by `from` to `spender`.
+   *         - If the new allowance reaches zero,
+   *           - Stop tracking the allowance in the allowance lookup tables for both spending and receiving directions.
+   * - Decreases the balance of the `owner` address.
+   * - Increases the balance of the `to` address by `amount`.
+   * - If we are **not** transfering **from** the reserve,
+   *   - Requires that there are enough transfer credits to cover for `amount`.
+   *   - Decreases the transfer credits by `amount`.
+   * - If the `to` address is the reserve,
+   *   - Decreases the total supply by `amount`.
+   *   - Calls `FastFrontendFacet.emitDetailsChanged`.
+   * - Else, if the `from` address is the reserve,
+   *   - Increases the total supply by `amount`.
+   *   - Calls `FastFrontendFacet.emitDetailsChanged`.
+   * - Calls `FastHistoryFacet.transfered`.
+   * - Emits a `Transfer(from, to, amount)` event.
+   */
   function performTransfer(TransferArgs calldata p)
       external onlyDiamondFacet
       differentAddresses(p.from, p.to)
@@ -331,6 +444,21 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Transfer(p.from, p.to, p.amount);
   }
 
+  /**
+   * @notice Increases the allowance given by `from` to `spender` by `amount`.
+   * 
+   * Business logic:
+   * - Modifiers:
+   *   - Only facets of the current diamond should be able to call this.
+   *   - Requires that `onlyTokenHolder` passes for the `from` address.
+   * - Requires that the `amount` is positive number.
+   * - Increases the allowance given by `from` to `spender` by `amount`.
+   * - Update the allowance lookup tables in both directions.
+   * - Emits an `Approval(from, spender, amount)`.
+   * @param from is the wallet from which to give the allowance.
+   * @param spender is the receiver of the allowance.
+   * @param amount is how much to **increase** the current allowance by.
+   */
   function performApproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet
@@ -338,7 +466,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
     LibFastToken.Data storage s = LibFastToken.data();
 
-    // Store allowance...
+    // Note that we are not exactly following ERC20 here - we don't want to **set** the allowance to `amount`
+    // to mitigate a possible attack.
+    // See https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#heading=h.gmr6zdg47087.
     s.allowances[from][spender] += amount;
     // Keep track of given and received allowances.
     s.allowancesByOwner[from].add(spender, true);
@@ -362,7 +492,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Disapproval(from, spender);
   }
 
-  // WARNING: This function contains two loops. We know that this should never
+  // WARNING: This method contains two loops. We know that this should never
   // happen in solidity. However:
   // - In the context of our private chain, gas is cheap.
   // - It can only be called by a governor.
@@ -415,8 +545,16 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   // Modifiers.
 
-  /** @dev Ensures that the given address is a member of the current FAST or the Zero Address.
-   *  @param candidate The address to check.
+  /**
+   * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
+   * 
+   * Business logic:
+   *  - If the candidate is not the reserve,
+   *    - If the fast is semi-public,
+   *      - We require that candidate is a member of the Marketplace contract.
+   *  - Otherwise,
+   *    - Require that the candidate is a member of the Token contract.
+   * @param candidate The address to check.
    */
   modifier onlyTokenHolder(address candidate) {
     // Only perform checks if the address is non-zero.

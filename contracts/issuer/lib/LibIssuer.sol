@@ -13,7 +13,7 @@ library LibIssuer {
   // Data structures.
 
   struct Data {
-    /// @dev The latest intializer version that was called.
+    /// @notice The latest intializer version that was called.
     uint16 version;
     // This is where we keep our list of deployed fast FASTs.
     LibAddressSet.Data fastSet;
