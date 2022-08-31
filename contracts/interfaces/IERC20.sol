@@ -27,7 +27,7 @@ interface IERC20 {
   /**
    * @notice Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner`
    * through `transferFrom`. This is zero by default.
-   * @dev This value changes when `approve` or `transferFrom` are called.
+   * @dev This value changes when `approve`, `disapprove` and `transferFrom` / `transferFromWithRef` are called.
    * @param owner is the owner of the funds.
    * @param spender is the address for which the allowance should be queried.
    * @return A `uint256` representing the remaining allowance of `spender` over `owner`'s funds.

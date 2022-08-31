@@ -67,7 +67,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
    *  Can only be called by an Issuer member. Business logic.
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
-   * - Requires that either the token has continuous supply.
+   * - Requires that the token has continuous supply.
    * - Requires that there are enough funds in the reserve to cover for `amount` being burnt.
    * - Decreases the reserve balance by `amount`.
    * - Calls `FastHistoryFacet.burnt(amount, ref)`.
