@@ -95,6 +95,35 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Burnt(amount, ref);
   }
 
+  function retrieveDeadTokens(address holder)
+      external
+      onlyIssuerMember {
+    // Cache how many tokens the holder has.
+    uint256 amount = balanceOf(holder);
+    // We won't do anything if the token holder doesn't have any.
+    if (amount == 0) {
+      return;
+    }
+
+    // Grab a pointer to the token storage.
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    // Increment the reserve's balance.
+    s.balances[address(0)] += amount;
+    // Set the holder balance to zero.
+    s.balances[holder] = 0;
+    // The tokens aren't in circulation anymore - decrease total supply.
+    s.totalSupply -= amount;
+
+    // Since the holder's account is now empty, make sure to keep track of it.
+    holdingUpdated(holder);
+
+    // This operation can be seen as a regular transfer between holder and reserve. Emit.
+    emit Transfer(holder, address(0), amount);
+    // Total supply and reserve balance have changed - emit.
+    FastFrontendFacet(address(this)).emitDetailsChanged();
+  }
+
   // Tranfer Credit management.
 
   /**
@@ -527,7 +556,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function holdingUpdated(address holder)
       private {
     // Return early if this is the zero address.
-    if (holder == address(0)) return;
+    if (holder == address(0)) {
+      return;
+    }
 
     LibFastToken.Data storage s = LibFastToken.data();
     uint256 balance = this.balanceOf(holder);
