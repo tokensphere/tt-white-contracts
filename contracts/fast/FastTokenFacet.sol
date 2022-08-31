@@ -2,7 +2,6 @@
 pragma solidity 0.8.10;
 
 import '../interfaces/IERC20.sol';
-import '../interfaces/IERC1404.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../interfaces/ITokenHoldings.sol';
@@ -18,7 +17,7 @@ import './FastHistoryFacet.sol';
 import './FastFrontendFacet.sol';
 
 
-contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
+contract FastTokenFacet is AFastFacet, IERC20 {
   using LibAddressSet for LibAddressSet.Data;
 
   // Minting methods.
@@ -255,7 +254,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice See `performTransfer`, the spender will be equal to the `owner`. */
   function transferWithRef(address to, uint256 amount, string calldata ref)
-      external {
+      external returns(bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performTransfer(
       TransferArgs({
@@ -266,6 +265,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
         ref: ref
       })
     );
+    return true;
   }
 
   function allowance(address owner, address spender)
@@ -301,9 +301,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
    */
   function disapprove(address spender, uint256 amount)
       external
-      onlyMember(msg.sender) {
+      onlyMember(msg.sender)
+      returns(bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performDisapproval(msg.sender, spender, amount);
+    return true;
   }
 
   /**
@@ -317,7 +319,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice See `performTransfer`. */
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      public {
+      public returns(bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performTransfer(
       TransferArgs({
@@ -328,6 +330,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
         ref: ref
       })
     );
+    return true;
   }
 
   // Allowances query operations.
@@ -358,18 +361,6 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
       index,
       perPage
     );
-  }
-
-  // ERC1404 implementation.
-
-  function detectTransferRestriction(address, address, uint256)
-      external pure override returns(uint8) {
-    return 0;
-  }
-
-  function messageForTransferRestriction(uint8)
-      external override pure returns(string memory) {
-    revert(LibConstants.UNKNOWN_RESTRICTION_CODE);
   }
 
   // These functions would be internal / private if we weren't using the diamond pattern.
