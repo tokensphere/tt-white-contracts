@@ -64,7 +64,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice Burns an amount of FAST tokens.
    *  A reference can be passed to identify why this happened for example.
-   *  Can only be called by an Issuer member. Business logic.
+   *  Business logic.
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
    * - Requires that the token has continuous supply.
@@ -95,6 +95,23 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Burnt(amount, ref);
   }
 
+  /**
+   * @notice Allows an Issuer member to move an arbitrary account's holdings back to the reserve,
+   * as per regulatory requirements.
+   * Business logic:
+   * - Modifiers:
+   *   - Requires that the caller is a member of the Issuer contract.
+   * - If the amount held by `holder` is zero,
+   *   - Then the function should return early, with no action.
+   * - The balance of `holder` should be set to zero.
+   * - The reserve's balance should be increased by how much was on the holder's account.
+   * - Total supply should be decreased by that amount too.
+   * - The `holder`'s address should not be tracked as a token holder in this FAST anymore.
+   * - The `holder`'s address should not be tracked as a token holder in the Marketplace anymore.
+   * - A `Transfer(holder, reserve, amount)` event should be emited.
+   * - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
+   * @param holder is the address for which to move the tokens from.
+   */
   function retrieveDeadTokens(address holder)
       external
       onlyIssuerMember {
@@ -108,10 +125,10 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // Grab a pointer to the token storage.
     LibFastToken.Data storage s = LibFastToken.data();
 
-    // Increment the reserve's balance.
-    s.balances[address(0)] += amount;
     // Set the holder balance to zero.
     s.balances[holder] = 0;
+    // Increment the reserve's balance.
+    s.balances[address(0)] += amount;
     // The tokens aren't in circulation anymore - decrease total supply.
     s.totalSupply -= amount;
 
