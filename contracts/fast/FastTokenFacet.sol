@@ -536,14 +536,14 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   }
 
   /**
-   * @notice Decreases allowance given by `from` to `spender` by `amount.
+   * @notice Decreases allowance given by `from` to `spender` by `amount`.
    *
    * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
    * - The allowance given by `from` to `spender` is decreased by `amount`.
    * - Whether the allowance reached zero, stop tracking it by owner and by spender.
-   * - Emit a `Disapproval(from, spender, amount)` evant.
+   * - Emit a `Disapproval(from, spender, amount)` event.
    */
   function performDisapproval(address from, address spender, uint256 amount)
       external
