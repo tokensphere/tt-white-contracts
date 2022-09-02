@@ -546,37 +546,59 @@ describe('FastTokenFacet', () => {
         };
 
         // Remove Johns approval.
-        await token.connect(bob).disapprove(args.from);
+        await token.connect(bob).disapprove(args.from, 10);
 
         // Expect performDisapproval to be called correctly.
         expect(tokenMock.performDisapproval).to.have.been
-          .calledOnceWith(args.spender, args.from)
+          .calledOnceWith(args.spender, args.from, 10)
           .delegatedFrom(token.address);
       });
 
-      it('sets the allowance to zero', async () => {
-        await token.connect(bob).disapprove(john.address);
+      it('subtracts from the existing allowance', async () => {
+        await token.connect(bob).disapprove(john.address, 10);
         const subject = await token.allowance(bob.address, john.address);
-        expect(subject).to.eq(0);
+        expect(subject).to.eq(5);
       });
 
-      it('removes the spender received allowance', async () => {
-        await token.connect(bob).disapprove(john.address);
-        const [allowances, /*cursor*/] = await token.paginateAllowancesBySpender(john.address, 0, 5);
-        expect(allowances).to.be.empty;
+      describe('when the allowance remains positive after the operation', async () => {
+        beforeEach(async () => {
+          // Remove full allowance.
+          await token.connect(bob).disapprove(john.address, 10);
+        });
+
+        it('removes the spender received allowance when it reaches zero', async () => {
+          const [allowances, /*cursor*/] = await token.paginateAllowancesBySpender(john.address, 0, 5);
+          expect(allowances).to.not.be.empty;
+        });
+
+        it('removes the original given allowance when it reaches zero', async () => {
+          const [allowances, /*cursor*/] = await token.paginateAllowancesByOwner(bob.address, 0, 5);
+          expect(allowances).to.not.be.empty;
+        });
       });
 
-      it('removes the original given allowance', async () => {
-        await token.connect(bob).disapprove(john.address);
-        const [allowances, /*cursor*/] = await token.paginateAllowancesByOwner(bob.address, 0, 5);
-        expect(allowances).to.be.empty;
+      describe('when the allowance reaches zero', async () => {
+        beforeEach(async () => {
+          // Remove full allowance.
+          await token.connect(bob).disapprove(john.address, 15);
+        });
+
+        it('removes the spender received allowance when it reaches zero', async () => {
+          const [allowances, /*cursor*/] = await token.paginateAllowancesBySpender(john.address, 0, 5);
+          expect(allowances).to.be.empty;
+        });
+
+        it('removes the original given allowance when it reaches zero', async () => {
+          const [allowances, /*cursor*/] = await token.paginateAllowancesByOwner(bob.address, 0, 5);
+          expect(allowances).to.be.empty;
+        });
       });
 
       it('emits a Disapproval event', async () => {
-        const subject = await token.connect(bob).disapprove(john.address);
+        const subject = await token.connect(bob).disapprove(john.address, 10);
         await expect(subject).to
           .emit(fast, 'Disapproval')
-          .withArgs(bob.address, john.address);
+          .withArgs(bob.address, john.address, 10);
       });
     });
 
@@ -959,7 +981,7 @@ describe('FastTokenFacet', () => {
         await issuerMemberToken.addTransferCredits(1_000);
         // Let alice give allowance to bob, and john give allowance to alice.
         await Promise.all([
-          token.connect(alice).approve(bob.address, 500),
+          token.connect(alice).approve(bob.address, 100),
           token.connect(john).approve(alice.address, 500)
         ]);
 
@@ -1000,10 +1022,10 @@ describe('FastTokenFacet', () => {
         const subject = await tokenAsItself.beforeRemovingMember(alice.address);
         await expect(subject).to
           .emit(fast, 'Disapproval')
-          .withArgs(alice.address, bob.address);
+          .withArgs(alice.address, bob.address, 100);
         await expect(subject).to
           .emit(fast, 'Disapproval')
-          .withArgs(john.address, alice.address);
+          .withArgs(john.address, alice.address, 500);
       });
     });
   })
