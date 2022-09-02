@@ -115,8 +115,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // The tokens aren't in circulation anymore - decrease total supply.
     s.totalSupply -= amount;
 
-    // Since the holder's account is now empty, make sure to keep track of it.
-    holdingUpdated(holder);
+    // Since the holder's account is now empty, make sure to keep track of it both
+    // in this FAST and in the marketplace.
+    s.tokenHolders.remove(holder, true);
+    ITokenHoldings(LibFast.data().marketplace).holdingUpdated(holder, address(this));
+
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
     emit Transfer(holder, address(0), amount);
