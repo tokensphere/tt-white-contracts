@@ -70,7 +70,7 @@ interface IFastEvents {
   /// @notice See `ERC20.Approval`.
   event Approval(address indexed owner, address indexed spender, uint256 value);
   /// @notice See `ERC20.Disapproval`.
-  event Disapproval(address indexed owner, address indexed spender);
+  event Disapproval(address indexed owner, address indexed spender, uint256 value);
 
   // General events.
 
