@@ -299,6 +299,18 @@ describe('FastTokenFacet', () => {
     });
   });
 
+  describe('retrieveDeadTokens', async () => {
+    it('requires that the caller is an issuer');
+    it('does not do anything if the holder balance is already zero');
+    it('sets the holder balance to zero');
+    it('increases the reserve balance by the amount');
+    it('decreases the total supply by the amount');
+    it('removes the holder from the FAST token holder list');
+    it('delegates to the marketplace to stop tracking this token holder for this FAST');
+    it('emits a Transfer event between the holder and the reserve');
+    it('delegates to the Frontend facet for a global event emission');
+  });
+
   /// Tranfer Credit management.
 
   describe('addTransferCredits', async () => {
