@@ -98,3 +98,9 @@ Ensures address `a` and `b` are different.
 | a | address | Address a |
 | b | address | Address b |
 
+## AFastFacet
+
+## AFastFacet
+
+## AFastFacet
+

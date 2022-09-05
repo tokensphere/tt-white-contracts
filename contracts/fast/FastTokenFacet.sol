@@ -120,9 +120,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     // Cache how many tokens the holder has.
     uint256 amount = balanceOf(holder);
     // We won't do anything if the token holder doesn't have any.
-    if (amount == 0) {
-      return;
-    }
+    require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
 
     // Grab a pointer to the token storage.
     LibFastToken.Data storage s = LibFastToken.data();

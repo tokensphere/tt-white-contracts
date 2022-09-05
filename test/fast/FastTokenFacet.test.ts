@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { deployments, ethers } from 'hardhat';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
-import { Issuer, Marketplace, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet } from '../../typechain';
+import { Issuer, Marketplace, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
 import {
   BALANCE_IS_POSITIVE,
@@ -49,6 +49,7 @@ describe('FastTokenFacet', () => {
     topMock: MockContract<FastTopFacet>,
     accessMock: MockContract<FastAccessFacet>,
     historyMock: MockContract<FastHistoryFacet>,
+    frontendMock: MockContract<FastFrontendFacet>,
     governedToken: FastTokenFacet,
     issuerMemberToken: FastTokenFacet;
 
@@ -69,7 +70,7 @@ describe('FastTokenFacet', () => {
         name: 'FastTokenFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast, accessMock, topMock, tokenMock, historyMock } = args);
+          ({ fast, accessMock, topMock, tokenMock, historyMock, frontendMock } = args);
           token = await ethers.getContractAt<FastTokenFacet>('FastTokenFacet', fast.address);
           governedToken = token.connect(governor);
           issuerMemberToken = token.connect(issuerMember);
@@ -231,6 +232,8 @@ describe('FastTokenFacet', () => {
         .emit(fast, 'Minted')
         .withArgs(3_000, 'Attempt 1');
     });
+
+    it('delegates to the frontend facet');
   });
 
   describe('burn', async () => {
@@ -297,18 +300,77 @@ describe('FastTokenFacet', () => {
         .emit(fast, 'Burnt')
         .withArgs(50, 'Feel the burn');
     });
+
+    it('delegates to the frontend facet');
   });
 
-  describe('retrieveDeadTokens', async () => {
-    it('requires that the caller is an issuer');
-    it('does not do anything if the holder balance is already zero');
-    it('sets the holder balance to zero');
-    it('increases the reserve balance by the amount');
-    it('decreases the total supply by the amount');
-    it('removes the holder from the FAST token holder list');
-    it('delegates to the marketplace to stop tracking this token holder for this FAST');
-    it('emits a Transfer event between the holder and the reserve');
-    it('delegates to the Frontend facet for a global event emission');
+  describe.only('retrieveDeadTokens', async () => {
+    beforeEach(async () => {
+      // Mint a few tokens and raise the transfer credits.
+      await issuerMemberToken.mint(1_000_000, 'ERC20 Tests');
+      // Transfer tokens from address zero to alice and bob.
+      await Promise.all([alice, bob].map(
+        async ({ address }) => governedToken.transferFrom(ZERO_ADDRESS, address, 100)
+      ));
+    });
+
+    it('requires Issuer membership', async () => {
+      const subject = token.retrieveDeadTokens(bob.address);
+      await expect(subject).to.have
+        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+    });
+
+    it('does not do anything if the holder balance is already zero', async () => {
+      const subject = issuerMemberToken.retrieveDeadTokens(john.address);
+      await expect(subject).to.have
+        .revertedWith(REQUIRES_NON_ZERO_AMOUNT);
+    });
+
+    it('sets the holder balance to zero while increasing the reserve balance', async () => {
+      const subject = async () => issuerMemberToken.retrieveDeadTokens(alice.address);
+      await expect(subject).to
+        .changeTokenBalances(
+          token,
+          [alice, ZERO_ACCOUNT_MOCK],
+          [-100, 100]
+        );
+    });
+
+    it('decreases the total supply by the amount', async () => {
+      const totalSupplyBefore = await token.totalSupply();
+      await issuerMemberToken.retrieveDeadTokens(alice.address);
+      const totalSupplyAfter = await token.totalSupply();
+      expect(totalSupplyBefore.sub(totalSupplyAfter)).to.eq(100);
+    });
+
+    it('removes the holder from the FAST token holder list', async () => {
+      await issuerMemberToken.retrieveDeadTokens(alice.address);
+      const subject = await token.holders();
+      expect(subject).to.be.eql([bob.address]);
+    });
+
+    it('calls the marketplace to stop tracking this token holder for this FAST', async () => {
+      marketplace.holdingUpdated.reset();
+      await issuerMemberToken.retrieveDeadTokens(alice.address);
+      expect(marketplace.holdingUpdated).to.have.been
+        .calledOnceWith(alice.address, token.address);
+    });
+
+    it('emits a Transfer event between the holder and the reserve', async () => {
+      const subject = await issuerMemberToken.retrieveDeadTokens(alice.address);
+      await expect(subject).to
+        .emit(fast, 'Transfer')
+        .withArgs(alice.address, ZERO_ADDRESS, 100);
+    });
+
+    it('delegates to the Frontend facet for a global event emission', async () => {
+      marketplace.holdingUpdated.reset();
+      frontendMock.emitDetailsChanged.reset();
+      await issuerMemberToken.retrieveDeadTokens(alice.address);
+      expect(frontendMock.emitDetailsChanged).to.have.been
+        .calledOnceWith()
+        .delegatedFrom(token.address);
+    });
   });
 
   /// Tranfer Credit management.
@@ -345,6 +407,8 @@ describe('FastTokenFacet', () => {
         .emit(fast, 'TransferCreditsAdded')
         .withArgs(issuerMember.address, 50);
     });
+
+    it('delegates to the frontend facet');
   });
 
   describe('drainTransferCredits', async () => {
