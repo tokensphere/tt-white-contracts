@@ -113,7 +113,7 @@ describe('FastTopFacet', () => {
         .calledOnceWith(issuerMember.address);
     });
 
-    it('cannot revert an Issuer to non-semi public once set', async () => {
+    it('prevents changing from semi-public to closed', async () => {
       // Set as semi public.
       await issuerMemberTop.setIsSemiPublic(true);
       // Attempt to revert to non-semi public.

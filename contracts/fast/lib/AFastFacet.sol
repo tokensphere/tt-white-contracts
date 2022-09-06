@@ -108,7 +108,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier differentAddresses(address a, address b) {
     if (a == b) {
-      revert ICustomErrors.RequiresDifferentSenderAndRecipient(a, b);
+      revert ICustomErrors.RequiresDifferentSenderAndRecipient(a);
     }
     _;
   }

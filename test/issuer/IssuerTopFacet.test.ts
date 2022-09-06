@@ -98,7 +98,7 @@ describe('IssuerTopFacet', () => {
           .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
       });
 
-      it('forbids adding two FASTS with the same symbol', async () => {
+      it('reverts if trying to add a FAST with an already existing symbol', async () => {
         const duplFast = await smock.fake('Fast');
         duplFast.symbol.returns('F01');
         const subject = issuerMemberIssuer.registerFast(duplFast.address)

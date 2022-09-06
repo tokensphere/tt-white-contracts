@@ -304,7 +304,7 @@ describe('FastTokenFacet', () => {
     it('delegates to the frontend facet');
   });
 
-  describe.only('retrieveDeadTokens', async () => {
+  describe('retrieveDeadTokens', async () => {
     beforeEach(async () => {
       // Mint a few tokens and raise the transfer credits.
       await issuerMemberToken.mint(1_000_000, 'ERC20 Tests');

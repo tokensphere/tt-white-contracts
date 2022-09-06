@@ -139,13 +139,12 @@ describe('FastAccessFacet', () => {
     describe('addGovernor', async () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = access.addGovernor(alice.address);
-        // Check that the registry
         await expect(subject).to.be
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('requires Issuer membership (governor)', async () => {
-        const subject = access.addGovernor(alice.address);
+        const subject = governedAccess.addGovernor(alice.address);
         await expect(subject).to.be
           .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
       });

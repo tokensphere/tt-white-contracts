@@ -23,5 +23,5 @@ interface ICustomErrors {
 
   error RequiresContinuousSupply();
   error RequiresPositiveBalance(address holder);
-  error RequiresDifferentSenderAndRecipient(address a, address b);
+  error RequiresDifferentSenderAndRecipient(address a);
 }

@@ -131,7 +131,7 @@ describe('IssuerAccessFacet', () => {
           .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
       });
 
-      it('reverts when a member tries to removes themselves', async () => {
+      it('requires that the user is not removing themselves', async () => {
         const subject = issuerMemberAccess.removeMember(issuerMember.address);
         await expect(subject).to.be
           .revertedWith(CANNOT_REMOVE_SELF);
