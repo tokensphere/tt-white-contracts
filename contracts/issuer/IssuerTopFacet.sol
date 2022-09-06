@@ -47,7 +47,7 @@ contract IssuerTopFacet is AIssuerFacet {
     LibIssuer.Data storage s = LibIssuer.data();
     string memory symbol = FastTokenFacet(fast).symbol();
     if (s.fastSymbols[symbol] != address(0)) {
-      revert ICustomErrors.DuplicateEntry(symbol);
+      revert ICustomErrors.DuplicateEntry();
     }
 
     // Add the FAST to our list.

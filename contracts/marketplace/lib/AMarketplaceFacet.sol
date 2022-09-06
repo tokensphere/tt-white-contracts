@@ -34,7 +34,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    */
   modifier onlyIssuerMember() {
     if (!IHasMembers(LibMarketplace.data().issuer).isMember(msg.sender)) {
-      revert ICustomErrors.RequiresIssuerMembership();
+      revert ICustomErrors.RequiresIssuerMembership(msg.sender);
     }
     _;
   }
@@ -45,7 +45,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    */
   modifier onlyMember(address candidate) {
     if (!LibMarketplaceAccess.data().memberSet.contains(candidate)) {
-      revert ICustomErrors.RequiresMarketplaceMembership();
+      revert ICustomErrors.RequiresMarketplaceMembership(candidate);
     }
     _;
   }

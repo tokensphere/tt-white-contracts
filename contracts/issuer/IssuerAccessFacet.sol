@@ -75,7 +75,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       onlyMember(msg.sender) {
     // No suicide allowed.
     if (msg.sender == member) {
-      revert ICustomErrors.CannotSelfRemove();
+      revert ICustomErrors.CannotSelfRemove(msg.sender);
     }
     // Remove the member from the set.
     LibIssuerAccess.data().memberSet.remove(member, false);

@@ -8,23 +8,20 @@ interface ICustomErrors {
   error RequiresDiamondOwnership();
   error RequiresFastContractCaller();
 
-  error RequiresIssuerMembership();
-  error RequiresMarketplaceMembership();
-  error RequiresMarketplaceActiveMember();
-  error RequiresMarketplaceDeactivatedMember();
+  error RequiresIssuerMembership(address who);
+  error RequiresMarketplaceMembership(address who);
+  error RequiresMarketplaceActiveMember(address who);
+  error RequiresMarketplaceDeactivatedMember(address who);
 
-  error RequiresFastGovernorship();
-  error RequiresFastMembership();
-  error RequiresNoFastMemberships();
+  error RequiresFastGovernorship(address who);
+  error RequiresFastMembership(address who);
+  error RequiresNoFastMemberships(address who);
 
-  error DuplicateEntry(string symbol);
+  error DuplicateEntry();
   error UnsupportedOperation();
-  error CannotSelfRemove();
+  error CannotSelfRemove(address who);
 
   error RequiresContinuousSupply();
-  error InsufficientFunds();
-  error InsufficientAllowance();
-  error InsufficientTransferCredits();
-  error RequiresDifferentSenderAndRecipient();
-  error UnknownRestrictionCode();
+  error RequiresPositiveBalance(address holder);
+  error RequiresDifferentSenderAndRecipient(address a, address b);
 }

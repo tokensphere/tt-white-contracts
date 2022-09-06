@@ -278,7 +278,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // is a governor, we want to make sure that the spender has full rights over it.
     if (owner == address(0)) {
       if (!FastAccessFacet(address(this)).isGovernor(spender)) {
-        revert ICustomErrors.RequiresFastGovernorship();
+        revert ICustomErrors.RequiresFastGovernorship(spender);
       }
       return s.balances[owner];
     }
@@ -553,7 +553,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   // - It can only be called by a governor.
   function beforeRemovingMember(address member)
       external onlyDiamondFacet() {
-    require(balanceOf(member) == 0, 'Balance is positive');
+    if (balanceOf(member) != 0) {
+      revert ICustomErrors.RequiresPositiveBalance(member);
+    }
 
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -625,13 +627,13 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // FAST is semi-public - the only requirement to hold tokens is to be an marketplace member.
       if (IFast(address(this)).isSemiPublic()) {
         if (!IHasMembers(LibFast.data().marketplace).isMember(candidate)) {
-          revert ICustomErrors.RequiresMarketplaceMembership();
+          revert ICustomErrors.RequiresMarketplaceMembership(candidate);
         }
       }
       // FAST is private, the requirement to hold tokens is to be a member of that FAST.
       else {
         if (!IHasMembers(address(this)).isMember(candidate)) {
-          revert ICustomErrors.RequiresFastMembership();
+          revert ICustomErrors.RequiresFastMembership(candidate);
         }
       }
     }

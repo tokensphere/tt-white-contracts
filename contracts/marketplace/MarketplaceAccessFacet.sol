@@ -78,7 +78,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     LibMarketplaceAccess.Data storage s = LibMarketplaceAccess.data();
     // Ensure that member doesn't have any FAST membership.
     if (s.fastMemberships[member].values.length != 0) {
-      revert ICustomErrors.RequiresNoFastMemberships();
+      revert ICustomErrors.RequiresNoFastMemberships(member);
     }
     // Remove member.
     s.memberSet.remove(member, false);
@@ -143,7 +143,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyMember(member) {
     // Guard against attempting to activate an already active member.
     if (this.isMemberActive(member)) {
-      revert ICustomErrors.RequiresMarketplaceDeactivatedMember();
+      revert ICustomErrors.RequiresMarketplaceDeactivatedMember(member);
     }
 
     // Remove the member from the deactivated members list.
@@ -164,7 +164,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
     if (!this.isMemberActive(member)) {
-      revert ICustomErrors.RequiresMarketplaceActiveMember();
+      revert ICustomErrors.RequiresMarketplaceActiveMember(member);
     }
 
     // Add the member to the deactivated members list.

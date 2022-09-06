@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'GovernorshipAdded(address,address)'],
       ['Facet$', 'GovernorshipRemoved(address,address)'],
       // Error types.
-      ['Facet$', 'RequiresIssuerMembership()'],
+      ['Facet$', 'RequiresIssuerMembership(address)'],
       ['Facet$', 'RequiresFastContractCaller()']
     ]),
     include: [
@@ -94,9 +94,9 @@ const config: HardhatUserConfig = {
       ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)'],
       // Error types.
       ['Facet$', 'InternalMethod()'],
-      ['Facet$', 'RequiresIssuerMembership()'],
-      ['Facet$', 'RequiresMarketplaceMembership()'],
-      ['Facet$', 'RequiresFastGovernorship()'],
+      ['Facet$', 'RequiresIssuerMembership(address)'],
+      ['Facet$', 'RequiresMarketplaceMembership(address)'],
+      ['Facet$', 'RequiresFastGovernorship(address)'],
       ['Facet$', 'UnsupportedOperation()']
     ]),
     include: [

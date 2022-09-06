@@ -38,7 +38,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
   /// @notice Ensures that the given address is a member of the current FAST.
   modifier onlyMember(address candidate) {
     if (!LibIssuerAccess.data().memberSet.contains(candidate)) {
-      revert ICustomErrors.RequiresIssuerMembership();
+      revert ICustomErrors.RequiresIssuerMembership(candidate);
     }
     _;
   }

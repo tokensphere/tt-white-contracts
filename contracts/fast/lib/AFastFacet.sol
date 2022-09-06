@@ -53,7 +53,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyMarketplaceMember(address candidate) {
     if (!IHasMembers(LibFast.data().marketplace).isMember(candidate)) {
-      revert ICustomErrors.RequiresMarketplaceMembership();
+      revert ICustomErrors.RequiresMarketplaceMembership(candidate);
     }
     _;
   }
@@ -64,7 +64,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
     if (!IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate)) {
-      revert ICustomErrors.RequiresMarketplaceActiveMember();
+      revert ICustomErrors.RequiresMarketplaceActiveMember(candidate);
     }
     _;
   }
@@ -74,7 +74,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyIssuerMember() {
     if (!IHasMembers(LibFast.data().issuer).isMember(msg.sender)) {
-      revert ICustomErrors.RequiresIssuerMembership();
+      revert ICustomErrors.RequiresIssuerMembership(msg.sender);
     }
     _;
   }
@@ -85,7 +85,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyGovernor(address candidate) {
     if (!IHasGovernors(address(this)).isGovernor(candidate)) {
-      revert ICustomErrors.RequiresFastGovernorship();
+      revert ICustomErrors.RequiresFastGovernorship(candidate);
     }
     _;
   }
@@ -96,7 +96,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier onlyMember(address candidate) {
     if (!IHasMembers(address(this)).isMember(candidate)) {
-      revert ICustomErrors.RequiresFastMembership();
+      revert ICustomErrors.RequiresFastMembership(candidate);
     }
     _;
   }
@@ -108,7 +108,7 @@ abstract contract AFastFacet is IFastEvents {
    */
   modifier differentAddresses(address a, address b) {
     if (a == b) {
-      revert ICustomErrors.RequiresDifferentSenderAndRecipient();
+      revert ICustomErrors.RequiresDifferentSenderAndRecipient(a, b);
     }
     _;
   }
