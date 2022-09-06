@@ -7,6 +7,7 @@ library LibConstants {
   address internal constant DEPLOYER_CONTRACT = 0x6DF2D25d8C6FD680730ee658b530A05a99BB769a;
 
   string internal constant ALREADY_INITIALIZED = 'Already initialized';
+  string internal constant ALREADY_MIGRATED = 'Already migrated to this version';
   string internal constant INTERNAL_METHOD = 'Internal method';
   string internal constant REQUIRES_DIAMOND_OWNERSHIP = 'Requires diamond ownership';
   string internal constant REQUIRES_FAST_CONTRACT_CALLER = 'Caller must be a FAST contract';
