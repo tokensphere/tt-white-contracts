@@ -1019,25 +1019,6 @@ describe('FastTokenFacet', () => {
     });
   });
 
-  /// ERC1404 implementation.
-  describe('ERC1404', async () => {
-    describe('detectTransferRestriction has codes for', async () => {
-      it('returns zero when the transfer is possible', async () => {
-        await issuerMemberToken.addTransferCredits(1);
-        const subject = await token.detectTransferRestriction(bob.address, alice.address, 1);
-        expect(subject).to.eq(0);
-      });
-    });
-
-    describe('messageForTransferRestriction has a message for', async () => {
-      it('errors when the restriction code is unknown', async () => {
-        const subject = token.messageForTransferRestriction(5);
-        await expect(subject).to.have
-          .revertedWith(UNKNOWN_RESTRICTION_CODE);
-      })
-    });
-  });
-
   describe('beforeRemovingMember', async () => {
     beforeEach(async () => {
       await issuerMemberToken.mint(1_000, 'Give me the money');

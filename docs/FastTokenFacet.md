@@ -185,7 +185,7 @@ See `performTransfer`, the spender will be equal to the `owner`, and the `ref` w
 ### transferWithRef
 
 ```solidity
-function transferWithRef(address to, uint256 amount, string ref) external
+function transferWithRef(address to, uint256 amount, string ref) external returns (bool)
 ```
 
 See `performTransfer`, the spender will be equal to the `owner`.
@@ -1036,7 +1036,7 @@ the transaction.
 ### disapprove
 
 ```solidity
-function disapprove(address spender) external
+function disapprove(address spender) external returns (bool)
 ```
 
 ### transferFrom
@@ -1050,7 +1050,7 @@ See `performTransfer`, the `ref` will be defaulted.
 ### transferFromWithRef
 
 ```solidity
-function transferFromWithRef(address from, address to, uint256 amount, string ref) public
+function transferFromWithRef(address from, address to, uint256 amount, string ref) public returns (bool)
 ```
 
 See `performTransfer`.
@@ -1077,18 +1077,6 @@ function receivedAllowanceCount(address spender) external view returns (uint256)
 
 ```solidity
 function paginateAllowancesBySpender(address spender, uint256 index, uint256 perPage) external view returns (address[], uint256)
-```
-
-### detectTransferRestriction
-
-```solidity
-function detectTransferRestriction(address, address, uint256) external pure returns (uint8)
-```
-
-### messageForTransferRestriction
-
-```solidity
-function messageForTransferRestriction(uint8) external pure returns (string)
 ```
 
 ### TransferArgs

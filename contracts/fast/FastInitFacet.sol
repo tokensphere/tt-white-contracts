@@ -4,7 +4,6 @@ pragma solidity 0.8.10;
 import '../interfaces/IERC20.sol';        // Token.
 import '../interfaces/IERC165.sol';       // Interface Support.
 import '../interfaces/IERC173.sol';       // Ownership.
-import '../interfaces/IERC1404.sol';      // Transfer Restriction.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasGovernors.sol'; // Governorship management.
@@ -50,7 +49,6 @@ contract FastInitFacet is AFastFacet {
     ds.supportedInterfaces[type(IERC20).interfaceId] = true;
     ds.supportedInterfaces[type(IERC165).interfaceId] = true;
     ds.supportedInterfaces[type(IERC173).interfaceId] = true;
-    ds.supportedInterfaces[type(IERC1404).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
     ds.supportedInterfaces[type(IHasGovernors).interfaceId] = true;
