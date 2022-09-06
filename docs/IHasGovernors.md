@@ -72,3 +72,9 @@ Removes a governor from the list of known governors.
 | ---- | ---- | ----------- |
 | governor | address | is the address to be removed. |
 
+## IHasGovernors
+
+## IHasGovernors
+
+## IHasGovernors
+

@@ -42,3 +42,9 @@ Activates a given member address.
 | ---- | ---- | ----------- |
 | member | address | is the address to activate. |
 
+## IHasActiveMembers
+
+## IHasActiveMembers
+
+## IHasActiveMembers
+

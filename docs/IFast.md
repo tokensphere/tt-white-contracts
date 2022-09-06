@@ -26,3 +26,9 @@ Queries whether the FAST has fixed or continuous supply.
 | ---- | ---- | ----------- |
 | [0] | bool | A `bool` being `true` if the FAST has fixed supply. |
 
+## IFast
+
+## IFast
+
+## IFast
+

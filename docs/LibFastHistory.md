@@ -81,3 +81,9 @@ Returns the history storage for the calling FAST.
 | ---- | ---- | ----------- |
 | s | struct LibFastHistory.Data | a struct pointer for history FAST data storage. |
 
+## LibFastHistory
+
+## LibFastHistory
+
+## LibFastHistory
+

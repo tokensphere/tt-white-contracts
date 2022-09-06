@@ -76,7 +76,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'TransferCreditsDrained(address,uint256)'],
       ['Facet$', 'Transfer(address,address,uint256)'],
       ['Facet$', 'Approval(address,address,uint256)'],
-      ['Facet$', 'Disapproval(address,address)'],
+      ['Facet$', 'Disapproval(address,address,uint256)'],
       ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)']
     ]),
     include: [

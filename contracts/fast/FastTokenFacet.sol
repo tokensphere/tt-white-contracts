@@ -26,7 +26,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice Mints an amount of FAST tokens.
    *  A reference can be passed to identify why this happened for example.
-   * 
+   *
    * Business logic:
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
@@ -64,10 +64,11 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice Burns an amount of FAST tokens.
    *  A reference can be passed to identify why this happened for example.
-   *  Can only be called by an Issuer member. Business logic.
+   *
+   * Business logic.
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
-   * - Requires that either the token has continuous supply.
+   * - Requires that the token has continuous supply.
    * - Requires that there are enough funds in the reserve to cover for `amount` being burnt.
    * - Decreases the reserve balance by `amount`.
    * - Calls `FastHistoryFacet.burnt(amount, ref)`.
@@ -95,6 +96,54 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Burnt(amount, ref);
   }
 
+  /**
+   * @notice Allows an Issuer member to move an arbitrary account's holdings back to the reserve,
+   * as per regulatory requirements.
+   *
+   * Business logic:
+   * - Modifiers:
+   *   - Requires that the caller is a member of the Issuer contract.
+   * - If the amount held by `holder` is zero,
+   *   - Then the function should return early, with no action.
+   * - The balance of `holder` should be set to zero.
+   * - The reserve's balance should be increased by how much was on the holder's account.
+   * - Total supply should be decreased by that amount too.
+   * - The `holder`'s address should not be tracked as a token holder in this FAST anymore.
+   * - The `holder`'s address should not be tracked as a token holder in the Marketplace anymore.
+   * - A `Transfer(holder, reserve, amount)` event should be emited.
+   * - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
+   * @param holder is the address for which to move the tokens from.
+   */
+  function retrieveDeadTokens(address holder)
+      external
+      onlyIssuerMember {
+    // Cache how many tokens the holder has.
+    uint256 amount = balanceOf(holder);
+    // We won't do anything if the token holder doesn't have any.
+    require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
+
+    // Grab a pointer to the token storage.
+    LibFastToken.Data storage s = LibFastToken.data();
+
+    // Set the holder balance to zero.
+    s.balances[holder] = 0;
+    // Increment the reserve's balance.
+    s.balances[address(0)] += amount;
+    // The tokens aren't in circulation anymore - decrease total supply.
+    s.totalSupply -= amount;
+
+    // Since the holder's account is now empty, make sure to keep track of it both
+    // in this FAST and in the marketplace.
+    s.tokenHolders.remove(holder, true);
+    ITokenHoldings(LibFast.data().marketplace).holdingUpdated(holder, address(this));
+
+
+    // This operation can be seen as a regular transfer between holder and reserve. Emit.
+    emit Transfer(holder, address(0), amount);
+    // Total supply and reserve balance have changed - emit.
+    FastFrontendFacet(address(this)).emitDetailsChanged();
+  }
+
   // Tranfer Credit management.
 
   /**
@@ -118,7 +167,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Drains the transfer credits from this FAST.
-   * 
+   *
    * Business logic:
    * - Modifiers:
    *   - Requires the caller to be a member of the Issuer contract.
@@ -244,11 +293,17 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     return true;
   }
 
-  function disapprove(address spender)
+  /**
+   * @notice This method directly calls `performDisapproval`, setting its `from` parameter to the sender of
+   * the transaction.
+   * @param spender is the address to disallow spending from the caller's wallet.
+   * @param amount is how much to **decrease** the allowance.
+   */
+  function disapprove(address spender, uint256 amount)
       external
       onlyMember(msg.sender) {
     // Make sure the call is performed externally so that we can mock.
-    this.performDisapproval(msg.sender, spender);
+    this.performDisapproval(msg.sender, spender, amount);
   }
 
   /**
@@ -332,7 +387,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   /**
    * @notice This is the internal method that gets called whenever a transfer is initiated. Both `transfer`,
    * `transferWithRef`, and their variants internally call this function.
-   * 
+   *
    * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
@@ -446,7 +501,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Increases the allowance given by `from` to `spender` by `amount`.
-   * 
+   *
    * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
@@ -478,18 +533,32 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     emit Approval(from, spender, amount);
   }
 
-  function performDisapproval(address from, address spender)
+  /**
+   * @notice Decreases allowance given by `from` to `spender` by `amount`.
+   *
+   * Business logic:
+   * - Modifiers:
+   *   - Only facets of the current diamond should be able to call this.
+   * - The allowance given by `from` to `spender` is decreased by `amount`.
+   * - Whether the allowance reached zero, stop tracking it by owner and by spender.
+   * - Emit a `Disapproval(from, spender, amount)` event.
+   */
+  function performDisapproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Remove allowance.
-    s.allowances[from][spender] = 0;
-    s.allowancesByOwner[from].remove(spender, false);
-    s.allowancesBySpender[spender].remove(from, false);
+    s.allowances[from][spender] -= amount;
+
+    // Whenever the allowance reaches zero, stop tracking it by owner and spender.
+    if (s.allowances[from][spender] == 0) {
+      s.allowancesByOwner[from].remove(spender, true);
+      s.allowancesBySpender[spender].remove(from, true);
+    }
 
     // Emit!
-    emit Disapproval(from, spender);
+    emit Disapproval(from, spender, amount);
   }
 
   // WARNING: This method contains two loops. We know that this should never
@@ -503,17 +572,23 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Remove all given allowances.
-    address[] storage gaData = s.allowancesByOwner[member].values;
-    while (gaData.length > 0) {
-      // Make sure the call is performed externally so that we can mock.
-      this.performDisapproval(member, gaData[0]);
+    {
+      address[] storage gaData = s.allowancesByOwner[member].values;
+      while (gaData.length > 0) {
+        // Make sure the call is performed externally so that we can mock.
+        address spender = gaData[0];
+        this.performDisapproval(member, spender, s.allowances[member][spender]);
+      }
     }
 
     // Remove all received allowances.
-    address[] storage raData = s.allowancesBySpender[member].values;
-    while (raData.length > 0) {
-      // Make sure the call is performed externally so that we can mock.
-      this.performDisapproval(raData[0], member);
+    {
+      address[] storage raData = s.allowancesBySpender[member].values;
+      while (raData.length > 0) {
+        // Make sure the call is performed externally so that we can mock.
+        address owner = raData[0];
+        this.performDisapproval(owner, member, s.allowances[owner][member]);
+      }
     }
   }
 
@@ -527,7 +602,9 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
   function holdingUpdated(address holder)
       private {
     // Return early if this is the zero address.
-    if (holder == address(0)) return;
+    if (holder == address(0)) {
+      return;
+    }
 
     LibFastToken.Data storage s = LibFastToken.data();
     uint256 balance = this.balanceOf(holder);
@@ -547,7 +624,7 @@ contract FastTokenFacet is AFastFacet, IERC20, IERC1404 {
 
   /**
    * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
-   * 
+   *
    * Business logic:
    *  - If the candidate is not the reserve,
    *    - If the fast is semi-public,
