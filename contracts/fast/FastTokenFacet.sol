@@ -2,6 +2,7 @@
 pragma solidity 0.8.10;
 
 import '../interfaces/IERC20.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
 import '../interfaces/ITokenHoldings.sol';
@@ -44,10 +45,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    require(
-      !FastTopFacet(address(this)).hasFixedSupply() || (s.totalSupply == 0 && this.balanceOf(address(0)) == 0),
-      LibConstants.REQUIRES_CONTINUOUS_SUPPLY
-    );
+    if (FastTopFacet(address(this)).hasFixedSupply() && (s.totalSupply != 0 || this.balanceOf(address(0)) != 0)) {
+      revert ICustomErrors.RequiresContinuousSupply();
+    }
 
     // Prepare the minted amount on the zero address.
     s.balances[address(0)] += amount;
@@ -81,8 +81,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    require(!FastTopFacet(address(this)).hasFixedSupply(), LibConstants.REQUIRES_CONTINUOUS_SUPPLY);
-    require(balanceOf(address(0)) >= amount, LibConstants.INSUFFICIENT_FUNDS);
+    if (FastTopFacet(address(this)).hasFixedSupply()) {
+      revert ICustomErrors.RequiresContinuousSupply();
+    }
 
     // Remove the minted amount from the zero address.
     s.balances[address(0)] -= amount;
@@ -119,7 +120,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Cache how many tokens the holder has.
     uint256 amount = balanceOf(holder);
     // We won't do anything if the token holder doesn't have any.
-    require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
+    if (amount == 0) {
+      return;
+    }
 
     // Grab a pointer to the token storage.
     LibFastToken.Data storage s = LibFastToken.data();
@@ -274,7 +277,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // If the allowance being queried is from the zero address and the spender
     // is a governor, we want to make sure that the spender has full rights over it.
     if (owner == address(0)) {
-      require(FastAccessFacet(address(this)).isGovernor(spender), LibConstants.REQUIRES_FAST_GOVERNORSHIP);
+      if (!FastAccessFacet(address(this)).isGovernor(spender)) {
+        revert ICustomErrors.RequiresFastGovernorship();
+      }
       return s.balances[owner];
     }
     return s.allowances[owner][spender];
@@ -308,16 +313,14 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     return true;
   }
 
-  /**
-   * @notice See `performTransfer`, the `ref` will be defaulted. */
+  /// @notice See `performTransfer`, the `ref` will be defaulted.
   function transferFrom(address from, address to, uint256 amount)
       external override returns(bool) {
     transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
     return true;
   }
 
-  /**
-   * @notice See `performTransfer`. */
+  /// @notice See `performTransfer`.
   function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
       public returns(bool) {
     // Make sure the call is performed externally so that we can mock.
@@ -414,26 +417,17 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       onlyTokenHolder(p.from)
       onlyMarketplaceActiveMember(p.from)
       onlyTokenHolder(p.to) {
+    // TODO: Make this function return instead of raising errors.
+    // TODO: Make this function run even when a zero amount is passed. It should just emit.
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Make sure that there's enough funds.
-    require(
-      s.balances[p.from] >= p.amount,
-      LibConstants.INSUFFICIENT_FUNDS
-    );
-    require(
-      p.amount > 0,
-      LibConstants.UNSUPPORTED_OPERATION
-    );
+    if (p.amount == 0) {
+      revert ICustomErrors.UnsupportedOperation();
+    }
 
     // If this is an allowance transfer...
     if (p.spender != p.from) {
-      // Make sure that the spender has enough allowance.
-      require(
-        FastTokenFacet(address(this)).allowance(p.from, p.spender) >= p.amount,
-        LibConstants.INSUFFICIENT_ALLOWANCE
-      );
-
       // If the from account isn't the zero address...
       if (p.from != address(0)) {
         // Decrease allowance.
@@ -462,11 +456,6 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
-      // Make sure enough credits exist.
-      require(
-        s.transferCredits >= p.amount,
-        LibConstants.INSUFFICIENT_TRANSFER_CREDITS
-      );
       s.transferCredits -= p.amount;
     }
 
@@ -492,7 +481,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
   /**
    * @notice Increases the allowance given by `from` to `spender` by `amount`.
-   *
+   * Note that this function should run and emit even if the amount passed is zero.
    * Business logic:
    * - Modifiers:
    *   - Only facets of the current diamond should be able to call this.
@@ -504,21 +493,23 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param from is the wallet from which to give the allowance.
    * @param spender is the receiver of the allowance.
    * @param amount is how much to **increase** the current allowance by.
+   * 
+   * Note: This function runs when amount is zero, and will emit.
    */
   function performApproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet
       onlyTokenHolder(from) {
-    require(amount > 0, LibConstants.REQUIRES_NON_ZERO_AMOUNT);
-    LibFastToken.Data storage s = LibFastToken.data();
-
-    // Note that we are not exactly following ERC20 here - we don't want to **set** the allowance to `amount`
-    // to mitigate a possible attack.
-    // See https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#heading=h.gmr6zdg47087.
-    s.allowances[from][spender] += amount;
+    if (amount > 0) {
+      LibFastToken.Data storage s = LibFastToken.data();
+      // Note that we are not exactly following ERC20 here - we don't want to **set** the allowance to `amount`
+      // to mitigate a possible attack.
+      // See https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#heading=h.gmr6zdg47087.
+      s.allowances[from][spender] += amount;
     // Keep track of given and received allowances.
-    s.allowancesByOwner[from].add(spender, true);
-    s.allowancesBySpender[spender].add(from, true);
+      s.allowancesByOwner[from].add(spender, true);
+      s.allowancesBySpender[spender].add(from, true);
+    }
 
     // Emit!
     emit Approval(from, spender, amount);
@@ -533,19 +524,23 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * - The allowance given by `from` to `spender` is decreased by `amount`.
    * - Whether the allowance reached zero, stop tracking it by owner and by spender.
    * - Emit a `Disapproval(from, spender, amount)` event.
+   * 
+   * Note: This function runs when amount is zero, and will emit.
    */
   function performDisapproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet {
-    LibFastToken.Data storage s = LibFastToken.data();
+    if (amount != 0) {
+      LibFastToken.Data storage s = LibFastToken.data();
 
-    // Remove allowance.
-    s.allowances[from][spender] -= amount;
+      // Remove allowance.
+      s.allowances[from][spender] -= amount;
 
-    // Whenever the allowance reaches zero, stop tracking it by owner and spender.
-    if (s.allowances[from][spender] == 0) {
-      s.allowancesByOwner[from].remove(spender, true);
-      s.allowancesBySpender[spender].remove(from, true);
+      // Whenever the allowance reaches zero, stop tracking it by owner and spender.
+      if (s.allowances[from][spender] == 0) {
+        s.allowancesByOwner[from].remove(spender, true);
+        s.allowancesBySpender[spender].remove(from, true);
+      }
     }
 
     // Emit!
@@ -629,17 +624,15 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     if (candidate != address(0)) {
     // FAST is semi-public - the only requirement to hold tokens is to be an marketplace member.
       if (IFast(address(this)).isSemiPublic()) {
-        require(
-          IHasMembers(LibFast.data().marketplace).isMember(candidate),
-          LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
-        );
+        if (!IHasMembers(LibFast.data().marketplace).isMember(candidate)) {
+          revert ICustomErrors.RequiresMarketplaceMembership();
+        }
       }
       // FAST is private, the requirement to hold tokens is to be a member of that FAST.
       else {
-        require(
-          IHasMembers(address(this)).isMember(candidate),
-          LibConstants.REQUIRES_FAST_MEMBERSHIP
-        );
+        if (!IHasMembers(address(this)).isMember(candidate)) {
+          revert ICustomErrors.RequiresFastMembership();
+        }
       }
     }
     _;

@@ -131,13 +131,11 @@ contract FastFrontendFacet is AFastFacet {
    */
   function detailedMember(address member)
       public view returns(MemberDetails memory) {
-    LibFastToken.Data storage tokenStorage = LibFastToken.data();
-    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     return MemberDetails({
       addr: member,
-      balance: tokenStorage.balances[member],
+      balance: LibFastToken.data().balances[member],
       ethBalance: member.balance,
-      isGovernor: accessStorage.governorSet.contains(member)
+      isGovernor: LibFastAccess.data().governorSet.contains(member)
     });
   }
 
@@ -147,34 +145,35 @@ contract FastFrontendFacet is AFastFacet {
    */
   function detailedGovernor(address governor)
       public view returns(GovernorDetails memory) {
-    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     return GovernorDetails({
       addr: governor,
       ethBalance: governor.balance,
-      isMember: accessStorage.memberSet.contains(governor)
+      isMember: LibFastAccess.data().memberSet.contains(governor)
     });
   }
 
   function paginateDetailedMembers(uint256 index, uint256 perPage)
       external view returns(MemberDetails[] memory, uint256) {
-    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     (address[] memory members, uint256 nextCursor) =
-      LibPaginate.addresses(accessStorage.memberSet.values, index, perPage);
+      LibPaginate.addresses(LibFastAccess.data().memberSet.values, index, perPage);
     MemberDetails[] memory values = new MemberDetails[](members.length);
-    for (uint256 i = 0; i < members.length; ++i) {
+    uint256 length = members.length;
+    for (uint256 i = 0; i < length;) {
       values[i] = detailedMember(members[i]);
+      unchecked { ++i; }
     }
     return (values, nextCursor);
   }
 
   function paginateDetailedGovernors(uint256 index, uint256 perPage)
       external view returns(GovernorDetails[] memory, uint256) {
-    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     (address[] memory governors, uint256 nextCursor) =
-      LibPaginate.addresses(accessStorage.governorSet.values, index, perPage);
+      LibPaginate.addresses(LibFastAccess.data().governorSet.values, index, perPage);
     GovernorDetails[] memory values = new GovernorDetails[](governors.length);
-    for (uint256 i = 0; i < governors.length; ++i) {
+    uint256 length =  governors.length;
+    for (uint256 i = 0; i < length;) {
       values[i] = detailedGovernor(governors[i]);
+      unchecked { ++i; }
     }
     return (values, nextCursor);
   }

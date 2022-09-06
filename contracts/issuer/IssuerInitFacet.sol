@@ -6,7 +6,7 @@ import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasMembers.sol';   // Membership management.
-import '../lib/LibConstants.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import './lib/AIssuerFacet.sol';
@@ -35,7 +35,9 @@ contract IssuerInitFacet is AIssuerFacet {
       onlyDiamondOwner {
     // Grab our top-level storage.
     // Make sure we haven't initialized yet.
-    require(LibIssuer.data().version < LibIssuer.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
+    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION) {
+      revert ICustomErrors.AlreadyInitialized();
+    }
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -48,8 +50,7 @@ contract IssuerInitFacet is AIssuerFacet {
     // ------------------------------------- //
 
     // Initialize top-level storage.
-    LibIssuer.Data storage topData = LibIssuer.data();
-    topData.version = LibIssuer.STORAGE_VERSION;
+    LibIssuer.data().version = LibIssuer.STORAGE_VERSION;
 
     // ------------------------------------- //
 

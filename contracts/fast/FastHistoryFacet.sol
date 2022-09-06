@@ -158,8 +158,9 @@ contract FastHistoryFacet is AFastFacet {
     uint256[] storage collection  = s.transferProofInvolvements[involvee];
     uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;
     LibFastHistory.TransferProof[] memory values = new LibFastHistory.TransferProof[](length);
-    for (uint256 i = 0; i < length; i++) {
+    for (uint256 i = 0; i < length;) {
       values[i] = s.transferProofs[collection[cursor + i]];
+      unchecked { ++i; }
     }
     return (values, cursor + length);
   }

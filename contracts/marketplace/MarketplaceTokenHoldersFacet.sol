@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import './lib/AMarketplaceFacet.sol';
 import '../issuer/IssuerTopFacet.sol';
 import '../interfaces/IERC20.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../interfaces/ITokenHoldings.sol';
 
 /** @dev The Marketplace FAST balances facet.
@@ -19,10 +20,9 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
     if (account == address(0)) return;
 
     // Verify that the given address is in fact a registered FAST contract.
-    require(
-      IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender),
-      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+      revert ICustomErrors.RequiresFastContractCaller();
+    }
 
     // Get the storage pointer and balance of the token holder.
     LibMarketplaceTokenHolders.Data storage s = LibMarketplaceTokenHolders.data();

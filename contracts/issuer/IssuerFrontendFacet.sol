@@ -24,9 +24,10 @@ contract IssuerFrontendFacet is AIssuerFacet {
       returns(FastFrontendFacet.Details[] memory, uint256) {
     (address[] memory addresses, uint256 nextCursor) = LibPaginate.addresses(LibIssuer.data().fastSet.values, cursor, perPage);
     FastFrontendFacet.Details[] memory fastDetails = new FastFrontendFacet.Details[](addresses.length);
-    for (uint256 i = 0; i < addresses.length; ++i) {
-      address fast = addresses[i];
-      fastDetails[i] = FastFrontendFacet(fast).details();
+    uint256 length = addresses.length;
+    for (uint256 i = 0; i < length;) {
+      fastDetails[i] = FastFrontendFacet(addresses[i]).details();
+      unchecked { ++i; }
     }
     return (fastDetails, nextCursor);
   }

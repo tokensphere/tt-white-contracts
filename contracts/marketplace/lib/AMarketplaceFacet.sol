@@ -7,6 +7,7 @@ import '../lib/LibMarketplace.sol';
 import '../lib/LibMarketplaceAccess.sol';
 import '../lib/LibMarketplaceTokenHolders.sol';
 import '../../interfaces/IERC173.sol';
+import '../../interfaces/ICustomErrors.sol';
 import '../../interfaces/IHasMembers.sol';
 import './IMarketplaceEvents.sol';
 
@@ -22,10 +23,9 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() {
-    require(
-      msg.sender == LibConstants.DEPLOYER_CONTRACT,
-      LibConstants.INTERNAL_METHOD
-    );
+    if (msg.sender != LibConstants.DEPLOYER_CONTRACT) {
+      revert ICustomErrors.InternalMethod();
+    }
     _;
   }
 
@@ -33,10 +33,9 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    * @notice Requires that the message sender is a member of the linked Issuer.
    */
   modifier onlyIssuerMember() {
-    require(
-      IHasMembers(LibMarketplace.data().issuer).isMember(msg.sender),
-      LibConstants.REQUIRES_ISSUER_MEMBERSHIP
-    );
+    if (!IHasMembers(LibMarketplace.data().issuer).isMember(msg.sender)) {
+      revert ICustomErrors.RequiresIssuerMembership();
+    }
     _;
   }
 
@@ -45,10 +44,9 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    * @param candidate is the address to be checked.
    */
   modifier onlyMember(address candidate) {
-    require(
-      LibMarketplaceAccess.data().memberSet.contains(candidate),
-      LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
-    );
+    if (!LibMarketplaceAccess.data().memberSet.contains(candidate)) {
+      revert ICustomErrors.RequiresMarketplaceMembership();
+    }
     _;
   }
 }

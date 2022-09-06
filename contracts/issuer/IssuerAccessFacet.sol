@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../lib/LibHelpers.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../interfaces/IHasMembers.sol';
 import '../fast/FastTopFacet.sol';
 import '../fast/FastTokenFacet.sol';
@@ -73,7 +74,9 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
       external override
       onlyMember(msg.sender) {
     // No suicide allowed.
-    require(msg.sender != member, LibConstants.CANNOT_REMOVE_SELF);
+    if (msg.sender == member) {
+      revert ICustomErrors.CannotSelfRemove();
+    }
     // Remove the member from the set.
     LibIssuerAccess.data().memberSet.remove(member, false);
     // Emit!
@@ -86,10 +89,9 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
   function governorAddedToFast(address governor)
       external {
     // Verify that the given address is in fact a registered FAST contract.
-    require(
-      IssuerTopFacet(address(this)).isFastRegistered(msg.sender),
-      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    if (!IssuerTopFacet(address(this)).isFastRegistered(msg.sender)) {
+      revert ICustomErrors.RequiresFastContractCaller();
+    }
     // Keep track of the governorship.
     LibIssuerAccess.data().fastGovernorships[governor].add(msg.sender, false);
 
@@ -102,10 +104,9 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
   function governorRemovedFromFast(address governor)
       external {
     // Verify that the given address is in fact a registered FAST contract.
-    require(
-      IssuerTopFacet(address(this)).isFastRegistered(msg.sender),
-      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    if (!IssuerTopFacet(address(this)).isFastRegistered(msg.sender)) {
+      revert ICustomErrors.RequiresFastContractCaller();
+    }
     // Remove the tracked governorship.
     LibIssuerAccess.data().fastGovernorships[governor].remove(msg.sender, false);
 
