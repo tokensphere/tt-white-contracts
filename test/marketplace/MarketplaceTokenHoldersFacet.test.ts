@@ -6,7 +6,7 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, Fast, MarketplaceTokenHoldersFacet, Marketplace } from '../../typechain';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
-import { REQUIRES_FAST_CONTRACT_CALLER, ten, zero, impersonateContract } from '../utils';
+import { ten, zero, impersonateContract } from '../utils';
 import { ZERO_ADDRESS } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -71,7 +71,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
       const subject = tokenHolders.holdingUpdated(alice.address, fast.address);
 
       await expect(subject).to.have
-        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+        .revertedWith('RequiresFastContractCaller()');
     });
 
     it('returns a list of FASTs that an account holds', async () => {

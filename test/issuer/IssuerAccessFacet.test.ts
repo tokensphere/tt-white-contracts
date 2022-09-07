@@ -5,12 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { smock, FakeContract } from '@defi-wonderland/smock';
 import { Issuer, IssuerAccessFacet, Fast } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import {
-  REQUIRES_ISSUER_MEMBERSHIP,
-  REQUIRES_FAST_CONTRACT_CALLER,
-  impersonateContract,
-  CANNOT_REMOVE_SELF
-} from '../utils';
+import { impersonateContract } from '../utils';
 import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);
@@ -97,7 +92,7 @@ describe('IssuerAccessFacet', () => {
       it('requires that the sender is a member', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('adds the member to the list', async () => {
@@ -128,13 +123,13 @@ describe('IssuerAccessFacet', () => {
       it('requires that the sender is a member', async () => {
         const subject = access.removeMember(bob.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('requires that the user is not removing themselves', async () => {
         const subject = issuerMemberAccess.removeMember(issuerMember.address);
         await expect(subject).to.be
-          .revertedWith(CANNOT_REMOVE_SELF);
+          .revertedWith(`CannotSelfRemove("${issuerMember.address}")`);
       });
 
       it('removes the member from the list', async () => {
@@ -164,7 +159,7 @@ describe('IssuerAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+        .revertedWith('RequiresFastContractCaller()');
     });
 
     it('adds the given member to the FAST governorship tracking data structure', async () => {
@@ -202,7 +197,7 @@ describe('IssuerAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+        .revertedWith('RequiresFastContractCaller()');
     });
 
     it('adds the given member to the FAST governorship tracking data structure', async () => {

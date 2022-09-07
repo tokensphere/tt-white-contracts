@@ -7,7 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, MarketplaceTopFacet, Marketplace, MarketplaceInitFacet } from '../../typechain';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
 import { BigNumber } from 'ethers';
-import { ALREADY_INITIALIZED, impersonateContract } from '../utils';
+import { impersonateContract } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -54,7 +54,7 @@ describe('MarketplaceInitFacet', () => {
       });
 
       await expect(subject).to.be
-        .revertedWith(ALREADY_INITIALIZED);
+        .revertedWith('AlreadyInitialized()');
     });
 
     it('set various storage versions', async () => {

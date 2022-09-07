@@ -6,7 +6,6 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Fast, Issuer, IssuerTopFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { ZERO_ADDRESS } from '../../src/utils';
-import { DUPLICATE_ENTRY, REQUIRES_ISSUER_MEMBERSHIP } from '../utils';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -95,7 +94,7 @@ describe('IssuerTopFacet', () => {
       it('requires Issuer membership', async () => {
         const subject = top.registerFast(f01.address);
         await expect(subject).to.have
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('reverts if trying to add a FAST with an already existing symbol', async () => {
@@ -103,7 +102,7 @@ describe('IssuerTopFacet', () => {
         duplFast.symbol.returns('F01');
         const subject = issuerMemberIssuer.registerFast(duplFast.address)
         await expect(subject).to.be
-          .revertedWith(DUPLICATE_ENTRY);
+          .revertedWith('DuplicateEntry()');
       });
 
       it('adds the registry address to the list of registries', async () => {
