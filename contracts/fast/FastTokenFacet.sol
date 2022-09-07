@@ -137,7 +137,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Since the holder's account is now empty, make sure to keep track of it both
     // in this FAST and in the marketplace.
     s.tokenHolders.remove(holder, true);
-    ITokenHoldings(LibFast.data().marketplace).holdingUpdated(holder, address(this));
+    ITokenHoldings(LibFast.data().marketplace).holdingUpdated(holder, 0);
 
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
@@ -442,17 +442,17 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     }
 
     // Keep track of the balances - `from` spends, `to` receives.
-    s.balances[p.from] -= p.amount;
-    s.balances[p.to] += p.amount;
+    uint256 fromBalance = (s.balances[p.from] -= p.amount);
+    uint256 toBalance = (s.balances[p.to] += p.amount);
 
     // Keep track of who has what FAST.
     LibFast.Data storage d = LibFast.data();
-    ITokenHoldings(d.marketplace).holdingUpdated(p.from, address(this));
-    ITokenHoldings(d.marketplace).holdingUpdated(p.to, address(this));
+    ITokenHoldings(d.marketplace).holdingUpdated(p.from, fromBalance);
+    ITokenHoldings(d.marketplace).holdingUpdated(p.to, toBalance);
 
     // Keep track of who holds this token.
-    holdingUpdated(p.from);
-    holdingUpdated(p.to);
+    holdingUpdated(p.from, fromBalance);
+    holdingUpdated(p.to, toBalance);
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
@@ -587,7 +587,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     return s.tokenHolders.values;
   }
 
-  function holdingUpdated(address holder)
+  function holdingUpdated(address holder, uint256 balance)
       private {
     // Return early if this is the zero address.
     if (holder == address(0)) {
@@ -595,15 +595,13 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     }
 
     LibFastToken.Data storage s = LibFastToken.data();
-    uint256 balance = this.balanceOf(holder);
 
     // If this is a positive balance and it doesn't already exist in the set, add address.
     if (balance > 0 && !s.tokenHolders.contains(holder)) {
       s.tokenHolders.add(holder, false);
     }
-
     // If the balance is 0 and it exists in the set, remove it.
-    if (balance == 0 && s.tokenHolders.contains(holder)) {
+    else if (balance == 0 && s.tokenHolders.contains(holder)) {
       s.tokenHolders.remove(holder, false);
     }
   }

@@ -8,9 +8,8 @@ interface ITokenHoldings {
   /**
    * @dev Callback for a FAST token.
    * @param account The account to add the FAST address to.
-   * @param fast The address of the FAST.
    */
-  function holdingUpdated(address account, address fast) external;
+  function holdingUpdated(address account, uint256 balance) external;
 
   /**
    * @dev Returns the FASTs an account holds.

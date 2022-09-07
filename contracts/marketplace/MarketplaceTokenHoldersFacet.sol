@@ -14,10 +14,12 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
 
   /** @dev The callback used when a balance changes on a FAST.
    */
-  function holdingUpdated(address account, address fast)
+  function holdingUpdated(address account, uint256 balance)
     external override {
     // Return early if this is the zero address.
-    if (account == address(0)) return;
+    if (account == address(0)) {
+      return;
+    }
 
     // Verify that the given address is in fact a registered FAST contract.
     if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
@@ -26,16 +28,15 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
 
     // Get the storage pointer and balance of the token holder.
     LibMarketplaceTokenHolders.Data storage s = LibMarketplaceTokenHolders.data();
-    uint256 balance = IERC20(fast).balanceOf(account);
 
     // If this is a positive balance and it doesn't already exist in the set, add address.
-    if (balance > 0 && !s.fastHoldings[account].contains(fast)) {
-      s.fastHoldings[account].add(fast, false);
+    if (balance > 0 && !s.fastHoldings[account].contains(msg.sender)) {
+      s.fastHoldings[account].add(msg.sender, false);
     }
 
     // If the balance is 0 and it exists in the set, remove it.
-    if (balance == 0 && s.fastHoldings[account].contains(fast)) {
-      s.fastHoldings[account].remove(fast, false);
+    if (balance == 0 && s.fastHoldings[account].contains(msg.sender)) {
+      s.fastHoldings[account].remove(msg.sender, false);
     }
   }
 
