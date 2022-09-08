@@ -68,7 +68,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
   describe('holdingsUpdated', async () => {
     it('reverts if not called by a FAST contract', async () => {
       // Trigger the holding update callback.
-      const subject = tokenHolders.holdingUpdated(alice.address, fast.address);
+      const subject = tokenHolders.fastBalanceChanged(alice.address, 0);
 
       await expect(subject).to.have
         .revertedWith('RequiresFastContractCaller()');
@@ -76,7 +76,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
 
     it('returns a list of FASTs that an account holds', async () => {
       // Trigger the holding update callback.
-      await tokenHoldersAsFast.holdingUpdated(alice.address, fast.address);
+      await tokenHoldersAsFast.fastBalanceChanged(alice.address, 10);
 
       // Expects that the FAST has been added to the list.
       const subject = await tokenHolders.holdings(alice.address);
@@ -85,15 +85,9 @@ describe('MarketplaceTokenHoldersFacet', () => {
 
     it('removes the FAST holding if account balance drops to 0', async () => {
       // Trigger the holding update callback.
-      await tokenHoldersAsFast.holdingUpdated(alice.address, fast.address);
-
-      // Reset account tokenHolders to zero.
-      fast.balanceOf.reset();
-      fast.balanceOf.returns(zero);
-
+      await tokenHoldersAsFast.fastBalanceChanged(alice.address, 10);
       // Trigger the callback again.
-      await tokenHoldersAsFast.holdingUpdated(alice.address, fast.address);
-
+      await tokenHoldersAsFast.fastBalanceChanged(alice.address, 0);
       // Expects that the FAST has been removed from the list.
       const subject = await tokenHolders.holdings(alice.address);
       expect(subject).to.be.empty;
@@ -101,7 +95,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
 
     it('does not track the zero address', async () => {
       // Trigger the callback.
-      await tokenHoldersAsFast.holdingUpdated(ZERO_ADDRESS, fast.address);
+      await tokenHoldersAsFast.fastBalanceChanged(ZERO_ADDRESS, fast.address);
 
       // Expects that the ZERO address doesn't have an entry.
       const subject = await tokenHolders.holdings(ZERO_ADDRESS);
@@ -112,7 +106,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
   describe('holdings', async () => {
     it('returns a list of FASTs a account holds', async () => {
       // Trigger the holding update callback.
-      await tokenHoldersAsFast.holdingUpdated(alice.address, fast.address);
+      await tokenHoldersAsFast.fastBalanceChanged(alice.address, fast.address);
 
       // Expects that the FAST has been removed from the list.
       const subject = await tokenHolders.holdings(alice.address);

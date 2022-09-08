@@ -5,13 +5,13 @@ import '../interfaces/IERC20.sol';
 import '../interfaces/ICustomErrors.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasGovernors.sol';
-import '../interfaces/ITokenHoldings.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
 import './lib/IFast.sol';
+import '../marketplace/MarketplaceTokenHoldersFacet.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
 import './FastHistoryFacet.sol';
@@ -137,7 +137,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Since the holder's account is now empty, make sure to keep track of it both
     // in this FAST and in the marketplace.
     s.tokenHolders.remove(holder, true);
-    ITokenHoldings(LibFast.data().marketplace).holdingUpdated(holder, 0);
+    MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, 0);
 
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
@@ -425,6 +425,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     if (p.amount == 0) {
       revert ICustomErrors.UnsupportedOperation();
     }
+    // Funds are moved from reserve... Must be a governor.
+    else if (p.from == address(0) && !IHasGovernors(address(this)).isGovernor(msg.sender)) {
+      revert ICustomErrors.RequiresFastGovernorship(msg.sender);
+    }
 
     // If this is an allowance transfer...
     if (p.spender != p.from) {
@@ -447,12 +451,12 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
     // Keep track of who has what FAST.
     LibFast.Data storage d = LibFast.data();
-    ITokenHoldings(d.marketplace).holdingUpdated(p.from, fromBalance);
-    ITokenHoldings(d.marketplace).holdingUpdated(p.to, toBalance);
+    MarketplaceTokenHoldersFacet(d.marketplace).fastBalanceChanged(p.from, fromBalance);
+    MarketplaceTokenHoldersFacet(d.marketplace).fastBalanceChanged(p.to, toBalance);
 
     // Keep track of who holds this token.
-    holdingUpdated(p.from, fromBalance);
-    holdingUpdated(p.to, toBalance);
+    balanceChanged(p.from, fromBalance);
+    balanceChanged(p.to, toBalance);
 
     // If the funds are not moving from the zero address, decrease transfer credits.
     if (p.from != address(0)) {
@@ -587,7 +591,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     return s.tokenHolders.values;
   }
 
-  function holdingUpdated(address holder, uint256 balance)
+  function balanceChanged(address holder, uint256 balance)
       private {
     // Return early if this is the zero address.
     if (holder == address(0)) {

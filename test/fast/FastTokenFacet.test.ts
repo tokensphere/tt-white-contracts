@@ -333,9 +333,9 @@ describe('FastTokenFacet', () => {
     });
 
     it('calls the marketplace to stop tracking this token holder for this FAST', async () => {
-      marketplace.holdingUpdated.reset();
+      marketplace.fastBalanceChanged.reset();
       await issuerMemberToken.retrieveDeadTokens(alice.address);
-      expect(marketplace.holdingUpdated).to.have.been
+      expect(marketplace.fastBalanceChanged).to.have.been
         .calledOnceWith(alice.address, token.address);
     });
 
@@ -347,7 +347,7 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the Frontend facet for a global event emission', async () => {
-      marketplace.holdingUpdated.reset();
+      marketplace.fastBalanceChanged.reset();
       frontendMock.emitDetailsChanged.reset();
       await issuerMemberToken.retrieveDeadTokens(alice.address);
       expect(frontendMock.emitDetailsChanged).to.have.been
@@ -554,11 +554,14 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(50);
       });
 
-      it('requires a non-zero amount', async () => {
-        // Let alice give allowance to bob.
-        const subject = token.connect(alice).approve(bob.address, 0);
-        await expect(subject).to.have
-          .revertedWith(REQUIRES_NON_ZERO_AMOUNT);
+      it('functions properly when given a zero amount', async () => {
+        await Promise.all([
+          token.connect(alice).approve(bob.address, 0),
+          token.connect(alice).approve(bob.address, 10),
+          token.connect(alice).approve(bob.address, 0)
+        ]);
+        const subject = await token.allowance(alice.address, bob.address);
+        expect(subject).to.eq(10);
       });
 
       it('stacks up new allowances', async () => {
@@ -836,9 +839,9 @@ describe('FastTokenFacet', () => {
       });
 
       it('delegates to the MarketplaceTokenHoldersFacet contract', async () => {
-        marketplace.holdingUpdated.reset();
+        marketplace.fastBalanceChanged.reset();
         await token.connect(john).transferFromWithRef(bob.address, alice.address, 12, 'Five')
-        expect(marketplace.holdingUpdated).to.have.been
+        expect(marketplace.fastBalanceChanged).to.have.been
           .calledTwice;
       });
 
@@ -894,19 +897,19 @@ describe('FastTokenFacet', () => {
         expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
       });
 
-      it('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
+      it.only('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
         const subject = issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
           .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
       });
 
-      it('requires that zero address can only be spent from as a governor (member)', async () => {
+      it.only('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
           .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
       });
 
-      it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
+      it.only('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
           .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
@@ -1039,7 +1042,7 @@ describe('FastTokenFacet', () => {
         // Attempt to run the callback, removing alice.
         const subject = tokenAsItself.beforeRemovingMember(alice.address);
         await expect(subject).to.be
-        .revertedWith(`RequiresPositiveBalance("${alice.address}")`)
+          .revertedWith(`RequiresPositiveBalance("${alice.address}")`)
       });
 
       it('sets allowances to / from the removed members to zero', async () => {

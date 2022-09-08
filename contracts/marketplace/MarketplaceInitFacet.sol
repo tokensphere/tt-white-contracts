@@ -6,7 +6,6 @@ import '../interfaces/IERC173.sol';        // Ownership.
 import '../interfaces/IDiamondCut.sol';    // Facet management.
 import '../interfaces/IDiamondLoupe.sol';  // Facet introspection.
 import '../interfaces/IHasMembers.sol';    // Membership management.
-import '../interfaces/ITokenHoldings.sol'; // Token holdings.
 import '../interfaces/ICustomErrors.sol';
 import '../lib/LibDiamond.sol';
 import './lib/AMarketplaceFacet.sol';
@@ -33,7 +32,6 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
     ds.supportedInterfaces[type(IHasMembers).interfaceId] = true;
-    ds.supportedInterfaces[type(ITokenHoldings).interfaceId] = true;
 
     // ------------------------------------- //
 

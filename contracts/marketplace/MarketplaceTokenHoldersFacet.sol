@@ -5,17 +5,16 @@ import './lib/AMarketplaceFacet.sol';
 import '../issuer/IssuerTopFacet.sol';
 import '../interfaces/IERC20.sol';
 import '../interfaces/ICustomErrors.sol';
-import '../interfaces/ITokenHoldings.sol';
 
 /** @dev The Marketplace FAST balances facet.
  */
-contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
+contract MarketplaceTokenHoldersFacet is AMarketplaceFacet {
   using LibAddressSet for LibAddressSet.Data;
 
   /** @dev The callback used when a balance changes on a FAST.
    */
-  function holdingUpdated(address account, uint256 balance)
-    external override {
+  function fastBalanceChanged(address account, uint256 balance)
+    external {
     // Return early if this is the zero address.
     if (account == address(0)) {
       return;
@@ -33,9 +32,8 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
     if (balance > 0 && !s.fastHoldings[account].contains(msg.sender)) {
       s.fastHoldings[account].add(msg.sender, false);
     }
-
     // If the balance is 0 and it exists in the set, remove it.
-    if (balance == 0 && s.fastHoldings[account].contains(msg.sender)) {
+    else if (balance == 0 && s.fastHoldings[account].contains(msg.sender)) {
       s.fastHoldings[account].remove(msg.sender, false);
     }
   }
@@ -44,7 +42,7 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, ITokenHoldings {
    *  @return list of FAST addresses.
    */
   function holdings(address account)
-    external view override
+    external view
     returns(address[] memory) {
     LibMarketplaceTokenHolders.Data storage s = LibMarketplaceTokenHolders.data();
     return s.fastHoldings[account].values;
