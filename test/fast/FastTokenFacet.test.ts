@@ -897,22 +897,22 @@ describe('FastTokenFacet', () => {
         expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
       });
 
-      it.only('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
+      it('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
         const subject = issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
+          .revertedWith(`RequiresFastGovernorship("${issuerMember.address}")`);
       });
 
-      it.only('requires that zero address can only be spent from as a governor (member)', async () => {
+      it('requires that zero address can only be spent from as a governor (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
+          .revertedWith(`RequiresFastGovernorship("${bob.address}")`);
       });
 
-      it.only('requires that zero address can only be spent from as a governor (anonymous)', async () => {
+      it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${issuer.address}")`);
+          .revertedWith(`RequiresFastGovernorship("${deployer.address}")`);
       });
 
       it('allows governors to transfer from the zero address', async () => {

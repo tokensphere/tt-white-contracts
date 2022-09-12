@@ -426,8 +426,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       revert ICustomErrors.UnsupportedOperation();
     }
     // Funds are moved from reserve... Must be a governor.
-    else if (p.from == address(0) && !IHasGovernors(address(this)).isGovernor(msg.sender)) {
-      revert ICustomErrors.RequiresFastGovernorship(msg.sender);
+    else if (p.from == address(0) && !IHasGovernors(address(this)).isGovernor(p.spender)) {
+      revert ICustomErrors.RequiresFastGovernorship(p.spender);
     }
 
     // If this is an allowance transfer...
