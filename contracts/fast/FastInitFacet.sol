@@ -8,6 +8,7 @@ import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
 import '../interfaces/IHasGovernors.sol'; // Governorship management.
 import '../interfaces/IHasMembers.sol';   // Membership management.
+import '../interfaces/ICustomErrors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../marketplace/MarketplaceTopFacet.sol';
@@ -42,8 +43,10 @@ contract FastInitFacet is AFastFacet {
       external
       onlyDeployer {
     // Make sure we haven't initialized yet.
-    require(LibFast.data().version < LibFast.STORAGE_VERSION, 'Already initialized');
-
+    if (LibFast.data().version >= LibFast.STORAGE_VERSION) {
+      revert ICustomErrors.AlreadyInitialized();
+    }
+ 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     ds.supportedInterfaces[type(IERC20).interfaceId] = true;

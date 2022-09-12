@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import '../interfaces/ICustomErrors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../lib/LibHelpers.sol';
@@ -45,7 +46,9 @@ contract IssuerTopFacet is AIssuerFacet {
       onlyMember(msg.sender) {
     LibIssuer.Data storage s = LibIssuer.data();
     string memory symbol = FastTokenFacet(fast).symbol();
-    require(s.fastSymbols[symbol] == address(0), LibConstants.DUPLICATE_ENTRY);
+    if (s.fastSymbols[symbol] != address(0)) {
+      revert ICustomErrors.DuplicateEntry();
+    }
 
     // Add the FAST to our list.
     s.fastSet.add(fast, false);

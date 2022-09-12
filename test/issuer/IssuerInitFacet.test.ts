@@ -7,7 +7,6 @@ import { Issuer, IssuerAccessFacet, IssuerInitFacet } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { BigNumber, ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
-import { ALREADY_INITIALIZED } from '../utils';
 import { ZERO_ADDRESS } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -52,7 +51,7 @@ describe('IssuerInitFacet', () => {
         member: ZERO_ADDRESS
       });
       await expect(subject).to.be
-        .revertedWith(ALREADY_INITIALIZED);
+        .revertedWith('AlreadyInitialized()');
     });
 
     it('set various storage versions', async () => {

@@ -57,10 +57,11 @@ contract FastTopFacet is AFastFacet {
   function setIsSemiPublic(bool flag)
       external
       onlyIssuerMember {
-    LibFast.Data storage s = LibFast.data();
     // Someone is trying to toggle back to private?... No can do!
-    require(!this.isSemiPublic() || this.isSemiPublic() == flag, LibConstants.UNSUPPORTED_OPERATION);
-    s.isSemiPublic = flag;
+    if (this.isSemiPublic()) {
+      revert ICustomErrors.UnsupportedOperation();
+    }
+    LibFast.data().isSemiPublic = flag;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }

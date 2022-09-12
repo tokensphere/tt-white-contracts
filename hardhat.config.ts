@@ -22,20 +22,30 @@ const config: HardhatUserConfig = {
     version: '0.8.10',
     settings: {
       outputSelection: {
-        '*': { '*': ['storageLayout'] }
+        '*': {
+          '*': ['storageLayout']
+        }
+      },
+      optimizer: {
+        enabled: true,
+        runs: 1000000
       }
     }
   },
   diamondAbi: [{
     name: 'Issuer',
     filter: abiFilter([
+      // Event types.
       ['Facet$', 'EthDrained(address,uint256)'],
       ['Facet$', 'EthReceived(address,uint256)'],
       ['Facet$', 'FastRegistered(address)'],
       ['Facet$', 'MemberAdded(address)'],
       ['Facet$', 'MemberRemoved(address)'],
       ['Facet$', 'GovernorshipAdded(address,address)'],
-      ['Facet$', 'GovernorshipRemoved(address,address)']
+      ['Facet$', 'GovernorshipRemoved(address,address)'],
+      // Error types.
+      ['Facet$', 'RequiresIssuerMembership(address)'],
+      ['Facet$', 'RequiresFastContractCaller()']
     ]),
     include: [
       'IERC165',
@@ -48,10 +58,13 @@ const config: HardhatUserConfig = {
   }, {
     name: 'Marketplace',
     filter: abiFilter([
+      // Event types.
       ['Facet$', 'MemberAdded(address)'],
       ['Facet$', 'MemberRemoved(address)'],
       ['Facet$', 'MemberActivated(address)'],
-      ['Facet$', 'MemberDeactivated(address)']
+      ['Facet$', 'MemberDeactivated(address)'],
+      // Error types.
+      ['Facet$', 'RequiresFastContractCaller()']
     ]),
     include: [
       'IERC165',
@@ -64,6 +77,7 @@ const config: HardhatUserConfig = {
   }, {
     name: 'Fast',
     filter: abiFilter([
+      // Event types.
       ['Facet$', 'EthDrained(address,uint256)'],
       ['Facet$', 'EthReceived(address,uint256)'],
       ['Facet$', 'MemberAdded(address)'],
@@ -77,7 +91,13 @@ const config: HardhatUserConfig = {
       ['Facet$', 'Transfer(address,address,uint256)'],
       ['Facet$', 'Approval(address,address,uint256)'],
       ['Facet$', 'Disapproval(address,address,uint256)'],
-      ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)']
+      ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)'],
+      // Error types.
+      ['Facet$', 'InternalMethod()'],
+      ['Facet$', 'RequiresIssuerMembership(address)'],
+      ['Facet$', 'RequiresMarketplaceMembership(address)'],
+      ['Facet$', 'RequiresFastGovernorship(address)'],
+      ['Facet$', 'UnsupportedOperation()']
     ]),
     include: [
       'IERC165',

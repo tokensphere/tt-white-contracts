@@ -53,6 +53,7 @@ export const REQUIRES_NON_CONTRACT_ADDR = 'Address cannot be a contract';
 export const DUPLICATE_ENTRY = 'Duplicate entry';
 export const UNSUPPORTED_OPERATION = 'Unsupported operation';
 
+export const UNDERFLOWED_OR_OVERFLOWED = 'reverted with panic code 0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)';
 export const REQUIRES_CONTINUOUS_SUPPLY = 'Requires continuous supply';
 export const INSUFFICIENT_FUNDS = 'Insufficient token balance';
 export const REQUIRES_NON_ZERO_AMOUNT = 'Amount cannot be zero';

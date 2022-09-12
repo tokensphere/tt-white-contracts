@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import '../../lib/LibConstants.sol';
 import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
+import '../../interfaces/ICustomErrors.sol';
 import '../../interfaces/IHasMembers.sol';
 import '../../interfaces/IHasGovernors.sol';
 import '../../interfaces/IHasActiveMembers.sol';
@@ -24,28 +25,25 @@ abstract contract AFastFacet is IFastEvents {
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
   modifier onlyDiamondFacet() {
-    require(
-      msg.sender == address(this),
-      LibConstants.INTERNAL_METHOD
-    );
+    if (msg.sender != address(this)) {
+      revert ICustomErrors.InternalMethod();
+    }
     _;
   }
 
   /// @notice Ensures that a method can only be called by the owner of this diamond.
   modifier onlyDiamondOwner() {
-    require(
-      msg.sender == IERC173(address(this)).owner(),
-      LibConstants.REQUIRES_DIAMOND_OWNERSHIP
-    );
+    if (msg.sender != IERC173(address(this)).owner()) {
+      revert ICustomErrors.RequiresDiamondOwnership();
+    }
     _;
   }
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() {
-    require(
-      msg.sender == LibConstants.DEPLOYER_CONTRACT,
-      LibConstants.INTERNAL_METHOD
-    );
+    if (msg.sender != LibConstants.DEPLOYER_CONTRACT) {
+      revert ICustomErrors.InternalMethod();
+    }
     _;
   }
 
@@ -54,10 +52,9 @@ abstract contract AFastFacet is IFastEvents {
    * @param candidate The address to check.
    */
   modifier onlyMarketplaceMember(address candidate) {
-    require(
-      IHasMembers(LibFast.data().marketplace).isMember(candidate),
-      LibConstants.REQUIRES_MARKETPLACE_MEMBERSHIP
-    );
+    if (!IHasMembers(LibFast.data().marketplace).isMember(candidate)) {
+      revert ICustomErrors.RequiresMarketplaceMembership(candidate);
+    }
     _;
   }
 
@@ -66,10 +63,9 @@ abstract contract AFastFacet is IFastEvents {
    * @param candidate The address to check.
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
-    require(
-      IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate),
-      LibConstants.REQUIRES_MARKETPLACE_ACTIVE_MEMBER
-    );
+    if (!IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate)) {
+      revert ICustomErrors.RequiresMarketplaceActiveMember(candidate);
+    }
     _;
   }
 
@@ -77,10 +73,9 @@ abstract contract AFastFacet is IFastEvents {
    * @notice Ensures that the message sender is a member of the Issuer.
    */
   modifier onlyIssuerMember() {
-    require(
-      IHasMembers(LibFast.data().issuer).isMember(msg.sender),
-      LibConstants.REQUIRES_ISSUER_MEMBERSHIP
-    );
+    if (!IHasMembers(LibFast.data().issuer).isMember(msg.sender)) {
+      revert ICustomErrors.RequiresIssuerMembership(msg.sender);
+    }
     _;
   }
 
@@ -89,10 +84,9 @@ abstract contract AFastFacet is IFastEvents {
    * @param candidate The address to check.
    */
   modifier onlyGovernor(address candidate) {
-    require(
-      IHasGovernors(address(this)).isGovernor(candidate),
-      LibConstants.REQUIRES_FAST_GOVERNORSHIP
-    );
+    if (!IHasGovernors(address(this)).isGovernor(candidate)) {
+      revert ICustomErrors.RequiresFastGovernorship(candidate);
+    }
     _;
   }
 
@@ -101,10 +95,9 @@ abstract contract AFastFacet is IFastEvents {
    * @param candidate The address to check.
    */
   modifier onlyMember(address candidate) {
-    require(
-      IHasMembers(address(this)).isMember(candidate),
-      LibConstants.REQUIRES_FAST_MEMBERSHIP
-    );
+    if (!IHasMembers(address(this)).isMember(candidate)) {
+      revert ICustomErrors.RequiresFastMembership(candidate);
+    }
     _;
   }
 
@@ -114,7 +107,9 @@ abstract contract AFastFacet is IFastEvents {
    * @param b Address b
    */
   modifier differentAddresses(address a, address b) {
-    require(a != b, LibConstants.REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT);
+    if (a == b) {
+      revert ICustomErrors.RequiresDifferentSenderAndRecipient(a);
+    }
     _;
   }
 }

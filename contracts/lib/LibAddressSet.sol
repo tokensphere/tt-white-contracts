@@ -33,11 +33,11 @@ library LibAddressSet {
     bool exists = contains(d, key);
     if (noThrow && !exists) { return; }
     require(exists, 'Address does not exist in set');
-    uint256 lastIndex = d.values.length - 1;
-    address keyToMove = d.values[lastIndex];
+    address keyToMove = d.values[d.values.length - 1];
     uint256 idxToReplace = d.indices[key];
     d.indices[keyToMove] = idxToReplace;
     d.values[idxToReplace] = keyToMove;
+
     delete d.indices[key];
     d.values.pop();
   }

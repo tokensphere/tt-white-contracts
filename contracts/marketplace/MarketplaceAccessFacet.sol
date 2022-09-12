@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../issuer/IssuerTopFacet.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasActiveMembers.sol';
 import './lib/LibMarketplaceAccess.sol';
@@ -76,7 +77,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
       onlyIssuerMember {
     LibMarketplaceAccess.Data storage s = LibMarketplaceAccess.data();
     // Ensure that member doesn't have any FAST membership.
-    require(s.fastMemberships[member].values.length == 0, LibConstants.REQUIRES_NO_FAST_MEMBERSHIPS);
+    if (s.fastMemberships[member].values.length != 0) {
+      revert ICustomErrors.RequiresNoFastMemberships(member);
+    }
     // Remove member.
     s.memberSet.remove(member, false);
     // Emit!
@@ -101,13 +104,11 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
   function memberAddedToFast(address member) 
       external {
     // Verify that the given address is in fact a registered FAST contract.
-    require(
-      IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender),
-      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+      revert ICustomErrors.RequiresFastContractCaller();
+    }
     // Keep track of the member's FAST membership.
-    LibAddressSet.Data storage memberFasts = LibMarketplaceAccess.data().fastMemberships[member];
-    memberFasts.add(msg.sender, false);
+    LibMarketplaceAccess.data().fastMemberships[member].add(msg.sender, false);
   }
 
   /**
@@ -116,13 +117,11 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
    */
   function memberRemovedFromFast(address member)
       external {
-    require(
-      IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender),
-      LibConstants.REQUIRES_FAST_CONTRACT_CALLER
-    );
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+      revert ICustomErrors.RequiresFastContractCaller();
+    }
     // Remove the tracked membership.
-    LibAddressSet.Data storage memberFasts = LibMarketplaceAccess.data().fastMemberships[member];
-    memberFasts.remove(msg.sender, false);
+    LibMarketplaceAccess.data().fastMemberships[member].remove(msg.sender, false);
   }
 
   /**
@@ -143,10 +142,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyIssuerMember
     onlyMember(member) {
     // Guard against attempting to activate an already active member.
-    require(
-      !this.isMemberActive(member),
-      LibConstants.REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER
-    );
+    if (this.isMemberActive(member)) {
+      revert ICustomErrors.RequiresMarketplaceDeactivatedMember(member);
+    }
 
     // Remove the member from the deactivated members list.
     LibMarketplaceAccess.data().deactivatedMemberSet.remove(member, false);
@@ -165,10 +163,9 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyIssuerMember
     onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
-    require(
-      this.isMemberActive(member),
-      LibConstants.REQUIRES_MARKETPLACE_ACTIVE_MEMBER
-    );
+    if (!this.isMemberActive(member)) {
+      revert ICustomErrors.RequiresMarketplaceActiveMember(member);
+    }
 
     // Add the member to the deactivated members list.
     LibMarketplaceAccess.data().deactivatedMemberSet.add(member, false);

@@ -5,16 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, Fast, MarketplaceAccessFacet, Marketplace } from '../../typechain';
-import {
-  REQUIRES_ISSUER_MEMBERSHIP,
-  REQUIRES_NO_FAST_MEMBERSHIPS,
-  REQUIRES_FAST_CONTRACT_CALLER,
-  REQUIRES_MARKETPLACE_ACTIVE_MEMBER,
-  REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER,
-  REQUIRES_MARKETPLACE_MEMBERSHIP,
-  one,
-  impersonateContract
-} from '../utils';
+import { one, impersonateContract } from '../utils';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
 import { toUnpaddedHexString } from '../../src/utils';
 chai.use(solidity);
@@ -147,7 +138,7 @@ describe('MarketplaceAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('delegates to the Issuer for permission', async () => {
@@ -187,7 +178,7 @@ describe('MarketplaceAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = marketplace.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
       it('delegates to the Issuer for permission', async () => {
@@ -210,7 +201,7 @@ describe('MarketplaceAccessFacet', () => {
 
         const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(REQUIRES_NO_FAST_MEMBERSHIPS);
+          .revertedWith(`RequiresNoFastMemberships("${alice.address}")`);
       });
 
       it('removes the given address as a member', async () => {
@@ -258,7 +249,7 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = marketplace.memberAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+        .revertedWith('RequiresFastContractCaller()');
     });
 
     it('adds the given member to the FAST membership tracking data structure', async () => {
@@ -280,7 +271,7 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = marketplace.memberRemovedFromFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith(REQUIRES_FAST_CONTRACT_CALLER);
+        .revertedWith('RequiresFastContractCaller()');
     });
 
     it('removes the FAST contract from the list of Fast members', async () => {
@@ -328,13 +319,13 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be an Issuer member', async () => {
       const subject = access.deactivateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
     });
 
     it('requires the member to deactivate is an Marketplace member', async () => {
       const subject = issuerMemberAccess.deactivateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_MARKETPLACE_MEMBERSHIP);
+        .revertedWith(`RequiresMarketplaceMembership("${bob.address}")`);
     });
 
     it('adds the FAST member to the list of deactivated members', async () => {
@@ -357,7 +348,7 @@ describe('MarketplaceAccessFacet', () => {
       // Attempt to re-deactivate Alice.
       const subject = issuerMemberAccess.deactivateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_MARKETPLACE_ACTIVE_MEMBER);
+        .revertedWith(`RequiresMarketplaceActiveMember("${alice.address}")`);
     });
   });
 
@@ -372,13 +363,13 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be an Issuer member', async () => {
       const subject = access.activateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
     });
 
     it('requires the member to activate is an Marketplace member', async () => {
       const subject = issuerMemberAccess.activateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_MARKETPLACE_MEMBERSHIP);
+        .revertedWith(`RequiresMarketplaceMembership("${bob.address}")`);
     });
 
     it('removes the FAST member from the list of deactivated members', async () => {
@@ -400,7 +391,7 @@ describe('MarketplaceAccessFacet', () => {
       // Attempt to activate an already active member.
       const subject = issuerMemberAccess.activateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_MARKETPLACE_DEACTIVATED_MEMBER);
+        .revertedWith(`RequiresMarketplaceDeactivatedMember("${bob.address}")`);
     });
   });
 });

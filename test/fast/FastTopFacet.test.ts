@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { REQUIRES_ISSUER_MEMBERSHIP, UNSUPPORTED_OPERATION, impersonateContract } from '../utils';
+import { impersonateContract } from '../utils';
 import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
@@ -102,7 +102,7 @@ describe('FastTopFacet', () => {
     it('requires Issuer membership for the sender', async () => {
       const subject = top.setIsSemiPublic(true);
       await expect(subject).to.be
-        .revertedWith(REQUIRES_ISSUER_MEMBERSHIP);
+        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
     });
 
     it('delegates to the Issuer for permission check', async () => {
@@ -113,13 +113,13 @@ describe('FastTopFacet', () => {
         .calledOnceWith(issuerMember.address);
     });
 
-    it('cannot revert an Issuer to non-semi public once set', async () => {
+    it('prevents changing from semi-public to closed', async () => {
       // Set as semi public.
       await issuerMemberTop.setIsSemiPublic(true);
       // Attempt to revert to non-semi public.
       const subject = issuerMemberTop.setIsSemiPublic(false);
       await expect(subject).to.be
-        .revertedWith(UNSUPPORTED_OPERATION);
+        .revertedWith('UnsupportedOperation()');
     });
 
     it('sets the required flag on the FAST', async () => {

@@ -6,8 +6,7 @@ import '../interfaces/IERC173.sol';        // Ownership.
 import '../interfaces/IDiamondCut.sol';    // Facet management.
 import '../interfaces/IDiamondLoupe.sol';  // Facet introspection.
 import '../interfaces/IHasMembers.sol';    // Membership management.
-import '../interfaces/ITokenHoldings.sol'; // Token holdings.
-import '../lib/LibConstants.sol';
+import '../interfaces/ICustomErrors.sol';
 import '../lib/LibDiamond.sol';
 import './lib/AMarketplaceFacet.sol';
 
@@ -22,7 +21,9 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
       external
       onlyDeployer {
     // Make sure we haven't initialized yet.
-    require(LibMarketplace.data().version < LibMarketplace.STORAGE_VERSION, LibConstants.ALREADY_INITIALIZED);
+    if (LibMarketplace.data().version >= LibMarketplace.STORAGE_VERSION) {
+      revert ICustomErrors.AlreadyInitialized();
+    }
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -31,7 +32,6 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
     ds.supportedInterfaces[type(IHasMembers).interfaceId] = true;
-    ds.supportedInterfaces[type(ITokenHoldings).interfaceId] = true;
 
     // ------------------------------------- //
 
@@ -43,13 +43,11 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     // ------------------------------------- //
 
     // Initialize access storage.
-    LibMarketplaceAccess.Data storage accessData = LibMarketplaceAccess.data();
-    accessData.version = LibMarketplaceAccess.STORAGE_VERSION;
+    LibMarketplaceAccess.data().version = LibMarketplaceAccess.STORAGE_VERSION;
 
     // ------------------------------------- //
 
     // Initialize token holders storage.
-    LibMarketplaceTokenHolders.Data storage tokenHoldersData = LibMarketplaceTokenHolders.data();
-    tokenHoldersData.version = LibMarketplaceTokenHolders.STORAGE_VERSION;
+    LibMarketplaceTokenHolders.data().version = LibMarketplaceTokenHolders.STORAGE_VERSION;
   }
 }

@@ -7,7 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, MarketplaceTopFacet, Marketplace, MarketplaceInitFacet } from '../../typechain';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
 import { BigNumber } from 'ethers';
-import { ALREADY_INITIALIZED, impersonateContract } from '../utils';
+import { impersonateContract } from '../utils';
 import { DEPLOYER_FACTORY_COMMON } from '../../src/utils';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -54,7 +54,7 @@ describe('MarketplaceInitFacet', () => {
       });
 
       await expect(subject).to.be
-        .revertedWith(ALREADY_INITIALIZED);
+        .revertedWith('AlreadyInitialized()');
     });
 
     it('set various storage versions', async () => {
@@ -74,15 +74,13 @@ describe('MarketplaceInitFacet', () => {
         IERC173: await marketplace.supportsInterface('0x7f5828d0'),
         IDiamondCut: await marketplace.supportsInterface('0x1f931c1c'),
         IDiamondLoupe: await marketplace.supportsInterface('0x48e2b093'),
-        IHasMembers: await marketplace.supportsInterface('0xb4bb4f46'),
-        ITokenHoldings: await marketplace.supportsInterface('0xc1da5b0c')
+        IHasMembers: await marketplace.supportsInterface('0xb4bb4f46')
       }).to.be.eql({
         IERC165: true,
         IERC173: true,
         IDiamondCut: true,
         IDiamondLoupe: true,
-        IHasMembers: true,
-        ITokenHoldings: true
+        IHasMembers: true
       })
     });
 
