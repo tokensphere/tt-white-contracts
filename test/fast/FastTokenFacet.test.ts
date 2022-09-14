@@ -303,12 +303,11 @@ describe('FastTokenFacet', () => {
         .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
     });
 
-    it('does not do anything if the holder balance is already zero', async () => {
-      // TODO: Not sure how we can efficiently test this.
-      // const subject = issuerMemberToken.retrieveDeadTokens(john.address);
-      // await expect(subject).to
-      //   .emit(fast, 'Transfer')
-      //   .withArgs(alice.address, ZERO_ADDRESS, 0);
+    it('still emits a Transfer event if the balance was already zero', async () => {
+      const subject = issuerMemberToken.retrieveDeadTokens(john.address);
+      await expect(subject).to
+        .emit(fast, 'Transfer')
+        .withArgs(john.address, ZERO_ADDRESS, 0);
     });
 
     it('sets the holder balance to zero while increasing the reserve balance', async () => {
@@ -336,10 +335,9 @@ describe('FastTokenFacet', () => {
 
     it('calls the marketplace to stop tracking this token holder for this FAST', async () => {
       marketplace.fastBalanceChanged.reset();
-      const balance = await token.balanceOf(alice.address);
       await issuerMemberToken.retrieveDeadTokens(alice.address);
       expect(marketplace.fastBalanceChanged).to.have.been
-        .calledOnceWith(alice.address, balance);
+        .calledOnceWith(alice.address, 0);
     });
 
     it('emits a Transfer event between the holder and the reserve', async () => {

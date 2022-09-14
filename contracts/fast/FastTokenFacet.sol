@@ -103,15 +103,15 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * Business logic:
    * - Modifiers:
    *   - Requires that the caller is a member of the Issuer contract.
-   * - If the amount held by `holder` is zero,
-   *   - Then the function should return early, with no action.
-   * - The balance of `holder` should be set to zero.
-   * - The reserve's balance should be increased by how much was on the holder's account.
-   * - Total supply should be decreased by that amount too.
+   * - If the amount held by `holder` is not zero
+   *   - The balance of `holder` should be set to zero.
+   *   - The reserve's balance should be increased by how much was on the holder's account.
+   *   - Total supply should be decreased by that amount too.
    * - The `holder`'s address should not be tracked as a token holder in this FAST anymore.
    * - The `holder`'s address should not be tracked as a token holder in the Marketplace anymore.
    * - A `Transfer(holder, reserve, amount)` event should be emited.
-   * - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
+   * - If the amount previously held by `holder` was not zero,
+   *   - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
    * @param holder is the address for which to move the tokens from.
    */
   function retrieveDeadTokens(address holder)
@@ -124,23 +124,28 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Grab a pointer to the token storage.
     LibFastToken.Data storage s = LibFastToken.data();
 
-    // Set the holder balance to zero.
-    s.balances[holder] = 0;
-    // Increment the reserve's balance.
-    s.balances[address(0)] += amount;
-    // The tokens aren't in circulation anymore - decrease total supply.
-    s.totalSupply -= amount;
+    // These should only run if the amount is zero, as they result in a no-op.
+    if (amount > 0) {
+      // Set the holder balance to zero.
+      s.balances[holder] = 0;
+      // Increment the reserve's balance.
+      s.balances[address(0)] += amount;
+      // The tokens aren't in circulation anymore - decrease total supply.
+      s.totalSupply -= amount;
+    }
 
     // Since the holder's account is now empty, make sure to keep track of it both
     // in this FAST and in the marketplace.
     s.tokenHolders.remove(holder, true);
-    MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, amount);
-
+    MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, 0);
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
     emit Transfer(holder, address(0), amount);
-    // Total supply and reserve balance have changed - emit.
-    FastFrontendFacet(address(this)).emitDetailsChanged();
+
+    // If amount wasn't zero, total supply and reserve balance have changed - emit.
+    if (amount > 0) {
+      FastFrontendFacet(address(this)).emitDetailsChanged();
+    }
   }
 
   // Tranfer Credit management.
