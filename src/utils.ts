@@ -103,6 +103,7 @@ export const accounts = (networkName: string): string[] => {
   try {
     return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, 'utf8'));
   } catch (_error) {
+    console.warn(`Cannot read keys file at conf/keys.${networkName}.json .`);
     return [];
   }
 }
