@@ -119,10 +119,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       onlyIssuerMember {
     // Cache how many tokens the holder has.
     uint256 amount = balanceOf(holder);
-    // We won't do anything if the token holder doesn't have any.
-    if (amount == 0) {
-      return;
-    }
+    // Note: The amount **can** be zero in this function.
 
     // Grab a pointer to the token storage.
     LibFastToken.Data storage s = LibFastToken.data();
@@ -137,7 +134,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Since the holder's account is now empty, make sure to keep track of it both
     // in this FAST and in the marketplace.
     s.tokenHolders.remove(holder, true);
-    MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, 0);
+    MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, amount);
 
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.

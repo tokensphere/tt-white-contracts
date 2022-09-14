@@ -21,7 +21,6 @@ describe('IssuerAccessFacet', () => {
   let issuer: Issuer,
     fast: FakeContract<Fast>,
     issuerMemberIssuer: Issuer,
-    initTx: ContractTransaction,
     access: IssuerAccessFacet,
     issuerMemberAccess: IssuerAccessFacet;
 
@@ -40,7 +39,7 @@ describe('IssuerAccessFacet', () => {
         name: 'IssuerAccessFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ issuer, initTx } = args)
+          ({ issuer } = args)
           issuerMemberIssuer = issuer.connect(issuerMember);
           access = await ethers.getContractAt<IssuerAccessFacet>('IssuerAccessFacet', issuer.address);
           issuerMemberAccess = access.connect(issuerMember);
@@ -165,16 +164,13 @@ describe('IssuerAccessFacet', () => {
     it('adds the given member to the FAST governorship tracking data structure', async () => {
       // This FAST is registered.
       await issuerMemberIssuer.registerFast(fast.address);
-
       // Call governorAddedToFast on the Issuer contract, as the FAST contract.
       const issuerAsFast = await impersonateContract(issuer, fast.address);
-      issuerAsFast.governorAddedToFast(alice.address);
-
+      await issuerAsFast.governorAddedToFast(alice.address);
       // Expecting the FAST address to be included in FASTs Alice is a governor of.
       const [subject, /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
-      expect(subject).to.be.eql([
-        fast.address
-      ]);
+      expect(subject).to.be
+        .eql([fast.address]);
     });
 
     it('emits GovernorshipAdded event', async () => {
