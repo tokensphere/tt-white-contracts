@@ -133,4 +133,24 @@ describe('FastTopFacet', () => {
       expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
     });
   });
+
+  describe('setTransfersDisabled', async () => {
+    it('requires Issuer membership from the sender', async () => {
+      const subject = top.setTransfersDisabled(true);
+      await expect(subject).to.be
+        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+    });
+
+    it('returns `false` when transfers are enabled', async () => {
+      await issuerMemberTop.setTransfersDisabled(false);
+      const subject = await top.transfersDisabled();
+      expect(subject).to.be.false;
+    });
+
+    it('returns `true` when transfers are disabled', async () => {
+      await issuerMemberTop.setTransfersDisabled(true);
+      const subject = await top.transfersDisabled();
+      expect(subject).to.be.true;
+    });
+  });
 });

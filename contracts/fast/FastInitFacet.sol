@@ -66,6 +66,7 @@ contract FastInitFacet is AFastFacet {
     topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
     topData.isSemiPublic = params.isSemiPublic;
+    topData.transfersDisabled = false;
 
     // ------------------------------------- //
 

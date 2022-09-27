@@ -348,6 +348,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    *   - Requires that `onlyTokenHolder` passes for the `from` address.
    *   - Requires that the `from` address is an active Marketplace contract member.
    *   - Requires that `onlyTokenHolder` passes for the `to` address.
+   * - Requires that transfers are enabled across this particular FAST.
    * - Requires that the `from` address has enough funds to cover for `amount`.
    * - Requires that the amount is a positive value.
    * - If the transfer is an allowance - e.g. the `spender` is not the same as the `from` address,
@@ -378,6 +379,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       onlyTokenHolder(p.to) {
     // TODO: Make this function return instead of raising errors.
     // TODO: Make this function run even when a zero amount is passed. It should just emit.
+    if (FastTopFacet(address(this)).transfersDisabled()) {
+      revert ICustomErrors.RequiresTransfersEnabled();
+    }
+
     LibFastToken.Data storage s = LibFastToken.data();
 
     // Make sure that there's enough funds.

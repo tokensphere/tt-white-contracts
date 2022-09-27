@@ -7,7 +7,7 @@ import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { Issuer, Marketplace, Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet } from '../../typechain';
 import { ZERO_ADDRESS, ZERO_ACCOUNT_MOCK } from '../../src/utils';
-import { UNDERFLOWED_OR_OVERFLOWED, DEFAULT_TRANSFER_REFERENCE, REQUIRES_NON_ZERO_AMOUNT, impersonateContract } from '../utils';
+import { UNDERFLOWED_OR_OVERFLOWED, DEFAULT_TRANSFER_REFERENCE, impersonateContract } from '../utils';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -89,6 +89,7 @@ describe('FastTokenFacet', () => {
     topMock.hasFixedSupply.returns(true);
     topMock.isSemiPublic.reset();
     topMock.isSemiPublic.returns(false);
+    topMock.transfersDisabled.returns(false);
   });
 
   /// Public stuff.
@@ -716,6 +717,13 @@ describe('FastTokenFacet', () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 101, 'Two');
         await expect(subject).to.have
           .revertedWith(UNDERFLOWED_OR_OVERFLOWED);
+      });
+
+      it('requires that transfers are enabled', async () => {
+        topMock.transfersDisabled.returns(true);
+        const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 100, 'Four');
+        await expect(subject).to.have
+          .revertedWith('RequiresTransfersEnabled()');
       });
 
       it('transfers from / to the given wallet address', async () => {

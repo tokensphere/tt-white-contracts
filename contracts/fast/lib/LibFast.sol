@@ -31,6 +31,8 @@ library LibFast {
     bool hasFixedSupply;
     /// @notice Whether or not this FAST requires to be a member to hold tokens.
     bool isSemiPublic;
+    /// @notice A flag which when toggled to `true` disables all transfers across this FAST.
+    bool transfersDisabled;
   }
 
   /**

@@ -8,6 +8,7 @@ interface ICustomErrors {
   error RequiresDiamondOwnership(address who);
   error RequiresFastContractCaller();
 
+  error RequiresTransfersEnabled();
   error RequiresIssuerMembership(address who);
   error RequiresMarketplaceMembership(address who);
   error RequiresMarketplaceActiveMember(address who);
