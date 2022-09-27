@@ -85,7 +85,5 @@ contract FastInitFacet is AFastFacet {
     (tokenData.name, tokenData.symbol, tokenData.decimals) =
       (params.name,   params.symbol,   params.decimals);
     tokenData.totalSupply = 0;
-    // Initialize other internal stuff.
-    tokenData.transferCredits = 0;
   }
 }

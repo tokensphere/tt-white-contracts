@@ -49,20 +49,6 @@ interface IFastEvents {
    */
   event Burnt(uint256 indexed amount, string indexed ref);
 
-  // Transfer credits related events.
-  /**
-   * @notice Emited whenever transfer credits increase inside a FAST.
-   * @param issuerMember is the address of the Issuer member who performed the operation.
-   * @param amount is the number of issued transfer credits.
-   */
-  event TransferCreditsAdded(address indexed issuerMember, uint256 amount);
-  /**
-   * @notice Emited whenever transfer credits are drained inside a FAST.
-   * @param issuerMember is the address of the Issuer member who performed the operation.
-   * @param amount is the number of drained transfer credits.
-   */
-  event TransferCreditsDrained(address indexed issuerMember, uint256 amount);
-
   // ERC20 stuff.
 
   /// @notice See `ERC20.Transfer`.
@@ -81,7 +67,6 @@ interface IFastEvents {
    * @param memberCount is the number of members in the FAST.
    * @param governorCount is the number of governors in the FAST.
    * @param totalSupply is the amount of tokens in circulation in the FAST.
-   * @param transferCredits represents how many transfer credits are available inside the FAST.
    * @param reserveBalance is the balance of the zero-address (aka reserve) for the FAST.
    * @param ethBalance is the amount of Eth locked in the FAST.
    */
@@ -89,7 +74,6 @@ interface IFastEvents {
     uint256 memberCount,
     uint256 governorCount,
     uint256 totalSupply,
-    uint256 transferCredits,
     uint256 reserveBalance,
     uint256 ethBalance
   );

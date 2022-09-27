@@ -86,7 +86,6 @@ describe('FastFrontendFacet', () => {
           detailsObj.memberCount,
           detailsObj.governorCount,
           detailsObj.totalSupply,
-          detailsObj.transferCredits,
           detailsObj.reserveBalance,
           BigNumber.isBigNumber /* the balance from detailsObj.ethBalance will not be correct */
         );
@@ -105,7 +104,6 @@ describe('FastFrontendFacet', () => {
         symbol: FAST_INIT_DEFAULTS.symbol,
         decimals: FAST_INIT_DEFAULTS.decimals,
         totalSupply: zero,
-        transferCredits: zero,
         isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
         hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
         reserveBalance: zero,

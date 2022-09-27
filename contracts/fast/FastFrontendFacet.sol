@@ -32,8 +32,6 @@ contract FastFrontendFacet is AFastFacet {
     uint8 decimals;
     /// @notice The `totalSupply` of the FAST (ERC20).
     uint256 totalSupply;
-    /// @notice The number of transfer credits the FAST currently has.
-    uint256 transferCredits;
     /// @notice Whether the FAST is semi public or not.
     bool isSemiPublic;
     /// @notice Whether the FAST has a fixed supply or continious.
@@ -92,7 +90,6 @@ contract FastFrontendFacet is AFastFacet {
       memberCount: accessData.memberSet.values.length,
       governorCount: accessData.governorSet.values.length,
       totalSupply: tokenData.totalSupply,
-      transferCredits: tokenData.transferCredits,
       reserveBalance: tokenData.balances[LibConstants.ZERO_ADDRESS],
       ethBalance: payable(address(this)).balance
     });
@@ -115,7 +112,6 @@ contract FastFrontendFacet is AFastFacet {
       symbol: tokenStorage.symbol,
       decimals: tokenStorage.decimals,
       totalSupply: tokenStorage.totalSupply,
-      transferCredits: tokenStorage.transferCredits,
       isSemiPublic: topStorage.isSemiPublic,
       hasFixedSupply: topStorage.hasFixedSupply,
       reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],

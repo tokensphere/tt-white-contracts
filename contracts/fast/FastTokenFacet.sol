@@ -148,49 +148,6 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     }
   }
 
-  // Tranfer Credit management.
-
-  /**
-   * @notice Get the current `transferCredits` for this FAST.
-   * @return Number of transfer credits remaining.
-   */
-  function transferCredits()
-      external view returns(uint256) {
-    return LibFastToken.data().transferCredits;
-  }
-
-  /// @notice Adds `amount` of transfer credits to this FAST.
-  function addTransferCredits(uint256 amount)
-      external
-      onlyIssuerMember {
-    LibFastToken.data().transferCredits += amount;
-    // Emit!
-    FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit TransferCreditsAdded(msg.sender, amount);
-  }
-
-  /**
-   * @notice Drains the transfer credits from this FAST.
-   *
-   * Business logic:
-   * - Modifiers:
-   *   - Requires the caller to be a member of the Issuer contract.
-   * - Emits a `TransferCreditsDrained(caller, previousTransferCredits)`.
-   * - Sets transfer credits to zero.
-   * - Calls `FastFrontendFacet.emitDetailsChanged`
-   */
-  function drainTransferCredits()
-      external
-      onlyIssuerMember {
-    LibFastToken.Data storage s = LibFastToken.data();
-    // Emit!
-    emit TransferCreditsDrained(msg.sender, s.transferCredits);
-    // Drain credits.
-    s.transferCredits = 0;
-    // Emit!
-    FastFrontendFacet(address(this)).emitDetailsChanged();
-  }
-
   // ERC20 implementation and transfer related methods.
 
   /**
@@ -459,11 +416,6 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Keep track of who holds this token.
     balanceChanged(p.from, fromBalance);
     balanceChanged(p.to, toBalance);
-
-    // If the funds are not moving from the zero address, decrease transfer credits.
-    if (p.from != address(0)) {
-      s.transferCredits -= p.amount;
-    }
 
     // If the funds are going to the ZERO address, decrease total supply.
     if (p.to == address(0)) {

@@ -103,9 +103,6 @@ describe('FastTokenFacet', () => {
 
       const decimals = await token.decimals();
       expect(decimals).to.eq(FAST_INIT_DEFAULTS.decimals);
-
-      const transferCredits = await token.transferCredits();
-      expect(transferCredits).to.eq(0);
     });
   });
 
@@ -135,13 +132,6 @@ describe('FastTokenFacet', () => {
   describe('totalSupply', async () => {
     it('returns the total supply', async () => {
       const subject = await token.totalSupply();
-      expect(subject).to.eq(0);
-    });
-  });
-
-  describe('transferCredits', async () => {
-    it('returns the remaining transfer credits', async () => {
-      const subject = await token.transferCredits();
       expect(subject).to.eq(0);
     });
   });
@@ -357,87 +347,12 @@ describe('FastTokenFacet', () => {
     });
   });
 
-  /// Tranfer Credit management.
-
-  describe('addTransferCredits', async () => {
-    it('requires Issuer membership (anonymous)', async () => {
-      const subject = token.addTransferCredits(10);
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
-    });
-
-    it('requires Issuer membership (member)', async () => {
-      const subject = token.connect(alice).addTransferCredits(10);
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${alice.address}")`);
-    });
-
-    it('requires Issuer membership (governor)', async () => {
-      const subject = governedToken.addTransferCredits(10);
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${governor.address}")`);
-    });
-
-    it('accumulates the credits to the existing transfer credits', async () => {
-      await Promise.all([10, 20, 30, 40].map(async (value) =>
-        issuerMemberToken.addTransferCredits(value)
-      ));
-      expect(await token.transferCredits()).to.eq(100);
-    });
-
-    it('emits a TransferCreditsAdded event', async () => {
-      const subject = await issuerMemberToken.addTransferCredits(50);
-      await expect(subject).to
-        .emit(fast, 'TransferCreditsAdded')
-        .withArgs(issuerMember.address, 50);
-    });
-
-    it('delegates to the frontend facet');
-  });
-
-  describe('drainTransferCredits', async () => {
-    it('requires Issuer membership (anonymous)', async () => {
-      const subject = token.drainTransferCredits();
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
-    });
-
-    it('requires Issuer membership (member)', async () => {
-      const subject = token.connect(alice).drainTransferCredits();
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${alice.address}")`);
-    });
-
-    it('requires Issuer membership (governor)', async () => {
-      const subject = governedToken.drainTransferCredits();
-      await expect(subject).to.have
-        .revertedWith(`RequiresIssuerMembership("${governor.address}")`);
-    });
-
-    it('sets the credit amount to zero', async () => {
-      await issuerMemberToken.addTransferCredits(100);
-      await issuerMemberToken.drainTransferCredits();
-      expect(await token.transferCredits()).to.eq(0);
-    });
-
-    it('emits a TransferCreditsDrained event', async () => {
-      const creditsBefore = await token.transferCredits();
-      const subject = await issuerMemberToken.drainTransferCredits();
-      await expect(subject).to
-        .emit(fast, 'TransferCreditsDrained')
-        .withArgs(issuerMember.address, creditsBefore);
-    });
-  });
-
   /// ERC20 implementation.
 
   describe('ERC20', async () => {
     beforeEach(async () => {
       // Mint a few tokens and raise the transfer credits.
-      await Promise.all([
-        issuerMemberToken.mint(1_000_000, 'ERC20 Tests'),
-        issuerMemberToken.addTransferCredits(1_000_000)
-      ]);
+      await issuerMemberToken.mint(1_000_000, 'ERC20 Tests');
       // Transfer tokens from address zero to alice and bob.
       await Promise.all([alice, bob].map(
         async ({ address }) => governedToken.transferFrom(ZERO_ADDRESS, address, 100)
@@ -791,18 +706,6 @@ describe('FastTokenFacet', () => {
         });
       });
 
-      it('decreases the transfer credits when not transacting from the zero address', async () => {
-        // The token transfer amount.
-        const transferAmount = 100;
-
-        // Snapshot the transfer tokens before, transfer then check balance after.
-        const creditsBefore = await issuerMemberToken.transferCredits();
-        await token.connect(john).transferFromWithRef(bob.address, alice.address, transferAmount, 'No!');
-        const creditsAfter = await issuerMemberToken.transferCredits();
-
-        expect(creditsAfter).to.be.eql(creditsBefore.sub(transferAmount));
-      });
-
       it('requires that the sender and recipient are different', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, bob.address, 100, 'No!')
         await expect(subject).to.have
@@ -812,16 +715,6 @@ describe('FastTokenFacet', () => {
       it('requires sufficient funds', async () => {
         const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 101, 'Two');
         await expect(subject).to.have
-          .revertedWith(UNDERFLOWED_OR_OVERFLOWED);
-      });
-
-      it('requires sufficient transfer credits', async () => {
-        // Drain all credits, and provision some more.
-        await issuerMemberToken.drainTransferCredits();
-        await issuerMemberToken.addTransferCredits(90);
-        // Do it!
-        const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 100, 'Three');
-        await expect(subject).to.be
           .revertedWith(UNDERFLOWED_OR_OVERFLOWED);
       });
 
@@ -921,21 +814,6 @@ describe('FastTokenFacet', () => {
         await expect(subject).to
           .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
-
-      it('does not require transfer credits when drawing from the zero address', async () => {
-        await issuerMemberToken.drainTransferCredits();
-        const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Ten');
-        await expect(subject).to
-          .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
-      });
-
-      it('does not impact transfer credits when drawing from the zero address', async () => {
-        await issuerMemberToken.addTransferCredits(1000);
-        const creditsBefore = await token.transferCredits();
-        await governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Eleven');
-        const subject = await token.transferCredits();
-        expect(subject).to.eq(creditsBefore);
-      });
     });
   });
 
@@ -1021,8 +899,6 @@ describe('FastTokenFacet', () => {
       let tokenAsItself: FastTokenFacet;
 
       beforeEach(async () => {
-        // Add transfer credits to the token contract.
-        await issuerMemberToken.addTransferCredits(1_000);
         // Let alice give allowance to bob, and john give allowance to alice.
         await Promise.all([
           token.connect(alice).approve(bob.address, 100),

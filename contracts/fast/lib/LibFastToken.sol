@@ -38,11 +38,8 @@ library LibFastToken {
     uint8 decimals;
     /// @notice The amount of tokens in circulation.
     uint256 totalSupply;
-    /**
-   * @notice Every time a transfer is executed, the credit decreases by the amount of said transfer.
-     * It becomes impossible to transact once it reaches zero, and must be provisioned by an Issuer member.
-    */
-    uint256 transferCredits;
+    /// @notice Legacy variable.
+    uint256 LEGACY_transferCredits;
     /// @notice Our members balances are held here.
     mapping(address => uint256) balances;
     // Allowances are stored here.

@@ -20,7 +20,6 @@ const FAST_DETAILS_DEFAULTS: FastFrontendFacet.DetailsStruct = {
   isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
   addr: ZERO_ADDRESS,
   totalSupply: BigNumber.from(20),
-  transferCredits: BigNumber.from(30),
   reserveBalance: BigNumber.from(40),
   ethBalance: BigNumber.from(0),
   memberCount: BigNumber.from(1),
