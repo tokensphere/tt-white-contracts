@@ -83,6 +83,7 @@ describe('FastFrontendFacet', () => {
       await expect(subject).to
         .emit(frontend, 'DetailsChanged')
         .withArgs(
+          detailsObj.transfersDisabled,
           detailsObj.memberCount,
           detailsObj.governorCount,
           detailsObj.totalSupply,
@@ -106,6 +107,7 @@ describe('FastFrontendFacet', () => {
         totalSupply: zero,
         isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
         hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
+        transfersDisabled: false,
         reserveBalance: zero,
         ethBalance: oneHundred,
         memberCount: BigNumber.from(2),

@@ -89,7 +89,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'Transfer(address,address,uint256)'],
       ['Facet$', 'Approval(address,address,uint256)'],
       ['Facet$', 'Disapproval(address,address,uint256)'],
-      ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256)'],
+      ['Facet$', 'DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)'],
       // Error types.
       ['Facet$', 'InternalMethod()'],
       ['Facet$', 'RequiresIssuerMembership(address)'],

@@ -8,6 +8,7 @@ import './lib/LibFast.sol';
 import './lib/IFastEvents.sol';
 import './FastFrontendFacet.sol';
 
+
 contract FastTopFacet is AFastFacet {
   // Getters and setters for global flags.
 
@@ -82,6 +83,13 @@ contract FastTopFacet is AFastFacet {
   function setTransfersDisabled(bool flag)
       external
       onlyIssuerMember {
-    LibFast.data().transfersDisabled = flag;
+    LibFast.Data storage d = LibFast.data();
+    // Only make changes and emit if the new flag is different than the old one.
+    if (d.transfersDisabled != flag) {
+      // Set flag.
+      d.transfersDisabled = flag;
+      // Emit!
+      FastFrontendFacet(address(this)).emitDetailsChanged();
+    }
   }
 }

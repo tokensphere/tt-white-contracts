@@ -36,6 +36,8 @@ contract FastFrontendFacet is AFastFacet {
     bool isSemiPublic;
     /// @notice Whether the FAST has a fixed supply or continious.
     bool hasFixedSupply;
+    /// @notice Whether the transfers are enabled or not for this FAST.
+    bool transfersDisabled;
     /// @notice The reserve balance.
     uint256 reserveBalance;
     /// @notice The Ether balance.
@@ -87,6 +89,7 @@ contract FastFrontendFacet is AFastFacet {
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     LibFastToken.Data storage tokenData = LibFastToken.data();
     emit DetailsChanged({
+      transfersDisabled: LibFast.data().transfersDisabled,
       memberCount: accessData.memberSet.values.length,
       governorCount: accessData.governorSet.values.length,
       totalSupply: tokenData.totalSupply,
@@ -114,6 +117,7 @@ contract FastFrontendFacet is AFastFacet {
       totalSupply: tokenStorage.totalSupply,
       isSemiPublic: topStorage.isSemiPublic,
       hasFixedSupply: topStorage.hasFixedSupply,
+      transfersDisabled: topStorage.transfersDisabled,
       reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],
       ethBalance: payable(address(this)).balance,
       memberCount: accessStorage.memberSet.values.length,
