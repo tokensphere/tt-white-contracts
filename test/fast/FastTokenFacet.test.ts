@@ -284,7 +284,7 @@ describe('FastTokenFacet', () => {
       await issuerMemberToken.mint(1_000_000, 'ERC20 Tests');
       // Transfer tokens from address zero to alice and bob.
       await Promise.all([alice, bob].map(
-        async ({ address }) => governedToken.transferFrom(ZERO_ADDRESS, address, 100)
+        ({ address }) => issuerMemberToken.transferFrom(ZERO_ADDRESS, address, 100)
       ));
     });
 
@@ -356,7 +356,7 @@ describe('FastTokenFacet', () => {
       await issuerMemberToken.mint(1_000_000, 'ERC20 Tests');
       // Transfer tokens from address zero to alice and bob.
       await Promise.all([alice, bob].map(
-        async ({ address }) => governedToken.transferFrom(ZERO_ADDRESS, address, 100)
+        async ({ address }) => issuerMemberToken.transferFrom(ZERO_ADDRESS, address, 100)
       ));
     });
 
@@ -415,18 +415,18 @@ describe('FastTokenFacet', () => {
         expect(subject).to.eq(50);
       });
 
-      it('follows value at zero address for governors', async () => {
+      it('follows value at zero address for issuer members', async () => {
         let subject: BigNumber;
         // Make the token continuous supply.
         topMock.hasFixedSupply.returns(false);
         // Check the balance.
         const allocated = await token.balanceOf(ZERO_ADDRESS);
-        subject = await token.allowance(ZERO_ADDRESS, governor.address);
+        subject = await token.allowance(ZERO_ADDRESS, issuerMember.address);
         expect(subject).to.eq(allocated);
 
         // Mint some more.
         issuerMemberToken.mint(50, 'Adding some more');
-        subject = await token.allowance(ZERO_ADDRESS, governor.address);
+        subject = await token.allowance(ZERO_ADDRESS, issuerMember.address);
         expect(subject).to.eq(allocated.add(50));
 
       });
@@ -460,7 +460,7 @@ describe('FastTokenFacet', () => {
         const subject = token.connect(alice).approve(john.address, 1);
 
         await expect(subject).to.have.been
-          .revertedWith(`RequiresFastMembership("${alice.address}")`);
+          .revertedWith(`RequiresValidTokenHolder("${alice.address}")`);
       });
 
       it('adds an allowance with the correct parameters', async () => {
@@ -657,7 +657,7 @@ describe('FastTokenFacet', () => {
 
           const subject = token.connect(alice).transferFromWithRef(john.address, bob.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(`RequiresMarketplaceMembership("${john.address}")`);
+            .revertedWith(`RequiresValidTokenHolder("${john.address}")`);
         });
 
         it('requires recipient membership (Marketplace membership)', async () => {
@@ -668,7 +668,7 @@ describe('FastTokenFacet', () => {
 
           const subject = token.connect(alice).transferFromWithRef(bob.address, john.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(`RequiresMarketplaceMembership("${john.address}")`);
+            .revertedWith(`RequiresValidTokenHolder("${john.address}")`);
         });
 
         it('allows marketplace members to transact', async () => {
@@ -697,13 +697,13 @@ describe('FastTokenFacet', () => {
         it('requires sender membership (FAST member)', async () => {
           const subject = token.connect(john).transferFromWithRef(anonymous.address, bob.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(`RequiresFastMembership("${anonymous.address}")`);
+            .revertedWith(`RequiresValidTokenHolder("${anonymous.address}")`);
         });
 
         it('requires recipient membership (FAST member)', async () => {
           const subject = token.connect(john).transferFromWithRef(bob.address, anonymous.address, 100, 'One');
           await expect(subject).to.have
-            .revertedWith(`RequiresFastMembership("${anonymous.address}")`);
+            .revertedWith(`RequiresValidTokenHolder("${anonymous.address}")`);
         });
       });
 
@@ -794,31 +794,31 @@ describe('FastTokenFacet', () => {
         // Keep track of total supply.
         const supplyBefore = await token.totalSupply();
         // Do it!
-        await governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Eight and a half?');
+        await issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Eight and a half?');
         // Check that total supply increased.
         expect(await token.totalSupply()).to.eql(supplyBefore.add(100));
       });
 
-      it('requires that zero address can only be spent from as a governor (Issuer member)', async () => {
-        const subject = issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
+      it('requires that zero address can only be spent from as an issuer member (governor)', async () => {
+        const subject = governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Nine');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${issuerMember.address}")`);
+          .revertedWith(`RequiresIssuerMembership("${governor.address}")`);
       });
 
-      it('requires that zero address can only be spent from as a governor (member)', async () => {
+      it('requires that zero address can only be spent from as an issuer member (member)', async () => {
         const subject = token.connect(bob).transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Cat');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${bob.address}")`);
+          .revertedWith(`RequiresIssuerMembership("${bob.address}")`);
       });
 
-      it('requires that zero address can only be spent from as a governor (anonymous)', async () => {
+      it('requires that zero address can only be spent from as an issuer member (anonymous)', async () => {
         const subject = token.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Dog');
         await expect(subject).to.have
-          .revertedWith(`RequiresFastGovernorship("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
       });
 
-      it('allows governors to transfer from the zero address', async () => {
-        const subject = () => governedToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
+      it('allows issuer members to transfer from the zero address', async () => {
+        const subject = () => issuerMemberToken.transferFromWithRef(ZERO_ADDRESS, alice.address, 100, 'Spider');
         await expect(subject).to
           .changeTokenBalances(token, [ZERO_ACCOUNT_MOCK, alice], [-100, 100]);
       });
@@ -923,7 +923,7 @@ describe('FastTokenFacet', () => {
 
       it('reverts if the member to remove still has a positive balance', async () => {
         // Give alice some tokens.
-        await governedToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
+        await issuerMemberToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         // Attempt to run the callback, removing alice.
         const subject = tokenAsItself.beforeRemovingMember(alice.address);
         await expect(subject).to.be
