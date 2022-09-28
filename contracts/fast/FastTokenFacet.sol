@@ -45,9 +45,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
     // - The token has fixed supply but has no tokens yet (First and only mint).
-    if (FastTopFacet(address(this)).hasFixedSupply() && (s.totalSupply != 0 || this.balanceOf(address(0)) != 0)) {
+    if (FastTopFacet(address(this)).hasFixedSupply() && (s.totalSupply != 0 || this.balanceOf(address(0)) != 0))
       revert ICustomErrors.RequiresContinuousSupply();
-    }
 
     // Prepare the minted amount on the zero address.
     s.balances[address(0)] += amount;
@@ -81,9 +80,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    if (FastTopFacet(address(this)).hasFixedSupply()) {
+    if (FastTopFacet(address(this)).hasFixedSupply())
       revert ICustomErrors.RequiresContinuousSupply();
-    }
 
     // Remove the minted amount from the zero address.
     s.balances[address(0)] -= amount;
@@ -143,9 +141,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     emit Transfer(holder, address(0), amount);
 
     // If amount wasn't zero, total supply and reserve balance have changed - emit.
-    if (amount > 0) {
+    if (amount > 0)
       FastFrontendFacet(address(this)).emitDetailsChanged();
-    }
   }
 
   // ERC20 implementation and transfer related methods.
@@ -516,9 +513,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   // - It can only be called by a governor.
   function beforeRemovingMember(address member)
       external onlyDiamondFacet() {
-    if (balanceOf(member) != 0) {
+    if (balanceOf(member) != 0)
       revert ICustomErrors.RequiresPositiveBalance(member);
-    }
 
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -553,23 +549,20 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   function balanceChanged(address holder, uint256 balance)
       private {
     // Return early if this is the zero address.
-    if (holder == address(0)) {
+    if (holder == address(0))
       return;
-    }
 
     LibFastToken.Data storage s = LibFastToken.data();
 
     // If this is a positive balance and it doesn't already exist in the set, add address.
-    if (balance > 0 && !s.tokenHolders.contains(holder)) {
+    if (balance > 0 && !s.tokenHolders.contains(holder))
       s.tokenHolders.add(holder, false);
-    }
     // If the balance is 0 and it exists in the set, remove it.
-    else if (balance == 0 && s.tokenHolders.contains(holder)) {
+    else if (balance == 0 && s.tokenHolders.contains(holder))
       s.tokenHolders.remove(holder, false);
-    }
   }
 
-  // Modifiers.
+  // Private and helper methods.
 
   /**
    * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
