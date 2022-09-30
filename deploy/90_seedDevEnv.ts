@@ -31,6 +31,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 
   const governedF01 = (await ethers.getContract('FastF01')).connect(fastGovernorSigner);
+  const issuerMemberF01 = (await ethers.getContract('FastF01')).connect(issuerMemberSigner);
   console.log('Adding user[1-5] as members of the F01 FAST...');
   for (const addr of [user1, user2, user3, user4, user5]) {
     console.log(`  ${addr}...`);
@@ -39,7 +40,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   console.log('Transferring F01 to user[1-3]...');
   for (const [index, addr] of [user1, user2, user3].entries()) {
     console.log(`  ${addr} ${index}...`);
-    await (await governedF01.transferFromWithRef(
+    await (await issuerMemberF01.transferFromWithRef(
       ZERO_ADDRESS, addr, toBaseUnit(1_000 * (index + 1), 18), `Transfer ${index + 1}`)
     ).wait();
   }
