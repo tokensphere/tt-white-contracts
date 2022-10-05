@@ -230,8 +230,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   function allowance(address owner, address spender)
       public view override returns(uint256) {
     LibFastToken.Data storage s = LibFastToken.data();
-    // If the allowance being queried is over the reserve, make it so that
-    // an issuer member would have complete coverage of it. Otherwise, make it zero.
+    // If the allowance being queried is owned by the reserve, and `spender` is
+    // an Issuer member, `spender` owns the full balance of `owner`. If they are
+    // not an Issuer member then their allowance is zero. Otherwise, the regular given
+    // allowance for `spender` over `owner` applies.
     if (owner == address(0))
       return IHasMembers(LibFast.data().issuer).isMember(spender)
         ? s.balances[owner]
@@ -387,7 +389,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // If `from` is not the reserve, requires that `from` is a valid token holder.
     else if (p.from != address(0) && !canHoldTokens(p.from))
       revert ICustomErrors.RequiresValidTokenHolder(p.from);
-    // If `from` is the reserve, requires that the message sender is an issuer member.
+    // If `from` is the reserve, requires that the spender (usually the original message sender) is an issuer member.
     else if (p.from == address(0) && !IHasMembers(topData.issuer).isMember(p.spender))
       revert ICustomErrors.RequiresIssuerMembership(p.spender);
     // Requires that `to` is a valid token holder.
@@ -579,9 +581,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
    *
    * Business logic:
-   *  - If the candidate is not the reserve,
-   *    - If the fast is semi-public,
-   *      - We require that candidate is a member of the Marketplace contract.
+  *    - If the fast is semi-public,
+  *      - We require that candidate is a member of the Marketplace contract and is active in it.
    *  - Otherwise,
    *    - Require that the candidate is a member of the FAST.
    * @param candidate The address to check.
