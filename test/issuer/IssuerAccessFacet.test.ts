@@ -119,32 +119,26 @@ describe('IssuerAccessFacet', () => {
         await issuerMemberIssuer.addMember(bob.address);
       });
 
-      it('requires that the sender is a member', async () => {
-        const subject = access.removeMember(bob.address);
+      it('requires that the sender is the diamond owner', async () => {
+        const subject = issuerMemberAccess.removeMember(bob.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
-      });
-
-      it('requires that the user is not removing themselves', async () => {
-        const subject = issuerMemberAccess.removeMember(issuerMember.address);
-        await expect(subject).to.be
-          .revertedWith(`CannotSelfRemove("${issuerMember.address}")`);
+          .revertedWith(`RequiresDiamondOwnership("${issuerMember.address}")`);
       });
 
       it('removes the member from the list', async () => {
-        await issuerMemberAccess.removeMember(bob.address);
+        await access.removeMember(bob.address);
         const subject = await issuer.isMember(bob.address);
         expect(subject).to.eq(false);
       });
 
       it('reverts if the member is not in the list', async () => {
-        const subject = issuerMemberAccess.removeMember(alice.address);
+        const subject = access.removeMember(alice.address);
         await expect(subject).to.be
           .revertedWith('Address does not exist in set');
       });
 
       it('emits a MemberRemoved event', async () => {
-        const subject = issuerMemberAccess.removeMember(bob.address);
+        const subject = access.removeMember(bob.address);
         await expect(subject).to
           .emit(issuer, 'MemberRemoved')
           .withArgs(bob.address);
