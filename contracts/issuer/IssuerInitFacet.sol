@@ -32,7 +32,7 @@ contract IssuerInitFacet is AIssuerFacet {
 
   function initialize(InitializerParams calldata params)
       external
-      onlyDiamondOwner {
+      onlyDiamondOwner() {
     // Grab our top-level storage.
     // Make sure we haven't initialized yet.
     if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION) {
