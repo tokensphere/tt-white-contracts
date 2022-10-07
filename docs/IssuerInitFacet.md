@@ -21,5 +21,3 @@ struct InitializerParams {
 function initialize(struct IssuerInitFacet.InitializerParams params) external
 ```
 
-## IssuerInitFacet
-

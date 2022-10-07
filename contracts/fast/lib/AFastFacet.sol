@@ -34,7 +34,7 @@ abstract contract AFastFacet is IFastEvents {
   /// @notice Ensures that a method can only be called by the owner of this diamond.
   modifier onlyDiamondOwner() {
     if (msg.sender != IERC173(address(this)).owner()) {
-      revert ICustomErrors.RequiresDiamondOwnership();
+      revert ICustomErrors.RequiresDiamondOwnership(msg.sender);
     }
     _;
   }

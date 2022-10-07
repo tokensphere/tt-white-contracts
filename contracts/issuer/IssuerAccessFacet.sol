@@ -72,11 +72,7 @@ contract IssuerAccessFacet is AIssuerFacet, IHasMembers {
    */
   function removeMember(address member)
       external override
-      onlyMember(msg.sender) {
-    // No suicide allowed.
-    if (msg.sender == member) {
-      revert ICustomErrors.CannotSelfRemove(msg.sender);
-    }
+      onlyDiamondOwner() {
     // Remove the member from the set.
     LibIssuerAccess.data().memberSet.remove(member, false);
     // Emit!

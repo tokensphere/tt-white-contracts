@@ -151,9 +151,3 @@ Returns a page of inbound and outbound transfer proofs based on an involvee.#
 | [0] | struct LibFastHistory.TransferProof[] | A `(LibFastHistory.TransferProof[], uint256)` tuple containing the results and the cursor to the next page. |
 | [1] | uint256 |  |
 
-## FastHistoryFacet
-
-## FastHistoryFacet
-
-## FastHistoryFacet
-

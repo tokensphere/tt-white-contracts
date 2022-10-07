@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 interface ICustomErrors {
   error AlreadyInitialized();
   error InternalMethod();
-  error RequiresDiamondOwnership();
+  error RequiresDiamondOwnership(address who);
   error RequiresFastContractCaller();
 
   error RequiresIssuerMembership(address who);
