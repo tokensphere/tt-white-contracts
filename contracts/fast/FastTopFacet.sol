@@ -8,6 +8,7 @@ import './lib/LibFast.sol';
 import './lib/IFastEvents.sol';
 import './FastFrontendFacet.sol';
 
+
 contract FastTopFacet is AFastFacet {
   // Getters and setters for global flags.
 
@@ -47,6 +48,15 @@ contract FastTopFacet is AFastFacet {
     return LibFast.data().hasFixedSupply;
   }
 
+  /**
+   * @notice Are transfers enabled across this FAST?
+   * @return `true` if transfers are disabled, `false` if transfers are enabled.
+   */
+  function transfersDisabled()
+      external view returns(bool) {
+    return LibFast.data().transfersDisabled;
+  }
+
   // Setters for global flags.
 
   /**
@@ -64,5 +74,22 @@ contract FastTopFacet is AFastFacet {
     LibFast.data().isSemiPublic = flag;
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
+  }
+
+  /**
+   * @notice Allows an issuer member to enable or disable all transfers within this FAST.
+   * @param flag Set the transfer capability to active or not.
+   */
+  function setTransfersDisabled(bool flag)
+      external
+      onlyIssuerMember {
+    LibFast.Data storage d = LibFast.data();
+    // Only make changes and emit if the new flag is different than the old one.
+    if (d.transfersDisabled != flag) {
+      // Set flag.
+      d.transfersDisabled = flag;
+      // Emit!
+      FastFrontendFacet(address(this)).emitDetailsChanged();
+    }
   }
 }

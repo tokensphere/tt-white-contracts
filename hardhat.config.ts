@@ -86,12 +86,10 @@ const config: HardhatUserConfig = {
       ['Facet$', 'GovernorRemoved(address)'],
       ['Facet$', 'Minted(uint256,string)'],
       ['Facet$', 'Burnt(uint256,string)'],
-      ['Facet$', 'TransferCreditsAdded(address,uint256)'],
-      ['Facet$', 'TransferCreditsDrained(address,uint256)'],
       ['Facet$', 'Transfer(address,address,uint256)'],
       ['Facet$', 'Approval(address,address,uint256)'],
       ['Facet$', 'Disapproval(address,address,uint256)'],
-      ['Facet$', 'DetailsChanged(uint256,uint256,uint256,uint256,uint256,uint256)'],
+      ['Facet$', 'DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)'],
       // Error types.
       ['Facet$', 'InternalMethod()'],
       ['Facet$', 'RequiresIssuerMembership(address)'],

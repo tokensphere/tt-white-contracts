@@ -60,6 +60,8 @@ describe('FastTopFacet', () => {
     issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
+
+    frontendMock.emitDetailsChanged.reset();
   });
 
   afterEach(async () => {
@@ -131,6 +133,31 @@ describe('FastTopFacet', () => {
       frontendMock.emitDetailsChanged.reset();
       await issuerMemberTop.setIsSemiPublic(true);
       expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+    });
+  });
+
+  describe('setTransfersDisabled', async () => {
+    it('requires Issuer membership from the sender', async () => {
+      const subject = top.setTransfersDisabled(true);
+      await expect(subject).to.be
+        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+    });
+
+    it('delegates to FastFrontendFacet.emitDetailsChanged', async () => {
+      await issuerMemberTop.setTransfersDisabled(true);
+      expect(frontendMock.emitDetailsChanged).to.be.calledOnce;
+    });
+
+    it('sets the flag to `false` when transfers are enabled', async () => {
+      await issuerMemberTop.setTransfersDisabled(false);
+      const subject = await top.transfersDisabled();
+      expect(subject).to.be.false;
+    });
+
+    it('sets the flag to `true` when transfers are disabled', async () => {
+      await issuerMemberTop.setTransfersDisabled(true);
+      const subject = await top.transfersDisabled();
+      expect(subject).to.be.true;
     });
   });
 });

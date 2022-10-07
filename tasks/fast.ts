@@ -41,15 +41,9 @@ task('fast-deploy', 'Deploys a FAST')
     // At this point, we can start minting a few tokens if requested.
     if (params.mint) {
       const { symbol, decimals, baseAmount } = await fastMint(issuerMemberFast, params.mint, 'Initial Mint');
-      // Also add transfer credits.
-      await fastAddTransferCredits(issuerMemberFast, params.mint);
       console.log(`Minted ${symbol}: `);
       console.log(`  In base unit: =${baseAmount}`);
       console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)}(${decimals} decimals truncated)`);
-    } else {
-      // Add transfer credits.
-      issuerMemberFast.addTransferCredits(params.txCredits);
-      console.log(`Added transfer credits`);
     }
   });
 
@@ -100,27 +94,6 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
     console.log(`Minted ${params.symbol}: `);
     console.log(`  In base unit: = ${baseAmount} `);
     console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
-  });
-
-interface FastAddTransferCreditsParams {
-  readonly symbol: string;
-  readonly credits: number;
-};
-
-task('fast-add-transfer-credits', 'Increases the transfer credits for a given FAST Token')
-  .addPositionalParam('symbol', 'The FAST Token symbol to operate on', undefined, types.string)
-  .addPositionalParam('credits', 'How many credits should be added', undefined, types.int)
-  .setAction(async (params: FastAddTransferCreditsParams, hre) => {
-    const { ethers, getNamedAccounts } = hre;
-    const { issuerMember } = await getNamedAccounts();
-    const issuerMemberSigner = await ethers.getSigner(issuerMember);
-
-    // Grab a handle to the deployed fast.
-    const fast = await fastBySymbol(hre, params.symbol);
-    if (!fast) { throw (`No FAST registry can be found for symbol ${params.symbol}!`); }
-    const issuerMemberFast = fast.connect(issuerMemberSigner);
-
-    await fastAddTransferCredits(issuerMemberFast, params.credits);
   });
 
 interface FastBalanceParams {
@@ -241,9 +214,4 @@ const fastMint = async (fast: Fast, amount: number | BigNumber, ref: string) => 
   return { symbol, decimals, baseAmount };
 }
 
-const fastAddTransferCredits = async (fast: Fast, credits: number | BigNumber) => {
-  const decimals = await fast.decimals();
-  await (await fast.addTransferCredits(toBaseUnit(BigNumber.from(credits), decimals))).wait();
-}
-
-export { FAST_FACETS, deployFast, fastBySymbol, fastMint, fastAddTransferCredits };
+export { FAST_FACETS, deployFast, fastBySymbol, fastMint };
