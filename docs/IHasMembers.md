@@ -72,9 +72,3 @@ Removes a member from the list of known members.
 | ---- | ---- | ----------- |
 | member | address | is the address to be removed. |
 
-## IHasMembers
-
-## IHasMembers
-
-## IHasMembers
-

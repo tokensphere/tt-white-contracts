@@ -63,9 +63,3 @@ Allows to switch from a private scheme to a semi-public scheme,
 | ---- | ---- | ----------- |
 | flag | bool | Set the semi public flag to true/false. |
 
-## FastTopFacet
-
-## FastTopFacet
-
-## FastTopFacet
-

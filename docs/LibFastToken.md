@@ -60,9 +60,3 @@ Returns the token storage for the calling FAST.
 | ---- | ---- | ----------- |
 | s | struct LibFastToken.Data | a struct pointer for token FAST data storage. |
 
-## LibFastToken
-
-## LibFastToken
-
-## LibFastToken
-

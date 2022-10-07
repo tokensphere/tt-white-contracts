@@ -18,5 +18,3 @@ struct InitializerParams {
 function initialize(struct MarketplaceInitFacet.InitializerParams params) external
 ```
 
-## MarketplaceInitFacet
-

@@ -110,9 +110,3 @@ Retrieves flags for a given address.
 | ---- | ---- | ----------- |
 | [0] | struct FastAccessFacet.Flags | A `Flags` struct. |
 
-## FastAccessFacet
-
-## FastAccessFacet
-
-## FastAccessFacet
-

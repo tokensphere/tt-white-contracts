@@ -68,9 +68,3 @@ If facet is not found return address(0).
 | ---- | ---- | ----------- |
 | facetAddress_ | address | The facet address. |
 
-## IDiamondLoupe
-
-## IDiamondLoupe
-
-## IDiamondLoupe
-

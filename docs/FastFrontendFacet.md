@@ -106,9 +106,3 @@ function paginateDetailedMembers(uint256 index, uint256 perPage) external view r
 function paginateDetailedGovernors(uint256 index, uint256 perPage) external view returns (struct FastFrontendFacet.GovernorDetails[], uint256)
 ```
 
-## FastFrontendFacet
-
-## FastFrontendFacet
-
-## FastFrontendFacet
-

@@ -21,7 +21,3 @@ Paginates the FAST diamonds registered with this Issuer based on a starting curs
 | [0] | struct FastFrontendFacet.Details[] | A `address[]` list of values at most `perPage` big. |
 | [1] | uint256 | A `uint256` index to the next page. |
 
-## IssuerFrontendFacet
-
-## IssuerFrontendFacet
-
