@@ -46,3 +46,5 @@ Returns the access storage for the calling FAST.
 | ---- | ---- | ----------- |
 | s | struct LibFastAccess.Data | a struct pointer for access FAST data storage. |
 
+## LibFastAccess
+
