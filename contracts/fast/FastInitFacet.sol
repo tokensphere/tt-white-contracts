@@ -46,6 +46,15 @@ contract FastInitFacet is AFastFacet {
     if (LibFast.data().version >= LibFast.STORAGE_VERSION) {
       revert ICustomErrors.AlreadyInitialized();
     }
+
+    // Make sure that the passed governor address is a member of the Marketplace.
+    if (!IHasMembers(params.marketplace).isMember(params.governor)) {
+      revert ICustomErrors.RequiresMarketplaceMembership(params.governor);
+    }
+    // Also make sure that the passed governor address is active in the Marketplace.
+    else if (!IHasActiveMembers(params.marketplace).isMemberActive(params.governor)) {
+      revert ICustomErrors.RequiresMarketplaceActiveMember(params.governor);
+    }
  
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -66,6 +75,7 @@ contract FastInitFacet is AFastFacet {
     topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
     topData.isSemiPublic = params.isSemiPublic;
+    // For expliciteness / data slot cleanup.
     topData.transfersDisabled = false;
 
     // ------------------------------------- //
@@ -83,8 +93,10 @@ contract FastInitFacet is AFastFacet {
     LibFastToken.Data storage tokenData = LibFastToken.data();
     tokenData.version = LibFastToken.STORAGE_VERSION;
     // Set up ERC20 related stuff.
-    (tokenData.name, tokenData.symbol, tokenData.decimals) =
-      (params.name,   params.symbol,   params.decimals);
+    tokenData.name = params.name;
+    tokenData.symbol = params.symbol;
+    tokenData.decimals = params.decimals;
+    // For expliciteness / data slot cleanup.
     tokenData.totalSupply = 0;
   }
 }
