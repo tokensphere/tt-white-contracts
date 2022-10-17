@@ -41,16 +41,20 @@ describe('FastAccessFacet', () => {
   });
 
   beforeEach(async () => {
+    // Issuer is a member of the issuer contract.
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
 
     marketplace.isMember.reset();
 
-    await Promise.all(
-      [alice, bob, rob, john].map(
-        async ({ address }) => marketplace.isMember.whenCalledWith(address).returns(true)
-      )
+    [governor, alice, bob, rob, john].forEach(
+      ({ address }) => {
+        marketplace.isMember.whenCalledWith(address).returns(true);
+        marketplace.isMemberActive.whenCalledWith(address).returns(true);
+      }
     );
+    marketplace.isMember.returns(false);
+    marketplace.isMemberActive.returns(false);
 
     await fastDeployFixture({
       opts: {
@@ -75,12 +79,8 @@ describe('FastAccessFacet', () => {
 
   describe('IHasGovernors implementation', async () => {
     describe('isGovernor', async () => {
-      beforeEach(async () => {
-        await issuerMemberAccess.addGovernor(alice.address);
-      });
-
       it('returns true when the address is a governor', async () => {
-        const subject = await access.isGovernor(alice.address);
+        const subject = await access.isGovernor(governor.address);
         expect(subject).to.eq(true);
       });
 

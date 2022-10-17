@@ -40,6 +40,9 @@ describe('FastFrontendFacet', () => {
     marketplace.isMember.whenCalledWith(member.address).returns(true);
     marketplace.isMember.whenCalledWith(governor.address).returns(true);
     marketplace.isMember.returns(false);
+    marketplace.isMemberActive.whenCalledWith(member.address).returns(true);
+    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
+    marketplace.isMemberActive.returns(false);
   });
 
   beforeEach(async () => {
