@@ -45,6 +45,11 @@ describe('FastTokenFacet', () => {
     issuer = await smock.fake('Issuer');
     marketplace = await smock.fake('Marketplace');
     marketplace.issuerAddress.returns(issuer.address);
+
+    marketplace.isMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isMember.returns(false);
+    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
+    marketplace.isMemberActive.returns(false);
   });
 
   beforeEach(async () => {
@@ -627,8 +632,9 @@ describe('FastTokenFacet', () => {
         beforeEach(async () => {
           marketplace.isMemberActive.reset();
           // Alice will be deactivated on the marketplace.
+          marketplace.isMemberActive.whenCalledWith(bob.address).returns(true);
           marketplace.isMemberActive.whenCalledWith(alice.address).returns(false);
-          marketplace.isMemberActive.returns(true);
+          marketplace.isMemberActive.returns(false);
         });
 
         it('requires active member when transferring from address (at the Marketplace level)', async () => {
@@ -638,6 +644,8 @@ describe('FastTokenFacet', () => {
         });
 
         it('allows transfer to a deactived member (at the Marketplace level)', async () => {
+          console.log('bob', bob.address);
+          console.log('alice', alice.address);
           const subject = () => token.connect(bob).transferFromWithRef(bob.address, alice.address, 100, 'One');
           await expect(subject).to
             .changeTokenBalances(token, [bob, alice], [-100, 100]);

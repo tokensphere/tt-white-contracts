@@ -34,6 +34,10 @@ describe('FastTopFacet', () => {
     issuer = await smock.fake('Issuer');
     marketplace = await smock.fake('Marketplace');
     marketplace.issuerAddress.returns(issuer.address);
+    marketplace.isMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isMember.returns(false);
+    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
+    marketplace.isMemberActive.returns(false);
   });
 
   beforeEach(async () => {
