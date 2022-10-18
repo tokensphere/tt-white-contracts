@@ -4,9 +4,8 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Fast, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
-  FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory,
-  FastHistoryFacet__factory, FastFrontendFacet__factory, FastInitFacet
+  Fast, FastInitFacet, FastTopFacet, FastAccessFacet, FastTokenFacet, FastHistoryFacet, FastFrontendFacet,
+  FastTopFacet__factory, FastAccessFacet__factory, FastTokenFacet__factory, FastHistoryFacet__factory, FastFrontendFacet__factory
 } from "../../typechain";
 import { FAST_FACETS } from "../../tasks/fast";
 

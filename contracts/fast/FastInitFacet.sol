@@ -84,8 +84,14 @@ contract FastInitFacet is AFastFacet {
     LibFastAccess.Data storage accessData = LibFastAccess.data();
     accessData.version = LibFastAccess.STORAGE_VERSION;
     // Add the governor and emit.
-    accessData.governorSet.add(params.governor, false);
+    accessData.governorSet.add(params.governor, true);
     emit GovernorAdded(params.governor);
+
+    // ------------------------------------- //
+
+    // Initialize history storage.
+    LibFastHistory.Data storage historyData = LibFastHistory.data();
+    historyData.version = LibFastHistory.STORAGE_VERSION;
 
     // ------------------------------------- //
 

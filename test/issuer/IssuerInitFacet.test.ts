@@ -47,9 +47,7 @@ describe('IssuerInitFacet', () => {
     it('requires that it is not initialized', async () => {
       // Attempt to re-initialize.
       const initIssuer = await ethers.getContractAt<IssuerInitFacet>('IssuerInitFacet', issuer.address);
-      const subject = initIssuer.initialize({
-        member: ZERO_ADDRESS
-      });
+      const subject = initIssuer.initialize({ member: ZERO_ADDRESS });
       await expect(subject).to.be
         .revertedWith('AlreadyInitialized()');
     });
