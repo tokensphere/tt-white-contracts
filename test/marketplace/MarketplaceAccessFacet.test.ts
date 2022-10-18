@@ -291,21 +291,19 @@ describe('MarketplaceAccessFacet', () => {
     });
   });
 
-  describe('isMemberActive', async () => {
-    beforeEach(async () => {
-      // Add Alice as an Marketplace member.
-      await issuerMemberAccess.addMember(alice.address);
-      // Deactivate Alice.
-      await issuerMemberAccess.deactivateMember(alice.address);
-    });
-
+  describe('isActiveMember', async () => {
     it('returns true when a member is active', async () => {
-      const subject = await access.isMemberActive(bob.address);
+      // Add Bob as a marketplace active member.
+      await issuerMemberAccess.addMember(bob.address);
+      const subject = await access.isActiveMember(bob.address);
       expect(subject).to.eq(true);
     });
 
     it('returns false when a member is deactived', async () => {
-      const subject = await access.isMemberActive(alice.address);
+      // Add Alice as a deactivated marketplace member.
+      await issuerMemberAccess.addMember(alice.address);
+      await issuerMemberAccess.deactivateMember(alice.address);
+      const subject = await access.isActiveMember(alice.address);
       expect(subject).to.eq(false);
     });
   });
@@ -330,7 +328,7 @@ describe('MarketplaceAccessFacet', () => {
 
     it('adds the FAST member to the list of deactivated members', async () => {
       await issuerMemberAccess.deactivateMember(alice.address);
-      const subject = await access.isMemberActive(alice.address);
+      const subject = await access.isActiveMember(alice.address);
       expect(subject).to.eq(false);
     });
 
@@ -348,7 +346,7 @@ describe('MarketplaceAccessFacet', () => {
       // Attempt to re-deactivate Alice.
       const subject = issuerMemberAccess.deactivateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresMarketplaceActiveMember("${alice.address}")`);
+        .revertedWith(`RequiresMarketplaceActiveMembership("${alice.address}")`);
     });
   });
 
@@ -374,7 +372,7 @@ describe('MarketplaceAccessFacet', () => {
 
     it('removes the FAST member from the list of deactivated members', async () => {
       await issuerMemberAccess.activateMember(alice.address);
-      const subject = await access.isMemberActive(alice.address);
+      const subject = await access.isActiveMember(alice.address);
       expect(subject).to.eq(true);
     });
 

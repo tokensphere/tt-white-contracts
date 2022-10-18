@@ -61,10 +61,6 @@ describe('MarketplaceTokenHoldersFacet', () => {
     issuer.isFastRegistered.returns(false);
   });
 
-  afterEach(async () => {
-    await ethers.provider.send("hardhat_stopImpersonatingAccount", [fast.address]);
-  });
-
   describe('holdingsUpdated', async () => {
     it('reverts if not called by a FAST contract', async () => {
       // Trigger the holding update callback.

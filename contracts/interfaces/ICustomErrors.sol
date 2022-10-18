@@ -11,7 +11,7 @@ interface ICustomErrors {
   error RequiresTransfersEnabled();
   error RequiresIssuerMembership(address who);
   error RequiresMarketplaceMembership(address who);
-  error RequiresMarketplaceActiveMember(address who);
+  error RequiresMarketplaceActiveMembership(address who);
   error RequiresMarketplaceDeactivatedMember(address who);
 
   error RequiresValidTokenHolder(address who);

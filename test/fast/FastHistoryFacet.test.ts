@@ -52,8 +52,8 @@ describe('FastHistoryFacet', () => {
 
     marketplace.isMember.whenCalledWith(governor.address).returns(true);
     marketplace.isMember.returns(false);
-    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
-    marketplace.isMemberActive.returns(false);
+    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isActiveMember.returns(false);
   });
 
   beforeEach(async () => {
@@ -74,10 +74,6 @@ describe('FastHistoryFacet', () => {
     });
 
     historyAsItself = await impersonateContract(history);
-  });
-
-  afterEach(async () => {
-    await ethers.provider.send("hardhat_stopImpersonatingAccount", [history.address]);
   });
 
   /// Supply proofs.

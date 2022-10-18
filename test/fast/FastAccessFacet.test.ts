@@ -50,11 +50,11 @@ describe('FastAccessFacet', () => {
     [governor, alice, bob, rob, john].forEach(
       ({ address }) => {
         marketplace.isMember.whenCalledWith(address).returns(true);
-        marketplace.isMemberActive.whenCalledWith(address).returns(true);
+        marketplace.isActiveMember.whenCalledWith(address).returns(true);
       }
     );
     marketplace.isMember.returns(false);
-    marketplace.isMemberActive.returns(false);
+    marketplace.isActiveMember.returns(false);
 
     await fastDeployFixture({
       opts: {

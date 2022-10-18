@@ -47,13 +47,9 @@ contract FastInitFacet is AFastFacet {
       revert ICustomErrors.AlreadyInitialized();
     }
 
-    // Make sure that the passed governor address is a member of the Marketplace.
-    if (!IHasMembers(params.marketplace).isMember(params.governor)) {
-      revert ICustomErrors.RequiresMarketplaceMembership(params.governor);
-    }
-    // Also make sure that the passed governor address is active in the Marketplace.
-    else if (!IHasActiveMembers(params.marketplace).isMemberActive(params.governor)) {
-      revert ICustomErrors.RequiresMarketplaceActiveMember(params.governor);
+    // Make sure that the passed governor is an active member of the marketplace.
+    if (!IHasActiveMembers(params.marketplace).isActiveMember(params.governor)) {
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(params.governor);
     }
  
     // Register interfaces.
