@@ -70,7 +70,7 @@ export const abiStructToObj = ({ ...struct }) => {
 };
 
 export const impersonateContract =
-  async <T extends BaseContract>(contract: T, called_by?: string | null): Promise<T> => {
+  async <T extends BaseContract>(contract: T, called_by?: string): Promise<T> => {
     // Are we switching _who_ is calling this contract?
     const caller_address = (called_by) ? called_by : contract.address;
     // Provision the fast with some ETH.

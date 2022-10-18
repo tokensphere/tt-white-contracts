@@ -16,7 +16,7 @@ chai.use(smock.matchers);
 
 const numberToBytes32 = (bn: BigNumber) => ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32))
 
-describe('FastTopFacet', () => {
+describe('FastInitFacet', () => {
   let
     deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
@@ -48,18 +48,18 @@ describe('FastTopFacet', () => {
     marketplace.isMember.reset();
     marketplace.isMember.whenCalledWith(governor.address).returns(true);
     marketplace.isMember.returns(false);
-    marketplace.isMemberActive.reset();
-    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
-    marketplace.isMemberActive.returns(false);
+    marketplace.isActiveMember.reset();
+    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isActiveMember.returns(false);
 
     await fastDeployFixture({
       opts: {
-        name: 'FastTopFixture',
+        name: 'FastInitFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ fast } = args);
           // Add the init facet back to the diamond.
-          await deployments.diamond.deploy('FastTopFixture', {
+          await deployments.diamond.deploy('FastInitFixture', {
             from: deployer.address,
             facets: [...FAST_FACETS, 'FastInitFacet'],
             deterministicSalt: deploymentSalt(hre)
@@ -101,9 +101,9 @@ describe('FastTopFacet', () => {
 
     it('sets LibFast storage version', async () => {
       const slot = ethers.utils.solidityKeccak256(['string'], ['Fast.storage']);
-      const subject = await ethers.provider.send('eth_getStorageAt', [fast.address, slot]);
-      // TODO: Why is this failing?!
-      // expect(BigNumber.from(subject)).to.eq(1);
+      const data = await ethers.provider.send('eth_getStorageAt', [fast.address, slot]);
+      const subject = ethers.utils.hexDataSlice(data, 30, 32);
+      expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it('sets LibFastAccess storage version', async () => {
@@ -124,7 +124,27 @@ describe('FastTopFacet', () => {
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
-    it('registers supported interfaces');
+    it('registers supported interfaces', async () => {
+      // TODO: We could add interfaces that we **don't** want to conform to, eg ERC1404...
+      expect({
+        IERC20: await fast.supportsInterface('0x36372b07'),
+        IERC165: await fast.supportsInterface('0x01ffc9a7'),
+        IERC173: await fast.supportsInterface('0x7f5828d0'),
+        IDiamondCut: await fast.supportsInterface('0x1f931c1c'),
+        IDiamondLoupe: await fast.supportsInterface('0x48e2b093'),
+        IHasGovernors: await fast.supportsInterface('0x84378070'),
+        IHasMembers: await fast.supportsInterface('0xb4bb4f46'),
+      }).to.be.eql({
+        IERC20: true,
+        IERC165: true,
+        IERC173: true,
+        IDiamondCut: true,
+        IDiamondLoupe: true,
+        IHasGovernors: true,
+        IHasMembers: true
+      })
+    });
+
     it('adds the given governor address to the governors list');
 
     describe('when running...', async () => {
@@ -137,6 +157,7 @@ describe('FastTopFacet', () => {
       it('reverts when the passed governor address is not a marketplace member', async () => {
         // Pretend that our governor isn't part of the marketplace.
         marketplace.isMember.whenCalledWith(governor.address).returns(false);
+        marketplace.isActiveMember.whenCalledWith(governor.address).returns(false);
         // Try and initialize.
         const subject = initFacetAsDeployer.initialize({
           ...FAST_INIT_DEFAULTS,
@@ -146,13 +167,13 @@ describe('FastTopFacet', () => {
         });
         // Should have failed.
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceMembership("${governor.address}")`);
+          .revertedWith(`RequiresMarketplaceActiveMembership("${governor.address}")`);
       });
 
       it('reverts when the passed governor address is deactivated in the marketplace', async () => {
         // Pretend that our governor is a marketplace member, but deactivated.
         marketplace.isMember.whenCalledWith(governor.address).returns(true);
-        marketplace.isMemberActive.whenCalledWith(governor.address).returns(false);
+        marketplace.isActiveMember.whenCalledWith(governor.address).returns(false);
         // Try and initialize.
         const subject = initFacetAsDeployer.initialize({
           ...FAST_INIT_DEFAULTS,
@@ -162,7 +183,7 @@ describe('FastTopFacet', () => {
         });
         // Should have failed.
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceActiveMember("${governor.address}")`);
+          .revertedWith(`RequiresMarketplaceActiveMembership("${governor.address}")`);
       });
 
       it('emits a GovernorAdded event', async () => {

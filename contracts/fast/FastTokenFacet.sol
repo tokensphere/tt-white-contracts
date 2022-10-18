@@ -384,8 +384,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     else if (p.from == p.to)
       revert ICustomErrors.RequiresDifferentSenderAndRecipient(p.from);
     // Requires that `from` membership is active in the marketplace.
-    else if (!IHasActiveMembers(topData.marketplace).isMemberActive(p.from))
-      revert ICustomErrors.RequiresMarketplaceActiveMember(p.from);
+    else if (!IHasActiveMembers(topData.marketplace).isActiveMember(p.from))
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(p.from);
     // If `from` is not the reserve, requires that `from` is a valid token holder.
     else if (p.from != address(0) && !canHoldTokens(p.from))
       revert ICustomErrors.RequiresValidTokenHolder(p.from);
@@ -592,11 +592,11 @@ contract FastTokenFacet is AFastFacet, IERC20 {
       private view returns(bool) {
     // If the fast is semi public, any member of the marketplace can hold tokens.
     if (IFast(address(this)).isSemiPublic()) {
-      address m = LibFast.data().marketplace;
-      return IHasMembers(m).isMember(candidate) && IHasActiveMembers(m).isMemberActive(candidate);
+      return IHasMembers(LibFast.data().marketplace).isMember(candidate);
     }
     // FAST is private, only members of the fast can hold tokens.
-    else
+    else {
       return IHasMembers(address(this)).isMember(candidate);
+    }
   }
 }

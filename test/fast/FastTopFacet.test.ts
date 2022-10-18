@@ -33,14 +33,22 @@ describe('FastTopFacet', () => {
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake('Issuer');
     marketplace = await smock.fake('Marketplace');
-    marketplace.issuerAddress.returns(issuer.address);
-    marketplace.isMember.whenCalledWith(governor.address).returns(true);
-    marketplace.isMember.returns(false);
-    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
-    marketplace.isMemberActive.returns(false);
   });
 
   beforeEach(async () => {
+    // Set up issuer mock.
+    issuer.isMember.reset();
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    issuer.isMember.returns(false);
+    // Set up marketplace mock.
+    marketplace.issuerAddress.returns(issuer.address);
+    marketplace.isMember.reset();
+    marketplace.isMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isMember.returns(false);
+    marketplace.isActiveMember.reset();
+    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isActiveMember.returns(false);
+
     await fastDeployFixture({
       opts: {
         name: 'FastTopFixture',
@@ -60,16 +68,8 @@ describe('FastTopFacet', () => {
 
     topAsItself = await impersonateContract(top);
 
-    // Set the Issuer member.
-    issuer.isMember.reset();
-    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
-    issuer.isMember.returns(false);
-
+    // Set up frontend facet mock.
     frontendMock.emitDetailsChanged.reset();
-  });
-
-  afterEach(async () => {
-    await ethers.provider.send("hardhat_stopImpersonatingAccount", [top.address]);
   });
 
   // Getters.

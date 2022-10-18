@@ -59,8 +59,8 @@ abstract contract AFastFacet is IFastEvents {
    * @param candidate The address to check.
    */
   modifier onlyMarketplaceActiveMember(address candidate) {
-    if (!IHasActiveMembers(LibFast.data().marketplace).isMemberActive(candidate))
-      revert ICustomErrors.RequiresMarketplaceActiveMember(candidate);
+    if (!IHasActiveMembers(LibFast.data().marketplace).isActiveMember(candidate))
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(candidate);
     _;
   }
 

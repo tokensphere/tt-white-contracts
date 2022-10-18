@@ -126,10 +126,11 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
 
   /**
    * @notice Given a member returns it's activation status.
-   * @param member The member to check activation status on.
+   * @param candidate The address to check activation status on.
    */
-  function isMemberActive(address member) external override view returns(bool) {
-    return !LibMarketplaceAccess.data().deactivatedMemberSet.contains(member);
+  function isActiveMember(address candidate) external override view returns(bool) {
+    return IHasMembers(this).isMember(candidate) &&
+           !LibMarketplaceAccess.data().deactivatedMemberSet.contains(candidate);
   }
 
   /**
@@ -142,7 +143,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyIssuerMember
     onlyMember(member) {
     // Guard against attempting to activate an already active member.
-    if (this.isMemberActive(member)) {
+    if (this.isActiveMember(member)) {
       revert ICustomErrors.RequiresMarketplaceDeactivatedMember(member);
     }
 
@@ -163,8 +164,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     onlyIssuerMember
     onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
-    if (!this.isMemberActive(member)) {
-      revert ICustomErrors.RequiresMarketplaceActiveMember(member);
+    if (!this.isActiveMember(member)) {
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(member);
     }
 
     // Add the member to the deactivated members list.

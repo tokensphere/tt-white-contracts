@@ -48,8 +48,8 @@ describe('FastTokenFacet', () => {
 
     marketplace.isMember.whenCalledWith(governor.address).returns(true);
     marketplace.isMember.returns(false);
-    marketplace.isMemberActive.whenCalledWith(governor.address).returns(true);
-    marketplace.isMemberActive.returns(false);
+    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isActiveMember.returns(false);
   });
 
   beforeEach(async () => {
@@ -88,7 +88,7 @@ describe('FastTokenFacet', () => {
     // Set the defaults when querying the Issuer or Marketplace fakes.
     issuer.isMember.returns(false);
     marketplace.isMember.returns(false);
-    marketplace.isMemberActive.returns(true);
+    marketplace.isActiveMember.returns(true);
 
     topMock.hasFixedSupply.reset();
     topMock.hasFixedSupply.returns(true);
@@ -630,22 +630,20 @@ describe('FastTokenFacet', () => {
 
       describe('when member deactivated', async () => {
         beforeEach(async () => {
-          marketplace.isMemberActive.reset();
+          marketplace.isActiveMember.reset();
           // Alice will be deactivated on the marketplace.
-          marketplace.isMemberActive.whenCalledWith(bob.address).returns(true);
-          marketplace.isMemberActive.whenCalledWith(alice.address).returns(false);
-          marketplace.isMemberActive.returns(false);
+          marketplace.isActiveMember.whenCalledWith(bob.address).returns(true);
+          marketplace.isActiveMember.whenCalledWith(alice.address).returns(false);
+          marketplace.isActiveMember.returns(false);
         });
 
         it('requires active member when transferring from address (at the Marketplace level)', async () => {
           const subject = token.connect(alice).transferFromWithRef(alice.address, bob.address, 100, 'ref');
           await expect(subject).to.have
-            .revertedWith(`RequiresMarketplaceActiveMember("${alice.address}")`);
+            .revertedWith(`RequiresMarketplaceActiveMembership("${alice.address}")`);
         });
 
         it('allows transfer to a deactived member (at the Marketplace level)', async () => {
-          console.log('bob', bob.address);
-          console.log('alice', alice.address);
           const subject = () => token.connect(bob).transferFromWithRef(bob.address, alice.address, 100, 'One');
           await expect(subject).to
             .changeTokenBalances(token, [bob, alice], [-100, 100]);
