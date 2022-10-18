@@ -4,6 +4,7 @@ import { deployments, ethers, getNamedAccounts } from 'hardhat';
 import { deployFast, fastMint } from '../tasks/fast';
 import { Marketplace, Fast } from '../typechain';
 import { ZERO_ADDRESS } from '../src/utils';
+import { marketplace } from '../typechain/contracts';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
@@ -13,8 +14,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     && netName != 'staging' && netName != 'mumbai') { return; }
 
   const { fastGovernor, issuerMember } = await getNamedAccounts();
+
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
+
+  // Grab pointer to marketplace contract.
+  const marketplace = await ethers.getContract<Marketplace>('Marketplace');
+  // Add the fast governor to the marketplace.
+  marketplace.connect(issuerMemberSigner).addMember(fastGovernor);
 
   {
     const deploy = await deployments.getOrNull('FastF01');
