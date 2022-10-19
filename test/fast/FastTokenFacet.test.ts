@@ -628,10 +628,23 @@ describe('FastTokenFacet', () => {
           .delegatedFrom(token.address);
       });
 
+      describe('for a zero amount', async () => {
+        it('does not impact balances');
+        it('does not impact allowances');
+        it('does not delegate to MarketplaceTokenHoldersFacet.fastBalanceChanged')
+        it('delegates to FastHistoryFacet.transfered');
+        it('emits a Transfer event')
+      });
+
       describe('when member deactivated', async () => {
         beforeEach(async () => {
+          marketplace.isMember.reset();
           marketplace.isActiveMember.reset();
-          // Alice will be deactivated on the marketplace.
+          // Both Bob and Alice are marketplace members.
+          marketplace.isMember.whenCalledWith(bob.address).returns(true);
+          marketplace.isMember.whenCalledWith(alice.address).returns(true);
+          marketplace.isMember.returns(false);
+          // Only Bob is active in the marketplace.
           marketplace.isActiveMember.whenCalledWith(bob.address).returns(true);
           marketplace.isActiveMember.whenCalledWith(alice.address).returns(false);
           marketplace.isActiveMember.returns(false);
