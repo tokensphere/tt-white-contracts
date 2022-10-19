@@ -372,7 +372,6 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   function performTransfer(TransferArgs calldata p)
       external onlyDiamondFacet {
     // TODO: Make this function return instead of raising errors.
-    // TODO: Make this function run even when a zero amount is passed. It should just emit.
 
     // Grab a pointer to our top-level storage.
     LibFast.Data storage topData = LibFast.data();
@@ -383,60 +382,64 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     // Requires that `from` and `to` are different addresses.
     else if (p.from == p.to)
       revert ICustomErrors.RequiresDifferentSenderAndRecipient(p.from);
-    // Requires that `from` membership is active in the marketplace.
-    else if (!IHasActiveMembers(topData.marketplace).isActiveMember(p.from))
-      revert ICustomErrors.RequiresMarketplaceActiveMembership(p.from);
-    // If `from` is not the reserve, requires that `from` is a valid token holder.
-    else if (p.from != address(0) && !canHoldTokens(p.from))
-      revert ICustomErrors.RequiresValidTokenHolder(p.from);
-    // If `from` is the reserve, requires that the spender (usually the original message sender) is an issuer member.
+    // Requires that allowance transfers from the reserve are performed by issuer members only.
     else if (p.from == address(0) && !IHasMembers(topData.issuer).isMember(p.spender))
       revert ICustomErrors.RequiresIssuerMembership(p.spender);
-    // Requires that `to` is a valid token holder.
-    else if (p.to != address(0) && !canHoldTokens(p.to))
+
+    // Requires that the `from` address can hold tokens.
+    else if (!canHoldTokens(p.from))
+      revert ICustomErrors.RequiresValidTokenHolder(p.from);
+    // Requires that the `from` address marketplace membership is active if not the reserve.
+    else if (p.from != address(0) && !IHasActiveMembers(LibFast.data().marketplace).isActiveMember(p.from))
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(p.from);
+
+    // Requires that the `to` address can hold tokens.
+    else if (!canHoldTokens(p.to))
       revert ICustomErrors.RequiresValidTokenHolder(p.to);
-    // Requires that the amount is a positive value.
-    else if (p.amount == 0)
-      revert ICustomErrors.UnsupportedOperation();
 
-    // Grab a pointer to our token storage.
-    LibFastToken.Data storage tokenData = LibFastToken.data();
+    // For any non-zero amount, update balances and allowances, notify other contracts, etc.
+    if (p.amount != 0) {
+      // Grab a pointer to our token storage.
+      LibFastToken.Data storage tokenData = LibFastToken.data();
 
-    // If this is an allowance transfer and if the `from` account is not the reserve...
-    if (p.spender != p.from && p.from != address(0)) {
-      // Decrease allowance.
-      uint256 newAllowance = tokenData.allowances[p.from][p.spender] -= p.amount;
-      // If the allowance reached zero, we want to remove that allowance from
-      // the various other places where we keep track of it.
-      if (newAllowance == 0) {
-        tokenData.allowancesByOwner[p.from].remove(p.spender, true);
-        tokenData.allowancesBySpender[p.spender].remove(p.from, true);
+      // If this is an allowance transfer and if the `from` account is not the reserve...
+      if (p.spender != p.from && p.from != address(0)) {
+        // Decrease allowance.
+        uint256 newAllowance = tokenData.allowances[p.from][p.spender] -= p.amount;
+        // If the allowance reached zero, we want to remove that allowance from
+        // the various other places where we keep track of it.
+        if (newAllowance == 0) {
+          tokenData.allowancesByOwner[p.from].remove(p.spender, true);
+          tokenData.allowancesBySpender[p.spender].remove(p.from, true);
+        }
       }
-    }
 
-    // Keep track of the balances - `from` spends (decrease), `to` receives (increase).
-    uint256 fromBalance = (tokenData.balances[p.from] -= p.amount);
-    uint256 toBalance = (tokenData.balances[p.to] += p.amount);
+      // Keep track of the balances - `from` spends (decrease), `to` receives (increase).
+      uint256 fromBalance = (tokenData.balances[p.from] -= p.amount);
+      uint256 toBalance = (tokenData.balances[p.to] += p.amount);
 
-    // Keep track of who has what FAST.
-    MarketplaceTokenHoldersFacet(topData.marketplace).fastBalanceChanged(p.from, fromBalance);
-    MarketplaceTokenHoldersFacet(topData.marketplace).fastBalanceChanged(p.to, toBalance);
+      // Keep track of who has what FAST.
+      MarketplaceTokenHoldersFacet(topData.marketplace).fastBalanceChanged(p.from, fromBalance);
+      MarketplaceTokenHoldersFacet(topData.marketplace).fastBalanceChanged(p.to, toBalance);
 
-    // Keep track of who holds this token.
-    balanceChanged(p.from, fromBalance);
-    balanceChanged(p.to, toBalance);
+      // Keep track of who holds this token.
+      balanceChanged(p.from, fromBalance);
+      balanceChanged(p.to, toBalance);
 
-    // If the funds are going to the ZERO address, decrease total supply.
-    if (p.to == address(0)) {
-      tokenData.totalSupply -= p.amount;
-      // If funds at address zero changed, we can emit a top-level details change event.
-      FastFrontendFacet(address(this)).emitDetailsChanged();
-    }
-    // If the funds are moving from the zero address, increase total supply.
-    else if (p.from == address(0)) {
-      tokenData.totalSupply += p.amount;
-      // If funds at address zero changed, we can emit a top-level details change event.
-      FastFrontendFacet(address(this)).emitDetailsChanged();
+      // If the funds are going to the reserve...
+      if (p.to == address(0)) {
+        // Decrease total supply.
+        tokenData.totalSupply -= p.amount;
+        // Emit a top-level details change event.
+        FastFrontendFacet(address(this)).emitDetailsChanged();
+      }
+      // If the funds are moving from the zero address...
+      else if (p.from == address(0)) {
+        // Increase total supply.
+        tokenData.totalSupply += p.amount;
+        // Emit a top-level details change event.
+        FastFrontendFacet(address(this)).emitDetailsChanged();
+      }
     }
 
     // Keep track of the transfer in the history facet.
@@ -466,12 +469,12 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   function performApproval(address from, address spender, uint256 amount)
       external
       onlyDiamondFacet {
-    // Require that the `from` address can hold tokens.
-    if (!canHoldTokens(from))
-      revert ICustomErrors.RequiresValidTokenHolder(from);
-    // Require that the `from` address cannot be the reserve.
-    else if (from == address(0))
+    // Allowance cannot be given over the reserve.
+    if (from == address(0))
       revert ICustomErrors.UnsupportedOperation();
+    // Require that the `from` address can hold tokens.
+    else if (!canHoldTokens(from))
+      revert ICustomErrors.RequiresValidTokenHolder(from);
     
     if (amount > 0) {
       LibFastToken.Data storage s = LibFastToken.data();
@@ -581,17 +584,21 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice Ensures that the given address is a member of the current FAST or the Zero Address.
    *
    * Business logic:
-  *    - If the fast is semi-public,
-  *      - We require that candidate is a member of the Marketplace contract and is active in it.
-   *  - Otherwise,
-   *    - Require that the candidate is a member of the FAST.
+   *   - If the candidate is the reserve, it is a valid token holder.
+   *   - If the FAST is semi-public,
+   *     - We require that candidate is a member of the Marketplace contract and is active in it.
+   *   - Otherwise,
+   *     - Require that the candidate is a member of the FAST.
    * @param candidate The address to check.
    * @return A boolean set to `true` if `candidate` can hold tokens, `false` otherwise.
    */
   function canHoldTokens(address candidate)
       private view returns(bool) {
-    // If the fast is semi public, any member of the marketplace can hold tokens.
-    if (IFast(address(this)).isSemiPublic()) {
+    // Zero address can hold tokens, in any cases.
+    if (candidate == address(0))
+      return true;
+    // If the FAST is semi public, any member of the marketplace can hold tokens.
+    else if (IFast(address(this)).isSemiPublic()) {
       return IHasMembers(LibFast.data().marketplace).isMember(candidate);
     }
     // FAST is private, only members of the fast can hold tokens.
