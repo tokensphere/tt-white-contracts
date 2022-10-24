@@ -1,4 +1,4 @@
-name: CI
+name: Unit Tests
 
 # Triggers the workflow on all pushes.
 on: push
