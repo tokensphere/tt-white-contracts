@@ -95,7 +95,7 @@ describe('FastInitFacet', () => {
         marketplace: ZERO_ADDRESS,
         governor: ZERO_ADDRESS
       });
-      expect(subject).to.be
+      await expect(subject).to.be
         .revertedWith('AlreadyInitialized()');
     });
 
