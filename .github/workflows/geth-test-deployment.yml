@@ -1,4 +1,4 @@
-name: 'Test deploying'
+name: 'Geth Test Deployment'
 
 # Triggers the workflow on push.
 on: push
