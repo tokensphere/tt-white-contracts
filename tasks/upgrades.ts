@@ -15,7 +15,7 @@ task('update-facets', 'Updates facets of all deployed contracts')
       .readdirSync(`deployments/${hre.network.name}`)
       .filter(fn => fn.startsWith('Fast') && fn.endsWith('_DiamondProxy.json'))
     for (const fn of fastFilenames) {
-      const symbol = fn.slice(4, -17);
-      await run(`fast-update-facets ${symbol}`);
+      const symbol = fn.slice(4, -18);
+      await run(`fast-update-facets`, { symbol });
     }
   });
