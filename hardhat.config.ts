@@ -16,6 +16,7 @@ import './tasks/accounts';
 import './tasks/issuer';
 import './tasks/marketplace';
 import './tasks/fast';
+import './tasks/upgrades';
 
 const config: HardhatUserConfig = {
   solidity: {
