@@ -121,6 +121,12 @@ Returns a list of FASTs that the passed address is a governor of.
 
 ## IssuerAccessFacet
 
+## IssuerAccessFacet
+
+## IssuerAccessFacet
+
+## IssuerAccessFacet
+
 ### isMember
 
 ```solidity

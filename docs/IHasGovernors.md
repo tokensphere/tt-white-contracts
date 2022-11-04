@@ -74,6 +74,12 @@ Removes a governor from the list of known governors.
 
 ## IHasGovernors
 
+## IHasGovernors
+
+## IHasGovernors
+
+## IHasGovernors
+
 ### isGovernor
 
 ```solidity

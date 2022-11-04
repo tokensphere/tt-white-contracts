@@ -51,6 +51,12 @@ Returns the top-level storage for the calling FAST.
 
 ## LibFast
 
+## LibFast
+
+## LibFast
+
+## LibFast
+
 Top-level shared functionality for FAST diamonds.
 
 _Note that if you feel like a method should be created inside this library, you might want to really consider

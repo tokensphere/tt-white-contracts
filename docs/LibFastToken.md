@@ -62,6 +62,12 @@ Returns the token storage for the calling FAST.
 
 ## LibFastToken
 
+## LibFastToken
+
+## LibFastToken
+
+## LibFastToken
+
 This library centralises shared functionality between FAST diamonds facets that have to do with token related logic.
 
 _Note that if you feel like a method should be created inside this library, you might want to really consider

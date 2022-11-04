@@ -153,3 +153,9 @@ Returns a page of inbound and outbound transfer proofs based on an involvee.#
 
 ## FastHistoryFacet
 
+## FastHistoryFacet
+
+## FastHistoryFacet
+
+## FastHistoryFacet
+

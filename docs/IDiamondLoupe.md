@@ -70,3 +70,9 @@ If facet is not found return address(0).
 
 ## IDiamondLoupe
 
+## IDiamondLoupe
+
+## IDiamondLoupe
+
+## IDiamondLoupe
+

@@ -28,3 +28,9 @@ Queries whether the FAST has fixed or continuous supply.
 
 ## IFast
 
+## IFast
+
+## IFast
+
+## IFast
+
