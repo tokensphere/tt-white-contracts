@@ -108,6 +108,12 @@ function paginateDetailedGovernors(uint256 index, uint256 perPage) external view
 
 ## FastFrontendFacet
 
+## FastFrontendFacet
+
+## FastFrontendFacet
+
+## FastFrontendFacet
+
 A facet dedicated to view / UI only methods. This facet should never hold any method that
 is not either `pure` or `view`, except to emit events.
 

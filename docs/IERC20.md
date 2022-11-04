@@ -99,6 +99,12 @@ allowance mechanism. `amount` is then deducted from the caller's allowance.
 
 ## IERC20
 
+## IERC20
+
+## IERC20
+
+## IERC20
+
 ### totalSupply
 
 ```solidity

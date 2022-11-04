@@ -23,6 +23,8 @@ Paginates the FAST diamonds registered with this Issuer based on a starting curs
 
 ## IssuerFrontendFacet
 
+## IssuerFrontendFacet
+
 ### paginateDetailedFasts
 
 ```solidity

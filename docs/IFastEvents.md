@@ -126,6 +126,12 @@ for that fast as well as the baseball cards in the FASTs list.
 
 ## IFastEvents
 
+## IFastEvents
+
+## IFastEvents
+
+## IFastEvents
+
 An interface allowing to use events within the Diamond pattern without name colisions.
 
 _The idea is that as several facets can emit the same events, we don't want to have to re-declare

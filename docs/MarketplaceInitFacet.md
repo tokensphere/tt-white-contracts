@@ -20,6 +20,8 @@ function initialize(struct MarketplaceInitFacet.InitializerParams params) extern
 
 ## MarketplaceInitFacet
 
+## MarketplaceInitFacet
+
 The Marketplace initialization facet.
 
 ### InitializerParams
