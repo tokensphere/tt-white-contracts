@@ -65,7 +65,8 @@ const config: HardhatUserConfig = {
       ['Facet$', 'MemberActivated(address)'],
       ['Facet$', 'MemberDeactivated(address)'],
       // Error types.
-      ['Facet$', 'RequiresFastContractCaller()']
+      ['Facet$', 'RequiresFastContractCaller()'],
+      ['Facet$', 'RequiresIssuerMembership(address)']
     ]),
     include: [
       'IERC165',

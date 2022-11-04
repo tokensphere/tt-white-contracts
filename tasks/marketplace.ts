@@ -38,7 +38,8 @@ const MARKETPLACE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
   'MarketplaceTopFacet',
   'MarketplaceAccessFacet',
-  'MarketplaceTokenHoldersFacet'
+  'MarketplaceTokenHoldersFacet',
+  'MarketplaceAutomatonsFacet'
 ];
 
 const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: string): Promise<Marketplace> => {
