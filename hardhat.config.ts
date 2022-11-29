@@ -64,6 +64,8 @@ const config: HardhatUserConfig = {
       ['Facet$', 'MemberRemoved(address)'],
       ['Facet$', 'MemberActivated(address)'],
       ['Facet$', 'MemberDeactivated(address)'],
+      ['Facet$', 'AutomatonPrivilegesSet(address,uint256)'],
+      ['Facet$', 'AutomatonRemoved(address)'],
       // Error types.
       ['Facet$', 'RequiresFastContractCaller()'],
       ['Facet$', 'RequiresIssuerMembership(address)']

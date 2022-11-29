@@ -4,7 +4,6 @@ pragma solidity 0.8.10;
 
 /// @title An interface signifying that the inheriting contract implements the concept of automatonship ACLs.
 interface IHasAutomatons {
-
   /**
    * @notice Queries whether a given address is a automaton or not.
    * @param candidate is the address to test.

@@ -43,11 +43,3 @@ a method with `delegatecall`.
 event DiamondCut(struct IDiamondCut.FacetCut[] _diamondCut, address _init, bytes _calldata)
 ```
 
-## IDiamondCut
-
-## IDiamondCut
-
-## IDiamondCut
-
-## IDiamondCut
-
