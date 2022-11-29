@@ -29,6 +29,8 @@ modifier onlyMember(address candidate)
 
 Requires that the given address is a member of the marketplace.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to be checked. |

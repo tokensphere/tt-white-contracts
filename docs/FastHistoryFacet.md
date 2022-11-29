@@ -38,6 +38,8 @@ function supplyProofCount() external view returns (uint256)
 
 Returns the number of supply proofs (minting and burning together) ever created.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | A `uint256`. |
@@ -50,10 +52,14 @@ function paginateSupplyProofs(uint256 cursor, uint256 perPage) external view ret
 
 Returns a page of supply proofs (minting and burning together).
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | cursor | uint256 | is the zero-based index where to start fetching records. |
 | perPage | uint256 | is the number of items to return. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -81,6 +87,8 @@ function transferProofCount() external view returns (uint256)
 
 Returns the number of transfer proofs ever created.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | A `uint256`. |
@@ -93,10 +101,14 @@ function paginateTransferProofs(uint256 cursor, uint256 perPage) external view r
 
 Returns a page of transfer proofs.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | cursor | uint256 | is the zero-based index where to start fetching records. |
 | perPage | uint256 | is the number of items to return. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -110,6 +122,8 @@ function transferProofByInvolveeCount(address involvee) external view returns (u
 ```
 
 Counts all past inbound and outbound transfers involving a given address.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -126,6 +140,8 @@ Returns pages of indices of past inbound and outbound transfer proofs by involve
 _This function is reading from an indexing data structure. Each index points to a record
 in the main transfer proof storage, and can then be found in `transferProofs` at returned indices._
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | involvee | address | is the address for which to retrieve a page of data. |
@@ -140,11 +156,15 @@ function paginateTransferProofsByInvolvee(address involvee, uint256 cursor, uint
 
 Returns a page of inbound and outbound transfer proofs based on an involvee.#
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | involvee | address | is the address for which to fetch the data. |
 | cursor | uint256 | is where to start. |
 | perPage | uint256 | is how many items at most to return. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

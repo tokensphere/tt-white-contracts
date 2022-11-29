@@ -20,6 +20,8 @@ Business logic:
 - Calls `FastFrontendFacet.emitDetailsChanged`.
 - Emits a `Minted(amount, ref)` event.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | amount | uint256 | The number of FAST tokens to mint. |
@@ -43,6 +45,8 @@ Business logic.
 - Calls `FastHistoryFacet.burnt(amount, ref)`.
 - Calls `FastFrontendFacet.emitDetailsChanged`.
 - Emits a `Burnt(amount, ref)`.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -71,6 +75,8 @@ Business logic:
 - If the amount previously held by `holder` was not zero,
   - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | holder | address | is the address for which to move the tokens from. |
@@ -82,6 +88,8 @@ function name() external view returns (string)
 ```
 
 The name of this FAST (ERC20 standard).
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -95,6 +103,8 @@ function symbol() external view returns (string)
 
 The symbol of this FAST (ERC20 standard).
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | string | string Symbol of the FAST. |
@@ -106,6 +116,8 @@ function decimals() external view returns (uint256)
 ```
 
 The `decimals` of this FAST (ERC20 standard).
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -119,6 +131,8 @@ function totalSupply() external view returns (uint256)
 
 The total supply of the FAST (ERC20 standard).
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | uint256 Total supply of the FAST. |
@@ -131,9 +145,13 @@ function balanceOf(address owner) public view returns (uint256)
 
 The balance of the passed owner (ERC20 standard).
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | owner | address | The owners address to get the balance of. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -166,10 +184,14 @@ through `transferFrom`. This is zero by default.
 
 _This value changes when `approve`, `disapprove` and `transferFrom` / `transferFromWithRef` are called._
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | owner | address | is the owner of the funds. |
 | spender | address | is the address for which the allowance should be queried. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -184,6 +206,8 @@ function approve(address spender, uint256 amount) external returns (bool)
 This method directly calls `performApproval`, setting its `from` paramter to the sender of
 the transaction.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | spender | address | is the address to allow spending from the caller's wallet. |
@@ -197,6 +221,8 @@ function disapprove(address spender, uint256 amount) external returns (bool)
 
 This method directly calls `performDisapproval`, setting its `from` parameter to the sender of
 the transaction.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -311,6 +337,8 @@ Business logic:
 - Update the allowance lookup tables in both directions.
 - Emits an `Approval(from, spender, amount)`.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | from | address | is the wallet from which to give the allowance. |
@@ -367,9 +395,13 @@ Business logic:
   - Otherwise,
     - Require that the candidate is a member of the FAST.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | The address to check. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

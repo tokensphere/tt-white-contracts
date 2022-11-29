@@ -77,6 +77,8 @@ function data() internal pure returns (struct LibFastHistory.Data s)
 
 Returns the history storage for the calling FAST.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | s | struct LibFastHistory.Data | a struct pointer for history FAST data storage. |

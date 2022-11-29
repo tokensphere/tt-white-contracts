@@ -10,9 +10,13 @@ function isAutomaton(address candidate) external view returns (bool)
 
 Queries whether a given address is a automaton or not.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -26,9 +30,13 @@ function automatonPrivileges(address automaton) external view returns (uint256)
 
 Queries flags assigned to a given automaton account.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | automaton | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -42,6 +50,8 @@ function automatonCount() external view returns (uint256)
 
 Queries the number of automatons.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | An `uint256`. |
@@ -54,10 +64,14 @@ function paginateAutomatons(uint256 index, uint256 perPage) external view return
 
 Queries pages of automatons based on a start index and a page size.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | index | uint256 | is the offset at which the pagination operation should start. |
 | perPage | uint256 | is how many items should be returned. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -72,6 +86,8 @@ function setAutomatonPrivileges(address candidate, uint256 privileges) external
 
 Adds a automaton to the list of known automatons.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to be added. |
@@ -84,6 +100,8 @@ function removeAutomaton(address automaton) external
 ```
 
 Removes a automaton from the list of known automatons.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

@@ -11,10 +11,14 @@ function paginateDetailedFasts(uint256 cursor, uint256 perPage) external view re
 Paginates the FAST diamonds registered with this Issuer based on a starting cursor and
        a number of records per page. It returns rich details for each FAST diamond.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | cursor | uint256 | The index at which to start. |
 | perPage | uint256 | How many records should be returned at most. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

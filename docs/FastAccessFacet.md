@@ -102,9 +102,13 @@ function flags(address a) external view returns (struct FastAccessFacet.Flags)
 
 Retrieves flags for a given address.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | a | address | is the address to retrieve flags for. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

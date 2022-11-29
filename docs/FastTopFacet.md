@@ -10,6 +10,8 @@ function issuerAddress() external view returns (address)
 
 Get the Issuer address.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | address | Address of Issuer. |
@@ -21,6 +23,8 @@ function marketplaceAddress() external view returns (address)
 ```
 
 Get the Marketplace address.
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -34,6 +38,8 @@ function isSemiPublic() external view returns (bool)
 
 Is this FAST a semi public FAST?
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | bool | bool Yes/no semi public. |
@@ -46,6 +52,8 @@ function hasFixedSupply() external view returns (bool)
 
 Is this FAST a fixed supply FAST?
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | bool | bool Yes/no fixed supply. |
@@ -57,6 +65,8 @@ function transfersDisabled() external view returns (bool)
 ```
 
 Are transfers enabled across this FAST?
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -71,6 +81,8 @@ function setIsSemiPublic(bool flag) external
 Allows to switch from a private scheme to a semi-public scheme,
  but not the other way around.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | flag | bool | Set the semi public flag to true/false. |
@@ -82,6 +94,8 @@ function setTransfersDisabled(bool flag) external
 ```
 
 Allows an issuer member to enable or disable all transfers within this FAST.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

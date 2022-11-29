@@ -10,6 +10,8 @@ event FastRegistered(address fast)
 
 Emited when a new FAST is registered.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | fast | address | The address of the newly registered FAST diamond. |

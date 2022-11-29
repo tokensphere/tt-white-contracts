@@ -42,6 +42,8 @@ function data() internal pure returns (struct LibFastAccess.Data s)
 
 Returns the access storage for the calling FAST.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | s | struct LibFastAccess.Data | a struct pointer for access FAST data storage. |
