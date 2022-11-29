@@ -392,4 +392,34 @@ describe('MarketplaceAccessFacet', () => {
         .revertedWith(`RequiresMarketplaceDeactivatedMember("${bob.address}")`);
     });
   });
+
+  describe('automaton management', async () => {
+    describe('isAutomaton', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('automatonPrivileges', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('automatonCount', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('paginateAutomatons', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('automatonPrivilegesStruct', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('setAutomatonPrivileges', async () => {
+      test('MUST BE TESTED');
+    });
+
+    describe('removeAutomaton', async () => {
+      test('MUST BE TESTED');
+    });
+  });
 });
