@@ -392,36 +392,4 @@ describe('MarketplaceAccessFacet', () => {
         .revertedWith(`RequiresMarketplaceDeactivatedMember("${bob.address}")`);
     });
   });
-
-  describe('automaton management', async () => {
-    describe('isAutomaton', async () => {
-      test('returns true when a privilege exists for the given candidate');
-      test('returns false when no privilege exists for the given candidate');
-    });
-
-    describe('automatonPrivileges', async () => {
-      test('returns a bitfield of the candidate privileges');
-    });
-
-    describe('automatonCount', async () => {
-      test('returns the number of registered automatons');
-    });
-
-    describe('paginateAutomatons', async () => {
-      test('paginates registered automatons');
-    });
-
-    describe('automatonPrivilegesStruct', async () => {
-      test('returns candidate privileges in the form of a struct');
-    });
-
-    describe('setAutomatonPrivileges', async () => {
-      test('assigns the given privileges to the candidate');
-      test('overwrites existing privileges');
-    });
-
-    describe('removeAutomaton', async () => {
-      test('removes the automaton from the list');
-    });
-  });
 });
