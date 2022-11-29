@@ -53,13 +53,13 @@ interface FastUpdateFacetsParams {
 
 task('fast-update-facets', 'Updates facets for a given FAST')
   .addPositionalParam('symbol', 'The FAST Token symbol to operate on', undefined, types.string)
-  .setAction(async (params: FastUpdateFacetsParams, hre) => {
+  .setAction(async (params: FastUpdateFacetsParams, hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts } = hre;
     const { deployer } = await getNamedAccounts()
     const diamondName = `Fast${params.symbol}`;
     // Make sure that the fast is known from our tooling.
     const { address } = await deployments.get(diamondName);
-    console.log(`Updating FAST diamond facets at ${address}...`);
+    console.log(`Updating ${diamondName} diamond facets at ${address}...`);
     await deployments.diamond.deploy(diamondName, {
       from: deployer,
       facets: FAST_FACETS,
@@ -79,7 +79,7 @@ task('fast-mint', 'Mints FASTs to a specified recipient')
   .addPositionalParam('symbol', 'The FAST Token symbol to operate on', undefined, types.string)
   .addParam('amount', 'The amount of tokens to mint', undefined, types.int)
   .addParam('ref', 'The reference to use for the minting operation', undefined, types.string)
-  .setAction(async (params: FastMintParams, hre) => {
+  .setAction(async (params: FastMintParams, hre: HardhatRuntimeEnvironment) => {
     const { ethers, getNamedAccounts } = hre;
     const { issuerMember } = await getNamedAccounts();
     const issuerMemberSigner = await ethers.getSigner(issuerMember);
@@ -104,7 +104,7 @@ interface FastBalanceParams {
 task('fast-balance', 'Retrieves the balance of a given account')
   .addPositionalParam('symbol', 'The FAST symbol to operate on', undefined, types.string)
   .addParam('account', 'The account to retrieve the balance of', undefined, types.string)
-  .setAction(async (params: FastBalanceParams, hre) => {
+  .setAction(async (params: FastBalanceParams, hre: HardhatRuntimeEnvironment) => {
     // Grab a handle to the deployed fast.
     const fast = await fastBySymbol(hre, params.symbol);
     if (!fast) { throw (`No FAST registry can be found for symbol ${params.symbol}!`); }
