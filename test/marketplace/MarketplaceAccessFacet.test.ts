@@ -395,31 +395,33 @@ describe('MarketplaceAccessFacet', () => {
 
   describe('automaton management', async () => {
     describe('isAutomaton', async () => {
-      test('MUST BE TESTED');
+      test('returns true when a privilege exists for the given candidate');
+      test('returns false when no privilege exists for the given candidate');
     });
 
     describe('automatonPrivileges', async () => {
-      test('MUST BE TESTED');
+      test('returns a bitfield of the candidate privileges');
     });
 
     describe('automatonCount', async () => {
-      test('MUST BE TESTED');
+      test('returns the number of registered automatons');
     });
 
     describe('paginateAutomatons', async () => {
-      test('MUST BE TESTED');
+      test('paginates registered automatons');
     });
 
     describe('automatonPrivilegesStruct', async () => {
-      test('MUST BE TESTED');
+      test('returns candidate privileges in the form of a struct');
     });
 
     describe('setAutomatonPrivileges', async () => {
-      test('MUST BE TESTED');
+      test('assigns the given privileges to the candidate');
+      test('overwrites existing privileges');
     });
 
     describe('removeAutomaton', async () => {
-      test('MUST BE TESTED');
+      test('removes the automaton from the list');
     });
   });
 });
