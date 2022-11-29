@@ -66,6 +66,8 @@ function details() public view returns (struct FastFrontendFacet.Details)
 
 Gets the details of a FAST.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | struct FastFrontendFacet.Details | The details for the current FAST, see `Details`. |
@@ -78,6 +80,8 @@ function detailedMember(address member) public view returns (struct FastFrontend
 
 Gets detailed member details.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | struct FastFrontendFacet.MemberDetails | A FAST member's details, see `MemberDetails`. |
@@ -89,6 +93,8 @@ function detailedGovernor(address governor) public view returns (struct FastFron
 ```
 
 Gets detailed governor details.
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

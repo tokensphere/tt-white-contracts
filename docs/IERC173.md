@@ -20,6 +20,8 @@ function owner() external view returns (address owner_)
 
 Get the address of the owner
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | owner_ | address | The address of the owner. |
@@ -32,6 +34,8 @@ function transferOwnership(address _newOwner) external
 
 Set the address of the new owner of the contract
 Set _newOwner to address(0) to renounce any ownership.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

@@ -10,9 +10,13 @@ function isGovernor(address candidate) external view returns (bool)
 
 Queries whether a given address is a governor or not.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -26,6 +30,8 @@ function governorCount() external view returns (uint256)
 
 Queries the number of governors.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | An `uint256`. |
@@ -38,10 +44,14 @@ function paginateGovernors(uint256 index, uint256 perPage) external view returns
 
 Queries pages of governors based on a start index and a page size.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | index | uint256 | is the offset at which the pagination operation should start. |
 | perPage | uint256 | is how many items should be returned. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -56,6 +66,8 @@ function addGovernor(address payable governor) external
 
 Adds a governor to the list of known governors.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | governor | address payable | is the address to be added. |
@@ -67,6 +79,8 @@ function removeGovernor(address governor) external
 ```
 
 Removes a governor from the list of known governors.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

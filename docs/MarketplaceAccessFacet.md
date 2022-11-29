@@ -12,9 +12,13 @@ function isMember(address candidate) external view returns (bool)
 
 Queries whether a given address is a member of this Marketplace or not.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -28,6 +32,8 @@ function memberCount() external view returns (uint256)
 
 Counts the numbers of members present in this Marketplace.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | The number of members in this marketplace. |
@@ -40,10 +46,14 @@ function paginateMembers(uint256 cursor, uint256 perPage) external view returns 
 
 Paginates the members of this Marketplace based on a starting cursor and a number of records per page.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | cursor | uint256 | is the index at which to start. |
 | perPage | uint256 | is how many records should be returned at most. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -60,6 +70,8 @@ Adds a member to this Marketplace member list.
 Requires that the caller is a member of the linked Issuer.
 Emits a `IHasMembers.MemberAdded` event.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | member | address payable | is the address of the member to be added. |
@@ -74,6 +86,8 @@ Removes a member from this Marketplace.
 Requires that the caller is a member of the linked Issuer.
 Emits a `IHasMembers.MemberRemoved` event.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | member | address | is the address of the member to be removed. |
@@ -85,6 +99,8 @@ function fastMemberships(address member, uint256 cursor, uint256 perPage) extern
 ```
 
 Allows to query FAST memberships for a given member address.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -100,6 +116,8 @@ function memberAddedToFast(address member) external
 
 Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | member | address | The member for which a new FAST membership has been added. |
@@ -111,6 +129,8 @@ function memberRemovedFromFast(address member) external
 ```
 
 Callback from FAST contracts allowing the Marketplace contract to keep track of FAST memberships.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -124,6 +144,8 @@ function isActiveMember(address candidate) external view returns (bool)
 
 Given a member returns it's activation status.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | The address to check activation status on. |
@@ -135,6 +157,8 @@ function activateMember(address member) external
 ```
 
 Activates a member at the Marketplace level.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -148,6 +172,8 @@ function deactivateMember(address payable member) external
 
 Deactivates a member at the Marketplace level.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | member | address payable | The member to add to the deactivation member set. |
@@ -160,9 +186,13 @@ function isAutomaton(address candidate) external view returns (bool)
 
 Queries whether a given address is a automaton or not.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -176,9 +206,13 @@ function automatonPrivileges(address automaton) external view returns (uint256)
 
 Queries flags assigned to a given automaton account.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | automaton | address | is the address to test. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -192,6 +226,8 @@ function automatonCount() external view returns (uint256)
 
 Queries the number of automatons.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | An `uint256`. |
@@ -204,10 +240,14 @@ function paginateAutomatons(uint256 index, uint256 perPage) external view return
 
 Queries pages of automatons based on a start index and a page size.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | index | uint256 | is the offset at which the pagination operation should start. |
 | perPage | uint256 | is how many items should be returned. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -227,6 +267,8 @@ function setAutomatonPrivileges(address candidate, uint256 privileges) external
 ```
 
 Adds a automaton to the list of known automatons.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

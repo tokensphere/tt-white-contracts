@@ -11,9 +11,13 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 Queries if a contract implements an interface
 Interface identification is specified in ERC-165. This method uses less than 30,000 gas.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | interfaceId | bytes4 | The interface identifier, as specified in ERC165. |
+
+#### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

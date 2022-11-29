@@ -56,6 +56,8 @@ function data() internal pure returns (struct LibFastToken.Data s)
 
 Returns the token storage for the calling FAST.
 
+#### Return Values
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | s | struct LibFastToken.Data | a struct pointer for token FAST data storage. |

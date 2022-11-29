@@ -37,6 +37,8 @@ modifier onlyMarketplaceMember(address candidate)
 
 Ensures that the given address is a member of the Marketplace.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | The address to check. |
@@ -48,6 +50,8 @@ modifier onlyMarketplaceActiveMember(address candidate)
 ```
 
 Ensures a candidate is an active member of the Marketplace.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -69,6 +73,8 @@ modifier onlyGovernor(address candidate)
 
 Ensures that the given address is a governor of the FAST.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | The address to check. |
@@ -81,6 +87,8 @@ modifier onlyMember(address candidate)
 
 Ensures that the given address is a member of the FAST.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | The address to check. |
@@ -92,6 +100,8 @@ modifier differentAddresses(address a, address b)
 ```
 
 Ensures address `a` and `b` are different.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

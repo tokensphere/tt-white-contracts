@@ -15,6 +15,8 @@ event MemberAdded(address member)
 
 Emited when a member is added to the implementing contract.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | member | address | is the address of the added member. |
@@ -26,6 +28,8 @@ event MemberRemoved(address member)
 ```
 
 Emited when a member is removed to the implementing contract.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -39,6 +43,8 @@ event GovernorAdded(address governor)
 
 Emited when a governor is added to the implementing contract.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | governor | address | is the address of the added governor. |
@@ -50,6 +56,8 @@ event GovernorRemoved(address governor)
 ```
 
 Emited when a governor is removed to the implementing contract.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -63,6 +71,8 @@ event Minted(uint256 amount, string ref)
 
 Emited whenever an issuance happens in a FAST.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | amount | uint256 | is the amount of tokens that have been minted. |
@@ -75,6 +85,8 @@ event Burnt(uint256 amount, string ref)
 ```
 
 Emited whenever an burning happens in a FAST.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -114,6 +126,8 @@ event DetailsChanged(bool transfersDisabled, uint256 memberCount, uint256 govern
 This is an event that is fired whenever any of some of the FAST parameters
 change, so that the frontend can react to it and refresh the general header
 for that fast as well as the baseball cards in the FASTs list.
+
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |

@@ -31,6 +31,8 @@ function diamondCut(struct IDiamondCut.FacetCut[] _diamondCut, address _init, by
 Add/replace/remove any number of functions and optionally execute
 a method with `delegatecall`.
 
+#### Parameters
+
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | _diamondCut | struct IDiamondCut.FacetCut[] | Contains the facet addresses and function selectors |
