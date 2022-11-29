@@ -3,8 +3,11 @@ pragma solidity 0.8.10;
 
 
 interface IMarketplaceEvents {
-  // IHasMembers.
+  // IHasAutomatons
+  event AutomatonPrivilegesSet(address indexed automaton, uint256 indexed privileges);
+  event AutomatonRemoved(address indexed automaton);
 
+  // IHasMembers.
   event MemberAdded(address indexed member);
   event MemberRemoved(address indexed member);
 

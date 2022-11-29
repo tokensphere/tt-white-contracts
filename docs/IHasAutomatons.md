@@ -89,5 +89,3 @@ Removes a automaton from the list of known automatons.
 | ---- | ---- | ----------- |
 | automaton | address | is the address to be removed. |
 
-## IHasAutomatons
-

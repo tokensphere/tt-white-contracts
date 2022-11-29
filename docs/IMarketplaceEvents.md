@@ -2,89 +2,17 @@
 
 ## IMarketplaceEvents
 
-### MemberAdded
+### AutomatonPrivilegesSet
 
 ```solidity
-event MemberAdded(address member)
+event AutomatonPrivilegesSet(address automaton, uint256 privileges)
 ```
 
-### MemberRemoved
+### AutomatonRemoved
 
 ```solidity
-event MemberRemoved(address member)
+event AutomatonRemoved(address automaton)
 ```
-
-### MemberActivated
-
-```solidity
-event MemberActivated(address member)
-```
-
-### MemberDeactivated
-
-```solidity
-event MemberDeactivated(address member)
-```
-
-## IMarketplaceEvents
-
-## IMarketplaceEvents
-
-### MemberAdded
-
-```solidity
-event MemberAdded(address member)
-```
-
-### MemberRemoved
-
-```solidity
-event MemberRemoved(address member)
-```
-
-### MemberActivated
-
-```solidity
-event MemberActivated(address member)
-```
-
-### MemberDeactivated
-
-```solidity
-event MemberDeactivated(address member)
-```
-
-## IMarketplaceEvents
-
-### MemberAdded
-
-```solidity
-event MemberAdded(address member)
-```
-
-### MemberRemoved
-
-```solidity
-event MemberRemoved(address member)
-```
-
-### MemberActivated
-
-```solidity
-event MemberActivated(address member)
-```
-
-### MemberDeactivated
-
-```solidity
-event MemberDeactivated(address member)
-```
-
-## IMarketplaceEvents
-
-## IMarketplaceEvents
-
-## IMarketplaceEvents
 
 ### MemberAdded
 
