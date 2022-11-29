@@ -4,8 +4,8 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Marketplace, MarketplaceTopFacet, MarketplaceAccessFacet, MarketplaceInitFacet, MarketplaceTokenHoldersFacet,
-  MarketplaceTopFacet__factory, MarketplaceAccessFacet__factory, MarketplaceTokenHoldersFacet__factory
+  Marketplace, MarketplaceTopFacet, MarketplaceAccessFacet, MarketplaceInitFacet, MarketplaceTokenHoldersFacet, MarketplaceAutomatonsFacet,
+  MarketplaceTopFacet__factory, MarketplaceAccessFacet__factory, MarketplaceTokenHoldersFacet__factory, MarketplaceAutomatonsFacet__factory
 } from "../../typechain";
 import { MARKETPLACE_FACETS } from "../../tasks/marketplace";
 
@@ -28,6 +28,7 @@ interface MarketplaceFixtureResult {
   topMock: MockContract<MarketplaceTopFacet>;
   accessMock: MockContract<MarketplaceAccessFacet>;
   tokenHoldersMock: MockContract<MarketplaceTokenHoldersFacet>;
+  automatonsMock: MockContract<MarketplaceAutomatonsFacet>;
 }
 
 export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, MarketplaceFixtureFuncArgs> =
@@ -55,7 +56,8 @@ export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, Marke
       marketplace,
       topMock: await facetMock<MarketplaceTopFacet__factory>(marketplace, 'MarketplaceTopFacet'),
       accessMock: await facetMock<MarketplaceAccessFacet__factory>(marketplace, 'MarketplaceAccessFacet'),
-      tokenHoldersMock: await facetMock<MarketplaceTokenHoldersFacet__factory>(marketplace, 'MarketplaceTokenHoldersFacet')
+      tokenHoldersMock: await facetMock<MarketplaceTokenHoldersFacet__factory>(marketplace, 'MarketplaceTokenHoldersFacet'),
+      automatonsMock: await facetMock<MarketplaceAutomatonsFacet__factory>(marketplace, 'MarketplaceAutomatonsFacet')
     };
     // Callback!
     await afterDeploy.apply(this, [result]);
