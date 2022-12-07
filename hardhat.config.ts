@@ -123,7 +123,7 @@ const config: HardhatUserConfig = {
       chainId: 18021980,
       accounts: accounts('dev')
     },
-    // Live stuff.
+    // CV Private chain stuff.
     staging: {
       live: true,
       saveDeployments: true,
@@ -143,7 +143,15 @@ const config: HardhatUserConfig = {
       live: true,
       saveDeployments: true,
       url: 'https://rpc-mumbai.maticvigil.com',
+      chainId: 80001,
       accounts: accounts('mumbai')
+    },
+    polygon: {
+      live: true,
+      saveDeployments: true,
+      url: 'https://polygon-rpc.com/',
+      chainId: 137,
+      accounts: accounts('polygon')
     }
   },
   namedAccounts: {
