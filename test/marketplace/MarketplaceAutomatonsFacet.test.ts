@@ -4,10 +4,9 @@ import { solidity } from 'ethereum-waffle';
 import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
-import { Issuer, Fast, MarketplaceAutomatonsFacet, Marketplace } from '../../typechain';
-import { abiStructToObj, impersonateContract } from '../utils';
+import { Issuer, MarketplaceAutomatonsFacet, Marketplace } from '../../typechain';
+import { abiStructToObj } from '../utils';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
-import { BigNumber } from 'ethers';
 chai.use(solidity);
 chai.use(smock.matchers);
 

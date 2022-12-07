@@ -23,7 +23,8 @@ const FAST_DETAILS_DEFAULTS: FastFrontendFacet.DetailsStruct = {
   reserveBalance: BigNumber.from(40),
   ethBalance: BigNumber.from(0),
   memberCount: BigNumber.from(1),
-  governorCount: BigNumber.from(2)
+  governorCount: BigNumber.from(2),
+  transfersDisabled: false
 };
 
 describe('IssuerFrontendFacet', () => {

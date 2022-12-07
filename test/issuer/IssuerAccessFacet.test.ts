@@ -6,7 +6,6 @@ import { smock, FakeContract } from '@defi-wonderland/smock';
 import { Issuer, IssuerAccessFacet, Fast } from '../../typechain';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { impersonateContract } from '../utils';
-import { ContractTransaction } from 'ethers';
 import { issuerFixtureFunc } from '../fixtures/issuer';
 chai.use(solidity);
 chai.use(smock.matchers);
