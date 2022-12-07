@@ -56,7 +56,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit Minted(amount, ref);
+    emit Minted(amount, ref, msg.sender);
   }
 
   /**
@@ -91,7 +91,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit Burnt(amount, ref);
+    emit Burnt(amount, ref, msg.sender);
   }
 
   /**
@@ -137,7 +137,11 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     s.tokenHolders.remove(holder, true);
     MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, 0);
 
+    // Keep track of this transfer in history facet.
+    FastHistoryFacet(address(this)).transfered(msg.sender, holder, address(0), amount, LibConstants.DEAD_TOKENS_RETRIEVAL);
+
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
+    emit FastTransfer(msg.sender, holder, address(0), amount, LibConstants.DEAD_TOKENS_RETRIEVAL);
     emit Transfer(holder, address(0), amount);
 
     // If amount wasn't zero, total supply and reserve balance have changed - emit.
@@ -446,6 +450,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     FastHistoryFacet(address(this)).transfered(p.spender, p.from, p.to, p.amount, p.ref);
 
     // Emit!
+    emit FastTransfer(p.spender, p.from, p.to, p.amount, p.ref);
     emit Transfer(p.from, p.to, p.amount);
   }
 
