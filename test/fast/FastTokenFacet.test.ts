@@ -358,11 +358,18 @@ describe('FastTokenFacet', () => {
     });
 
     it('delegates to the Frontend facet for a global event emission', async () => {
-      marketplace.fastBalanceChanged.reset();
       frontendMock.emitDetailsChanged.reset();
       await issuerMemberToken.retrieveDeadTokens(alice.address);
       expect(frontendMock.emitDetailsChanged).to.have.been
         .calledOnceWith()
+        .delegatedFrom(token.address);
+    });
+
+    it('delegates to the History facet for papertrail tracking', async () => {
+      historyMock.transfered.reset();
+      await issuerMemberToken.retrieveDeadTokens(alice.address);
+      expect(historyMock.transfered).to.have.been
+        .calledOnceWith(issuerMember.address, alice.address, ZERO_ADDRESS, 100, 'Dead tokens retrieval')
         .delegatedFrom(token.address);
     });
   });
