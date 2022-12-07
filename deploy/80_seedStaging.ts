@@ -2,9 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { deployments, ethers, getNamedAccounts } from 'hardhat';
 import { deployFast, fastMint } from '../tasks/fast';
-import { Marketplace, Fast } from '../typechain';
-import { ZERO_ADDRESS } from '../src/utils';
-import { marketplace } from '../typechain/contracts';
+import { Marketplace } from '../typechain';
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
