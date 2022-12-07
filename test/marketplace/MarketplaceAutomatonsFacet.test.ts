@@ -25,7 +25,9 @@ describe('MarketplaceAutomatonsFacet', () => {
     automatons: MarketplaceAutomatonsFacet,
     issuerAutomatons: MarketplaceAutomatonsFacet;
 
-  let privilegesFixture: ReadonlyArray<{ who: SignerWithAddress, privileges: number }>;
+  let privilegesFixture: ReadonlyArray<{
+    readonly who: SignerWithAddress, readonly privileges: number
+  }>;
 
   const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
 
