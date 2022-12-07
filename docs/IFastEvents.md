@@ -66,7 +66,7 @@ Emited when a governor is removed to the implementing contract.
 ### Minted
 
 ```solidity
-event Minted(uint256 amount, string ref)
+event Minted(uint256 amount, string ref, address who)
 ```
 
 Emited whenever an issuance happens in a FAST.
@@ -77,11 +77,12 @@ Emited whenever an issuance happens in a FAST.
 | ---- | ---- | ----------- |
 | amount | uint256 | is the amount of tokens that have been minted. |
 | ref | string | is the reference associated with the minting operation. |
+| who | address | is the account from which the minting operation originated. |
 
 ### Burnt
 
 ```solidity
-event Burnt(uint256 amount, string ref)
+event Burnt(uint256 amount, string ref, address who)
 ```
 
 Emited whenever an burning happens in a FAST.
@@ -92,6 +93,7 @@ Emited whenever an burning happens in a FAST.
 | ---- | ---- | ----------- |
 | amount | uint256 | is the amount of tokens that have been burnt. |
 | ref | string | is the reference associated with the burning operation. |
+| who | address | is the account from which the burning operation originated. |
 
 ### Transfer
 
@@ -116,6 +118,25 @@ event Disapproval(address owner, address spender, uint256 value)
 ```
 
 See `ERC20.Disapproval`.
+
+### FastTransfer
+
+```solidity
+event FastTransfer(address spender, address from, address to, uint256 value, string ref)
+```
+
+As we augmented the ERC20 standard with a few concepts, we emit our custom events
+in addition to the ERC20 ones.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| spender | address | is the account who performed the transfer. |
+| from | address | is the account from which the tokens will be debited from. |
+| to | address | is the account to which the tokens will be credited to. |
+| value | uint256 | is the amount of tokens transfered. |
+| ref | string | is the optional reference associated with the transfer. |
 
 ### DetailsChanged
 
