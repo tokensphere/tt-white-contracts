@@ -91,7 +91,7 @@ Adds a automaton to the list of known automatons.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | candidate | address | is the address to be added. |
-| privileges | uint256 |  |
+| privileges | uint256 | is a bitfield describing the flags to assign to `candidate`. |
 
 ### removeAutomaton
 
