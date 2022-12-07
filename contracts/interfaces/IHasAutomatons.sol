@@ -35,6 +35,7 @@ interface IHasAutomatons {
   /**
    * @notice Adds a automaton to the list of known automatons.
    * @param candidate is the address to be added.
+   * @param privileges is a bitfield describing the flags to assign to `candidate`.
    */
   function setAutomatonPrivileges(address candidate, uint256 privileges) external;
 

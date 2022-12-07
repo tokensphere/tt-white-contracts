@@ -10,7 +10,7 @@ import './lib/AMarketplaceFacet.sol';
 
 /**
  * @title The Marketplace Smart Contract.
- * @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
+ * @notice The Marketplace Automatons facet is in charge of keeping track of automaton accounts.
  */
 contract MarketplaceAutomatonsFacet is AMarketplaceFacet, IHasAutomatons {
   using LibAddressSet for LibAddressSet.Data;
