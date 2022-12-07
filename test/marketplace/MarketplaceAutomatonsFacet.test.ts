@@ -5,8 +5,9 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { Issuer, Fast, MarketplaceAutomatonsFacet, Marketplace } from '../../typechain';
-import { impersonateContract } from '../utils';
+import { abiStructToObj, impersonateContract } from '../utils';
 import { marketplaceFixtureFunc } from '../fixtures/marketplace';
+import { BigNumber } from 'ethers';
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -20,10 +21,11 @@ describe('MarketplaceAutomatonsFacet', () => {
     john: SignerWithAddress;
 
   let issuer: FakeContract<Issuer>,
-    fast: FakeContract<Fast>,
     marketplace: Marketplace,
-    marketplaceAsItself: Marketplace,
-    automatons: MarketplaceAutomatonsFacet;
+    automatons: MarketplaceAutomatonsFacet,
+    issuerAutomatons: MarketplaceAutomatonsFacet;
+
+  let privilegesFixture: ReadonlyArray<{ who: SignerWithAddress, privileges: number }>;
 
   const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
 
@@ -33,21 +35,22 @@ describe('MarketplaceAutomatonsFacet', () => {
     issuer.isMember.returns(false);
   }
 
-  const resetFastMock = () => {
-    issuer.isFastRegistered.reset();
-    issuer.isFastRegistered.whenCalledWith(fast.address).returns(true);
-    issuer.isFastRegistered.returns(false);
-  }
-
   before(async () => {
     // Keep track of a few signers.
     [deployer, issuerMember, alice, bob, rob, john] = await ethers.getSigners();
     // Mock Issuer and Fast contracts.
     issuer = await smock.fake('Issuer');
-    fast = await smock.fake('Fast');
+
+    privilegesFixture = [
+      { who: bob, privileges: 0b01 },
+      { who: alice, privileges: 0b01 },
+      { who: rob, privileges: 0b11 }
+    ];
   });
 
   beforeEach(async () => {
+    resetIssuerMock();
+
     await marketplaceDeployFixture({
       opts: {
         name: 'MarketplaceAutomatonsFixture',
@@ -55,47 +58,118 @@ describe('MarketplaceAutomatonsFacet', () => {
         afterDeploy: async (args) => {
           ({ marketplace } = args);
           automatons = await ethers.getContractAt<MarketplaceAutomatonsFacet>('MarketplaceAutomatonsFacet', marketplace.address);
+          issuerAutomatons = await automatons.connect(issuerMember);
+
+          for (const { who: { address }, privileges } of privilegesFixture) {
+            await issuerAutomatons.setAutomatonPrivileges(address, privileges)
+          }
         }
       },
       initWith: {
         issuer: issuer.address
       }
     });
-
-    marketplaceAsItself = await impersonateContract(marketplace);
-
-    resetIssuerMock();
-    resetFastMock()
   });
   describe('IHasAutomatons', async () => {
     describe('isAutomaton', async () => {
-      it('returns true when a privilege exists for the given candidate');
-      it('returns false when no privilege exists for the given candidate');
+      it('returns true when a privilege exists for the given candidate', async () => {
+        for (const { who: { address } } of privilegesFixture) {
+          expect(await automatons.isAutomaton(address)).to.eq(true);
+        }
+      });
+
+      it('returns false when no privilege exists for the given candidate', async () => {
+        expect(await automatons.isAutomaton(john.address)).to.eq(false);
+      });
     });
 
     describe('automatonPrivileges', async () => {
-      it('returns a bitfield of the candidate privileges');
+      it('returns a bitfield of the candidate privileges', async () => {
+        for (const { who: { address }, privileges } of privilegesFixture) {
+          const subject = await automatons.automatonPrivileges(address);
+          expect(subject).to.eq(privileges);
+        }
+      });
+
+      it('returns zero when no privileges exist for the candidate', async () => {
+        expect(await automatons.automatonPrivileges(john.address)).to.eq(0b00);
+      });
     });
 
     describe('automatonCount', async () => {
-      it('returns the number of registered automatons');
+      it('returns the number of registered automatons', async () => {
+        const subject = await automatons.automatonCount();
+        expect(subject).to.eq(privilegesFixture.length);
+      });
     });
 
     describe('paginateAutomatons', async () => {
-      it('paginates registered automatons');
+      it('paginates registered automatons', async () => {
+        const [page, nextCursor] = await automatons.paginateAutomatons(1, 2);
+        expect(page).to.eql([alice.address, rob.address]);
+        expect(nextCursor).to.eq(3);
+      });
     });
 
     describe('automatonPrivilegesStruct', async () => {
-      it('returns candidate privileges in the form of a struct');
+      it('returns candidate privileges in the form of a struct', async () => {
+        const subject = abiStructToObj(await automatons.automatonPrivilegesStruct(alice.address));
+        solidity
+        expect(subject).to.eql({
+          canAddMember: true,
+          canRemoveMember: false,
+          canActivateMember: false,
+          canDeactivateMember: false
+        });
+      });
     });
 
     describe('setAutomatonPrivileges', async () => {
-      it('assigns the given privileges to the candidate');
-      it('overwrites existing privileges');
+      it('requires issuer membership', async () => {
+        const subject = automatons.setAutomatonPrivileges(john.address, 0b111);
+        await expect(subject).to.be
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+      });
+
+      it('assigns the given privileges to the candidate', async () => {
+        await issuerAutomatons.setAutomatonPrivileges(john.address, 0b111);
+        const subject = await automatons.automatonPrivileges(john.address);
+        expect(subject).to.eq(0b111);
+      });
+
+      it('overwrites existing privileges', async () => {
+        await issuerAutomatons.setAutomatonPrivileges(alice.address, 0b111);
+        const subject = await automatons.automatonPrivileges(alice.address);
+        expect(subject).to.eq(0b111);
+      });
+
+      it('emits a AutomatonPrivilegesSet event', async () => {
+        const subject = await issuerAutomatons.setAutomatonPrivileges(john.address, 0b111);
+        await expect(subject).to
+          .emit(marketplace, 'AutomatonPrivilegesSet')
+          .withArgs(john.address, 0b111);
+      });
     });
 
     describe('removeAutomaton', async () => {
-      it('removes the automaton from the list');
+      it('requires issuer privileges', async () => {
+        const subject = automatons.removeAutomaton(john.address);
+        await expect(subject).to.be
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+      });
+
+      it('removes the automaton from the list', async () => {
+        await issuerAutomatons.removeAutomaton(alice.address);
+        const subject = await automatons.isAutomaton(alice.address);
+        expect(subject).to.eq(false);
+      });
+
+      it('emits a AutomatonRemoved event', async () => {
+        const subject = await issuerAutomatons.removeAutomaton(alice.address);
+        await expect(subject).to
+          .emit(marketplace, 'AutomatonRemoved')
+          .withArgs(alice.address);
+      });
     });
   });
 });
