@@ -17,6 +17,7 @@ deployments/localhost
 conf/keys.staging.json
 conf/keys.production.json
 conf/keys.mumbai.json
+conf/keys.polygon.json
 .env.secret
 
 # Geth local chain state.
