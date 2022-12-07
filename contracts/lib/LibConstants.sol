@@ -10,4 +10,6 @@ library LibConstants {
   string internal constant REQUIRES_MARKETPLACE_MEMBERSHIP = 'Requires Marketplace membership';
   string internal constant REQUIRES_FAST_MEMBERSHIP = 'Requires FAST membership';
   string internal constant REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = 'Requires different sender and recipient';
+
+  string internal constant DEAD_TOKENS_RETRIEVAL = 'Dead tokens retrieval';
 }
