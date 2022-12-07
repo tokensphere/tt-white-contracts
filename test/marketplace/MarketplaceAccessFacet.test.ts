@@ -161,7 +161,7 @@ describe('MarketplaceAccessFacet', () => {
       });
 
       it('emits a MemberAdded event', async () => {
-        const subject = await issuerMemberAccess.addMember(alice.address);
+        const subject = issuerMemberAccess.addMember(alice.address);
         await expect(subject).to
           .emit(marketplace, 'MemberAdded')
           .withArgs(alice.address);
@@ -211,7 +211,7 @@ describe('MarketplaceAccessFacet', () => {
       });
 
       it('emits a MemberRemoved event', async () => {
-        const subject = await issuerMemberAccess.removeMember(alice.address);
+        const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to
           .emit(marketplace, 'MemberRemoved')
           .withArgs(alice.address);
@@ -333,7 +333,7 @@ describe('MarketplaceAccessFacet', () => {
     });
 
     it('emits a MemberDeactivated event', async () => {
-      const subject = await issuerMemberAccess.deactivateMember(alice.address);
+      const subject = issuerMemberAccess.deactivateMember(alice.address);
       expect(subject).to
         .emit(access, 'MemberDeactivated')
         .withArgs(alice.address);
@@ -377,7 +377,7 @@ describe('MarketplaceAccessFacet', () => {
     });
 
     it('emits a MemberActivated event', async () => {
-      const subject = await issuerMemberAccess.activateMember(alice.address);
+      const subject = issuerMemberAccess.activateMember(alice.address);
       expect(subject).to
         .emit(access, 'MemberActivated')
         .withArgs(alice.address);

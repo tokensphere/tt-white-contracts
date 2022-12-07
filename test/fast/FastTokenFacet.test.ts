@@ -206,10 +206,10 @@ describe('FastTokenFacet', () => {
     });
 
     it('emits a Minted event', async () => {
-      const subject = await issuerMemberToken.mint(3_000, 'Attempt 1');
+      const subject = issuerMemberToken.mint(3_000, 'Attempt 1');
       await expect(subject).to
         .emit(fast, 'Minted')
-        .withArgs(3_000, 'Attempt 1');
+        .withArgs(3_000, 'Attempt 1', issuerMember.address);
     });
 
     it('delegates to the frontend facet');
@@ -274,10 +274,10 @@ describe('FastTokenFacet', () => {
     });
 
     it('emits a Burnt event', async () => {
-      const subject = await issuerMemberToken.burn(50, 'Feel the burn');
+      const subject = issuerMemberToken.burn(50, 'Feel the burn');
       await expect(subject).to
         .emit(fast, 'Burnt')
-        .withArgs(50, 'Feel the burn');
+        .withArgs(50, 'Feel the burn', issuerMember.address);
     });
 
     it('delegates to the frontend facet');
@@ -299,7 +299,18 @@ describe('FastTokenFacet', () => {
         .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
     });
 
-    it('still emits a Transfer event if the balance was already zero', async () => {
+    it('emits a Transfer and a FastTransfer event', async () => {
+      const subject = issuerMemberToken.retrieveDeadTokens(alice.address);
+
+      await expect(subject).to
+        .emit(fast, 'FastTransfer')
+        .withArgs(issuerMember.address, alice.address, ZERO_ADDRESS, 100, 'Dead tokens retrieval');
+      await expect(subject).to
+        .emit(fast, 'Transfer')
+        .withArgs(alice.address, ZERO_ADDRESS, 100);
+    });
+
+    it('emits a Transfer event if the balance was already zero', async () => {
       const subject = issuerMemberToken.retrieveDeadTokens(john.address);
       await expect(subject).to
         .emit(fast, 'Transfer')
@@ -336,8 +347,11 @@ describe('FastTokenFacet', () => {
         .calledOnceWith(alice.address, 0);
     });
 
-    it('emits a Transfer event between the holder and the reserve', async () => {
-      const subject = await issuerMemberToken.retrieveDeadTokens(alice.address);
+    it('emits a FastTransfer and Transfer events between the holder and the reserve', async () => {
+      const subject = issuerMemberToken.retrieveDeadTokens(alice.address);
+      await expect(subject).to
+        .emit(fast, 'FastTransfer')
+        .withArgs(issuerMember.address, alice.address, ZERO_ADDRESS, 100, 'Dead tokens retrieval');
       await expect(subject).to
         .emit(fast, 'Transfer')
         .withArgs(alice.address, ZERO_ADDRESS, 100);
@@ -508,7 +522,7 @@ describe('FastTokenFacet', () => {
 
       it('emits an Approval event', async () => {
         // Let alice give allowance to bob.
-        const subject = await token.connect(alice).approve(bob.address, 60);
+        const subject = token.connect(alice).approve(bob.address, 60);
         await expect(subject).to
           .emit(fast, 'Approval')
           .withArgs(alice.address, bob.address, 60)
@@ -579,7 +593,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a Disapproval event', async () => {
-        const subject = await token.connect(bob).disapprove(john.address, 10);
+        const subject = token.connect(bob).disapprove(john.address, 10);
         await expect(subject).to
           .emit(fast, 'Disapproval')
           .withArgs(bob.address, john.address, 10);
@@ -786,7 +800,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a IERC20.Transfer event', async () => {
-        const subject = await token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
+        const subject = token.connect(john).transferFromWithRef(bob.address, alice.address, 98, 'Six');
         await expect(subject).to
           .emit(fast, 'Transfer')
           .withArgs(bob.address, alice.address, 98);
@@ -966,7 +980,7 @@ describe('FastTokenFacet', () => {
       });
 
       it('emits a Disapproval event as many times as it removed allowance', async () => {
-        const subject = await tokenAsItself.beforeRemovingMember(alice.address);
+        const subject = tokenAsItself.beforeRemovingMember(alice.address);
         await expect(subject).to
           .emit(fast, 'Disapproval')
           .withArgs(alice.address, bob.address, 100);
