@@ -73,7 +73,6 @@ yarn hardhat fast-deploy \
               --decimals 18 \
               --has-fixed-supply false \
               --is-semi-public true \
-              --tx-credits 1000000 \
               --mint 1000000
 ```
 
@@ -90,13 +89,6 @@ yarn hardhat fast-mint SAF \
               --network localhost \
               --amount 1000000 \
               --ref "Much tokens, very wow, such bling."
-```
-
-At this point, it's important to add transfer credits to the FAST, so that transfers can freely be executed.
-
-```shell
-yarn hardhat fast-add-transfer-credits SAF 5000000 \
-              --network localhost
 ```
 
 To obtain the balance of an account over a particular FAST:
