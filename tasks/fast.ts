@@ -15,7 +15,6 @@ interface FastDeployTaskParams {
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
-  readonly txCredits: number;
   readonly mint?: number;
 };
 
@@ -26,7 +25,6 @@ task('fast-deploy', 'Deploys a FAST')
   .addOptionalParam('decimals', 'The decimals for the new FAST', 18, types.int)
   .addParam('hasFixedSupply', 'The minting scheme for the new FAST', undefined, types.boolean)
   .addParam('isSemiPublic', 'Whether or not this FAST should be semi-public', undefined, types.boolean)
-  .addParam('txCredits', 'The number of credits available for this new FAST', undefined, types.int)
   .addOptionalParam('mint', 'How many tokens to initially mint and transfer to the governor', undefined, types.int)
   .setAction(async (params: FastDeployTaskParams, hre: HardhatRuntimeEnvironment) => {
     const { ethers, getNamedAccounts } = hre;
