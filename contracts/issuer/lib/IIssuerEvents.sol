@@ -13,6 +13,11 @@ interface IIssuerEvents {
    * @param fast The address of the newly registered FAST diamond.
    */
   event FastRegistered(address indexed fast);
+  /**
+   * @notice Emited when a FAST is removed from the Issuer contract.
+   * @param fast The address of the unregistered FAST.
+   */
+  event FastUnregistered(address indexed fast);
 
   // IHasMembers.
 

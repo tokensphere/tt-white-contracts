@@ -20,6 +20,7 @@ interface ICustomErrors {
   error RequiresNoFastMemberships(address who);
 
   error DuplicateEntry();
+  error NonExistentEntry();
   error UnsupportedOperation();
   error CannotSelfRemove(address who);
 

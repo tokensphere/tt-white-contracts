@@ -40,6 +40,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'EthDrained(address,uint256)'],
       ['Facet$', 'EthReceived(address,uint256)'],
       ['Facet$', 'FastRegistered(address)'],
+      ['Facet$', 'FastUnregistered(address)'],
       ['Facet$', 'MemberAdded(address)'],
       ['Facet$', 'MemberRemoved(address)'],
       ['Facet$', 'GovernorshipAdded(address,address)'],

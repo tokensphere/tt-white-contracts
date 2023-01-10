@@ -60,6 +60,29 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   /**
+   * @notice Allows the unregistration of a given FAST diamond with this Issuer.
+   * @param fast The address of the FAST diamond to be unregistered.
+   * @notice Requires that the caller is a member of this Issuer.
+   * @notice Emits a `FastUnregistered` event.
+   */
+  function unregisterFast(address fast)
+    external
+    onlyMember(msg.sender) {
+      LibIssuer.Data storage s = LibIssuer.data();
+      string memory symbol = FastTokenFacet(fast).symbol();
+
+      // Disable transfers in the FAST.
+      FastTopFacet(fast).setTransfersDisabled(true);
+
+      // Remove the FAST from our lists.
+      s.fastSet.remove(fast, false);
+      delete s.fastSymbols[symbol];
+
+      // Emit!
+      emit FastUnregistered(fast);
+    }
+
+  /**
    * @notice Counts the number of FAST diamonds registered with this Issuer.
    * @return The number of FAST diamonds registered with this Issuer.
    */
