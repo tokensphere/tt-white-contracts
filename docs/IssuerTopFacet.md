@@ -58,6 +58,22 @@ Emits a `FastRegistered` event.
 | ---- | ---- | ----------- |
 | fast | address | The address of the FAST diamond to be registered. |
 
+### unregisterFast
+
+```solidity
+function unregisterFast(address fast) external
+```
+
+Allows the unregistration of a given FAST diamond with this Issuer.
+Requires that the caller is a member of this Issuer.
+Emits a `FastUnregistered` event.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| fast | address | The address of the FAST diamond to be unregistered. |
+
 ### fastCount
 
 ```solidity
