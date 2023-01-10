@@ -123,6 +123,39 @@ describe('IssuerTopFacet', () => {
       });
     });
 
+    describe('unregisterFast', async () => {
+      it('requires Issuer membership', async () => {
+        const subject = top.unregisterFast(f01.address);
+        await expect(subject).to.have
+          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+      });
+
+      it('disables transfers for the FAST being unregistered', async () => {
+        await issuerMemberIssuer.unregisterFast(f01.address);
+        expect(f01.setTransfersDisabled).to.be
+          .calledOnceWith(true);
+      });
+
+      it('removes the FAST from the FAST address registry', async () => {
+        await issuerMemberIssuer.unregisterFast(f01.address);
+        const subject = await top.isFastRegistered(f01.address);
+        expect(subject).to.be.false;
+      });
+
+      it('removes the FAST from the symbol lookup table', async () => {
+        await issuerMemberIssuer.unregisterFast(f01.address);
+        const subject = await top.fastBySymbol('F01');
+        expect(subject).to.eq(ZERO_ADDRESS);
+      });
+
+      it('emits a FastUnregistered event', async () => {
+        const subject = issuerMemberIssuer.unregisterFast(f01.address);
+        await expect(subject).to
+          .emit(issuer, 'FastUnregistered')
+          .withArgs(f01.address);
+      })
+    });
+
     describe('fastCount', async () => {
       it('returns the FAST count', async () => {
         const subject = await issuer.fastCount();
