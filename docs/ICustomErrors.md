@@ -86,6 +86,12 @@ error RequiresNoFastMemberships(address who)
 error DuplicateEntry()
 ```
 
+### NonExistentEntry
+
+```solidity
+error NonExistentEntry()
+```
+
 ### UnsupportedOperation
 
 ```solidity
