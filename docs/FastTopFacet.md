@@ -79,7 +79,7 @@ function setIsSemiPublic(bool flag) external
 ```
 
 Allows to switch from a private scheme to a semi-public scheme,
- but not the other way around.
+ but not the other way around, unless the total supply is zero.
 
 #### Parameters
 

@@ -374,36 +374,3 @@ function beforeRemovingMember(address member) external
 function holders() external view returns (address[])
 ```
 
-### balanceChanged
-
-```solidity
-function balanceChanged(address holder, uint256 balance) private
-```
-
-### canHoldTokens
-
-```solidity
-function canHoldTokens(address candidate) private view returns (bool)
-```
-
-Ensures that the given address is a member of the current FAST or the Zero Address.
-
-Business logic:
-  - If the candidate is the reserve, it is a valid token holder.
-  - If the FAST is semi-public,
-    - We require that candidate is a member of the Marketplace contract and is active in it.
-  - Otherwise,
-    - Require that the candidate is a member of the FAST.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| candidate | address | The address to check. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | A boolean set to `true` if `candidate` can hold tokens, `false` otherwise. |
-
