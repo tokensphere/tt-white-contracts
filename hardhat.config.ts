@@ -46,7 +46,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'GovernorshipRemoved(address,address)'],
       // Error types.
       ['Facet$', 'RequiresIssuerMembership(address)'],
-      ['Facet$', 'RequiresFastContractCaller()']
+      ['Facet$', 'RequiresFastContractCaller']
     ]),
     include: [
       'IERC165',
@@ -67,7 +67,7 @@ const config: HardhatUserConfig = {
       ['Facet$', 'AutomatonPrivilegesSet(address,uint256)'],
       ['Facet$', 'AutomatonRemoved(address)'],
       // Error types.
-      ['Facet$', 'RequiresFastContractCaller()'],
+      ['Facet$', 'RequiresFastContractCaller'],
       ['Facet$', 'RequiresIssuerMembership(address)']
     ]),
     include: [
@@ -96,11 +96,11 @@ const config: HardhatUserConfig = {
       ['Facet$', 'Disapproval(address,address,uint256)'],
       ['Facet$', 'DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)'],
       // Error types.
-      ['Facet$', 'InternalMethod()'],
+      ['Facet$', 'InternalMethod'],
       ['Facet$', 'RequiresIssuerMembership(address)'],
       ['Facet$', 'RequiresMarketplaceMembership(address)'],
       ['Facet$', 'RequiresFastGovernorship(address)'],
-      ['Facet$', 'UnsupportedOperation()']
+      ['Facet$', 'UnsupportedOperation']
     ]),
     include: [
       'IERC165',

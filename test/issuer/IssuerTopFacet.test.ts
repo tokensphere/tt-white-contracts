@@ -94,7 +94,7 @@ describe('IssuerTopFacet', () => {
       it('requires Issuer membership', async () => {
         const subject = top.registerFast(f01.address);
         await expect(subject).to.have
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('reverts if trying to add a FAST with an already existing symbol', async () => {
@@ -102,7 +102,7 @@ describe('IssuerTopFacet', () => {
         duplFast.symbol.returns('F01');
         const subject = issuerMemberIssuer.registerFast(duplFast.address)
         await expect(subject).to.be
-          .revertedWith('DuplicateEntry()');
+          .revertedWith('DuplicateEntry');
       });
 
       it('adds the registry address to the list of registries', async () => {

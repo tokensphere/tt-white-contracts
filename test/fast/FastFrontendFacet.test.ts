@@ -9,6 +9,7 @@ import { zero, tenThousand, abiStructToObj, oneHundred, impersonateContract } fr
 import { Issuer, Marketplace, Fast, FastFrontendFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 import { toUnpaddedHexString } from '../../src/utils';
+
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -71,14 +72,19 @@ describe('FastFrontendFacet', () => {
     it('requires that the caller is the diamond', async () => {
       const subject = frontend.emitDetailsChanged();
       await expect(subject).to.have.been
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     it('emits a DetailsChanged event with all the correct information', async () => {
       const frontendAsItself = await impersonateContract(frontend);
+      // We need to account for the transaction cost here, as the account being
+      // debited is the smart contract itself, acting on its own behalf.
+      // If the solidity function body changes, this number likely needs to be recalculated.
+      const txCost = BigNumber.from('30105784837004394');
 
-      // Fire off the events but wait for the transaction.
+      // Fire off the events.
       const subject = frontendAsItself.emitDetailsChanged();
+      await subject;
 
       // Get the other details from a standard `details` function call.
       const detailsObj = abiStructToObj(await frontend.details());
@@ -91,7 +97,7 @@ describe('FastFrontendFacet', () => {
           detailsObj.governorCount,
           detailsObj.totalSupply,
           detailsObj.reserveBalance,
-          BigNumber.isBigNumber /* the balance from detailsObj.ethBalance will not be correct */
+          detailsObj.ethBalance.sub(txCost)
         );
     });
   });
