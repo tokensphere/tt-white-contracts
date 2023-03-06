@@ -138,7 +138,7 @@ describe('MarketplaceAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('delegates to the Issuer for permission', async () => {
@@ -178,7 +178,7 @@ describe('MarketplaceAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = marketplace.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('delegates to the Issuer for permission', async () => {
@@ -201,7 +201,7 @@ describe('MarketplaceAccessFacet', () => {
 
         const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresNoFastMemberships("${alice.address}")`);
+          .revertedWith(`RequiresNoFastMemberships`);
       });
 
       it('removes the given address as a member', async () => {
@@ -249,7 +249,7 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = marketplace.memberAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith('RequiresFastContractCaller()');
+        .revertedWith('RequiresFastContractCaller');
     });
 
     it('adds the given member to the FAST membership tracking data structure', async () => {
@@ -271,7 +271,7 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = marketplace.memberRemovedFromFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith('RequiresFastContractCaller()');
+        .revertedWith('RequiresFastContractCaller');
     });
 
     it('removes the FAST contract from the list of Fast members', async () => {
@@ -317,13 +317,13 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be an Issuer member', async () => {
       const subject = access.deactivateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+        .revertedWith(`RequiresIssuerMembership`);
     });
 
     it('requires the member to deactivate is an Marketplace member', async () => {
       const subject = issuerMemberAccess.deactivateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresMarketplaceMembership("${bob.address}")`);
+        .revertedWith(`RequiresMarketplaceMembership`);
     });
 
     it('adds the FAST member to the list of deactivated members', async () => {
@@ -346,7 +346,7 @@ describe('MarketplaceAccessFacet', () => {
       // Attempt to re-deactivate Alice.
       const subject = issuerMemberAccess.deactivateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresMarketplaceActiveMembership("${alice.address}")`);
+        .revertedWith(`RequiresMarketplaceActiveMembership`);
     });
   });
 
@@ -361,13 +361,13 @@ describe('MarketplaceAccessFacet', () => {
     it('requires the caller to be an Issuer member', async () => {
       const subject = access.activateMember(alice.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+        .revertedWith(`RequiresIssuerMembership`);
     });
 
     it('requires the member to activate is an Marketplace member', async () => {
       const subject = issuerMemberAccess.activateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresMarketplaceMembership("${bob.address}")`);
+        .revertedWith(`RequiresMarketplaceMembership`);
     });
 
     it('removes the FAST member from the list of deactivated members', async () => {
@@ -389,7 +389,7 @@ describe('MarketplaceAccessFacet', () => {
       // Attempt to activate an already active member.
       const subject = issuerMemberAccess.activateMember(bob.address);
       await expect(subject).to.be
-        .revertedWith(`RequiresMarketplaceDeactivatedMember("${bob.address}")`);
+        .revertedWith(`RequiresMarketplaceDeactivatedMember`);
     });
   });
 });

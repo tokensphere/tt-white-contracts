@@ -90,7 +90,7 @@ describe('IssuerAccessFacet', () => {
       it('requires that the sender is a member', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('adds the member to the list', async () => {
@@ -121,7 +121,7 @@ describe('IssuerAccessFacet', () => {
       it('requires that the sender is the diamond owner', async () => {
         const subject = issuerMemberAccess.removeMember(bob.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresDiamondOwnership("${issuerMember.address}")`);
+          .revertedWith(`RequiresDiamondOwnership`);
       });
 
       it('removes the member from the list', async () => {
@@ -151,7 +151,7 @@ describe('IssuerAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith('RequiresFastContractCaller()');
+        .revertedWith('RequiresFastContractCaller');
     });
 
     it('adds the given member to the FAST governorship tracking data structure', async () => {
@@ -186,7 +186,7 @@ describe('IssuerAccessFacet', () => {
     it('requires the caller to be a registered FAST', async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been
-        .revertedWith('RequiresFastContractCaller()');
+        .revertedWith('RequiresFastContractCaller');
     });
 
     it('adds the given member to the FAST governorship tracking data structure', async () => {

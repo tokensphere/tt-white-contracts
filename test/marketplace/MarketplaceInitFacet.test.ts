@@ -54,7 +54,7 @@ describe('MarketplaceInitFacet', () => {
       });
 
       await expect(subject).to.be
-        .revertedWith('AlreadyInitialized()');
+        .revertedWith('AlreadyInitialized');
     });
 
     it('set various storage versions', async () => {

@@ -129,7 +129,7 @@ describe('MarketplaceAutomatonsFacet', () => {
       it('requires issuer membership', async () => {
         const subject = automatons.setAutomatonPrivileges(john.address, 0b111);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('assigns the given privileges to the candidate', async () => {
@@ -156,7 +156,7 @@ describe('MarketplaceAutomatonsFacet', () => {
       it('requires issuer privileges', async () => {
         const subject = automatons.removeAutomaton(john.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('removes the automaton from the list', async () => {

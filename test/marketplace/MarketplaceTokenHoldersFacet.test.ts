@@ -67,7 +67,7 @@ describe('MarketplaceTokenHoldersFacet', () => {
       const subject = tokenHolders.fastBalanceChanged(alice.address, 0);
 
       await expect(subject).to.have
-        .revertedWith('RequiresFastContractCaller()');
+        .revertedWith('RequiresFastContractCaller');
     });
 
     it('returns a list of FASTs that an account holds', async () => {

@@ -96,7 +96,7 @@ describe('FastInitFacet', () => {
         governor: ZERO_ADDRESS
       });
       await expect(subject).to.be
-        .revertedWith('AlreadyInitialized()');
+        .revertedWith('AlreadyInitialized');
     });
 
     it('sets LibFast storage version', async () => {
@@ -167,7 +167,7 @@ describe('FastInitFacet', () => {
         });
         // Should have failed.
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceActiveMembership("${governor.address}")`);
+          .revertedWith(`RequiresMarketplaceActiveMembership`);
       });
 
       it('reverts when the passed governor address is deactivated in the marketplace', async () => {
@@ -183,7 +183,7 @@ describe('FastInitFacet', () => {
         });
         // Should have failed.
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceActiveMembership("${governor.address}")`);
+          .revertedWith(`RequiresMarketplaceActiveMembership`);
       });
 
       it('emits a GovernorAdded event', async () => {

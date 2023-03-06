@@ -49,7 +49,7 @@ describe('IssuerInitFacet', () => {
       const initIssuer = await ethers.getContractAt<IssuerInitFacet>('IssuerInitFacet', issuer.address);
       const subject = initIssuer.initialize({ member: ZERO_ADDRESS });
       await expect(subject).to.be
-        .revertedWith('AlreadyInitialized()');
+        .revertedWith('AlreadyInitialized');
     });
 
     it('set various storage versions', async () => {

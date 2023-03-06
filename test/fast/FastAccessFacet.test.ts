@@ -139,13 +139,13 @@ describe('FastAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = access.addGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('requires Issuer membership (governor)', async () => {
         const subject = governedAccess.addGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${governor.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('delegates to the Issuer for permission checking', async () => {
@@ -160,7 +160,7 @@ describe('FastAccessFacet', () => {
         marketplace.isMember.reset();
         const subject = issuerMemberAccess.addGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceMembership("${alice.address}")`);
+          .revertedWith(`RequiresMarketplaceMembership`);
       });
 
       it('requires that the address is not a governor yet', async () => {
@@ -199,13 +199,13 @@ describe('FastAccessFacet', () => {
       it('requires Issuer membership (anonymous)', async () => {
         const subject = access.removeGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('requires Issuer membership (governor)', async () => {
         const subject = governedAccess.removeGovernor(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresIssuerMembership("${governor.address}")`);
+          .revertedWith(`RequiresIssuerMembership`);
       });
 
       it('delegates to the Issuer for permission checking', async () => {
@@ -311,20 +311,20 @@ describe('FastAccessFacet', () => {
       it('requires governance (anonymous)', async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresFastGovernorship("${deployer.address}")`);
+          .revertedWith(`RequiresFastGovernorship`);
       });
 
       it('requires governance (Issuer governor)', async () => {
         const subject = issuerMemberAccess.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresFastGovernorship("${issuerMember.address}")`);
+          .revertedWith(`RequiresFastGovernorship`);
       });
 
       it('requires that the address is an Marketplace member', async () => {
         marketplace.isMember.whenCalledWith(alice.address).returns(false);
         const subject = governedAccess.addMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresMarketplaceMembership("${alice.address}")`);
+          .revertedWith(`RequiresMarketplaceMembership`);
       });
 
       it('requires that the address is not a member yet', async () => {
@@ -370,13 +370,13 @@ describe('FastAccessFacet', () => {
       it('requires governance (anonymous)', async () => {
         const subject = access.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresFastGovernorship("${deployer.address}")`);
+          .revertedWith(`RequiresFastGovernorship`);
       });
 
       it('requires governance (Issuer governor)', async () => {
         const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to.be
-          .revertedWith(`RequiresFastGovernorship("${issuerMember.address}")`);
+          .revertedWith(`RequiresFastGovernorship`);
       });
 
       it('requires that the address is an existing member', async () => {

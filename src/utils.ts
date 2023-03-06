@@ -1,7 +1,6 @@
 import fs from 'fs';
 import { BigNumber, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { utils } from 'ethers';
 import { JsonFragment } from '@ethersproject/abi';
 
 export const ZERO_ADDRESS = ethers.constants.AddressZero;
@@ -31,7 +30,7 @@ export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnv
 
 // Transforms an ABIElement
 export const abiElementToSignature = (abiElement: JsonFragment): string =>
-  utils.Fragment.fromObject(abiElement).format()
+  ethers.utils.Fragment.fromObject(abiElement).format()
 
 export type AbiIgnoreList = ReadonlyArray<[Readonly<string>, Readonly<string>]>;
 export const abiFilter = (ignoreList: AbiIgnoreList) =>

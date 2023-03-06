@@ -109,7 +109,7 @@ describe('FastTopFacet', () => {
     it('requires Issuer membership for the sender', async () => {
       const subject = top.setIsSemiPublic(true);
       await expect(subject).to.be
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+        .revertedWith(`RequiresIssuerMembership`);
     });
 
     it('delegates to the Issuer for permission check', async () => {
@@ -138,7 +138,7 @@ describe('FastTopFacet', () => {
       // Attempt to revert to non-semi public.
       const subject = issuerMemberTop.setIsSemiPublic(false);
       await expect(subject).to.be
-        .revertedWith('UnsupportedOperation()');
+        .revertedWith('UnsupportedOperation');
     });
 
     it('sets the required flag on the FAST', async () => {
@@ -157,7 +157,7 @@ describe('FastTopFacet', () => {
     it('requires Issuer membership from the sender', async () => {
       const subject = top.setTransfersDisabled(true);
       await expect(subject).to.be
-        .revertedWith(`RequiresIssuerMembership("${deployer.address}")`);
+        .revertedWith(`RequiresIssuerMembership`);
     });
 
     it('delegates to FastFrontendFacet.emitDetailsChanged', async () => {

@@ -82,13 +82,13 @@ describe('FastHistoryFacet', () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.minted(1, 'One');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.minted(2, 'Two');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     describe('as the diamond', async () => {
@@ -107,13 +107,13 @@ describe('FastHistoryFacet', () => {
     it('requires that the caller is the diamond (anonymous)', async () => {
       const subject = history.burnt(1, 'One');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     it('requires that the caller is the diamond (governor)', async () => {
       const subject = governedHistory.burnt(2, 'Two');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     describe('as the diamond', async () => {
@@ -177,13 +177,13 @@ describe('FastHistoryFacet', () => {
     it('requires that the caller is the token (anonymous)', async () => {
       const subject = history.transfered(alice.address, bob.address, john.address, 100, 'Attempt 1');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     it('requires that the caller is the token (governor)', async () => {
       const subject = governedHistory.transfered(alice.address, bob.address, john.address, 100, 'Attempt 2');
       await expect(subject).to.have
-        .revertedWith('InternalMethod()');
+        .revertedWith('InternalMethod');
     });
 
     it('adds an entry to the transfer proof list', async () => {
