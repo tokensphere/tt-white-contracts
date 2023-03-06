@@ -7,6 +7,7 @@ import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
 import './lib/IFastEvents.sol';
 import './FastFrontendFacet.sol';
+import './FastTokenFacet.sol';
 
 
 contract FastTopFacet is AFastFacet {
@@ -61,14 +62,14 @@ contract FastTopFacet is AFastFacet {
 
   /**
    * @notice Allows to switch from a private scheme to a semi-public scheme,
-   *  but not the other way around.
+   *  but not the other way around, unless the total supply is zero.
    * @param flag Set the semi public flag to true/false.
    */
   function setIsSemiPublic(bool flag)
       external
       onlyIssuerMember {
     // Someone is trying to toggle back to private?... No can do!
-    if (this.isSemiPublic()) {
+    if (this.isSemiPublic() && FastTokenFacet(address(this)).totalSupply() != 0) {
       revert ICustomErrors.UnsupportedOperation();
     }
     LibFast.data().isSemiPublic = flag;

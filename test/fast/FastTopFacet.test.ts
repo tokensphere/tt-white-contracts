@@ -5,7 +5,7 @@ import { deployments, ethers } from 'hardhat';
 import { FakeContract, MockContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 import { impersonateContract } from '../utils';
-import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet } from '../../typechain';
+import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet, FastTokenFacet } from '../../typechain';
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from '../fixtures/fast';
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -21,6 +21,7 @@ describe('FastTopFacet', () => {
     marketplace: FakeContract<Marketplace>,
     fast: Fast,
     top: FastTopFacet,
+    tokenMock: MockContract<FastTokenFacet>,
     frontendMock: MockContract<FastFrontendFacet>,
     issuerMemberTop: FastTopFacet,
     topAsItself: FastTopFacet;
@@ -54,7 +55,7 @@ describe('FastTopFacet', () => {
         name: 'FastTopFixture',
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          ({ fast, frontendMock } = args);
+          ({ fast, frontendMock, tokenMock } = args);
           top = await ethers.getContractAt<FastTopFacet>('FastTopFacet', fast.address);
           issuerMemberTop = top.connect(issuerMember);
         }
@@ -119,7 +120,19 @@ describe('FastTopFacet', () => {
         .calledOnceWith(issuerMember.address);
     });
 
+    it('allows changing from semi-public to closed as long as total supply is zero', async () => {
+      // Fake that total supply returns zero.
+      tokenMock.totalSupply.returns(0);
+      // Set as semi public.
+      await issuerMemberTop.setIsSemiPublic(true);
+      // Attempt to revert to non-semi public.
+      await issuerMemberTop.setIsSemiPublic(false);
+      expect(await issuerMemberTop.isSemiPublic()).to.be.false;
+    });
+
     it('prevents changing from semi-public to closed', async () => {
+      // Fake that total supply returns something else than zero.
+      tokenMock.totalSupply.returns(100);
       // Set as semi public.
       await issuerMemberTop.setIsSemiPublic(true);
       // Attempt to revert to non-semi public.
