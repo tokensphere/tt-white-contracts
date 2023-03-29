@@ -8,12 +8,12 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "local-node": "yarn hardhat node",
-    "console": "yarn hardhat console",
-    "test": "yarn hardhat test",
+    "local-node": "yarn build:types && yarn hardhat node",
+    "console": "yarn build:types &&yarn hardhat console",
+    "test": "yarn build:types && yarn hardhat test",
     "coverage": "yarn hardhat coverage",
-    "postinstall": "yarn build:abi",
-    "build": "yarn build:contracts && yarn build:abi && yarn build:types",
+    "postinstall": "yarn build",
+    "build": "yarn build:contracts && yarn build:abi",
     "build:contracts": "TS_NODE_TRANSPILE_ONLY=1 yarn hardhat compile",
     "build:types": "TS_NODE_TRANSPILE_ONLY=1 yarn hardhat typechain",
     "build:abi": "scripts/consolidate-artifacts.sh"
