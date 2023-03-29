@@ -12,7 +12,6 @@
     "console": "yarn hardhat console",
     "test": "yarn hardhat test",
     "coverage": "yarn hardhat coverage",
-    "postinstall": "yarn build",
     "build": "yarn build:contracts && yarn build:abi && yarn build:types",
     "build:contracts": "TS_NODE_TRANSPILE_ONLY=1 yarn hardhat compile",
     "build:types": "TS_NODE_TRANSPILE_ONLY=1 yarn hardhat typechain",
