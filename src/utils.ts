@@ -1,46 +1,45 @@
-import fs from 'fs';
-import { BigNumber, ethers } from 'ethers';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { JsonFragment } from '@ethersproject/abi';
+import fs from "fs";
+import { BigNumber, ethers } from "ethers";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { JsonFragment } from "@ethersproject/abi";
 
 export const ZERO_ADDRESS = ethers.constants.AddressZero;
 export const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
 
 export const DEPLOYER_FACTORY_COMMON = {
-  deployer: '0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e',
-  factory: '0x6DF2D25d8C6FD680730ee658b530A05a99BB769a',
-  funding: '10000000000000000'
-}
+  deployer: "0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e",
+  factory: "0x6DF2D25d8C6FD680730ee658b530A05a99BB769a",
+  funding: "10000000000000000",
+};
 
 export const COMMON_DIAMOND_FACETS = [];
 
 export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
   // Staging or production environments.
-  if (netName != 'hardhat' && netName != 'localhost' && netName != 'dev') {
+  if (netName !== "hardhat" && netName !== "localhost" && netName !== "dev") {
     const salt = process.env.DEPLOYMENT_SALT;
-    if (salt == undefined)
-      throw 'DEPLOYMENT_SALT must be set.';
+    if (salt === undefined) throw Error("DEPLOYMENT_SALT must be set.");
     return salt;
   }
   // Local environments.
   else {
-    return '0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d';
+    return "0x59fb51d231c59b6ca2b8489684b740972f67176a9dafd18bd1412321114f1c7d";
   }
-}
+};
 
 // Transforms an ABIElement
 export const abiElementToSignature = (abiElement: JsonFragment): string =>
-  ethers.utils.Fragment.fromObject(abiElement).format()
+  ethers.utils.Fragment.fromObject(abiElement).format();
 
 export type AbiIgnoreList = ReadonlyArray<[Readonly<string>, Readonly<string>]>;
-export const abiFilter = (ignoreList: AbiIgnoreList) =>
-  (abiElement: any, index: number, abi: any, contractName: string) =>
+export const abiFilter =
+  (ignoreList: AbiIgnoreList) => (abiElement: any, index: number, abi: any, contractName: string) =>
     // Find the first filter that matches...
     !ignoreList.some(
       ([nameMatcher, sig]) =>
         // If the name matches the name matcher and the function signature, we can set it to "ignore".
-        contractName.match(nameMatcher) && abiElementToSignature(abiElement) === sig
-    )
+        contractName.match(nameMatcher) && abiElementToSignature(abiElement) === sig,
+    );
 
 export const fromBaseUnit = (amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber => {
   amount = BigNumber.from(amount);
@@ -48,7 +47,7 @@ export const fromBaseUnit = (amount: BigNumber | string | number, decimals: BigN
   const ten = BigNumber.from(10);
   const exp = ten.pow(decimals);
   return amount.div(exp);
-}
+};
 
 export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: BigNumber | string | number) => {
   rawAmount = BigNumber.from(rawAmount);
@@ -63,35 +62,40 @@ export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: Big
   const base = ten.pow(BigNumber.from(decimals));
 
   // Is it negative?
-  const negative = (amount.substring(0, 1) === '-');
+  const negative = amount.substring(0, 1) === "-";
   if (negative) {
     amount = amount.substring(1);
   }
-  if (amount === '.') {
+  if (amount === ".") {
     throw new Error(`Invalid amount ${amount} cannot be converted to base unit with ${decimals} decimals.`);
   }
 
   // Split it into a whole and fractional part
-  let [wholeStr, fractionStr] = amount.split('.');
-  if (!wholeStr) { wholeStr = '0'; }
-  if (!fractionStr) { fractionStr = '0'; }
+  let [wholeStr, fractionStr] = amount.split(".");
+  if (!wholeStr) {
+    wholeStr = "0";
+  }
+  if (!fractionStr) {
+    fractionStr = "0";
+  }
   if (BigNumber.from(fractionStr.length) > decimals) {
-    throw new Error('Too many decimal places');
+    throw new Error("Too many decimal places");
   }
   while (BigNumber.from(fractionStr.length) < decimals) {
-    fractionStr += '0';
+    fractionStr += "0";
   }
 
   const whole = BigNumber.from(wholeStr);
   const fraction = BigNumber.from(fractionStr);
-  let wei = (whole.mul(base)).add(fraction);
-  if (negative) { wei = wei.mul(-1); }
+  let wei = whole.mul(base).add(fraction);
+  if (negative) {
+    wei = wei.mul(-1);
+  }
 
   return BigNumber.from(wei.toString());
-}
+};
 
-export const toUnpaddedHexString = (amount: BigNumber) =>
-  amount.toHexString().replace(/0x0+/, '0x')
+export const toUnpaddedHexString = (amount: BigNumber) => amount.toHexString().replace(/0x0+/, "0x");
 
 // =================================================== //
 
@@ -100,9 +104,9 @@ export const nodeUrl = (networkName: string): string =>
 
 export const accounts = (networkName: string): string[] => {
   try {
-    return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, 'utf8'));
+    return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, "utf8"));
   } catch (_error) {
     console.warn(`Cannot read keys file at conf/keys.${networkName}.json .`);
     return [];
   }
-}
+};
