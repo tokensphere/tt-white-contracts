@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import '../../fast/Distribution.sol';
+
 
 /**
  * @title FAST events inventory.
@@ -70,6 +72,10 @@ interface IFastEvents {
    * @param ref is the optional reference associated with the transfer.
    */
   event FastTransfer(address indexed spender, address indexed from, address indexed to, uint256 value, string ref);
+
+  // Distribution related events.
+
+  event DistributionDeployed(Distribution indexed distribution);
 
   // General events.
 

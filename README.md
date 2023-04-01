@@ -1,9 +1,11 @@
 # TT White Contracts
 
 This repository contains the Ethereum Smart Contracts that are used for our Tokenization as a Service (TSaaS) platform.
-This project uses Hardhat to allow for streamlined development and testing, as well as some helpful tasks (see `./src/tasks`).
+This project uses Hardhat to allow for streamlined development and testing, as well as some helpful tasks (see
+`./src/tasks`).
 
-This means that regardless of the network you're using (local, staging, production etc), the address of the deployed contracts should remain the same.
+This means that regardless of the network you're using (local, staging, production etc), the address of the deployed
+contracts should remain the same.
 
 ## Contract Folder Structure
 
@@ -16,7 +18,8 @@ Here is an overview of the layout of the `contracts` folder:
 
 ## Bootstrapping a Functional System Locally
 
-For development systems, we use local signers (Eg `ethers.getSigners()`). In the following paragraphs, you can assume that:
+For development systems, we use local signers (Eg `ethers.getSigners()`). In the following paragraphs, you can assume
+that:
 
 - `zero_address` is `0x0000000000000000000000000000000000000000`.
 - `deployer` is the very first signer from the signers list.
@@ -25,8 +28,9 @@ For development systems, we use local signers (Eg `ethers.getSigners()`). In the
 - `member` is the fourth signer from the signers list.
 - `random` is a random - non-signer at address `0xF7e5800E52318834E8689c37dCCCD2230427a905`.
 
-Before starting a node, it is recommended to clean your local deployment folder (`rm -rf deployments/localhost`).
-Then, you can run `yarn hardhat node`. You'll notice that both the Issuer and Marketplace contracts are being deployed automatically.
+Before starting a node, it is recommended to clean your local deployment folder (`rm -rf deployments/localhost`). Then,
+you can run `yarn hardhat node`. You'll notice that both the Issuer and Marketplace contracts are being deployed
+automatically.
 
 You then probably might want to jump directly to the `fast-deploy` task of this document to get started.
 
@@ -39,8 +43,7 @@ yarn hardhat faucet 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 \
               --network localhost
 ```
 
-Or if you're in a hurry and you would like all available signers to obtain an outrageous amount
-of ETH, you can run:
+Or if you're in a hurry and you would like all available signers to obtain an outrageous amount of ETH, you can run:
 
 ```shell
 yarn hardhat make-us-rich \
@@ -49,7 +52,8 @@ yarn hardhat make-us-rich \
 
 ## Top-Level Tasks (See `src/tasks/issuer.ts`)
 
-Although the local node you're running should already have an Issuer and an Marketplace diamond automatically deployed, you could deploy one yourself if running on a completely clean chain:
+Although the local node you're running should already have an Issuer and an Marketplace diamond automatically deployed,
+you could deploy one yourself if running on a completely clean chain:
 
 ```shell
 yarn hardhat issuer-deploy \
@@ -57,8 +61,8 @@ yarn hardhat issuer-deploy \
               --member 0x70997970c51812dc3a010c7d01b50e0d17dc79c8
 ```
 
-> Note that you won't need to run this particular task if you're using a local development node,
-> as the migration scripts in `deploy/` are ran automatically upon starting it.
+> Note that you won't need to run this particular task if you're using a local development node, as the migration
+> scripts in `deploy/` are ran automatically upon starting it.
 
 ## FAST Token Tasks (See `src/tasks/fast.ts`)
 
@@ -79,8 +83,8 @@ yarn hardhat fast-deploy \
 This task automatically deploys a full FAST diamond including its initialization facet. It then calls the
 `FastInitFacet.initialize/0` function, and lastly performs a diamond cut to remove the initialization facet.
 
-Once at least one FAST is deployed, take note of its symbol. There are more tasks that you can run
-over a particular FAST.
+Once at least one FAST is deployed, take note of its symbol. There are more tasks that you can run over a particular
+FAST.
 
 For example, to mint new tokens:
 
@@ -105,6 +109,40 @@ If you would like to query the minted (unallocated) tokens, you can instead quer
 yarn hardhat fast-balance SAF \
               --network localhost \
               --account 0x0000000000000000000000000000000000000000
+```
+
+## Distributions
+
+```typescript
+// We'll use the `user1` named account to be the owner of the distribution.
+user = await ethers.getSigner((await getNamedAccounts())["user1"]);
+// Get our dummy ERC20 token, and bind it to our user as the caller.
+token = (await ethers.getContract("ERC20")).connect(user);
+// Mint 5000 tokens for that user.
+await token.mint(user.address, 5000);
+// Get a handle to `F01` FAST, and bind it to our user as the caller.
+fast = (await ethers.getContract("FastF01")).connect(user);
+// Have the user create a new distribution. It will deploy a new Distribution contract in the Fund phase.
+await fast.createDistribution(token.address, 100);
+// Get the address and handle of the newly deployed contract.
+let [[distAddr]] = await fast.paginateDistributions(0, 1);
+let dist = await ethers.getContractAt("Distribution", distAddr);
+// Let our user approve 100 tokens to be spent by our distribution contract.
+await token.approve(dist.address, "100");
+// Let the distribution contract move to the Setup phase.
+await dist.advance();
+// Get a bunch of other accounts, all members of F01.
+let { user2, user3, user4 } = await getNamedAccounts();
+// Set them up as beneficiaries of the distribution.
+await dist.addBeneficiaries([user2, user3, user4], [5, 10, 15]);
+// Advance to the Withdrawal phase.
+await dist.advance();
+// Our beneficiaries should be able to withdraw from the Distribution.
+await dist.connect(await ethers.getSigner(user2)).withdraw();
+await dist.connect(await ethers.getSigner(user3)).withdraw();
+await dist.connect(await ethers.getSigner(user4)).withdraw();
+// Check the token balance of the beneficiaries.
+await Promise.all([user2, user3, user4].map((u) => token.balanceOf(u))).then((b) => b.map((b) => b.toString()));
 ```
 
 ## Hardhat Cheat-Sheet
