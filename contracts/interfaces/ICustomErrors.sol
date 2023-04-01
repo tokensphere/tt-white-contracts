@@ -19,10 +19,15 @@ interface ICustomErrors {
   error RequiresFastMembership(address who);
   error RequiresNoFastMemberships(address who);
 
+  error RequiresDistributionOwner(address who);
+
+  error InsuficientFunds(uint256 available, uint256 needed);
+
   error DuplicateEntry();
   error NonExistentEntry();
   error UnsupportedOperation();
   error CannotSelfRemove(address who);
+  error ReentrancyError();
 
   error RequiresContinuousSupply();
   error RequiresPositiveBalance(address holder);
