@@ -49,7 +49,7 @@ library LibFastToken {
     mapping(address => LibAddressSet.Data) allowancesByOwner;
     /// @notice A reverse lookup table allowing to retrieve allowances given by spender.
     mapping(address => LibAddressSet.Data) allowancesBySpender;
-    // Token holders
+    /// @notice All of this FAST token holders.
     LibAddressSet.Data tokenHolders;
   }
 
