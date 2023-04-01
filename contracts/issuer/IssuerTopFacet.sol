@@ -103,4 +103,11 @@ contract IssuerTopFacet is AIssuerFacet {
       returns(address[] memory, uint256) {
     return LibPaginate.addresses(LibIssuer.data().fastSet.values, cursor, perPage);
   }
+
+  // TODO: TEST.
+  function transferERC20Tokens (IERC20 token, uint256 amount)
+      public
+      onlyMember(msg.sender) {
+    token.transfer(msg.sender, amount);
+  }
 }
