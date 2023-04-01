@@ -2,12 +2,14 @@
 pragma solidity 0.8.10;
 
 import './lib/AFastFacet.sol';
+import './FastTopFacet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/LibFastDistributions.sol';
 import './Distribution.sol';
 import 'hardhat/console.sol';
 
 
+// TODO: TEST.
 contract FastDistributionsFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
@@ -15,7 +17,13 @@ contract FastDistributionsFacet is AFastFacet {
       external
       onlyMember(msg.sender) {
     // Deploy a new Distribution contract locked onto the current FAST and target currency token.
-    Distribution distribution = new Distribution(address(this), token, msg.sender, total);
+    Distribution distribution = new Distribution(
+      address(this),
+      token,
+      msg.sender,
+      total,
+      FastTopFacet(address(this)).issuerAddress()
+    );
     // Register our newly created distribution and keep track of it.
     LibFastDistributions.data().distributionSet.add(address(distribution), false);
     // Emit!
