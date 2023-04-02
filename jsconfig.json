@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "es2022",
+    "moduleResolution": "Node",
+    "target": "es2022",
+    "jsx": "react",
+    "strictNullChecks": true,
+    "strictFunctionTypes": true
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "abi",
+    "artifacts",
+    "cache"
+  ]
+}

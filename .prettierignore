@@ -1,5 +1,10 @@
-node_modules
+abi
 artifacts
+build
 cache
+deployments
+typechain
+node_modules
+.coverage_*
 coverage*
 gasReporterOutput.json
