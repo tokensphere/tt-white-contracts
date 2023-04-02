@@ -19,9 +19,9 @@ interface ICustomErrors {
   error RequiresFastMembership(address who);
   error RequiresNoFastMemberships(address who);
 
-  error RequiresDistributionOwner(address who);
+  error RequiresOwner(address who);
 
-  error InsuficientFunds(uint256 available, uint256 needed);
+  error InsuficientFunds(uint256 missing);
 
   error DuplicateEntry();
   error NonExistentEntry();

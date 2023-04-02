@@ -115,37 +115,38 @@ yarn hardhat fast-balance SAF \
 
 ```typescript
 // We'll use the `user1` named account to be the owner of the distribution.
-let user = await ethers.getSigner((await getNamedAccounts())["user1"]);
+let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let issuerSigner = await ethers.getSigner(issuerMember);
+let automatonSigner = await ethers.getSigner(automaton);
+let userSigner = await ethers.getSigner(user1);
 // Get our dummy ERC20 token, and bind it to our user as the caller.
-let token = (await ethers.getContract("ERC20")).connect(user);
+let token = (await ethers.getContract("ERC20")).connect(userSigner);
 // Mint 5000 tokens for that user.
-await token.mint(user.address, 5000);
+await token.mint(userSigner.address, 5000);
 // Get a handle to `F01` FAST, and bind it to our user as the caller.
-let fast = (await ethers.getContract("FastF01")).connect(user);
+let fast = await ethers.getContract("FastF01");
 // Have the user create a new distribution. It will deploy a new Distribution contract in the Fund phase.
-await fast.createDistribution(token.address, 100);
+await fast.connect(userSigner).createDistribution(token.address, 100);
 // Get the address and handle of the newly deployed contract.
 let [[distAddr]] = await fast.paginateDistributions(0, 1);
 let dist = await ethers.getContractAt("Distribution", distAddr);
 // Let our user approve 100 tokens to be spent by our distribution contract.
 await token.approve(dist.address, "100");
 // Let the distribution contract move to the Setup phase.
-await dist.advance();
+await dist.connect(userSigner).advance();
 // At this point, the fee needs to be set.
-await dist.setFee("10");
-// Get a bunch of other accounts, all members of F01.
-let { user2, user3, user4 } = await getNamedAccounts();
+await dist.connect(automatonSigner).setFee("10");
 // Set them up as beneficiaries of the distribution.
-await dist.addBeneficiaries([user2, user3, user4], [10, 30, 50]);
+await dist.connect(automatonSigner).addBeneficiaries([user2, user3, user4], [10, 30, 50]);
 // Advance to the Withdrawal phase.
-await dist.advance();
+await dist.connect(automatonSigner).advance();
 // At this point, the issuer should already have received their fee.
 let issuer = await ethers.getContract("Issuer");
 (await token.balanceOf(issuer.address)).toString();
 // Our beneficiaries should be able to withdraw from the Distribution.
-await dist.connect(await ethers.getSigner(user2)).withdraw();
-await dist.connect(await ethers.getSigner(user3)).withdraw();
-await dist.connect(await ethers.getSigner(user4)).withdraw();
+await dist.withdraw(user2);
+await dist.withdraw(user3);
+await dist.withdraw(user4);
 // Check the token balance of the beneficiaries.
 await Promise.all([user2, user3, user4].map((u) => token.balanceOf(u))).then((b) => b.map((b) => b.toString()));
 ```

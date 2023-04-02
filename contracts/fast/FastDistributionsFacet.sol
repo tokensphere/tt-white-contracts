@@ -6,7 +6,6 @@ import './FastTopFacet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/LibFastDistributions.sol';
 import './Distribution.sol';
-import 'hardhat/console.sol';
 
 
 // TODO: TEST.
@@ -18,16 +17,17 @@ contract FastDistributionsFacet is AFastFacet {
       onlyMember(msg.sender) {
     // Deploy a new Distribution contract locked onto the current FAST and target currency token.
     Distribution distribution = new Distribution(
-      address(this),
-      token,
-      msg.sender,
-      total,
-      FastTopFacet(address(this)).issuerAddress()
+      Distribution.ConstructorParams({
+        issuer: FastTopFacet(address(this)).issuerAddress(),
+        fast: address(this),
+        token: token,
+        owner: msg.sender,
+        total: total
+      })
     );
     // Register our newly created distribution and keep track of it.
     LibFastDistributions.data().distributionSet.add(address(distribution), false);
     // Emit!
-    console.log('Distribution', address(distribution));
     emit DistributionDeployed(distribution);
   }
 

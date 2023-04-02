@@ -13,6 +13,10 @@ import '../../fast/Distribution.sol';
 interface IFastEvents {
   // IHasMembers.
 
+  // IHasAutomatons
+  event AutomatonPrivilegesSet(address indexed automaton, uint256 indexed privileges);
+  event AutomatonRemoved(address indexed automaton);
+
   /**
    * @notice Emited when a member is added to the implementing contract.
    * @param member is the address of the added member.

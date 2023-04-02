@@ -12,6 +12,19 @@ export const DEPLOYER_FACTORY_COMMON = {
   funding: "10000000000000000",
 };
 
+export const MARKETPLACE_AUTOMATON_PRIVILEGES = {
+  ADD_MEMBER: 1,
+  REMOVE_MEMBER: 2,
+  ACTIVATE_MEMBER: 4,
+  DEACTIVATE_MEMBER: 8,
+};
+
+export const FAST_AUTOMATON_PRIVILEGES = {
+  ADD_MEMBER: 1,
+  REMOVE_MEMBER: 2,
+  MANAGE_DISTRIBUTIONS: 4,
+};
+
 export const COMMON_DIAMOND_FACETS = [];
 
 export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
