@@ -4,7 +4,6 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { impersonateContract } from "../utils";
 import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet, FastTokenFacet } from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 chai.use(solidity);
@@ -18,8 +17,7 @@ describe("FastTopFacet", () => {
     top: FastTopFacet,
     tokenMock: MockContract<FastTokenFacet>,
     frontendMock: MockContract<FastFrontendFacet>,
-    issuerMemberTop: FastTopFacet,
-    topAsItself: FastTopFacet;
+    issuerMemberTop: FastTopFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -61,8 +59,6 @@ describe("FastTopFacet", () => {
         governor: governor.address,
       },
     });
-
-    topAsItself = await impersonateContract(top);
 
     // Set up frontend facet mock.
     frontendMock.emitDetailsChanged.reset();

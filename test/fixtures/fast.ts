@@ -87,7 +87,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     historyMock: await facetMock<FastHistoryFacet__factory>(fast, "FastHistoryFacet"),
     frontendMock: await facetMock<FastFrontendFacet__factory>(fast, "FastFrontendFacet"),
     automatonsMock: await facetMock<FastAutomatonsFacet__factory>(fast, "FastAutomatonsFacet"),
-    distributionsMock: await facetMock<FastDistributionsFacet__factory>(fast, "FastDistributionssFacet"),
+    distributionsMock: await facetMock<FastDistributionsFacet__factory>(fast, "FastDistributionsFacet"),
   };
   // Callback!
   await afterDeploy.apply(this, [result]);
