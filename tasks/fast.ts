@@ -130,6 +130,7 @@ const FAST_FACETS = [
   "FastHistoryFacet",
   "FastFrontendFacet",
   "FastDistributionsFacet",
+  "FastAutomatonsFacet",
 ];
 
 interface FastDeployParams {

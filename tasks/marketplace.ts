@@ -8,7 +8,7 @@ import { Marketplace } from "../typechain";
 interface MarketplaceDeployParams {}
 
 task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
-  async ({}: MarketplaceDeployParams, hre) => {
+  async (_params: MarketplaceDeployParams, hre) => {
     const { address: issuerAddr } = await hre.deployments.get("Issuer");
     await deployMarketplace(hre, issuerAddr);
   },

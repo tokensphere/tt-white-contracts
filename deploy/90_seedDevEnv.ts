@@ -2,16 +2,17 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers, getNamedAccounts } from "hardhat";
 import { Marketplace } from "../typechain";
-import { toBaseUnit, ZERO_ADDRESS } from "../src/utils";
+import { FAST_AUTOMATON_PRIVILEGES, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
   const { name: netName } = hre.network;
-  if (netName != "hardhat" && netName != "localhost" && netName != "dev") {
+  if (netName !== "hardhat" && netName !== "localhost" && netName !== "dev") {
     return;
   }
+  console.log("------------------------------------------------ 90_seedDevEnv");
 
-  const { fastGovernor, issuerMember, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10 } =
+  const { fastGovernor, issuerMember, automaton, user1, user2, user3, user4, user5, user6, user7, user8, user9 } =
     await getNamedAccounts();
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
@@ -19,10 +20,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // Grab handles to the Marketplace.
   const marketplace = await ethers.getContract<Marketplace>("Marketplace");
   const issuerMemberMarketplace = marketplace.connect(issuerMemberSigner);
-  // Grab handles to the IOU FAST.
 
   console.log("Adding user[1-10] to the Marketplace as members...");
-  for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10]) {
+  for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9]) {
     if (!(await marketplace.isMember(addr))) {
       console.log(`  ${addr}...`);
       await (await issuerMemberMarketplace.addMember(addr)).wait();
@@ -31,6 +31,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const governedF01 = (await ethers.getContract("FastF01")).connect(fastGovernorSigner);
   const issuerMemberF01 = (await ethers.getContract("FastF01")).connect(issuerMemberSigner);
+  console.log("Adding automaton to F01 FAST...");
+  await issuerMemberF01.setAutomatonPrivileges(automaton, FAST_AUTOMATON_PRIVILEGES.MANAGE_DISTRIBUTIONS);
   console.log("Adding user[1-5] as members of the F01 FAST...");
   for (const addr of [user1, user2, user3, user4, user5]) {
     console.log(`  ${addr}...`);

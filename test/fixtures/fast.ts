@@ -11,12 +11,14 @@ import {
   FastTokenFacet,
   FastHistoryFacet,
   FastFrontendFacet,
+  FastAutomatonsFacet,
   FastDistributionsFacet,
   FastTopFacet__factory,
   FastAccessFacet__factory,
   FastTokenFacet__factory,
   FastHistoryFacet__factory,
   FastFrontendFacet__factory,
+  FastAutomatonsFacet__factory,
   FastDistributionsFacet__factory,
 } from "../../typechain";
 import { FAST_FACETS } from "../../tasks/fast";
@@ -32,15 +34,6 @@ export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
   isSemiPublic: false,
 };
 
-interface FastFixtureOpts {
-  readonly name: string;
-  readonly deployer: string;
-  readonly afterDeploy: (result: FastFixtureResult) => void;
-}
-interface FastFixtureFuncArgs {
-  readonly initWith: {};
-  readonly opts: FastFixtureOpts;
-}
 interface FastFixtureResult {
   readonly fast: Fast;
   readonly topMock: MockContract<FastTopFacet>;
@@ -48,7 +41,19 @@ interface FastFixtureResult {
   readonly tokenMock: MockContract<FastTokenFacet>;
   readonly historyMock: MockContract<FastHistoryFacet>;
   readonly frontendMock: MockContract<FastFrontendFacet>;
+  readonly automatonsMock: MockContract<FastAutomatonsFacet>;
   readonly distributionsMock: MockContract<FastDistributionsFacet>;
+}
+
+interface FastFixtureOpts {
+  readonly name: string;
+  readonly deployer: string;
+  readonly afterDeploy: (result: FastFixtureResult) => void;
+}
+
+interface FastFixtureFuncArgs {
+  readonly initWith: {};
+  readonly opts: FastFixtureOpts;
 }
 
 export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> = async (hre, opts) => {
@@ -81,6 +86,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     tokenMock: await facetMock<FastTokenFacet__factory>(fast, "FastTokenFacet"),
     historyMock: await facetMock<FastHistoryFacet__factory>(fast, "FastHistoryFacet"),
     frontendMock: await facetMock<FastFrontendFacet__factory>(fast, "FastFrontendFacet"),
+    automatonsMock: await facetMock<FastAutomatonsFacet__factory>(fast, "FastAutomatonsFacet"),
     distributionsMock: await facetMock<FastDistributionsFacet__factory>(fast, "FastDistributionssFacet"),
   };
   // Callback!
