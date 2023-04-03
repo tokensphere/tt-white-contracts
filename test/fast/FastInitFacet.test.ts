@@ -103,8 +103,8 @@ describe("FastInitFacet", () => {
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
-    it("sets LibFastAccess storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Access"]);
+    it("sets LibFastToken storage version", async () => {
+      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Token"]);
       const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
@@ -115,30 +115,44 @@ describe("FastInitFacet", () => {
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
-    it("sets LibFastToken storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Token"]);
+    it("sets LibFastDistributions storage version", async () => {
+      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Distributions"]);
+      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      expect(BigNumber.from(subject)).to.eq(1);
+    });
+
+    it("sets LibHasGovernors storage version", async () => {
+      const slot = ethers.utils.solidityKeccak256(["string"], ["HasGovernors.storage.Main"]);
+      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      expect(BigNumber.from(subject)).to.eq(1);
+    });
+
+    it("sets LibHasMembers storage version", async () => {
+      const slot = ethers.utils.solidityKeccak256(["string"], ["HasMembers.storage.Main"]);
       const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("registers supported interfaces", async () => {
-      // TODO: We could add interfaces that we **don't** want to conform to, eg ERC1404...
+      // TODO: We could test for interfaces that we **don't** want to conform to, eg ERC1404...
       expect({
         IERC20: await fast.supportsInterface("0x36372b07"),
         IERC165: await fast.supportsInterface("0x01ffc9a7"),
         IERC173: await fast.supportsInterface("0x7f5828d0"),
         IDiamondCut: await fast.supportsInterface("0x1f931c1c"),
         IDiamondLoupe: await fast.supportsInterface("0x48e2b093"),
-        IHasGovernors: await fast.supportsInterface("0x84378070"),
-        IHasMembers: await fast.supportsInterface("0xb4bb4f46"),
+        AHasGovernors: await fast.supportsInterface("0x84378070"),
+        AHasMembers: await fast.supportsInterface("0xb4bb4f46"),
+        AHasAutomatons: await fast.supportsInterface("0x1a0d3515")
       }).to.be.eql({
         IERC20: true,
         IERC165: true,
         IERC173: true,
         IDiamondCut: true,
         IDiamondLoupe: true,
-        IHasGovernors: true,
-        IHasMembers: true,
+        AHasGovernors: true,
+        AHasMembers: true,
+        AHasAutomatons: true,
       });
     });
 
@@ -189,7 +203,7 @@ describe("FastInitFacet", () => {
           marketplace: marketplace.address,
           governor: governor.address,
         });
-        await expect(subject).to.emit(fast, "GovernorAdded").withArgs(governor.address);
+        await expect(subject).to.emit(initFacet, "GovernorAdded").withArgs(governor.address);
       });
     });
   });

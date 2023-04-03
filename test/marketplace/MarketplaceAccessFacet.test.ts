@@ -126,7 +126,7 @@ describe("MarketplaceAccessFacet", () => {
     describe("addMember", async () => {
       it("requires Issuer membership (anonymous)", async () => {
         const subject = access.addMember(alice.address);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
       });
 
       it("delegates to the Issuer for permission", async () => {
@@ -148,8 +148,10 @@ describe("MarketplaceAccessFacet", () => {
 
       it("emits a MemberAdded event", async () => {
         const subject = issuerMemberAccess.addMember(alice.address);
-        await expect(subject).to.emit(marketplace, "MemberAdded").withArgs(alice.address);
+        await expect(subject).to.emit(access, "MemberAdded").withArgs(alice.address);
       });
+
+      it("calls back onMemberAdded");
     });
 
     describe("removeMember", async () => {
@@ -161,7 +163,7 @@ describe("MarketplaceAccessFacet", () => {
 
       it("requires Issuer membership (anonymous)", async () => {
         const subject = marketplace.removeMember(alice.address);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
       });
 
       it("delegates to the Issuer for permission", async () => {
@@ -190,8 +192,18 @@ describe("MarketplaceAccessFacet", () => {
 
       it("emits a MemberRemoved event", async () => {
         const subject = issuerMemberAccess.removeMember(alice.address);
-        await expect(subject).to.emit(marketplace, "MemberRemoved").withArgs(alice.address);
+        await expect(subject).to.emit(access, "MemberRemoved").withArgs(alice.address);
       });
+
+      it("calls back onMemberRemoved");
+    });
+
+    describe("onMemberAdded", async () => {
+      it("MUST BE TESTED");
+    });
+
+    describe("onMemberRemoved", async () => {
+      it("MUST BE TESTED");
     });
   });
 
@@ -234,12 +246,11 @@ describe("MarketplaceAccessFacet", () => {
 
       // Call memberAddedToFast on the Marketplace contract, as the FAST contract.
       const marketplaceAsFast = await impersonateContract(marketplace, fast.address);
-      marketplaceAsFast.memberAddedToFast(alice.address);
+      await marketplaceAsFast.memberAddedToFast(alice.address);
 
       // Expecting the FAST address to be included in FASTs Alice belongs to.
-      const [members] = await marketplace.fastMemberships(alice.address, 0, 10);
-      console.log(members);
-      expect(members[0]).to.be.eq(fast.address);
+      const [[member]] = await marketplace.fastMemberships(alice.address, 0, 10);
+      expect(member).to.be.eq(fast.address);
     });
   });
 

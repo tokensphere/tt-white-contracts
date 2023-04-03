@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibConstants.sol';
 import '../../lib/LibHelpers.sol';
-import '../../lib/LibAddressSet.sol';
-import '../../interfaces/IERC173.sol';
+import '../../common/AHasMembers.sol';
 import '../../interfaces/ICustomErrors.sol';
-import '../lib/LibIssuerAccess.sol';
 import './IIssuerEvents.sol';
 
 
@@ -15,31 +12,43 @@ import './IIssuerEvents.sol';
 * certain permissions.
 */
 abstract contract AIssuerFacet is IIssuerEvents {
-  using LibAddressSet for LibAddressSet.Data;
+  /// Internal ACL functions.
+
+  function _isMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(address(this)).isMember(who);
+  }
 
   /// Modifiers.
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
-  modifier onlyDiamondFacet() virtual {
-    if (msg.sender != address(this)) {
+  modifier onlyDiamondFacet() {
+    if (!LibHelpers._isDiamondFacet(msg.sender))
       revert ICustomErrors.InternalMethod();
-    }
     _;
   }
 
   /// @notice Ensures that a method can only be called by the owner of this diamond.
-  modifier onlyDiamondOwner() virtual {
-    if (msg.sender != IERC173(address(this)).owner()) {
+  modifier onlyDiamondOwner() {
+    if (!LibHelpers._isDiamondOwner(msg.sender))
       revert ICustomErrors.RequiresDiamondOwnership(msg.sender);
-    }
     _;
   }
 
-  /// @notice Ensures that the given address is a member of the current FAST.
-  modifier onlyMember(address candidate) virtual {
-    if (!LibIssuerAccess.data().memberSet.contains(candidate)) {
-      revert ICustomErrors.RequiresIssuerMembership(candidate);
-    }
+  /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
+  modifier onlyDeployer() {
+    if (!LibHelpers._isDeployer(msg.sender))
+      revert ICustomErrors.InternalMethod();
+    _;
+  }
+
+  /**
+   * @notice Ensures that the given address is a member of the FAST.
+   * @param who The address to check.
+   */
+  modifier onlyMember(address who) {
+    if (!_isMember(who))
+      revert ICustomErrors.RequiresIssuerMembership(who);
     _;
   }
 }

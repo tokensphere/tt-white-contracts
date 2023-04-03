@@ -19,11 +19,6 @@ interface IIssuerEvents {
    */
   event FastUnregistered(address indexed fast);
 
-  // IHasMembers.
-
-  event MemberAdded(address indexed member);
-  event MemberRemoved(address indexed member);
-
   // Governors.
 
   event GovernorshipRemoved(address indexed fast, address indexed governor);

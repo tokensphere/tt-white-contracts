@@ -5,7 +5,6 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../issuer/IssuerTopFacet.sol';
 import './lib/LibMarketplace.sol';
-import '../interfaces/IHasMembers.sol';
 import './lib/AMarketplaceFacet.sol';
 
 

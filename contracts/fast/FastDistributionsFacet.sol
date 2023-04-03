@@ -8,7 +8,10 @@ import './lib/LibFastDistributions.sol';
 import './Distribution.sol';
 
 
-// TODO: TEST.
+/**
+ * @title The Fast Smart Contract.
+ * @notice The Fast Distributions facet is in charge of deploying and keeping track of distributions.
+ */
 contract FastDistributionsFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 

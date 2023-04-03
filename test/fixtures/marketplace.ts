@@ -61,7 +61,7 @@ export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, Marke
     deterministicSalt: deploymentSalt(hre),
   });
 
-  // Get a MARKETPLACE typed pointer.
+  // Get a Marketplace typed pointer.
   const marketplace = await ethers.getContractAt<Marketplace>("Marketplace", marketplaceAddr);
   // Build result.
   const result: MarketplaceFixtureResult = {

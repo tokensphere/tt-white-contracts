@@ -73,13 +73,15 @@ describe("MarketplaceInitFacet", () => {
         IERC173: await marketplace.supportsInterface("0x7f5828d0"),
         IDiamondCut: await marketplace.supportsInterface("0x1f931c1c"),
         IDiamondLoupe: await marketplace.supportsInterface("0x48e2b093"),
-        IHasMembers: await marketplace.supportsInterface("0xb4bb4f46"),
+        AHasMembers: await marketplace.supportsInterface("0xb4bb4f46"),
+        AHasAutomatons: await marketplace.supportsInterface("0x1a0d3515")
       }).to.be.eql({
         IERC165: true,
         IERC173: true,
         IDiamondCut: true,
         IDiamondLoupe: true,
-        IHasMembers: true,
+        AHasMembers: true,
+        AHasAutomatons: true,
       });
     });
 

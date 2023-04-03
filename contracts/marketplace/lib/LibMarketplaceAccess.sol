@@ -13,8 +13,6 @@ library LibMarketplaceAccess {
   struct Data {
     /// @notice The latest intializer version that was called.
     uint16 version;
-    /// @notice This is where we hold our members data.
-    LibAddressSet.Data memberSet;
     /// @notice This is where we keep track of our member FAST memberships.
     mapping(address => LibAddressSet.Data) fastMemberships;
     /// @notice This is where we keep track of our deactivated memberships.

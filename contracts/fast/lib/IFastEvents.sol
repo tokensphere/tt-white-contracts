@@ -11,45 +11,7 @@ import '../../fast/Distribution.sol';
  * the same event several time. This interface is a per-diamond central place for such event declaration.
  */
 interface IFastEvents {
-  // IHasMembers.
-
-  /**
-   * @notice Emited when a member is added to the implementing contract.
-   * @param member is the address of the added member.
-   */
-  event MemberAdded(address indexed member);
-  /**
-   * @notice Emited when a member is removed to the implementing contract.
-   * @param member is the address of the removed member.
-   */
-  event MemberRemoved(address indexed member);
-
-  // IHasGovernors.
-
-  /**
-   * @notice Emited when a governor is added to the implementing contract.
-   * @param governor is the address of the added governor.
-   */
-  event GovernorAdded(address indexed governor);
-  /**
-   * @notice Emited when a governor is removed to the implementing contract.
-   * @param governor is the address of the removed member.
-   */
-  event GovernorRemoved(address indexed governor);
-
-  /**
-   * @notice Emited when an automaton is added or when their privileges is set.
-   * @param automaton is the automaton address.
-   * @param privileges is the bitfield containing the new privileges.
-   */
-  event AutomatonPrivilegesSet(address indexed automaton, uint256 indexed privileges);
-  /**
-   * @notice Emited when an automaton is removed.
-   * @param automaton is the automaton address.
-   */
-  event AutomatonRemoved(address indexed automaton);
-
-  // Issuance related events.
+  /// Issuance related events.
   
   /**
    * @notice Emited whenever an issuance happens in a FAST.
@@ -66,7 +28,7 @@ interface IFastEvents {
    */
   event Burnt(uint256 indexed amount, string indexed ref, address indexed who);
 
-  // Transfer and ERC20 stuff.
+  /// Transfer and ERC20 stuff.
 
   /// @notice See `ERC20.Transfer`.
   event Transfer(address indexed from, address indexed to, uint256 value);
@@ -85,11 +47,11 @@ interface IFastEvents {
    */
   event FastTransfer(address indexed spender, address indexed from, address indexed to, uint256 value, string ref);
 
-  // Distribution related events.
+  /// Distribution related events.
 
   event DistributionDeployed(Distribution indexed distribution);
 
-  // General events.
+  /// General events.
 
   /**
    * @notice This is an event that is fired whenever any of some of the FAST parameters

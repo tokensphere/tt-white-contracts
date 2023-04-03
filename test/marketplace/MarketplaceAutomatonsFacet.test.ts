@@ -77,6 +77,7 @@ describe("MarketplaceAutomatonsFacet", () => {
       },
     });
   });
+
   describe("IHasAutomatons", async () => {
     describe("isAutomaton", async () => {
       it("returns true when a privilege exists for the given candidate", async () => {
@@ -123,22 +124,10 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
     });
 
-    describe("automatonPrivilegesStruct", async () => {
-      it("returns candidate privileges in the form of a struct", async () => {
-        const subject = abiStructToObj(await automatons.automatonPrivilegesStruct(alice.address));
-        expect(subject).to.eql({
-          canAddMember: true,
-          canRemoveMember: false,
-          canActivateMember: false,
-          canDeactivateMember: false,
-        });
-      });
-    });
-
     describe("setAutomatonPrivileges", async () => {
       it("requires issuer membership", async () => {
         const subject = automatons.setAutomatonPrivileges(john.address, 0b111);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.be.revertedWith("RequiresAutomatonsManager");
       });
 
       it("assigns the given privileges to the candidate", async () => {
@@ -162,7 +151,7 @@ describe("MarketplaceAutomatonsFacet", () => {
     describe("removeAutomaton", async () => {
       it("requires issuer privileges", async () => {
         const subject = automatons.removeAutomaton(john.address);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.be.revertedWith("RequiresAutomatonsManager");
       });
 
       it("removes the automaton from the list", async () => {

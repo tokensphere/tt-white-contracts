@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../interfaces/IHasMembers.sol';
-import '../interfaces/IHasGovernors.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
+import '../common/AHasMembers.sol';
+import '../common/AHasGovernors.sol';
 import '../marketplace/MarketplaceAccessFacet.sol';
 import '../issuer/IssuerAccessFacet.sol';
 import './FastTokenFacet.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFast.sol';
-import './lib/LibFastAccess.sol';
 import './FastTopFacet.sol';
 import './FastFrontendFacet.sol';
 
 
 /**
+ * @title The Fast Smart Contract.
  * @notice The FAST Access facet is the source of truth when it comes to
  * permissioning and ACLs within a given FAST.
  */
-contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
+contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
   using LibAddressSet for LibAddressSet.Data;
-  // Structs.
+  /// Structs.
 
   /**
    * @notice This structure isn't used anywhere in storage. Instead, it
@@ -35,107 +35,63 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
     bool isMember;
   }
 
-  // Governorship related stuff.
+  /// AHasGovernors implementation.
 
-  /// @notice See `IHasGovernors`.
-  function isGovernor(address candidate)
-      external view override returns(bool) {
-    return LibFastAccess.data().governorSet.contains(candidate);
+  function isGovernorsManager(address who)
+      internal view override(AHasGovernors) returns(bool) {
+    return _isIssuerMember(who);
   }
 
-   /// @notice See `IHasGovernors`.
-  function governorCount()
-      external override view returns(uint256) {
-    return LibFastAccess.data().governorSet.values.length;
+  function isValidGovernor(address who)
+      internal view override(AHasGovernors) returns(bool) {
+    return _isMarketplaceMember(who);
   }
 
-   /// @notice See `IHasGovernors`.
-  function paginateGovernors(uint256 index, uint256 perPage)
-      external override view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(LibFastAccess.
-      data().governorSet.values,
-      index,
-      perPage
-    );
-  }
-
-   /// @notice See `IHasGovernors`.
-  function addGovernor(address payable governor)
-      external override
-      onlyIssuerMember
-      onlyMarketplaceMember(governor) {
-    // Add governor to list.
-    LibFastAccess.data().governorSet.add(governor, false);
+  function onGovernorAdded(address governor)
+      internal override(AHasGovernors) {
     // Notify issuer that this governor was added to this FAST.
     IssuerAccessFacet(LibFast.data().issuer).governorAddedToFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit GovernorAdded(governor);
   }
 
-   /// @notice See `IHasGovernors`.
-  function removeGovernor(address governor)
-      external override
-      onlyIssuerMember {
-    // Remove governor.
-    LibFastAccess.data().governorSet.remove(governor, false);
+  function onGovernorRemoved(address governor)
+      internal override(AHasGovernors) {
     // Notify issuer that this governor was removed from this FAST.
     IssuerAccessFacet(LibFast.data().issuer).governorRemovedFromFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit GovernorRemoved(governor);
   }
 
-  /// Membership related stuff.
+  /// AHasMembers implementation.
 
-   /// @notice See `IHasMembers`.
-  function isMember(address candidate)
-      external override view returns(bool) {
-    return LibFastAccess.data().memberSet.contains(candidate);
+  function isMembersManager(address who)
+      internal view override(AHasMembers) returns(bool) {
+    // TODO: We could also allow automatons with privileges.
+    return _isGovernor(who);
   }
 
-   /// @notice See `IHasMembers`.
-  function memberCount()
-      external override view returns(uint256) {
-    return LibFastAccess.data().memberSet.values.length;
+  function isValidMember(address who)
+      internal view override(AHasMembers) returns(bool) {
+    return _isMarketplaceMember(who);
   }
 
-   /// @notice See `IHasMembers`.
-  function paginateMembers(uint256 index, uint256 perPage)
-      external override view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      LibFastAccess.data().memberSet.values,
-      index,
-      perPage
-    );
-  }
-
-   /// @notice See `IHasMembers`.
-  function addMember(address payable member)
-      external override 
-      onlyGovernor(msg.sender) onlyMarketplaceMember(member) {
-    // Add the member.
-    LibFastAccess.data().memberSet.add(member, false);
+  function onMemberAdded(address member)
+      internal override(AHasMembers) {
     // Notify marketplace that this member was added to this FAST.
     MarketplaceAccessFacet(LibFast.data().marketplace).memberAddedToFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit MemberAdded(member);
   }
 
-   /// @notice See `IHasMembers`.
-  function removeMember(address member)
-      external override 
-      onlyGovernor(msg.sender) {
-    // Remove member.
-    LibFastAccess.data().memberSet.remove(member, false);
+  function onMemberRemoved(address member)
+      internal override(AHasMembers) {
     // Notify token facet that this member was removed.
     FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Notify marketplace that this member was removed from this FAST.
     MarketplaceAccessFacet(LibFast.data().marketplace).memberRemovedFromFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
-    emit MemberRemoved(member);
   }
 
   /// Flags.
@@ -147,11 +103,9 @@ contract FastAccessFacet is AFastFacet, IHasMembers, IHasGovernors {
    */
   function flags(address a)
       external view returns(Flags memory) {
-    LibFastAccess.Data storage s = LibFastAccess.data();
-    return
-      Flags({
-        isGovernor: s.governorSet.contains(a),
-        isMember: s.memberSet.contains(a)
+    return Flags({
+        isGovernor: _isGovernor(a),
+        isMember: _isMember(a)
       });
   }
 }

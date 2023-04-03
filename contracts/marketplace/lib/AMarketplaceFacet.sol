@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibConstants.sol';
-import '../../lib/LibAddressSet.sol';
-import '../lib/LibMarketplace.sol';
-import '../lib/LibMarketplaceAccess.sol';
-import '../lib/LibMarketplaceTokenHolders.sol';
-import '../../interfaces/IERC173.sol';
+import '../../lib/LibHelpers.sol';
+import '../../common/AHasMembers.sol';
 import '../../interfaces/ICustomErrors.sol';
-import '../../interfaces/IHasMembers.sol';
+import '../lib/LibMarketplace.sol';
 import './IMarketplaceEvents.sol';
 
 
@@ -17,36 +13,46 @@ import './IMarketplaceEvents.sol';
 *       certain permissions.
 */
 abstract contract AMarketplaceFacet is IMarketplaceEvents {
-  using LibAddressSet for LibAddressSet.Data;
+  /// Internal ACL functions.
+
+  function _isIssuerMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(LibMarketplace.data().issuer).isMember(who);
+  }
+
+  function _isMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(address(this)).isMember(who);
+  }
 
   // Modifiers.
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier onlyDeployer() virtual {
-    if (msg.sender != LibConstants.DEPLOYER_CONTRACT) {
+  modifier onlyDeployer()
+      virtual {
+    if (!LibHelpers._isDeployer(msg.sender))
       revert ICustomErrors.InternalMethod();
-    }
     _;
   }
 
   /**
    * @notice Requires that the message sender is a member of the linked Issuer.
    */
-  modifier onlyIssuerMember() virtual {
-    if (!IHasMembers(LibMarketplace.data().issuer).isMember(msg.sender)) {
+  modifier onlyIssuerMember()
+      virtual {
+    if (!_isIssuerMember(msg.sender))
       revert ICustomErrors.RequiresIssuerMembership(msg.sender);
-    }
     _;
   }
 
   /**
    * @notice Requires that the given address is a member of the marketplace.
-   * @param candidate is the address to be checked.
+   * @param who is the address to be checked.
    */
-  modifier onlyMember(address candidate) virtual {
-    if (!LibMarketplaceAccess.data().memberSet.contains(candidate)) {
-      revert ICustomErrors.RequiresMarketplaceMembership(candidate);
-    }
+  modifier onlyMember(address who)
+      virtual {
+    if (!_isMember(who))
+      revert ICustomErrors.RequiresMarketplaceMembership(who);
     _;
   }
 }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import '../lib/LibHelpers.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
-import './lib/LibFastAccess.sol';
 import './lib/LibFastToken.sol';
 
 
@@ -15,7 +15,7 @@ import './lib/LibFastToken.sol';
 contract FastFrontendFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
-  // Data structures.
+  /// Data structures.
 
   /**
    * @notice This struct groups the common attributes of a FAST.
@@ -49,6 +49,18 @@ contract FastFrontendFacet is AFastFacet {
   }
 
   /**
+   * @notice Governor level details.
+   * @dev Note that **this struct shouldn't be used in internal storage**.
+   */
+  struct GovernorDetails {
+    /// @notice The Governor's address.
+    address addr;
+    uint256 ethBalance;
+    /// @notice Whether the Governor is also a Member.
+    bool isMember;
+  }
+
+  /**
    * @notice Member level details.
    * @dev This struct shouldn't be used in internal storage.
    */
@@ -62,19 +74,7 @@ contract FastFrontendFacet is AFastFacet {
     bool isGovernor;
   }
 
-  /**
-   * @notice Governor level details.
-   * @dev Note that **this struct shouldn't be used in internal storage**.
-   */
-  struct GovernorDetails {
-    /// @notice The Governor's address.
-    address addr;
-    uint256 ethBalance;
-    /// @notice Whether the Governor is also a Member.
-    bool isMember;
-  }
-
-  // Emitters.
+  /// Emitters.
 
   /**
    * @notice Called by diamond facets, signals that FAST details may have changed.
@@ -86,19 +86,18 @@ contract FastFrontendFacet is AFastFacet {
    */
   function emitDetailsChanged()
       external onlyDiamondFacet {
-    LibFastAccess.Data storage accessData = LibFastAccess.data();
     LibFastToken.Data storage tokenData = LibFastToken.data();
     emit DetailsChanged({
       transfersDisabled: LibFast.data().transfersDisabled,
-      memberCount: accessData.memberSet.values.length,
-      governorCount: accessData.governorSet.values.length,
+      memberCount: LibHasMembers.data().memberSet.values.length,
+      governorCount: LibHasGovernors.data().governorSet.values.length,
       totalSupply: tokenData.totalSupply,
-      reserveBalance: tokenData.balances[LibConstants.ZERO_ADDRESS],
+      reserveBalance: tokenData.balances[LibHelpers.ZERO_ADDRESS],
       ethBalance: payable(address(this)).balance
     });
   }
 
-  // Public functions.
+  /// Public functions.
 
   /**
    * @notice Gets the details of a FAST.
@@ -107,7 +106,6 @@ contract FastFrontendFacet is AFastFacet {
   function details()
       public view returns(Details memory) {
     LibFast.Data storage topStorage = LibFast.data();
-    LibFastAccess.Data storage accessStorage = LibFastAccess.data();
     LibFastToken.Data storage tokenStorage = LibFastToken.data();
     return Details({
       addr: address(this),
@@ -118,24 +116,10 @@ contract FastFrontendFacet is AFastFacet {
       isSemiPublic: topStorage.isSemiPublic,
       hasFixedSupply: topStorage.hasFixedSupply,
       transfersDisabled: topStorage.transfersDisabled,
-      reserveBalance: tokenStorage.balances[LibConstants.ZERO_ADDRESS],
+      reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],
       ethBalance: payable(address(this)).balance,
-      memberCount: accessStorage.memberSet.values.length,
-      governorCount: accessStorage.governorSet.values.length
-    });
-  }
-
-  /**
-   * @notice Gets detailed member details.
-   * @return A FAST member's details, see `MemberDetails`.
-   */
-  function detailedMember(address member)
-      public view returns(MemberDetails memory) {
-    return MemberDetails({
-      addr: member,
-      balance: LibFastToken.data().balances[member],
-      ethBalance: member.balance,
-      isGovernor: LibFastAccess.data().governorSet.contains(member)
+      memberCount: AHasMembers(address(this)).memberCount(),
+      governorCount: LibHasGovernors.data().governorSet.values.length
     });
   }
 
@@ -148,31 +132,46 @@ contract FastFrontendFacet is AFastFacet {
     return GovernorDetails({
       addr: governor,
       ethBalance: governor.balance,
-      isMember: LibFastAccess.data().memberSet.contains(governor)
+      isMember: _isMember(governor)
     });
-  }
-
-  function paginateDetailedMembers(uint256 index, uint256 perPage)
-      external view returns(MemberDetails[] memory, uint256) {
-    (address[] memory members, uint256 nextCursor) =
-      LibPaginate.addresses(LibFastAccess.data().memberSet.values, index, perPage);
-    MemberDetails[] memory values = new MemberDetails[](members.length);
-    uint256 length = members.length;
-    for (uint256 i = 0; i < length;) {
-      values[i] = detailedMember(members[i]);
-      unchecked { ++i; }
-    }
-    return (values, nextCursor);
   }
 
   function paginateDetailedGovernors(uint256 index, uint256 perPage)
       external view returns(GovernorDetails[] memory, uint256) {
     (address[] memory governors, uint256 nextCursor) =
-      LibPaginate.addresses(LibFastAccess.data().governorSet.values, index, perPage);
+      LibPaginate.addresses(LibHasGovernors.data().governorSet.values, index, perPage);
     GovernorDetails[] memory values = new GovernorDetails[](governors.length);
     uint256 length =  governors.length;
     for (uint256 i = 0; i < length;) {
       values[i] = detailedGovernor(governors[i]);
+      unchecked { ++i; }
+    }
+    return (values, nextCursor);
+  }
+
+  /**
+   * @notice Gets detailed member details.
+   * @return A FAST member's details, see `MemberDetails`.
+   */
+  function detailedMember(address member)
+      public view returns(MemberDetails memory) {
+    return MemberDetails({
+      addr: member,
+      balance: LibFastToken.data().balances[member],
+      ethBalance: member.balance,
+      isGovernor: LibHasGovernors.data().governorSet.contains(member)
+    });
+  }
+
+  function paginateDetailedMembers(uint256 index, uint256 perPage)
+      external view returns(MemberDetails[] memory, uint256) {
+    LibHasMembers.Data storage membersData = LibHasMembers.data();
+    (address[] memory members, uint256 nextCursor) =
+      LibPaginate.addresses(membersData.memberSet.values, index, perPage);
+    MemberDetails[] memory values = new MemberDetails[](members.length);
+    uint256 length = members.length;
+    for (uint256 i = 0; i < length;) {
+      values[i] = detailedMember(members[i]);
       unchecked { ++i; }
     }
     return (values, nextCursor);

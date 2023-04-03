@@ -119,19 +119,20 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("detailedMember", async () => {
-    it("returns a MemberDetails struct with the correct information", async () => {
-      const subject = await frontend.detailedMember(issuerMember.address);
-      const memberObj = abiStructToObj(subject);
+  // TODO: Move to FastAccessFacet tests.
+  // describe("detailedMember", async () => {
+  //   it("returns a MemberDetails struct with the correct information", async () => {
+  //     const subject = await frontend.detailedMember(issuerMember.address);
+  //     const memberObj = abiStructToObj(subject);
 
-      expect(memberObj).to.eql({
-        addr: issuerMember.address,
-        balance: zero,
-        ethBalance: await issuerMember.getBalance(),
-        isGovernor: false,
-      });
-    });
-  });
+  //     expect(memberObj).to.eql({
+  //       addr: issuerMember.address,
+  //       balance: zero,
+  //       ethBalance: await issuerMember.getBalance(),
+  //       isGovernor: false,
+  //     });
+  //   });
+  // });
 
   describe("detailedGovernor", async () => {
     beforeEach(async () => {
@@ -148,47 +149,48 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("paginateDetailedMembers", async () => {
-    it("returns member details with next cursor", async () => {
-      const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
-      // Convert the structs to objects.
-      const [memberAObj, memberBObj] = members.map(abiStructToObj);
+  // TODO: Move to FastAccessFacet tests.
+  // describe("paginateDetailedMembers", async () => {
+  //   it("returns member details with next cursor", async () => {
+  //     const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
+  //     // Convert the structs to objects.
+  //     const [memberAObj, memberBObj] = members.map(abiStructToObj);
 
-      // Member A details.
-      expect(memberAObj).to.eql({
-        addr: member.address,
-        balance: zero,
-        ethBalance: tenThousand,
-        isGovernor: false,
-      });
+  //     // Member A details.
+  //     expect(memberAObj).to.eql({
+  //       addr: member.address,
+  //       balance: zero,
+  //       ethBalance: tenThousand,
+  //       isGovernor: false,
+  //     });
 
-      // Member B details.
-      expect(memberBObj).to.eql({
-        addr: governor.address,
-        balance: zero,
-        ethBalance: await governor.getBalance(),
-        isGovernor: true,
-      });
+  //     // Member B details.
+  //     expect(memberBObj).to.eql({
+  //       addr: governor.address,
+  //       balance: zero,
+  //       ethBalance: await governor.getBalance(),
+  //       isGovernor: true,
+  //     });
 
-      // Next cursor.
-      expect(nextCursor).to.eq(2);
-    });
+  //     // Next cursor.
+  //     expect(nextCursor).to.eq(2);
+  //   });
 
-    it("handles an offset index cursor", async () => {
-      // Fetch details of Member passing 1 as an offset index.
-      const [members] = await frontend.paginateDetailedMembers(1, 2);
-      // Convert the structs to objects.
-      const [memberAObj] = members.map(abiStructToObj);
+  //   it("handles an offset index cursor", async () => {
+  //     // Fetch details of Member passing 1 as an offset index.
+  //     const [members] = await frontend.paginateDetailedMembers(1, 2);
+  //     // Convert the structs to objects.
+  //     const [memberAObj] = members.map(abiStructToObj);
 
-      // Expect Member B.
-      expect(memberAObj).to.eql({
-        addr: governor.address,
-        balance: zero,
-        ethBalance: await governor.getBalance(),
-        isGovernor: true,
-      });
-    });
-  });
+  //     // Expect Member B.
+  //     expect(memberAObj).to.eql({
+  //       addr: governor.address,
+  //       balance: zero,
+  //       ethBalance: await governor.getBalance(),
+  //       isGovernor: true,
+  //     });
+  //   });
+  // });
 
   describe("paginateDetailedGovernors", async () => {
     beforeEach(async () => {

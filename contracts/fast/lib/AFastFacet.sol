@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibConstants.sol';
 import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
-import '../../interfaces/ICustomErrors.sol';
-import '../../interfaces/IHasMembers.sol';
-import '../../interfaces/IHasGovernors.sol';
+import '../../common/AHasGovernors.sol';
+import '../../common/AHasMembers.sol';
 import '../../interfaces/IHasActiveMembers.sol';
-import '../../interfaces/IERC173.sol';
 import '../lib/LibFast.sol';
 import './IFastEvents.sol';
 
@@ -21,75 +18,107 @@ import './IFastEvents.sol';
 abstract contract AFastFacet is IFastEvents {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// Internal ACL functions.
+
+  function _isMarketplaceMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(LibFast.data().marketplace).isMember(who);
+  }
+
+  function _isMarketplaceActiveMember(address who)
+      internal view returns(bool) {
+    return IHasActiveMembers(LibFast.data().marketplace).isActiveMember(who);
+  }
+
+  function _isIssuerMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(LibFast.data().issuer).isMember(who);
+  }
+
+  function _isGovernor(address who)
+      internal view returns(bool) {
+    return AHasGovernors(address(this)).isGovernor(who);
+  }
+
+  function _isMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(address(this)).isMember(who);
+  }
+
+  function _automatonHasPrivilege(address who, uint32 flag)
+      internal view returns(bool) {
+    return (AHasAutomatons(address(this)).automatonPrivileges(who) & flag) != 0;
+  }
+
   /// Modifiers.
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
-  modifier onlyDiamondFacet() virtual{
-    if (msg.sender != address(this))
+  modifier onlyDiamondFacet() {
+    if (!LibHelpers._isDiamondFacet(msg.sender))
       revert ICustomErrors.InternalMethod();
     _;
   }
 
   /// @notice Ensures that a method can only be called by the owner of this diamond.
-  modifier onlyDiamondOwner() virtual {
-    if (msg.sender != IERC173(address(this)).owner())
+  modifier onlyDiamondOwner() {
+    if (!LibHelpers._isDiamondOwner(msg.sender))
       revert ICustomErrors.RequiresDiamondOwnership(msg.sender);
     _;
   }
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier onlyDeployer() virtual {
-    if (msg.sender != LibConstants.DEPLOYER_CONTRACT)
+  modifier onlyDeployer() {
+    if (!LibHelpers._isDeployer(msg.sender))
       revert ICustomErrors.InternalMethod();
     _;
   }
 
   /**
    * @notice Ensures that the given address is a member of the Marketplace.
-   * @param candidate The address to check.
+   * @param who The address to check.
    */
-  modifier onlyMarketplaceMember(address candidate) virtual {
-    if (!IHasMembers(LibFast.data().marketplace).isMember(candidate))
-      revert ICustomErrors.RequiresMarketplaceMembership(candidate);
+  modifier onlyMarketplaceMember(address who) {
+    if (!_isMarketplaceMember(who))
+      revert ICustomErrors.RequiresMarketplaceMembership(who);
     _;
   }
 
   /**
-   * @notice Ensures a candidate is an active member of the Marketplace.
-   * @param candidate The address to check.
+   * @notice Ensures a who is an active member of the Marketplace.
+   * @param who The address to check.
    */
-  modifier onlyMarketplaceActiveMember(address candidate) virtual {
-    if (!IHasActiveMembers(LibFast.data().marketplace).isActiveMember(candidate))
-      revert ICustomErrors.RequiresMarketplaceActiveMembership(candidate);
+  modifier onlyMarketplaceActiveMember(address who) {
+    if (!_isMarketplaceActiveMember(who))
+      revert ICustomErrors.RequiresMarketplaceActiveMembership(who);
     _;
   }
 
   /**
    * @notice Ensures that the message sender is a member of the Issuer.
    */
-  modifier onlyIssuerMember() virtual {
-    if (!IHasMembers(LibFast.data().issuer).isMember(msg.sender))
+  modifier onlyIssuerMember() {
+    if (!_isIssuerMember(msg.sender))
       revert ICustomErrors.RequiresIssuerMembership(msg.sender);
     _;
   }
 
   /**
    * @notice Ensures that the given address is a governor of the FAST.
-   * @param candidate The address to check.
+   * @param who The address to check.
    */
-  modifier onlyGovernor(address candidate) virtual {
-    if (!IHasGovernors(address(this)).isGovernor(candidate))
-      revert ICustomErrors.RequiresFastGovernorship(candidate);
+  modifier onlyGovernor(address who) {
+    if (!_isGovernor(who))
+      revert ICustomErrors.RequiresFastGovernorship(who);
     _;
   }
 
   /**
    * @notice Ensures that the given address is a member of the FAST.
-   * @param candidate The address to check.
+   * @param who The address to check.
    */
-  modifier onlyMember(address candidate) virtual {
-    if (!IHasMembers(address(this)).isMember(candidate))
-      revert ICustomErrors.RequiresFastMembership(candidate);
+  modifier onlyMember(address who) {
+    if (!_isMember(who))
+      revert ICustomErrors.RequiresFastMembership(who);
     _;
   }
 
@@ -98,7 +127,7 @@ abstract contract AFastFacet is IFastEvents {
    * @param a Address a
    * @param b Address b
    */
-  modifier differentAddresses(address a, address b) virtual {
+  modifier differentAddresses(address a, address b) {
     if (a == b)
       revert ICustomErrors.RequiresDifferentSenderAndRecipient(a);
     _;

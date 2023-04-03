@@ -37,20 +37,20 @@ contract ERC20 is IERC20 {
   }
 
 
-  function balanceOf(address account) public view override returns (uint256) {
+  function balanceOf(address account) public view override(IERC20) returns (uint256) {
     return _balances[account];
   }
 
-  function transfer(address recipient, uint256 amount) public override returns (bool) {
+  function transfer(address recipient, uint256 amount) public override(IERC20) returns (bool) {
     _transfer(msg.sender, recipient, amount);
     return true;
   }
 
-  function allowance(address owner, address spender) public view override returns (uint256) {
+  function allowance(address owner, address spender) public view override(IERC20) returns (uint256) {
     return _allowances[owner][spender];
   }
 
-  function approve(address spender, uint256 amount) public override returns (bool) {
+  function approve(address spender, uint256 amount) public override(IERC20) returns (bool) {
     _approve(msg.sender, spender, amount);
     return true;
   }
