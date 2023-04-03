@@ -105,9 +105,16 @@ contract IssuerTopFacet is AIssuerFacet {
   }
 
   // TODO: TEST.
-  function transferERC20Tokens (IERC20 token, uint256 amount)
+  /**
+   * @notice Allows an issuer member to move collected ERC20 fees from this contract
+   * to an arbitrary address.
+   * @param token is the address of the ERC20 to be collected.
+   * @param amount is how much should be moved from the ERC20 to the collection address.
+   * @param to is the collection address - eg the address that will receive the ERC20 tokens.
+   */
+  function transferERC20Tokens (IERC20 token, uint256 amount, address to)
       public
       onlyMember(msg.sender) {
-    token.transfer(msg.sender, amount);
+    require(token.transfer(to, amount));
   }
 }

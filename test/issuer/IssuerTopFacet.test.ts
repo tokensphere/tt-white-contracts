@@ -146,6 +146,10 @@ describe("IssuerTopFacet", () => {
       });
     });
 
+    describe('transferERC20Tokens', async () => {
+      it('MUST BE TESTED');
+    });
+
     describe("paginateFasts", async () => {
       it("returns pages of FASTs", async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.

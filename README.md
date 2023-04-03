@@ -115,40 +115,56 @@ yarn hardhat fast-balance SAF \
 
 ```typescript
 // We'll use the `user1` named account to be the owner of the distribution.
-let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let { issuerMember, automaton, user1, user2, user3, user4, user5 } = await getNamedAccounts();
 let issuerSigner = await ethers.getSigner(issuerMember);
 let automatonSigner = await ethers.getSigner(automaton);
 let userSigner = await ethers.getSigner(user1);
 // Get our dummy ERC20 token, and bind it to our user as the caller.
-let token = (await ethers.getContract("ERC20")).connect(userSigner);
+let token = (await ethers.getContract('ERC20')).connect(userSigner);
 // Mint 5000 tokens for that user.
 await token.mint(userSigner.address, 5000);
-// Get a handle to `F01` FAST, and bind it to our user as the caller.
-let fast = await ethers.getContract("FastF01");
+// Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
+let issuer = await ethers.getContract('Issuer');
+let fast = await ethers.getContract('FastF01');
+
+// Let our user approve 100 tokens to be spent by our FAST contract.
+await token.connect(userSigner).approve(fast.address, 110);
+// At this point, the allowance from our user to the FAST contract should be 110;
+(await token.allowance(user1, fast.address)).toString();
 // Have the user create a new distribution. It will deploy a new Distribution contract in the Fund phase.
-await fast.connect(userSigner).createDistribution(token.address, 100);
+await fast.connect(userSigner).createDistribution(token.address, 110, 0);
+
 // Get the address and handle of the newly deployed contract.
 let [[distAddr]] = await fast.paginateDistributions(0, 1);
-let dist = await ethers.getContractAt("Distribution", distAddr);
-// Let our user approve 100 tokens to be spent by our distribution contract.
-await token.approve(dist.address, "100");
-// Let the distribution contract move to the Setup phase.
-await dist.connect(userSigner).advance();
+let dist = await ethers.getContractAt('Distribution', distAddr);
 // At this point, the fee needs to be set.
-await dist.connect(automatonSigner).setFee("10");
+await dist.connect(automatonSigner).setFee(10);
 // Set them up as beneficiaries of the distribution.
-await dist.connect(automatonSigner).addBeneficiaries([user2, user3, user4], [10, 30, 50]);
-// Advance to the Withdrawal phase.
+await dist.connect(automatonSigner).addBeneficiaries([user2, user3, user4], [10, 20, 30]);
+// Advance to the Withdrawal phase - it should fail, since the fee plus all amounts doesn't take all the available funds.
 await dist.connect(automatonSigner).advance();
-// At this point, the issuer should already have received their fee.
-let issuer = await ethers.getContract("Issuer");
+// Add a beneficiary to make sure all available funds are distributed.
+await dist.connect(automatonSigner).addBeneficiaries([user5], [40]);
+// Advance to the Withdrawal phase - this time it should succeed.
+await dist.connect(automatonSigner).advance();
+// At this point, the issuer should already have received their fee - it should be 10.
 (await token.balanceOf(issuer.address)).toString();
+
 // Our beneficiaries should be able to withdraw from the Distribution.
-await dist.withdraw(user2);
-await dist.withdraw(user3);
-await dist.withdraw(user4);
-// Check the token balance of the beneficiaries.
-await Promise.all([user2, user3, user4].map((u) => token.balanceOf(u))).then((b) => b.map((b) => b.toString()));
+await Promise.all([user2, user3, user4, user5].map((u) => dist.withdraw(u)));
+// Check the token balance of the beneficiaries - it should be [10, 20, 30, 40].
+await Promise.all([issuer.address, user2, user3, user4, user5].map((u) => token.balanceOf(u))).then(
+  (b) => b.map((b) => b.toString())
+);
+
+// Now let the issuer member wire all the ERC20 to themselves.
+(await
+  issuer
+    .connect(issuerSigner)
+    .transferERC20Tokens(token.address, await token.balanceOf(issuer.address), issuerMember)
+);
+// The issuer contract should now have no ERC20 tokens, while the issuer member should have them all.
+(await Promise.all([issuer.address, issuerMember].map(u => token.balanceOf(u)))).map(b => b.toString());
 ```
 
 ## Hardhat Cheat-Sheet
