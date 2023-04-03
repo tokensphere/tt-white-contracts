@@ -20,7 +20,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
   /// Modifiers.
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
-  modifier onlyDiamondFacet() {
+  modifier onlyDiamondFacet() virtual {
     if (msg.sender != address(this)) {
       revert ICustomErrors.InternalMethod();
     }
@@ -28,7 +28,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
   }
 
   /// @notice Ensures that a method can only be called by the owner of this diamond.
-  modifier onlyDiamondOwner() {
+  modifier onlyDiamondOwner() virtual {
     if (msg.sender != IERC173(address(this)).owner()) {
       revert ICustomErrors.RequiresDiamondOwnership(msg.sender);
     }
@@ -36,7 +36,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
   }
 
   /// @notice Ensures that the given address is a member of the current FAST.
-  modifier onlyMember(address candidate) {
+  modifier onlyMember(address candidate) virtual {
     if (!LibIssuerAccess.data().memberSet.contains(candidate)) {
       revert ICustomErrors.RequiresIssuerMembership(candidate);
     }

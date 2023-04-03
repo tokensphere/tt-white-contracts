@@ -4,21 +4,11 @@ pragma solidity 0.8.10;
 import '../../lib/LibAddressSet.sol';
 
 
-library LibFastAutomatons {
+library LibAutomatons {
   // The current version of the storage.
   uint16 internal constant STORAGE_VERSION = 1;
-  // This is keccak256('Fast.storage.Automatons'):
-  bytes32 internal constant STORAGE_SLOT = 0xc40d5c7e936c6e810afbdc90336d014a00cba2ec97796ebc91c7cafa2a5827f8;
-
-  uint256 constant PRIVILEGE_ADD_MEMBER = 1;
-  uint256 constant PRIVILEGE_REMOVE_MEMBER = 2;
-  uint256 constant PRIVILEGE_MANAGE_DISTRIBUTIONS = 4;
-
-  struct Privileges {
-    bool canAddMember;
-    bool canRemoveMember;
-    bool canManageDistributions;
-  }
+  // This is keccak256('Automatons.storage'):
+  bytes32 internal constant STORAGE_SLOT = 0x72e61414f0d129b9bbb7bdca6bd66869caef273bde181c005dc191fc7c503714;
 
   struct Data {
     /// @notice The latest intializer version that was called.

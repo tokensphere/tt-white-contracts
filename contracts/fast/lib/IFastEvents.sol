@@ -13,10 +13,6 @@ import '../../fast/Distribution.sol';
 interface IFastEvents {
   // IHasMembers.
 
-  // IHasAutomatons
-  event AutomatonPrivilegesSet(address indexed automaton, uint256 indexed privileges);
-  event AutomatonRemoved(address indexed automaton);
-
   /**
    * @notice Emited when a member is added to the implementing contract.
    * @param member is the address of the added member.
@@ -40,6 +36,18 @@ interface IFastEvents {
    * @param governor is the address of the removed member.
    */
   event GovernorRemoved(address indexed governor);
+
+  /**
+   * @notice Emited when an automaton is added or when their privileges is set.
+   * @param automaton is the automaton address.
+   * @param privileges is the bitfield containing the new privileges.
+   */
+  event AutomatonPrivilegesSet(address indexed automaton, uint256 indexed privileges);
+  /**
+   * @notice Emited when an automaton is removed.
+   * @param automaton is the automaton address.
+   */
+  event AutomatonRemoved(address indexed automaton);
 
   // Issuance related events.
   
