@@ -22,7 +22,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
   // Modifiers.
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
-  modifier onlyDeployer() {
+  modifier onlyDeployer() virtual {
     if (msg.sender != LibConstants.DEPLOYER_CONTRACT) {
       revert ICustomErrors.InternalMethod();
     }
@@ -32,7 +32,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
   /**
    * @notice Requires that the message sender is a member of the linked Issuer.
    */
-  modifier onlyIssuerMember() {
+  modifier onlyIssuerMember() virtual {
     if (!IHasMembers(LibMarketplace.data().issuer).isMember(msg.sender)) {
       revert ICustomErrors.RequiresIssuerMembership(msg.sender);
     }
@@ -43,7 +43,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    * @notice Requires that the given address is a member of the marketplace.
    * @param candidate is the address to be checked.
    */
-  modifier onlyMember(address candidate) {
+  modifier onlyMember(address candidate) virtual {
     if (!LibMarketplaceAccess.data().memberSet.contains(candidate)) {
       revert ICustomErrors.RequiresMarketplaceMembership(candidate);
     }

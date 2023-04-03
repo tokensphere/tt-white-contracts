@@ -21,7 +21,7 @@ contract FastDistributionsFacet is AFastFacet {
   function createDistribution(IERC20 token, uint256 total, uint256 blockLatch)
       external
       onlyMember(msg.sender) {
-    // Make sure the current FAST contract has at least `total` allowance over `token.
+    // Make sure the current FAST contract has at least `total` allowance over the user's ERC20 tokens.
     uint256 allowance = token.allowance(msg.sender, address(this));
     if (allowance < total)
       revert ICustomErrors.InsuficientFunds(total - allowance);
