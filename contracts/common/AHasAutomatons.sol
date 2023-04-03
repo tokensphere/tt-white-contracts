@@ -3,8 +3,7 @@ pragma solidity 0.8.10;
 
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import '../interfaces/IHasAutomatons.sol';
-import '../common/lib/LibAutomatons.sol';
+import '../common/lib/LibHasAutomatons.sol';
 import '../interfaces/ICustomErrors.sol';
 
 
@@ -12,13 +11,42 @@ import '../interfaces/ICustomErrors.sol';
  * @title The Fast Smart Contract.
  * @notice The Fast Automatons facet is in charge of keeping track of automaton accounts.
  */
-abstract contract AHasAutomatons is IHasAutomatons {
+abstract contract AHasAutomatons {
   using LibAddressSet for LibAddressSet.Data;
 
-  // These must be overriden.
-  modifier onlyIssuerMember() virtual;
+  /// Errors.
 
-  // Automatons management.
+  error RequiresAutomatonsManager(address who);
+
+  /// Events.
+
+  /**
+   * @notice Emited when an automaton is added or changed.
+   * @param automaton is the address of the automaton.
+   * @param privileges is the new bitfield assigned to this automaton.
+   */
+  event AutomatonPrivilegesSet(address indexed automaton, uint32 indexed privileges);
+
+  /**
+   * @notice Emited when an automaton is removed.
+   * @param automaton is the address of the removed automaton.
+   */
+  event AutomatonRemoved(address indexed automaton);
+
+  // Must be overriden.
+  function isAutomatonsManager(address who)
+      virtual internal view
+      returns(bool);
+
+  // May be overriden.
+  function onAutomatonAdded(address member)
+      virtual internal {}
+  
+  // May be overriden.
+  function onAutomatonRemoved(address member)
+      virtual internal {}
+
+  /// Automatons management.
 
   /**
    * @notice Queries whether a given address is an automaton for this Fast or not.
@@ -26,8 +54,8 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @return A `boolean` flag.
    */
   function isAutomaton(address candidate)
-      external override view returns(bool) {
-    return LibAutomatons.data().automatonSet.contains(candidate);
+      external view returns(bool) {
+    return LibHasAutomatons.data().automatonSet.contains(candidate);
   }
 
   /**
@@ -36,8 +64,8 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @return An `uint256` bitfield.
    */
   function automatonPrivileges(address automaton)
-      external override view returns(uint256) {
-    return LibAutomatons.data().automatonPrivileges[automaton];
+      external view returns(uint32) {
+    return LibHasAutomatons.data().automatonPrivileges[automaton];
   }
 
   /**
@@ -45,8 +73,8 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @return The number of automatons in this marketplace.
    */
   function automatonCount()
-      external override view returns(uint256) {
-    return LibAutomatons.data().automatonSet.values.length;
+      external view returns(uint256) {
+    return LibHasAutomatons.data().automatonSet.values.length;
   }
 
   /**
@@ -57,9 +85,9 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @return A `uint256` index to the next page.
    */
   function paginateAutomatons(uint256 cursor, uint256 perPage)
-    external override view returns(address[] memory, uint256) {
+    external view returns(address[] memory, uint256) {
     return LibPaginate.addresses(
-      LibAutomatons.data().automatonSet.values,
+      LibHasAutomatons.data().automatonSet.values,
       cursor,
       perPage
     );
@@ -70,12 +98,12 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @param candidate is the automaton address to which the privileges should be assigned.
    * @param privileges is a bitfield of privileges to apply.
    */
-  function setAutomatonPrivileges(address candidate, uint256 privileges)
-      external override onlyIssuerMember {
-    LibAutomatons.Data storage ds = LibAutomatons.data();
+  function setAutomatonPrivileges(address candidate, uint32 privileges)
+      external onlyAutomatonManager(msg.sender) {
+    LibHasAutomatons.Data storage ds = LibHasAutomatons.data();
     ds.automatonSet.add(candidate, true);
     ds.automatonPrivileges[candidate] = privileges;
-    // emit AutomatonPrivilegesSet(candidate, privileges);
+    emit AutomatonPrivilegesSet(candidate, privileges);
   }
 
   /**
@@ -83,10 +111,18 @@ abstract contract AHasAutomatons is IHasAutomatons {
    * @param candidate is the automaton to remove.
    */
   function removeAutomaton(address candidate)
-      external override onlyIssuerMember {
-    LibAutomatons.Data storage ds = LibAutomatons.data();
+      external onlyAutomatonManager(msg.sender) {
+    LibHasAutomatons.Data storage ds = LibHasAutomatons.data();
     ds.automatonSet.remove(candidate, false);
     delete ds.automatonPrivileges[candidate];
-    // emit AutomatonRemoved(candidate);
+    emit AutomatonRemoved(candidate);
+  }
+
+  /// Modifiers.
+
+  modifier onlyAutomatonManager(address who) {
+    if (!isAutomatonsManager(who))
+      revert RequiresAutomatonsManager(who);
+    _;
   }
 }

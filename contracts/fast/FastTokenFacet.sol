@@ -3,14 +3,12 @@ pragma solidity 0.8.10;
 
 import '../interfaces/IERC20.sol';
 import '../interfaces/ICustomErrors.sol';
-import '../interfaces/IHasMembers.sol';
-import '../interfaces/IHasGovernors.sol';
+import '../common/AHasMembers.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import './lib/AFastFacet.sol';
 import './lib/LibFastToken.sol';
-import './lib/IFast.sol';
 import '../marketplace/MarketplaceTokenHoldersFacet.sol';
 import './FastTopFacet.sol';
 import './FastAccessFacet.sol';
@@ -21,7 +19,11 @@ import './FastFrontendFacet.sol';
 contract FastTokenFacet is AFastFacet, IERC20 {
   using LibAddressSet for LibAddressSet.Data;
 
-  // Minting methods.
+  /// Constants.
+
+  string internal constant DEAD_TOKENS_RETRIEVAL = 'Dead tokens retrieval';
+
+  /// Minting methods.
 
   /**
    * @notice Mints an amount of FAST tokens.
@@ -138,10 +140,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     MarketplaceTokenHoldersFacet(LibFast.data().marketplace).fastBalanceChanged(holder, 0);
 
     // Keep track of this transfer in history facet.
-    FastHistoryFacet(address(this)).transfered(msg.sender, holder, address(0), amount, LibConstants.DEAD_TOKENS_RETRIEVAL);
+    FastHistoryFacet(address(this)).transfered(msg.sender, holder, address(0), amount, DEAD_TOKENS_RETRIEVAL);
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
-    emit FastTransfer(msg.sender, holder, address(0), amount, LibConstants.DEAD_TOKENS_RETRIEVAL);
+    emit FastTransfer(msg.sender, holder, address(0), amount, DEAD_TOKENS_RETRIEVAL);
     emit Transfer(holder, address(0), amount);
 
     // If amount wasn't zero, total supply and reserve balance have changed - emit.
@@ -183,7 +185,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @return uint256 Total supply of the FAST.
    */
   function totalSupply()
-      external override view returns(uint256) {
+      external override(IERC20) view returns(uint256) {
     return LibFastToken.data().totalSupply;
   }
 
@@ -193,14 +195,14 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @return uint256 The current balance of this owner's account.
    */
   function balanceOf(address owner)
-      public view override returns(uint256) {
+      public view override(IERC20) returns(uint256) {
     return LibFastToken.data().balances[owner];
   }
 
   /**
    * @notice See `performTransfer`, the spender will be equal to the `owner`, and the `ref` will be defauted. */
   function transfer(address to, uint256 amount)
-      external override returns(bool) {
+      external override(IERC20) returns(bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performTransfer(
       TransferArgs({
@@ -232,14 +234,14 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   }
 
   function allowance(address owner, address spender)
-      public view override returns(uint256) {
+      public view override(IERC20) returns(uint256) {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the allowance being queried is owned by the reserve, and `spender` is
     // an Issuer member, `spender` owns the full balance of `owner`. If they are
     // not an Issuer member then their allowance is zero. Otherwise, the regular given
     // allowance for `spender` over `owner` applies.
     if (owner == address(0))
-      return IHasMembers(LibFast.data().issuer).isMember(spender)
+      return AHasMembers(LibFast.data().issuer).isMember(spender)
         ? s.balances[owner]
         : 0;
     else
@@ -253,7 +255,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param amount is how much to **increase** the allowance.
    */
   function approve(address spender, uint256 amount)
-      external override returns(bool) {
+      external override(IERC20) returns(bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performApproval(msg.sender, spender, amount);
     return true;
@@ -276,7 +278,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
   /// @notice See `performTransfer`, the `ref` will be defaulted.
   function transferFrom(address from, address to, uint256 amount)
-      external override returns(bool) {
+      external override(IERC20) returns(bool) {
     transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
     return true;
   }
@@ -387,7 +389,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     else if (p.from == p.to)
       revert ICustomErrors.RequiresDifferentSenderAndRecipient(p.from);
     // Requires that allowance transfers from the reserve are performed by issuer members only.
-    else if (p.from == address(0) && !IHasMembers(topData.issuer).isMember(p.spender))
+    else if (p.from == address(0) && !AHasMembers(topData.issuer).isMember(p.spender))
       revert ICustomErrors.RequiresIssuerMembership(p.spender);
 
     // Requires that the `from` address can hold tokens.
@@ -603,12 +605,12 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     if (candidate == address(0))
       return true;
     // If the FAST is semi public, any member of the marketplace can hold tokens.
-    else if (IFast(address(this)).isSemiPublic()) {
-      return IHasMembers(LibFast.data().marketplace).isMember(candidate);
+    else if (FastTopFacet(address(this)).isSemiPublic()) {
+      return AHasMembers(LibFast.data().marketplace).isMember(candidate);
     }
     // FAST is private, only members of the fast can hold tokens.
     else {
-      return IHasMembers(address(this)).isMember(candidate);
+      return AHasMembers(address(this)).isMember(candidate);
     }
   }
 }

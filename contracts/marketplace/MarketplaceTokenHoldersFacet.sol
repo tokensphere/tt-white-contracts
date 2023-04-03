@@ -2,6 +2,7 @@
 pragma solidity 0.8.10;
 
 import './lib/AMarketplaceFacet.sol';
+import './lib/LibMarketplaceTokenHolders.sol';
 import '../issuer/IssuerTopFacet.sol';
 import '../interfaces/IERC20.sol';
 import '../interfaces/ICustomErrors.sol';

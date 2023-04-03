@@ -84,7 +84,7 @@ describe("IssuerAccessFacet", () => {
     describe("addMember", async () => {
       it("requires that the sender is a member", async () => {
         const subject = access.addMember(alice.address);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
       });
 
       it("adds the member to the list", async () => {
@@ -100,8 +100,10 @@ describe("IssuerAccessFacet", () => {
 
       it("emits a MemberAdded event", async () => {
         const subject = issuerMemberAccess.addMember(bob.address);
-        await expect(subject).to.emit(issuer, "MemberAdded").withArgs(bob.address);
+        await expect(subject).to.emit(access, "MemberAdded").withArgs(bob.address);
       });
+
+      it("calls back onMemberAdded");
     });
 
     describe("removeMember", async () => {
@@ -109,26 +111,36 @@ describe("IssuerAccessFacet", () => {
         await issuerMemberIssuer.addMember(bob.address);
       });
 
-      it("requires that the sender is the diamond owner", async () => {
-        const subject = issuerMemberAccess.removeMember(bob.address);
-        await expect(subject).to.be.revertedWith(`RequiresDiamondOwnership`);
+      it("requires that the sender is an issuer member", async () => {
+        const subject = access.removeMember(bob.address);
+        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
       });
 
       it("removes the member from the list", async () => {
-        await access.removeMember(bob.address);
+        await issuerMemberAccess.removeMember(bob.address);
         const subject = await issuer.isMember(bob.address);
         expect(subject).to.eq(false);
       });
 
       it("reverts if the member is not in the list", async () => {
-        const subject = access.removeMember(alice.address);
+        const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to.be.revertedWith("Address does not exist in set");
       });
 
       it("emits a MemberRemoved event", async () => {
-        const subject = access.removeMember(bob.address);
-        await expect(subject).to.emit(issuer, "MemberRemoved").withArgs(bob.address);
+        const subject = issuerMemberAccess.removeMember(bob.address);
+        await expect(subject).to.emit(access, "MemberRemoved").withArgs(bob.address);
       });
+
+      it("calls back onMemberRemoved");
+    });
+
+    describe("onMemberAdded", async () => {
+      it("MUST BE TESTED");
+    });
+
+    describe("onMemberRemoved", async () => {
+      it("MUST BE TESTED");
     });
   });
 
@@ -161,7 +173,7 @@ describe("IssuerAccessFacet", () => {
       // Add then remove Alice.
       const subject = issuerAsFast.governorAddedToFast(alice.address);
 
-      await expect(subject).to.emit(issuer, "GovernorshipAdded").withArgs(fast.address, alice.address);
+      await expect(subject).to.emit(access, "GovernorshipAdded").withArgs(fast.address, alice.address);
     });
   });
 
@@ -198,7 +210,7 @@ describe("IssuerAccessFacet", () => {
       await issuerAsFast.governorAddedToFast(alice.address);
       const subject = issuerAsFast.governorRemovedFromFast(alice.address);
 
-      await expect(subject).to.emit(issuer, "GovernorshipRemoved").withArgs(fast.address, alice.address);
+      await expect(subject).to.emit(access, "GovernorshipRemoved").withArgs(fast.address, alice.address);
     });
   });
 

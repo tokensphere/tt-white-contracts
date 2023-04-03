@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import '../common/AHasMembers.sol';
+import '../common/AHasAutomatons.sol';
 import '../interfaces/IERC165.sol';       // Interface Support.
 import '../interfaces/IERC173.sol';       // Ownership.
 import '../interfaces/IDiamondCut.sol';   // Facet management.
 import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
-import '../interfaces/IHasMembers.sol';   // Membership management.
 import '../interfaces/ICustomErrors.sol';
 import '../lib/LibDiamond.sol';
 import '../lib/LibAddressSet.sol';
@@ -23,6 +24,10 @@ import './lib/LibIssuerAccess.sol';
  */
 contract IssuerInitFacet is AIssuerFacet {
   using LibAddressSet for LibAddressSet.Data;
+  /// Events.
+
+  // Duplicated from AHasMembers.
+  event MemberAdded(address indexed member);
 
   /// Initializers.
 
@@ -31,13 +36,10 @@ contract IssuerInitFacet is AIssuerFacet {
   }
 
   function initialize(InitializerParams calldata params)
-      external
-      onlyDiamondOwner() {
-    // Grab our top-level storage.
+      external onlyDiamondOwner() {
     // Make sure we haven't initialized yet.
-    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION) {
+    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION)
       revert ICustomErrors.AlreadyInitialized();
-    }
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -45,20 +47,28 @@ contract IssuerInitFacet is AIssuerFacet {
     ds.supportedInterfaces[type(IERC173).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
-    ds.supportedInterfaces[type(IHasMembers).interfaceId] = true;
+    ds.supportedInterfaces[type(AHasMembers).interfaceId] = true;
+    ds.supportedInterfaces[type(AHasAutomatons).interfaceId] = true;
 
     // ------------------------------------- //
 
-    // Initialize top-level storage.
+    // Initialize top-level facet storage.
     LibIssuer.data().version = LibIssuer.STORAGE_VERSION;
 
+    // Initialize access facet storage.
+    LibIssuerAccess.data().version = LibIssuerAccess.STORAGE_VERSION;
+
     // ------------------------------------- //
 
-    // Initialize access storage.
-    LibIssuerAccess.Data storage s = LibIssuerAccess.data();
-    s.version = LibIssuerAccess.STORAGE_VERSION;
+    // Initialize members storage.
+    LibHasMembers.Data storage membersData = LibHasMembers.data();
+    membersData.version = LibHasMembers.STORAGE_VERSION;
     // Add the member and emit.
-    s.memberSet.add(params.member, false);
+    membersData.memberSet.add(params.member, false);
+    // TODO: Find a way...
     emit MemberAdded(params.member);
+
+    // Initialize automatons storage.
+    LibHasAutomatons.data().version = LibHasAutomatons.STORAGE_VERSION;
   }
 }

@@ -51,7 +51,7 @@ describe("IssuerTopFacet", () => {
       f02 = await smock.fake("Fast");
       f02.symbol.returns("F02");
       await issuerMemberIssuer.registerFast(f02.address);
-      // Third fast isn't registered with Issuer.
+      // Third fast isn"t registered with Issuer.
       f03 = await smock.fake("Fast");
       f03.symbol.returns("F03");
     });
@@ -146,13 +146,13 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe('transferERC20Tokens', async () => {
-      it('MUST BE TESTED');
+    describe("transferERC20Tokens", async () => {
+      it("MUST BE TESTED");
     });
 
     describe("paginateFasts", async () => {
       it("returns pages of FASTs", async () => {
-        // We're testing the pagination library here... Not too good. But hey, we're in a rush.
+        // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
         const [[a1, a2]] = await issuer.paginateFasts(0, 10);
         expect(a1).to.eq(f01.address);
         expect(a2).to.eq(f02.address);

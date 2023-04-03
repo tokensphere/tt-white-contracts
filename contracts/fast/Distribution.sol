@@ -4,12 +4,11 @@ pragma solidity 0.8.10;
 import '../interfaces/IERC20.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
-import '../interfaces/IHasMembers.sol';
-import '../interfaces/IHasAutomatons.sol';
+import '../common/AHasMembers.sol';
+import '../common/AHasAutomatons.sol';
 import '../interfaces/ICustomErrors.sol';
 
 
-// TODO: TEST.
 /**
  * @title The `Distribution` FAST contract.
  * @notice This contract allows for dividends or proceeds to be distributted amongst
@@ -25,26 +24,26 @@ contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice The possible phases in which the contract is in.
-  enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
+  enum Phase { Creation, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
 
   /**
-   * @notice Emitted whenever the internal phase of this distribution changes.
+   * @notice Emited whenever the internal phase of this distribution changes.
    * @param phase The new phase of this contract.
    */
   event Advance(Phase phase);
   /**
-   * @notice Emitted whenever a beneficiary is added to the distribution list.
+   * @notice Emited whenever a beneficiary is added to the distribution list.
    * @param beneficiary is the address of the beneficiary who was added.
    * @param amount is the amount in native target token that is owed to the beneficiary. 
    */
   event BeneficiaryAdded(address indexed beneficiary, uint256 indexed amount);
   /**
-   * @notice Emitted whenever a beneficiary is removed from the distribution list.
+   * @notice Emited whenever a beneficiary is removed from the distribution list.
    * @param beneficiary is the address of the beneficiary who was removed.
    */
   event BeneficiaryRemoved(address indexed beneficiary);
   /**
-   * @notice Emitted whenever a beneficiary withdraws their owings.
+   * @notice Emited whenever a beneficiary withdraws their owings.
    * @param caller is the address who ordered the withdrawal.
    * @param beneficiary is the address of the beneficiary who performed the withdrawal.
    * @param amount is the amount that was withdrawn.
@@ -70,10 +69,10 @@ contract Distribution {
   /// @notice A version identifier for us to track what's deployed.
   uint16 public constant VERSION = 1;
   /// @notice The initial params, as passed to the contract's constructor.
-  Params params;
+  Params public params;
 
   /// @notice The phase at which the distribution is at.
-  Phase public phase = Phase.Funding;
+  Phase public phase = Phase.Creation;
   /// @notice When was the distribution created.
   uint256 public creationBlock;
   /// @notice How much the fee that will be distributed to `issuer` is.
@@ -100,7 +99,17 @@ contract Distribution {
     params = p;
     available = p.total;
     creationBlock = block.number;
-    emit Advance(phase);
+
+    // We are in the funding phase. Let's check that this contract is allowed to spend
+    // on behalf of the distributor. Note that only the distributor can call this function.
+    // Note that this transition requires that the caller is the distributor of the distribution.
+
+    // Make sure that the current distribution has exactly the required amount locked.
+    uint256 balance = params.token.balanceOf(address(this));
+    if (balance != params.total)
+      revert ICustomErrors.InsuficientFunds(params.total - balance);
+    // Move to next phase.
+    emit Advance(phase = Phase.FeeSetup);
   }
 
   /** 
@@ -110,21 +119,9 @@ contract Distribution {
    */
   function advance()
       public {
-    // We are still in the funding phase. Let's check that this contract is allowed to spend
-    // on behalf of the distributor. Note that only the distributor can call this function.
-    // Note that this transition requires that the caller is the distributor of the distribution.
-    if (phase == Phase.Funding) {
-      requireFastContractCaller();
-      // Make sure that the current distribution has the funds locked.
-      uint256 balance = params.token.balanceOf(address(this));
-      if (balance < params.total)
-        revert ICustomErrors.InsuficientFunds(params.total - balance);
-      // Move to next phase.
-      emit Advance(phase = Phase.FeeSetup);
-    }
     // If we are still in the BeneficiariesSetup phase, progress to Withdrawal phase.
     // Note that only managers should be allowed to move from the BeneficiariesSetup phase.
-    else if (phase == Phase.BeneficiariesSetup) {
+    if (phase == Phase.BeneficiariesSetup) {
       requireManagerCaller();
       // If the distribution covers more than the sum of all proceeds, we want
       // to prevent the distribution from advancing to the withdrawal phase.
@@ -138,9 +135,8 @@ contract Distribution {
     // Any transition other than the ones specified here are not to be made using
     // the `advance` method. For example, Moving manually from the fee setup phase
     // isn't supported, the way to do this is to use the `setFee` method.
-    else {
+    else
       revert ICustomErrors.UnsupportedOperation();
-    }
   }
 
   /**
@@ -186,7 +182,7 @@ contract Distribution {
       address beneficiary = _beneficiaries[i];
       uint256 amount = _amounts[i];
       // Make sure the beneficiary is a member of the FAST.
-      if (!IHasMembers(params.fast).isMember(beneficiary))
+      if (!AHasMembers(params.fast).isMember(beneficiary))
         revert ICustomErrors.RequiresFastMembership(beneficiary);
 
       // Add the beneficiary to our set.
@@ -284,7 +280,7 @@ contract Distribution {
    * protected against reentrancy**.
    */
   function terminate()
-      public onlyDistributor {
+      public onlyManager {
     // Reset internal variables so that it's clear that the contract is terminated.
     // It is important to do this prior to any call to `token` methods to prevent
     // re-entrancy attacks.
@@ -297,15 +293,9 @@ contract Distribution {
 
   // Modifiers
 
-  function requireFastContractCaller()
-      internal view {
-    if (msg.sender != params.fast)
-      revert ICustomErrors.RequiresFastContractCaller();
-  }
-
   function requireManagerCaller()
       internal view {
-    if (!IHasMembers(params.issuer).isMember(msg.sender) && !IHasAutomatons(params.fast).isAutomaton(msg.sender))
+    if (!AHasMembers(params.issuer).isMember(msg.sender) && !AHasAutomatons(params.fast).isAutomaton(msg.sender))
       revert ICustomErrors.RequiresIssuerMembership(msg.sender);
   }
 
@@ -314,17 +304,7 @@ contract Distribution {
     require(msg.sender == params.distributor, "Distributorship needed.");
   }
 
-  modifier onlyFast() {
-    requireFastContractCaller();
-    _;
-  }
-
   modifier onlyManager() {
-    requireManagerCaller();
-    _;
-  }
-
-  modifier onlyDistributor() {
     requireManagerCaller();
     _;
   }

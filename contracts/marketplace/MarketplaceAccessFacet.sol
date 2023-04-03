@@ -3,9 +3,9 @@ pragma solidity 0.8.10;
 
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
+import '../common/AHasMembers.sol';
 import '../issuer/IssuerTopFacet.sol';
 import '../interfaces/ICustomErrors.sol';
-import '../interfaces/IHasMembers.sol';
 import '../interfaces/IHasActiveMembers.sol';
 import './lib/LibMarketplaceAccess.sol';
 import './lib/AMarketplaceFacet.sol';
@@ -15,76 +15,30 @@ import './lib/AMarketplaceFacet.sol';
  * @title The Marketplace Smart Contract.
  * @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
  */
-contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMembers {
+contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMembers {
   using LibAddressSet for LibAddressSet.Data;
+  /// AHasMembers implementation.
 
-  // Membership management.
-
-  /**
-   * @notice Queries whether a given address is a member of this Marketplace or not.
-   * @param candidate is the address to test.
-   * @return A `boolean` flag.
-   */
-  function isMember(address candidate)
-      external override view returns(bool) {
-    return LibMarketplaceAccess.data().memberSet.contains(candidate);
+  function isMembersManager(address who)
+      internal view override(AHasMembers) returns(bool) {
+    // TODO: We could also allow automatons with privileges.
+    return _isIssuerMember(who);
   }
 
-  /**
-   * @notice Counts the numbers of members present in this Marketplace.
-   * @return The number of members in this marketplace.
-   */
-  function memberCount()
-      external override view returns(uint256) {
-    return LibMarketplaceAccess.data().memberSet.values.length;
+  function isValidMember(address who)
+      internal pure override(AHasMembers) returns(bool) {
+    return who != LibHelpers.ZERO_ADDRESS;
   }
 
-  /**
-   * @notice Paginates the members of this Marketplace based on a starting cursor and a number of records per page.
-   * @param cursor is the index at which to start.
-   * @param perPage is how many records should be returned at most.
-   * @return A `address[]` list of values at most `perPage` big.
-   * @return A `uint256` index to the next page.
-   */
-  function paginateMembers(uint256 cursor, uint256 perPage)
-      external override view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(LibMarketplaceAccess.data().memberSet.values, cursor, perPage);
-  }
-
-  /**
-   * @notice Adds a member to this Marketplace member list.
-   * @param member is the address of the member to be added.
-   * @notice Requires that the caller is a member of the linked Issuer.
-   * @notice Emits a `IHasMembers.MemberAdded` event.
-   */
-  function addMember(address payable member)
-      external override
-      onlyIssuerMember {
-    // Add the member to our list.
-    LibMarketplaceAccess.data().memberSet.add(member, false);
-    // Emit!
-    emit MemberAdded(member);
-  }
-
-  /**
-   * @notice Removes a member from this Marketplace.
-   * @param member is the address of the member to be removed.
-   * @notice Requires that the caller is a member of the linked Issuer.
-   * @notice Emits a `IHasMembers.MemberRemoved` event.
-   */
-  function removeMember(address member)
-      external override
-      onlyIssuerMember {
+  function onMemberRemoved(address member)
+      internal view override(AHasMembers) {
     LibMarketplaceAccess.Data storage s = LibMarketplaceAccess.data();
     // Ensure that member doesn't have any FAST membership.
-    if (s.fastMemberships[member].values.length != 0) {
+    if (s.fastMemberships[member].values.length != 0)
       revert ICustomErrors.RequiresNoFastMemberships(member);
-    }
-    // Remove member.
-    s.memberSet.remove(member, false);
-    // Emit!
-    emit MemberRemoved(member);
   }
+
+  /// FAST memberships functions.
 
   /**
    * @notice Allows to query FAST memberships for a given member address.
@@ -124,12 +78,14 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
     LibMarketplaceAccess.data().fastMemberships[member].remove(msg.sender, false);
   }
 
+  /// IHasActiveMembers implementation.
+
   /**
    * @notice Given a member returns it's activation status.
    * @param candidate The address to check activation status on.
    */
-  function isActiveMember(address candidate) external override view returns(bool) {
-    return IHasMembers(this).isMember(candidate) &&
+  function isActiveMember(address candidate) external override(IHasActiveMembers) view returns(bool) {
+    return _isMember(candidate) &&
            !LibMarketplaceAccess.data().deactivatedMemberSet.contains(candidate);
   }
 
@@ -138,18 +94,13 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
    * @param member The member to remove from the deactivation member set.
    */
   function activateMember(address member)
-    external
-    override
-    onlyIssuerMember
-    onlyMember(member) {
+    external override(IHasActiveMembers)
+    onlyIssuerMember onlyMember(member) {
     // Guard against attempting to activate an already active member.
-    if (this.isActiveMember(member)) {
+    if (this.isActiveMember(member))
       revert ICustomErrors.RequiresMarketplaceDeactivatedMember(member);
-    }
-
     // Remove the member from the deactivated members list.
     LibMarketplaceAccess.data().deactivatedMemberSet.remove(member, false);
-
     // Emit!
     emit MemberActivated(member);
   }
@@ -159,18 +110,13 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, IHasMembers, IHasActiveMem
    * @param member The member to add to the deactivation member set.
    */
   function deactivateMember(address payable member)
-    external
-    override
-    onlyIssuerMember
-    onlyMember(member) {
+    external override(IHasActiveMembers)
+    onlyIssuerMember onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
-    if (!this.isActiveMember(member)) {
+    if (!this.isActiveMember(member))
       revert ICustomErrors.RequiresMarketplaceActiveMembership(member);
-    }
-
     // Add the member to the deactivated members list.
     LibMarketplaceAccess.data().deactivatedMemberSet.add(member, false);
-
     // Emit!
     emit MemberDeactivated(member);
   }
