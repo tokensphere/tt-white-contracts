@@ -17,14 +17,15 @@ import '../interfaces/ICustomErrors.sol';
  * following steps (or phases):
  * - Funding, during which the sum to be distributed has to be credited to this contract.
  * - FeeSetup, during which the oracle will define the fee to be paid upon distribution.
- * - Setup, during which the oracle can setup the beneficiaries.
+ * - BeneficiariesSetup, during which the oracle can setup the beneficiaries.
  * - Withdrawal, during which each beneficiary can withdraw their proceeds.
+ * - Terminated, during which nothing is possible.
  */
 contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice The possible phases in which the contract is in.
-  enum Phase { Funding, FeeSetup, Setup, Withdrawal, Terminated }
+  enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
 
   /**
    * @notice Emitted whenever the internal phase of this distribution changes.
@@ -50,69 +51,56 @@ contract Distribution {
    */
   event Withdrawal(address indexed caller, address indexed beneficiary, uint256 amount);
 
-  /// @notice The phase at which the distribution is at.
-  Phase public phase;
-
-  uint16 public constant STORAGE_VERSION = 1;
-
-  /// @notice The owner of the distribution - eg the address who ordered its deployment.
-  address public owner;
-  /// @notice The Issuer contract address, allowed to manage this distribution. Will also take a fee.
-  address public issuer;
-  /// @notice To which FAST this Distribution belongs.
-  address public fast;
-  /**
-   * @notice The target ERC20 address to be distributed to the beneficiaries.
-   * @dev Note that since we do not have control over the smart contract at this
-   * address, every call made to it should be considered as potential sources of reentrancy
-   * adversity.
-   */
-  IERC20 public token;
-  /// @notice How much is meant to be distributed.
-  uint256 public total;
-  /// @notice How much the fee that will be distributed to `issuer` is.
-  uint256 public fee;
-
-  /**
-   * @dev How much is left for distribution, used to make sure that the amount we
-   * are setting up during Setup do not exceed what was planned for.
-   */
-  uint256 private available;
-
-  /// @notice The list of beneficiaries known to the system.
-  LibAddressSet.Data private beneficiaries;
-  /// @notice How much was set asside for a particular beneficiary.
-  mapping(address => uint256) public owings;
-  /// @notice Whether or not a benificiary has withdrawn yet.
-  mapping(address => bool) public withdrawn;
-
   /// @notice Parameters to be passed to this contract's constructor.
-  struct ConstructorParams {
-    /// @notice The owner of the distribution - eg the address who ordered its deployment.
-    address owner;
+  struct Params {
+    /// @notice The distributor of the distribution - eg the address who ordered its deployment.
+    address distributor;
     /// @notice The Issuer contract address.
     address issuer;
     /// @notice To which FAST this Distribution belongs
     address fast;
     /// @notice The target ERC20 address to be distributed to the beneficiaries.
     IERC20 token;
+    /// @notice Block latching.
+    uint256 blockLatch;
     /// @notice How much is meant to be distributed.
     uint256 total;
   }
 
+  /// @notice A version identifier for us to track what's deployed.
+  uint16 public constant VERSION = 1;
+  /// @notice The initial params, as passed to the contract's constructor.
+  Params params;
+
+  /// @notice The phase at which the distribution is at.
+  Phase public phase = Phase.Funding;
+  /// @notice When was the distribution created.
+  uint256 public creationBlock;
+  /// @notice How much the fee that will be distributed to `issuer` is.
+  uint256 public fee;
+  /// @notice How much is left for distribution.
+  uint256 public available;
+
+  /// @notice The list of beneficiaries known to the system.
+  LibAddressSet.Data internal beneficiaries;
+  /// @notice How much was set asside for a particular beneficiary.
+  mapping(address => uint256) public owings;
+  /// @notice Whether or not a benificiary has withdrawn yet.
+  mapping(address => bool) public withdrawn;
+
   /**
    * @notice Constructs a new `Distribution` contracts.
-   * @param p is a `ConstructorParams` structure.
+   * @param p is a `Params` structure.
    */
-  constructor(ConstructorParams memory p) {
-    // Move to next phase.
-    emit Advance(phase = Phase.Funding);
+  constructor(Params memory p) {
+    // If the distribution is latched in the future, throw.
+    if (p.blockLatch >= block.number)
+      revert ICustomErrors.UnsupportedOperation();
     // Store all parameters.
-    owner = p.owner;
-    issuer = p.issuer;
-    fast = p.fast;
-    token = p.token;
-    total = available = p.total;
+    params = p;
+    available = p.total;
+    creationBlock = block.number;
+    emit Advance(phase);
   }
 
   /** 
@@ -123,25 +111,27 @@ contract Distribution {
   function advance()
       public {
     // We are still in the funding phase. Let's check that this contract is allowed to spend
-    // on behalf of the owner. Note that only the owner can call this function.
-    // Note that this transition requires that the caller is the owner of the distribution.
+    // on behalf of the distributor. Note that only the distributor can call this function.
+    // Note that this transition requires that the caller is the distributor of the distribution.
     if (phase == Phase.Funding) {
-      requireOwner();
-      // Make sure that the allowance is set.
-      uint256 allowance = token.allowance(owner, address(this));
-      if (allowance < total)
-        revert ICustomErrors.InsuficientFunds(total - allowance);
-      // Attempt to transfer `total` from the owner's account to this new contract address.
-      require(token.transferFrom(owner, address(this), total));
+      requireFastContractCaller();
+      // Make sure that the current distribution has the funds locked.
+      uint256 balance = params.token.balanceOf(address(this));
+      if (balance < params.total)
+        revert ICustomErrors.InsuficientFunds(params.total - balance);
       // Move to next phase.
       emit Advance(phase = Phase.FeeSetup);
     }
-    // If we are still in the Setup phase, progress to Withdrawal phase.
-    // Note that only managers should be allowed to move from the Setup phase.
-    else if (phase == Phase.Setup) {
-      requireManager();
+    // If we are still in the BeneficiariesSetup phase, progress to Withdrawal phase.
+    // Note that only managers should be allowed to move from the BeneficiariesSetup phase.
+    else if (phase == Phase.BeneficiariesSetup) {
+      requireManagerCaller();
+      // If the distribution covers more than the sum of all proceeds, we want
+      // to prevent the distribution from advancing to the withdrawal phase.
+      if (available > 0)
+        revert ICustomErrors.UnsupportedOperation();
       // Transfer the fee to the issuer contract.
-      require(token.transfer(issuer, fee));
+      require(params.token.transfer(params.issuer, fee));
       // Move to next phase.
       emit Advance(phase = Phase.Withdrawal);
     }
@@ -156,7 +146,7 @@ contract Distribution {
   /**
    * @notice Sets the fee to be taken upon distribution. Only available during the
    * `Phase.FeeSetup` phase, throws otherwise. This method automatically advances the
-   * phase to `Phase.Setup`, so it can only be called once.
+   * phase to `Phase.BeneficiariesSetup`, so it can only be called once.
    * Note that only a manager (issuer or automaton with the correct privileges) can
    * call this method.
    * @param _fee is the amount that the `issuer` will receive.
@@ -164,14 +154,15 @@ contract Distribution {
   function setFee(uint256 _fee)
       external onlyDuring(Phase.FeeSetup) onlyManager {
     fee = _fee;
+    available -= fee;
     // Move to next phase.
-    emit Advance(phase = Phase.Setup);
+    emit Advance(phase = Phase.BeneficiariesSetup);
   }
 
   /**
    * @notice Adds beneficiaries and amounts to the distribution list. Both `_beneficiaries`
    * and `_amounts` arrays must be of the same size, or the method will revert.
-   * This method is only available during the `Phase.Setup` phase.
+   * This method is only available during the `Phase.BeneficiariesSetup` phase.
    * During execution, this method will make sure that the cumulated amounts for all
    * beneficiaries doesn't exceed the `total` amount available for distribution, or it
    * will simply throw.
@@ -182,7 +173,7 @@ contract Distribution {
    * @param _amounts is the list of amounts respective to each beneficiary.
    */
   function addBeneficiaries(address[] calldata _beneficiaries, uint256[] calldata _amounts)
-      public onlyDuring(Phase.Setup) onlyManager {
+      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Beneficiaries and amount sizes must match.
     if (_beneficiaries.length != _amounts.length)
       revert ICustomErrors.UnsupportedOperation();
@@ -195,7 +186,7 @@ contract Distribution {
       address beneficiary = _beneficiaries[i];
       uint256 amount = _amounts[i];
       // Make sure the beneficiary is a member of the FAST.
-      if (!IHasMembers(fast).isMember(beneficiary))
+      if (!IHasMembers(params.fast).isMember(beneficiary))
         revert ICustomErrors.RequiresFastMembership(beneficiary);
 
       // Add the beneficiary to our set.
@@ -227,7 +218,7 @@ contract Distribution {
    * @param _beneficiaries is the list of addresses to remove.
    */
   function removeBeneficiaries(address[] memory _beneficiaries)
-      external onlyDuring(Phase.Setup) onlyManager {
+      external onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Remove all specified beneficiaries.
     for (uint256 i = 0; i < _beneficiaries.length;) {
       address beneficiary = _beneficiaries[i];
@@ -271,56 +262,70 @@ contract Distribution {
       public onlyDuring(Phase.Withdrawal) {
     if (withdrawn[beneficiary])
       revert ICustomErrors.DuplicateEntry();
+    else if (!beneficiaries.contains(beneficiary))
+      revert ICustomErrors.NonExistentEntry();
     // Memoize a few variables.
     uint256 amount = owings[beneficiary];
     // Make sure they can't do it again later... It is important
     // to do this before any call to `token` to prevent reentrancy.
     withdrawn[beneficiary] = true;
     // Transfer to the beneficiary all of their ownings.
-    require(token.transfer(beneficiary, amount));
+    require(params.token.transfer(beneficiary, amount));
     // Emit!
     emit Withdrawal(msg.sender, beneficiary, amount);
   }
 
+  // TODO: Only allow the termination after a certain number of blocks have ellapsed.
   /**
-   * @notice A panic function that can only be called by the owner of the distribution.
+   * @notice A panic function that can only be called by the distributor of the distribution.
    * Upon calling this method, the contract will simply send back any funds still
    * available to it and set its internal state to a termination one.
    * Note that since this method calls the `token` contract, it **must be
    * protected against reentrancy**.
    */
   function terminate()
-      public onlyOwner {
+      public onlyDistributor {
     // Reset internal variables so that it's clear that the contract is terminated.
     // It is important to do this prior to any call to `token` methods to prevent
     // re-entrancy attacks.
     emit Advance(phase = Phase.Terminated);
     available = 0;
 
-    // Move all funds to the owner account.
-    token.transfer(owner, token.balanceOf(address(this)));
+    // Move all funds to the distributor account.
+    params.token.transfer(params.distributor, params.token.balanceOf(address(this)));
   }
 
   // Modifiers
 
-  function requireManager()
-      private view {
-    if (!IHasMembers(issuer).isMember(msg.sender) && !IHasAutomatons(fast).isAutomaton(msg.sender))
+  function requireFastContractCaller()
+      internal view {
+    if (msg.sender != params.fast)
+      revert ICustomErrors.RequiresFastContractCaller();
+  }
+
+  function requireManagerCaller()
+      internal view {
+    if (!IHasMembers(params.issuer).isMember(msg.sender) && !IHasAutomatons(params.fast).isAutomaton(msg.sender))
       revert ICustomErrors.RequiresIssuerMembership(msg.sender);
   }
 
-  function requireOwner()
-      private view {
-    require(msg.sender == owner, "Ownership needed.");
+  function requireDistributor()
+      internal view {
+    require(msg.sender == params.distributor, "Distributorship needed.");
   }
 
-  modifier onlyManager() {
-    requireManager();
+  modifier onlyFast() {
+    requireFastContractCaller();
     _;
   }
 
-  modifier onlyOwner() {
-    requireManager();
+  modifier onlyManager() {
+    requireManagerCaller();
+    _;
+  }
+
+  modifier onlyDistributor() {
+    requireManagerCaller();
     _;
   }
 

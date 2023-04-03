@@ -7,10 +7,9 @@ chai.use(smock.matchers);
 
 describe("Distributions", () => {
   before(async () => { });
-
   beforeEach(async () => { });
 
   describe("everything", async () => {
-    it("must be tested");
+    it("MUST BE TESTED");
   });
 });

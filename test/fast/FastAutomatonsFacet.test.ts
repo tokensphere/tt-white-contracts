@@ -6,11 +6,10 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 describe("FastAutomatonsFacet", () => {
-  before(async () => {});
-
-  beforeEach(async () => {});
+  before(async () => { });
+  beforeEach(async () => { });
 
   describe("everything", async () => {
-    it("must be tested");
+    it("MUST BE TESTED");
   });
 });

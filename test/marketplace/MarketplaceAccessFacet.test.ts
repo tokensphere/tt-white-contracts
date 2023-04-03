@@ -237,8 +237,9 @@ describe("MarketplaceAccessFacet", () => {
       marketplaceAsFast.memberAddedToFast(alice.address);
 
       // Expecting the FAST address to be included in FASTs Alice belongs to.
-      const [[memberFast] /* nextCursor */] = await marketplace.fastMemberships(alice.address, 0, 10);
-      expect(memberFast).to.be.eq(fast.address);
+      const [members] = await marketplace.fastMemberships(alice.address, 0, 10);
+      console.log(members);
+      expect(members[0]).to.be.eq(fast.address);
     });
   });
 
