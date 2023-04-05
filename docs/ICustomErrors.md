@@ -1,0 +1,142 @@
+# Solidity API
+
+## ICustomErrors
+
+### AlreadyInitialized
+
+```solidity
+error AlreadyInitialized()
+```
+
+### InternalMethod
+
+```solidity
+error InternalMethod()
+```
+
+### RequiresDiamondOwnership
+
+```solidity
+error RequiresDiamondOwnership(address who)
+```
+
+### RequiresFastContractCaller
+
+```solidity
+error RequiresFastContractCaller()
+```
+
+### RequiresTransfersEnabled
+
+```solidity
+error RequiresTransfersEnabled()
+```
+
+### RequiresIssuerMembership
+
+```solidity
+error RequiresIssuerMembership(address who)
+```
+
+### RequiresMarketplaceMembership
+
+```solidity
+error RequiresMarketplaceMembership(address who)
+```
+
+### RequiresMarketplaceActiveMembership
+
+```solidity
+error RequiresMarketplaceActiveMembership(address who)
+```
+
+### RequiresMarketplaceDeactivatedMember
+
+```solidity
+error RequiresMarketplaceDeactivatedMember(address who)
+```
+
+### RequiresValidTokenHolder
+
+```solidity
+error RequiresValidTokenHolder(address who)
+```
+
+### RequiresFastGovernorship
+
+```solidity
+error RequiresFastGovernorship(address who)
+```
+
+### RequiresFastMembership
+
+```solidity
+error RequiresFastMembership(address who)
+```
+
+### RequiresNoFastMemberships
+
+```solidity
+error RequiresNoFastMemberships(address who)
+```
+
+### RequiresOwner
+
+```solidity
+error RequiresOwner(address who)
+```
+
+### InsuficientFunds
+
+```solidity
+error InsuficientFunds(uint256 missing)
+```
+
+### DuplicateEntry
+
+```solidity
+error DuplicateEntry()
+```
+
+### NonExistentEntry
+
+```solidity
+error NonExistentEntry()
+```
+
+### UnsupportedOperation
+
+```solidity
+error UnsupportedOperation()
+```
+
+### CannotSelfRemove
+
+```solidity
+error CannotSelfRemove(address who)
+```
+
+### ReentrancyError
+
+```solidity
+error ReentrancyError()
+```
+
+### RequiresContinuousSupply
+
+```solidity
+error RequiresContinuousSupply()
+```
+
+### RequiresPositiveBalance
+
+```solidity
+error RequiresPositiveBalance(address holder)
+```
+
+### RequiresDifferentSenderAndRecipient
+
+```solidity
+error RequiresDifferentSenderAndRecipient(address a)
+```
+
