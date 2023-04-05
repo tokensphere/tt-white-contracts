@@ -107,7 +107,7 @@ contract Distribution {
     // Make sure that the current distribution has exactly the required amount locked.
     uint256 balance = params.token.balanceOf(address(this));
     if (balance != params.total)
-      revert ICustomErrors.InsuficientFunds(params.total - balance);
+      revert ICustomErrors.InsufficientFunds(params.total - balance);
     // Move to next phase.
     emit Advance(phase = Phase.FeeSetup);
   }
@@ -199,7 +199,7 @@ contract Distribution {
 
     // Make sure that there's enough to pay everyone.
     if (available < needed)
-      revert ICustomErrors.InsuficientFunds(needed - available);
+      revert ICustomErrors.InsufficientFunds(needed - available);
     // Decrease the amount of available funds.
     unchecked { available -= needed; }
   }
