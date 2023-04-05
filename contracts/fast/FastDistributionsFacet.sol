@@ -27,7 +27,7 @@ contract FastDistributionsFacet is AFastFacet {
     // Make sure the current FAST contract has at least `total` allowance over the user's ERC20 tokens.
     uint256 allowance = token.allowance(msg.sender, address(this));
     if (allowance < total)
-      revert ICustomErrors.InsuficientFunds(total - allowance);
+      revert ICustomErrors.InsufficientFunds(total - allowance);
     // Deploy a new Distribution contract locked onto the current FAST and target currency token.
     Distribution dist = new Distribution(
       Distribution.Params({
@@ -43,8 +43,7 @@ contract FastDistributionsFacet is AFastFacet {
     LibFastDistributions.data().distributionSet.add(address(dist), false);
     // Transfer the ERC20 tokens to the distribution contract.
     require(token.transferFrom(msg.sender, address(dist), total));
-    // Advance the distribution past funding.
-    dist.advance();
+
     // Emit!
     emit DistributionDeployed(dist);
   }

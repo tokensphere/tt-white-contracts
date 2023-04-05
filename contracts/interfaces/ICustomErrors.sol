@@ -21,7 +21,7 @@ interface ICustomErrors {
 
   error RequiresOwner(address who);
 
-  error InsuficientFunds(uint256 missing);
+  error InsufficientFunds(uint256 missing);
 
   error DuplicateEntry();
   error NonExistentEntry();

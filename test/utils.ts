@@ -63,6 +63,15 @@ export const REQUIRES_DIFFERENT_SENDER_AND_RECIPIENT = "Requires different sende
 export const UNKNOWN_RESTRICTION_CODE = "Unknown restriction code";
 export const BALANCE_IS_POSITIVE = "Balance is positive";
 
+// Distribution phases.
+export enum DistributionPhase {
+  Creation,
+  FeeSetup,
+  BeneficiariesSetup,
+  Withdrawal,
+  Terminated
+}
+
 // Get a POJO from a struct.
 export const abiStructToObj = ({ ...struct }) => {
   const entries = Object.entries(struct);
