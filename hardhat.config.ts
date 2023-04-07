@@ -42,8 +42,6 @@ const config: HardhatUserConfig = {
         ["Facet$", "EthReceived(address,uint256)"],
         ["Facet$", "FastRegistered(address)"],
         ["Facet$", "FastUnregistered(address)"],
-        // ["Facet$", "MemberAdded(address)"],
-        // ["Facet$", "MemberRemoved(address)"],
         ["Facet$", "GovernorshipAdded(address,address)"],
         ["Facet$", "GovernorshipRemoved(address,address)"],
         // Error types.
@@ -56,12 +54,8 @@ const config: HardhatUserConfig = {
       name: "Marketplace",
       filter: abiFilter([
         // Event types.
-        // ["Facet$", "MemberAdded(address)"],
-        // ["Facet$", "MemberRemoved(address)"],
         ["Facet$", "MemberActivated(address)"],
         ["Facet$", "MemberDeactivated(address)"],
-        // ["Facet$", "AutomatonPrivilegesSet(address,uint256)"],
-        // ["Facet$", "AutomatonRemoved(address)"],
         // Error types.
         ["Facet$", "RequiresFastContractCaller()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
@@ -74,12 +68,6 @@ const config: HardhatUserConfig = {
         // Event types.
         ["Facet$", "EthDrained(address,uint256)"],
         ["Facet$", "EthReceived(address,uint256)"],
-        // ["Facet$", "MemberAdded(address)"],
-        // ["Facet$", "MemberRemoved(address)"],
-        ["Facet$", "GovernorAdded(address)"],
-        ["Facet$", "GovernorRemoved(address)"],
-        // ["Facet$", "AutomatonPrivilegesSet(address,uint256)"],
-        // ["Facet$", "AutomatonRemoved(address)"],
         ["Facet$", "Minted(uint256,string,address)"],
         ["Facet$", "Burnt(uint256,string,address)"],
         ["Facet$", "FastTransfer(address,address,address,uint256,string)"],

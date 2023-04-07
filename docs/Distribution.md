@@ -11,11 +11,71 @@ following steps (or phases):
 - Withdrawal, during which each beneficiary can withdraw their proceeds.
 - Terminated, during which nothing is possible.
 
+### InternalMethod
+
+```solidity
+error InternalMethod()
+```
+
+### UnsupportedOperation
+
+```solidity
+error UnsupportedOperation()
+```
+
+### InconsistentParameters
+
+```solidity
+error InconsistentParameters()
+```
+
+### InvalidBlockNumber
+
+```solidity
+error InvalidBlockNumber(uint256 number)
+```
+
+### RequiresFastMembership
+
+```solidity
+error RequiresFastMembership(address who)
+```
+
+### RequiresManager
+
+```solidity
+error RequiresManager(address who)
+```
+
+### InsufficientFunds
+
+```solidity
+error InsufficientFunds(uint256 amount)
+```
+
+### Overfunded
+
+```solidity
+error Overfunded(uint256 amount)
+```
+
+### DuplicateEntry
+
+```solidity
+error DuplicateEntry()
+```
+
+### NonExistentEntry
+
+```solidity
+error NonExistentEntry()
+```
+
 ### Phase
 
 ```solidity
 enum Phase {
-  Creation,
+  Funding,
   FeeSetup,
   BeneficiariesSetup,
   Withdrawal,
@@ -298,10 +358,16 @@ available to it and set its internal state to a termination one.
 Note that since this method calls the `token` contract, it **must be
 protected against reentrancy**.
 
-### requireManagerCaller
+### requireFastCaller
 
 ```solidity
-function requireManagerCaller() internal view
+function requireFastCaller() internal view
+```
+
+### requireManager
+
+```solidity
+function requireManager() internal view
 ```
 
 ### requireDistributor

@@ -99,6 +99,12 @@ Returns the privileges for a given automaton address, or zero if no privileges e
 | ---- | ---- | ----------- |
 | [0] | uint32 | An `uint256` bitfield. |
 
+### automatonCan
+
+```solidity
+function automatonCan(address automaton, uint32 privilege) external view returns (bool)
+```
+
 ### automatonCount
 
 ```solidity
