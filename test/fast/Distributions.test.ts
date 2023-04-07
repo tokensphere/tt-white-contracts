@@ -18,27 +18,30 @@ import { abiStructToObj, DistributionPhase } from "../utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
-describe.only("Distributions", () => {
+describe("Distributions", () => {
   let
     deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
     automaton: SignerWithAddress,
     alice: SignerWithAddress,
-    bob: SignerWithAddress;
+    bob: SignerWithAddress,
+    paul: SignerWithAddress,
+    ben: SignerWithAddress;
 
   let
     issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     fast: FakeContract<Fast>,
     distribution: Distribution,
+    distributionAsIssuer: Distribution,
     deployDistribution: (params: Distribution.ParamsStruct) => void,
     validDistributionParams: Distribution.ParamsStruct,
     erc20: FakeContract<IERC20>;
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, automaton, alice, bob] = await ethers.getSigners();
+    [deployer, issuerMember, governor, automaton, alice, bob, paul, ben] = await ethers.getSigners();
   });
 
   // Before each test, we want to allow impersonating the FAST contract address and fund it.
@@ -69,13 +72,14 @@ describe.only("Distributions", () => {
     fast.isMember.reset();
     fast.isMember.whenCalledWith(alice.address).returns(true);
     fast.isMember.whenCalledWith(bob.address).returns(true);
+    fast.isMember.whenCalledWith(paul.address).returns(true);
     fast.automatonCan.reset();
     fast.automatonCan.returns(true);
 
     erc20.balanceOf.reset();
     erc20.transfer.reset();
 
-    await hre.network.provider.request({ method: 'hardhat_impersonateAccount', params: [fast.address] });
+    await hre.network.provider.request({ method: "hardhat_impersonateAccount", params: [fast.address] });
     await ethers.provider.send("hardhat_setBalance", [fast.address, "0xfffffffffffffffffff"]);
 
     validDistributionParams = {
@@ -94,13 +98,59 @@ describe.only("Distributions", () => {
         await factory
           .connect(await ethers.getSigner(fast.address))
           .deploy({ ...params, fast: fast.address });
+      distributionAsIssuer = distribution.connect(issuerMember);
     }
   });
 
   // After each test, we want to stop impersonating the FAST contract address and unfund it.
   afterEach(async () => {
-    // hre.network.provider.request({ method: 'hardhat_stopImpersonatingAccount', params: [fast.address] });
+    // hre.network.provider.request({ method: "hardhat_stopImpersonatingAccount", params: [fast.address] });
     // await ethers.provider.send("hardhat_setBalance", [fast.address, "0x0"]);
+  });
+
+  describe("various synthesized getters", async () => {
+    beforeEach(async () => {
+      await deployDistribution(validDistributionParams);
+    });
+
+    it("expose VERSION", async () => {
+      expect(await distribution.VERSION()).to.be.eq(1);
+    });
+
+    it("expose initial params", async () => {
+      const originalParams = await distribution.params();
+      const params = abiStructToObj(originalParams);
+
+      expect(params).to.eql({
+        distributor: governor.address,
+        issuer: issuer.address,
+        fast: fast.address,
+        token: erc20.address,
+        total: BigNumber.from(validDistributionParams.total),
+        blockLatch: BigNumber.from(validDistributionParams.blockLatch)
+      });
+    });
+
+    it("expose phase", async () => {
+      const subject = await distribution.phase();
+      expect(subject).to.be.eq(DistributionPhase.Funding);
+    });
+
+    it("expose creationBlock", async () => {
+      const latestBlockNumber = (await ethers.provider.getBlock("latest")).number;
+      const subject = await distribution.creationBlock()
+      expect(subject).to.be.eq(latestBlockNumber);
+    });
+
+    it("expose fee", async () => {
+      const subject = await distribution.fee();
+      expect(subject).to.be.eq(0);
+    });
+
+    it("expose available", async () => {
+      const subject = await distribution.available()
+      expect(subject).to.be.eq(validDistributionParams.total);
+    });
   });
 
   describe("constructor", async () => {
@@ -216,18 +266,18 @@ describe.only("Distributions", () => {
 
 
       it("sets the fee", async () => {
-        await distribution.connect(issuerMember).advanceToBeneficiariesSetup(10);
+        await distributionAsIssuer.advanceToBeneficiariesSetup(10);
         const subject = await distribution.fee();
         expect(subject).to.eq(10);
       });
 
       it("underflow if the fee is too large", async () => {
-        const subject = distribution.connect(issuerMember).advanceToBeneficiariesSetup(BigNumber.from(validDistributionParams.total).add(1));
+        const subject = distributionAsIssuer.advanceToBeneficiariesSetup(BigNumber.from(validDistributionParams.total).add(1));
         await expect(subject).to.have.revertedWith("panic code 0x11");
       });
 
       it("emits advancing to the BeneficiariesSetup phase", async () => {
-        const subject = await distribution.connect(issuerMember).advanceToBeneficiariesSetup(10);
+        const subject = await distributionAsIssuer.advanceToBeneficiariesSetup(10);
         expect(subject).to
           .emit(distribution, "Advance")
           .withArgs(DistributionPhase.BeneficiariesSetup);
@@ -245,527 +295,274 @@ describe.only("Distributions", () => {
       erc20.balanceOf.returns(validDistributionParams.total);
       // Move to the correct phase.
       await distribution.advanceToFeeSetup();
-      await distribution.connect(issuerMember).advanceToBeneficiariesSetup(fee);
-      // Allocate exactly the right funds.
-      await distribution.connect(issuerMember).addBeneficiaries([alice.address, bob.address], [40, 50])
+      await distributionAsIssuer.advanceToBeneficiariesSetup(fee);
     });
 
-    describe("advanceToWithdrawal", async () => {
-      it("requires the distribution to be in the BeneficiariesSetup phase");
+    describe("with beneficiaries properly added", async () => {
+      describe("advanceToWithdrawal", async () => {
+        beforeEach(async () => {
+          // Allocate exactly the right funds.
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], [40, 50])
+        });
 
-      it("requires the caller to be a manager", async () => {
-        const subject = distribution.advanceToWithdrawal();
-        await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+        it("requires the distribution to be in the BeneficiariesSetup phase");
+
+        it("requires the caller to be a manager", async () => {
+          const subject = distribution.advanceToWithdrawal();
+          await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+        });
+
+        it("requires that all available funds have been attributed", async () => {
+          await distributionAsIssuer.removeBeneficiaries([bob.address])
+          const subject = distributionAsIssuer.advanceToWithdrawal();
+          await expect(subject).to.have
+            .revertedWith("Overfunded");
+        });
+
+        it("delegates to the ERC20.transfer method to move the fee to the issuer", async () => {
+          erc20.transfer.returns(true);
+          await distributionAsIssuer.advanceToWithdrawal();
+          expect(erc20.transfer).to.have.been
+            .calledOnceWith(issuer.address, fee);
+        });
+
+        it("reverts if the fee cannot be moved", async () => {
+          erc20.transfer.returns(false);
+          const subject = distributionAsIssuer.advanceToWithdrawal();
+          expect(subject).to.have
+            .revertedWith("TokenContractError");
+        });
+
+        it("emits advancing to the Withdrawal phase", async () => {
+          erc20.transfer.returns(true);
+          const subject = distributionAsIssuer.advanceToWithdrawal();
+          await expect(subject).to
+            .emit(distribution, "Advance")
+            .withArgs(DistributionPhase.Withdrawal);
+        });
       });
 
-      it("requires that all available funds have been attributed", async () => {
-        await distribution.connect(issuerMember).removeBeneficiaries([bob.address])
-        const subject = distribution.connect(issuerMember).advanceToWithdrawal();
-        await expect(subject).to.have
-          .revertedWith("Overfunded");
+      describe("addBeneficiaries", async () => {
+        it("requires the distribution to be in the BeneficiariesSetup phase")
+
+        it("requires the caller to be a manger", async () => {
+          const subject = distribution.addBeneficiaries([ben.address], [1]);
+          await expect(subject).to.have
+            .revertedWith("RequiresManagerCaller");
+        });
+
+        it("checks the length of beneficiaries and amounts", async () => {
+          const subject = distributionAsIssuer.addBeneficiaries([alice.address], []);
+          await expect(subject).to.have
+            .revertedWith("InconsistentParameters");
+        });
+
+        it("delegates to the FAST contract for membership checks", async () => {
+          await distributionAsIssuer.addBeneficiaries([alice.address], [1]);
+          // Yes, two expectations here, I know.
+          expect(fast.isMember).to.have.been
+            .calledOnce;
+        });
+
+        it("reverts when a beneficiary isn't a member of the FAST", async () => {
+          const subject = distributionAsIssuer.addBeneficiaries([ben.address], [1]);
+          // Yes, two expectations here, I know.
+          await expect(subject).to.have
+            .revertedWith("RequiresFastMembership");
+        });
+
+        it("adds the beneficiaries to the list", async () => {
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], [1, 2]);
+          await distributionAsIssuer.addBeneficiaries([paul.address], [3]);
+          const [beneficiaries] = await distribution.paginateBeneficiaries(0, 3);
+          expect(beneficiaries).to
+            .eql([alice.address, bob.address, paul.address]);
+        });
+
+        it("doesn't allow adding the same beneficiary twice", async () => {
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], [1, 2]);
+          const subject = distributionAsIssuer.addBeneficiaries([alice.address], [3]);
+          await expect(subject).to.have
+            .revertedWith("Address already in set");
+        });
+
+        it("keeps track of the owings", async () => {
+          const owings = [BigNumber.from(1), BigNumber.from(2)];
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], owings);
+          const amounts = await Promise.all([
+            distribution.owings(alice.address),
+            distribution.owings(bob.address)
+          ]);
+          expect(amounts).to
+            .eql(owings);
+        });
+
+        it("emits as BeneficiaryAdded event per beneficiary", async () => {
+          const subject = distributionAsIssuer.addBeneficiaries([alice.address], [1]);
+          await expect(subject).to
+            .emit(distribution, "BeneficiaryAdded")
+            .withArgs(alice.address, 1);
+        });
+
+        it("checks that the needed amounts are not getting over the available funds", async () => {
+          const subject = distributionAsIssuer.addBeneficiaries([alice.address, bob.address], [40, 51]);
+          await expect(subject).to.have
+            .revertedWith("InsufficientFunds");
+        });
       });
 
-      it("delegates to the ERC20.transfer method to move the fee to the issuer", async () => {
-        erc20.transfer.returns(true);
-        await distribution.connect(issuerMember).advanceToWithdrawal();
-        expect(erc20.transfer).to.have.been
-          .calledOnceWith(issuer.address, fee);
+      describe("removeBeneficiaries", async () => {
+        beforeEach(async () => {
+          // Allocate exactly the right funds.
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address, paul.address], [20, 30, 40]);
+        });
+
+        it("requires the distribution to be in the BeneficiariesSetup phase");
+
+        it("requires the caller to be a manager", async () => {
+          const subject = distribution.removeBeneficiaries([alice.address]);
+          await expect(subject).to.have
+            .revertedWith("RequiresManagerCaller");
+        });
+
+        it("removes the beneficiaries from the list", async () => {
+          await distributionAsIssuer.removeBeneficiaries([alice.address, paul.address]);
+          const [beneficiaries] = await distribution.paginateBeneficiaries(0, 3);
+          expect(beneficiaries).to
+            .eql([bob.address]);
+        });
+
+        it("sets the removed beneficiaries' owings to zero", async () => {
+          await distributionAsIssuer.removeBeneficiaries([alice.address]);
+          const subject = await distribution.owings(alice.address);
+          expect(subject).to
+            .eq(BigNumber.from(0))
+        });
+
+        it("reclaims the unallocated funds", async () => {
+          await distributionAsIssuer.removeBeneficiaries([alice.address, paul.address]);
+          const subject = await distribution.available();
+          expect(subject).to
+            .eq(BigNumber.from(60));
+        });
+
+        it("emits a BeneficiaryAdded event", async () => {
+          const subject = distributionAsIssuer.removeBeneficiaries([alice.address]);
+          await expect(subject).to
+            .emit(distribution, "BeneficiaryRemoved")
+            .withArgs(alice.address);
+        });
+
+        it("reverts when removing a beneficiary that doesn't exist", async () => {
+          const subject = distributionAsIssuer.removeBeneficiaries([ben.address]);
+          await expect(subject).to.have
+            .revertedWith("Address does not exist in set");
+        });
       });
 
-      it("reverts if the fee cannot be moved", async () => {
-        erc20.transfer.returns(false);
-        const subject = distribution.connect(issuerMember).advanceToWithdrawal();
-        expect(subject).to.have
-          .revertedWith("TokenContractError");
-      });
+      describe("paginateBeneficiaries", async () => {
+        beforeEach(async () => {
+          // Allocate exactly the right funds.
+          await distributionAsIssuer.addBeneficiaries([alice.address, bob.address, paul.address], [20, 30, 40]);
+        });
 
-      it("emits advancing to the Withdrawal phase", async () => {
-        erc20.transfer.returns(true);
-        const subject = distribution.connect(issuerMember).advanceToWithdrawal();
-        await expect(subject).to
-          .emit(distribution, "Advance")
-          .withArgs(DistributionPhase.Withdrawal);
+        it("returns pages of beneficiaries", async () => {
+          const [beneficiaries, nextCursor] = await distribution.paginateBeneficiaries(0, 3);
+          // I know... Two assertions. It's fine, this is thoroughly tested.
+          expect(beneficiaries).to
+            .deep.eq([alice.address, bob.address, paul.address]);
+          expect(nextCursor).to
+            .eq(BigNumber.from(3));
+        });
       });
     });
   });
 
-  // describe("addBeneficiaries", async () => {
-  //   let distribution: MockContract<Distribution>,
-  //     issuerDistribution: MockContract<Distribution>,
-  //     governorDistribution: MockContract<Distribution>;
+  describe("in the Withdrawal phase", async () => {
+    const fee = BigNumber.from(10);
 
-  //   const totalFunds = 10;
-
-  //   beforeEach(async () => {
-  //     // Stub out the ERC20 contract.
-  //     erc20.balanceOf.reset();
-  //     erc20.balanceOf.returns(10);
-  //     erc20.transfer.reset();
-  //     erc20.transfer.returns(true);
-
-  //     // Deploy the Distribution contract.
-  //     const factory = await smock.mock<Distribution__factory>("Distribution", deployer);
-
-  //     distribution = await factory.deploy({
-  //       distributor: governor.address,
-  //       issuer: issuer.address,
-  //       fast: fast.address,
-  //       token: erc20.address,
-  //       total: totalFunds,
-  //       blockLatch: 1
-  //     });
-
-  //     governorDistribution = distribution.connect(governor);
-  //     issuerDistribution = distribution.connect(issuerMember);
-  //   });
-
-  //   it("requires that the phase is BeneficiariesSetup", async () => {
-  //     // The fee hasn't been set yet, so the phase is still FeeSetup.
-  //     // TODO: Maybe make this more explicit.
-  //     const subject = issuerDistribution.addBeneficiaries([alice.address], [1]);
-  //     expect(subject).to.have.been
-  //       .revertedWith("UnsupportedOperation");
-  //   });
-
-  //   it("requires that the caller is a distribution manager", async () => {
-  //     // TODO: Add some kind of random number for the fee?
-  //     await issuerDistribution.setFee(3);
-
-  //     const subject = governorDistribution.addBeneficiaries([alice.address], [1]);
-  //     expect(subject).to.have.been
-  //       .revertedWith("RequiresIssuerMembership");
-  //   });
-
-  //   it("enforces that the list of beneficiaries matches the list of amounts", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     const subject = issuerDistribution.addBeneficiaries([alice.address], [1, 2]);
-  //     expect(subject).to.have.been
-  //       .revertedWith("UnsupportedOperation");
-  //   });
-
-  //   it("ensures that the needed amount doesn't get past the available funds", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice a member of the Fast... in her dreams!
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     const subject = issuerDistribution.addBeneficiaries([alice.address], [5]);
-  //     expect(subject).to.have.been
-  //       .revertedWith("InsufficientFunds");
-  //   });
-
-  //   it("adds the beneficiaries to the internal list along with their correct owings", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice a member of the Fast... in her dreams!
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add them.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [2]);
-
-  //     // Check that Alice belongs to the list.
-  //     const [[beneficiary]] = await distribution.paginateBeneficiaries(0, 1);
-  //     expect(beneficiary).to.be.eq(alice.address);
-  //   });
-
-  //   it("emits as many BeneficiaryAdded events as there are beneficiaries added", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice a member of the Fast... in her dreams!
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add them.
-  //     const subject = issuerDistribution.addBeneficiaries([alice.address], [2]);
-
-  //     await expect(subject).to.emit(distribution, "BeneficiaryAdded");
-  //   });
-
-  //   it("updates the available funds after adding all the beneficiaries", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice a member of the Fast... in her dreams!
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     await issuerDistribution.addBeneficiaries([alice.address], [2]);
-
-  //     const subject = await distribution.available();
-  //     expect(subject).to.eq(10 - 6 - 2);
-  //   });
-
-  //   it("can be called several times with different beneficiaries", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice and Bob a member of the Fast.
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-  //     accessMock.isMember.whenCalledWith(bob.address).returns(true);
-
-  //     await issuerDistribution.addBeneficiaries([alice.address, bob.address], [2, 1]);
-
-  //     // Check that Alice and Bob are both in the list.
-  //     const [beneficiaries] = await distribution.paginateBeneficiaries(0, 2);
-  //     expect(beneficiaries).to.be.eql([alice.address, bob.address]);
-  //   });
-
-  //   it("reverts if a beneficiary is added twice", async () => {
-  //     await issuerDistribution.setFee(6);
-
-  //     // Make Alice a member of the Fast.
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Try and add Alice twice.
-  //     const subject = issuerDistribution.addBeneficiaries([alice.address, alice.address], [2, 1]);
-  //     await expect(subject).to.have.been
-  //       .revertedWith("Address already in set");
-  //   });
-  // });
-
-  // describe("removeBeneficiaries", async () => {
-  //   let distribution: MockContract<Distribution>,
-  //     issuerDistribution: MockContract<Distribution>,
-  //     governorDistribution: MockContract<Distribution>;
-
-  //   const totalFunds = 10;
-
-  //   beforeEach(async () => {
-  //     // Stub out the ERC20 contract.
-  //     erc20.balanceOf.reset();
-  //     erc20.balanceOf.returns(10);
-  //     erc20.transfer.reset();
-  //     erc20.transfer.returns(true);
-
-  //     // Deploy the Distribution contract.
-  //     const factory = await smock.mock<Distribution__factory>("Distribution", deployer);
-
-  //     distribution = await factory.deploy({
-  //       distributor: governor.address,
-  //       issuer: issuer.address,
-  //       fast: fast.address,
-  //       token: erc20.address,
-  //       total: totalFunds,
-  //       blockLatch: 1
-  //     });
-
-  //     governorDistribution = distribution.connect(governor);
-  //     issuerDistribution = distribution.connect(issuerMember);
-  //   });
-
-  //   it("requires that the phase is BeneficiariesSetup", async () => {
-  //     // We haven't set the fee yet so this should revert.
-  //     const subject = issuerDistribution.removeBeneficiaries([alice.address]);
-  //     await expect(subject).to.have.been
-  //       .revertedWith("UnsupportedOperation");
-  //   });
-
-  //   it("requires that the caller is a distribution manager", async () => {
-  //     await issuerDistribution.setFee(2);
-
-  //     const subject = governorDistribution.removeBeneficiaries([alice.address]);
-  //     await expect(subject).to.have.been
-  //       .revertedWith("RequiresIssuerMembership");
-  //   });
-
-  //   it("removes given beneficiaries and their owings", async () => {
-  //     // Setup.
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add Alice as a beneficiary.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [1]);
-
-  //     // Remove Alice.
-  //     await issuerDistribution.removeBeneficiaries([alice.address]);
-
-  //     const [beneficiaries] = await distribution.paginateBeneficiaries(0, 1);
-  //     expect(beneficiaries).to.be.eql([]);
-  //   });
-
-  //   it("reclaims the unused funds as part of the available funds tracker", async () => {
-  //     // Setup.
-  //     const amount = 2;
-
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add Alice as a beneficiary.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [amount]);
-
-  //     const availableBefore = (await distribution.available()).toNumber();
-
-  //     // Remove Alice, increasing the available funds.
-  //     await issuerDistribution.removeBeneficiaries([alice.address]);
-
-  //     const availableAfter = (await distribution.available()).toNumber();
-
-  //     expect(availableBefore).to.be.eq(availableAfter - amount);
-  //   });
-
-  //   it("reverts if a beneficiary cannot be removed because it is not present", async () => {
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Remove Alice, this should raise an error.
-  //     const subject = issuerDistribution.removeBeneficiaries([alice.address]);
-
-  //     await expect(subject).to.have.been
-  //       .revertedWith("Address does not exist in set");
-  //   });
-
-  //   it("emits as many BeneficiaryRemoved events as there are beneficiaries removed", async () => {
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add and remove Alice as a beneficiary.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [2]);
-  //     const subject = issuerDistribution.removeBeneficiaries([alice.address]);
-
-  //     await expect(subject).to.emit(distribution, "BeneficiaryRemoved");
-  //   });
-  // });
-
-  // describe("paginateBeneficiaries", async () => {
-  //   // I LOVE COPYING AND PASTING THIS ALL OVER THE PLACE... HINT HINT...
-  //   let distribution: MockContract<Distribution>,
-  //     issuerDistribution: MockContract<Distribution>,
-  //     governorDistribution: MockContract<Distribution>;
-
-  //   const totalFunds = 10;
-
-  //   beforeEach(async () => {
-  //     // Stub out the ERC20 contract.
-  //     erc20.balanceOf.reset();
-  //     erc20.balanceOf.returns(10);
-  //     erc20.transfer.reset();
-  //     erc20.transfer.returns(true);
-
-  //     // Deploy the Distribution contract.
-  //     const factory = await smock.mock<Distribution__factory>("Distribution", deployer);
-
-  //     distribution = await factory.deploy({
-  //       distributor: governor.address,
-  //       issuer: issuer.address,
-  //       fast: fast.address,
-  //       token: erc20.address,
-  //       total: totalFunds,
-  //       blockLatch: 1
-  //     });
-
-  //     governorDistribution = distribution.connect(governor);
-  //     issuerDistribution = distribution.connect(issuerMember);
-  //   });
-
-  //   it("returns pages of beneficiaries", async () => {
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add Alice as a beneficiary.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [2]);
-
-  //     const [beneficiaries] = await distribution.paginateBeneficiaries(0, 1);
-  //     expect(beneficiaries).to.be.eql([alice.address]);
-  //   });
-  // });
-
-  // describe("withdraw", async () => {
-  //   let distribution: MockContract<Distribution>,
-  //     issuerDistribution: MockContract<Distribution>,
-  //     aliceDistribution: MockContract<Distribution>,
-  //     bobDistribution: MockContract<Distribution>;
-
-  //   const totalFunds = 10;
-
-  //   beforeEach(async () => {
-  //     // Stub out the ERC20 contract.
-  //     erc20.balanceOf.reset();
-  //     erc20.balanceOf.returns(10);
-  //     erc20.transfer.reset();
-  //     erc20.transfer.returns(true);
-
-  //     // Deploy the Distribution contract.
-  //     const factory = await smock.mock<Distribution__factory>("Distribution", deployer);
-
-  //     distribution = await factory.deploy({
-  //       distributor: governor.address,
-  //       issuer: issuer.address,
-  //       fast: fast.address,
-  //       token: erc20.address,
-  //       total: totalFunds,
-  //       blockLatch: 1
-  //     });
-
-  //     aliceDistribution = distribution.connect(alice);
-  //     bobDistribution = distribution.connect(bob);
-  //     issuerDistribution = distribution.connect(issuerMember);
-
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-
-  //     // Add Alice as a beneficiary.
-  //     await issuerDistribution.addBeneficiaries([alice.address], [8]);
-
-  //     // Advance to the Withdrawl phase.
-  //     await issuerDistribution.advance();
-  //   });
-
-  //   it("requires that the caller is a known beneficiary", async () => {
-  //     const subject = bobDistribution.withdraw(bob.address);
-  //     await expect(subject).to.be
-  //       .revertedWith("NonExistentEntry");
-  //   });
-
-  //   it("reverts if the withdrawal already has been made", async () => {
-  //     aliceDistribution = distribution.connect(alice);
-  //     // Withdraw once.
-  //     await aliceDistribution.withdraw(alice.address);
-
-  //     // Attempt to withdraw again.
-  //     const subject = aliceDistribution.withdraw(alice.address);
-  //     await expect(subject).to.be
-  //       .revertedWith("DuplicateEntry");
-  //   });
-
-  //   it("can be called on behalf of someone by anyone else", async () => {
-  //     // Bob is going to withdraw on behalf of Alice... to Alice.
-  //     await bobDistribution.withdraw(alice.address);
-
-  //     // The ERC20 should have it's transfer function called with Alice's address.
-  //     expect(erc20.transfer).to.have.been
-  //       .calledWith(alice.address, 8);
-  //   });
-
-  //   it("transfers the ERC20 token to the given beneficiary", async () => {
-  //     // Alice attempts to withdraw.
-  //     await aliceDistribution.withdraw(alice.address);
-
-  //     // The ERC20 should have it's transfer function called with Alice's address.
-  //     expect(erc20.transfer).to.have.been
-  //       .calledWith(alice.address, 8);
-  //   });
-
-  //   it("emits a Withdrawal event", async () => {
-  //     const subject = aliceDistribution.withdraw(alice.address);
-
-  //     await expect(subject).to.emit(distribution, "Withdrawal");
-  //   });
-  // });
-
-  // describe("terminate", async () => {
-  //   // TODO: Fix this duplication please...
-  //   let distribution: MockContract<Distribution>,
-  //     issuerDistribution: MockContract<Distribution>,
-  //     aliceDistribution: MockContract<Distribution>;
-
-  //   const totalFunds = 10;
-
-  //   beforeEach(async () => {
-  //     // Stub out the ERC20 contract.
-  //     erc20.balanceOf.reset();
-  //     erc20.balanceOf.returns(10);
-  //     erc20.transfer.reset();
-  //     erc20.transfer.returns(true);
-
-  //     // Deploy the Distribution contract.
-  //     const factory = await smock.mock<Distribution__factory>("Distribution", deployer);
-
-  //     distribution = await factory.deploy({
-  //       distributor: governor.address,
-  //       issuer: issuer.address,
-  //       fast: fast.address,
-  //       token: erc20.address,
-  //       total: totalFunds,
-  //       blockLatch: 1
-  //     });
-
-  //     aliceDistribution = distribution.connect(alice);
-  //     issuerDistribution = distribution.connect(issuerMember);
-
-  //     await issuerDistribution.setFee(2);
-  //     accessMock.isMember.reset();
-  //     accessMock.isMember.whenCalledWith(alice.address).returns(true);
-  //   });
-
-  //   it("requires the caller to be a distribution manager", async () => {
-  //     const subject = aliceDistribution.terminate();
-  //     await expect(subject).to.be
-  //       .revertedWith("RequiresIssuerMembership");
-  //   });
-
-  //   it("advances to the Terminated phase", async () => {
-  //     await issuerDistribution.terminate();
-  //     const subject = await distribution.phase();
-  //     expect(subject).to.be.eq(DistributionPhase.Terminated);
-  //   });
-
-  //   it("transfers all unclaimed ERC20 funds back to the distributor", async () => {
-  //     await issuerDistribution.terminate();
-
-  //     // The ERC20 should have it's transfer function called with the Issuer's address.
-  //     expect(erc20.transfer).to.have.been
-  //       .calledOnceWith(governor.address, 10);
-  //   });
-
-  //   it("sets the available funds to zero", async () => {
-  //     await issuerDistribution.terminate();
-
-  //     const subject = await distribution.available();
-  //     expect(subject).to.be.eq(0);
-  //   });
-  // });
-
-  describe("various synthesized getters", async () => {
     beforeEach(async () => {
+      // Deploy.
       await deployDistribution(validDistributionParams);
+      // Mock ERC20 to have the right balance.
+      erc20.balanceOf.returns(validDistributionParams.total);
+      // Move to the correct phase.
+      await distribution.advanceToFeeSetup();
+      await distributionAsIssuer.advanceToBeneficiariesSetup(fee);
+      await distributionAsIssuer.addBeneficiaries([alice.address, bob.address, paul.address], [20, 30, 40]);
+      erc20.transfer.reset();
     });
 
-    it("expose VERSION", async () => {
-      expect(await distribution.VERSION()).to.be.eq(1);
-    });
+    describe("withdraw", async () => {
+      it("requires the distribution to be in the Withdrawal phase");
 
-    it("expose initial params", async () => {
-      const originalParams = await distribution.params();
-      const params = abiStructToObj(originalParams);
+      describe("with unsuccessful ERC20 transfer", async () => {
+        beforeEach(async () => {
+          erc20.transfer.reset();
+          erc20.transfer.returns(false);
+        });
 
-      expect(params).to.eql({
-        distributor: governor.address,
-        issuer: issuer.address,
-        fast: fast.address,
-        token: erc20.address,
-        total: BigNumber.from(validDistributionParams.total),
-        blockLatch: BigNumber.from(validDistributionParams.blockLatch)
+        it("reverts", async () => {
+          const subject = distributionAsIssuer.advanceToWithdrawal()
+          await expect(subject).to.have
+            .revertedWith("TokenContractError");
+        });
+      });
+
+      describe("with successful ERC20 transfer", async () => {
+        beforeEach(async () => {
+          erc20.transfer.reset();
+          erc20.transfer.returns(true);
+          await distributionAsIssuer.advanceToWithdrawal();
+        });
+
+        it("reverts if the beneficiary is unknown", async () => {
+          const subject = distribution.withdraw(ben.address);
+          await expect(subject).to.have
+            .revertedWith("NonExistentEntry");
+        });
+
+        it("requires that the beneficiary hasn't already withdrawn", async () => {
+          await distribution.withdraw(alice.address);
+          const subject = distribution.withdraw(alice.address);
+          await expect(subject).to.have
+            .revertedWith("DuplicateEntry");
+        });
+
+        it("marks the withdrawal as done", async () => {
+          await distribution.withdraw(alice.address);
+          const subject = await distribution.withdrawn(alice.address);
+          await expect(subject).to
+            .eq(true);
+        });
+
+        it("delegates to ERC20.transfer method", async () => {
+          erc20.transfer.reset();
+          erc20.transfer.returns(true);
+          await distribution.withdraw(alice.address);
+          expect(erc20.transfer).to.have.been
+            .calledOnceWith(alice.address, BigNumber.from(20))
+        });
+
+        it("emits a Withdrawal event", async () => {
+          const subject = distribution.connect(deployer).withdraw(alice.address);
+          await expect(subject).to
+            .emit(distribution, "Withdrawal")
+            .withArgs(deployer.address, alice.address, BigNumber.from(20));
+        });
       });
     });
+  });
 
-    it("expose phase", async () => {
-      const subject = await distribution.phase();
-      expect(subject).to.be.eq(DistributionPhase.Funding);
-    });
-
-    it("expose creationBlock", async () => {
-      const latestBlockNumber = (await ethers.provider.getBlock("latest")).number;
-      const subject = await distribution.creationBlock()
-      expect(subject).to.be.eq(latestBlockNumber);
-    });
-
-    it("expose fee", async () => {
-      const subject = await distribution.fee();
-      expect(subject).to.be.eq(0);
-    });
-
-    it("expose available", async () => {
-      const subject = await distribution.available()
-      expect(subject).to.be.eq(validDistributionParams.total);
-    });
+  describe("terminate", async () => {
+    it("can be called during the Funding phase");
+    it("can be called during the FeeSetup phase");
+    it("can be called during the BeneficiariesSetup phase");
+    it("can be called during the Withdrawal phase");
+    it("can be called during the Terminated phase");
+    it("requires that the caller is a manager");
+    it("sets the available amount to zero");
+    it("calls the ERC20.transfer method to return the remaining balance to the distributor");
+    it("emits an Advance event");
   });
 });

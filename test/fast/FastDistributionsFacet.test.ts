@@ -27,12 +27,6 @@ describe("FastDistributionsFacet", () => {
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
-  const resetIssuerMock = () => {
-    issuer.isMember.reset();
-    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
-    issuer.isMember.returns(false);
-  };
-
   // Setup for a successful distribution.
   const setupSuccessfulDistribution = async () => {
     // Setup a fake ERC20 token.
@@ -68,18 +62,15 @@ describe("FastDistributionsFacet", () => {
   });
 
   beforeEach(async () => {
-    resetIssuerMock();
-
-    // Issuer is a member of the issuer contract.
+    issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
 
     marketplace.isMember.reset();
-
-    [governor, alice].forEach(({ address }) => {
+    for (const address in [governor, alice]) {
       marketplace.isMember.whenCalledWith(address).returns(true);
       marketplace.isActiveMember.whenCalledWith(address).returns(true);
-    });
+    }
     marketplace.isMember.returns(false);
     marketplace.isActiveMember.returns(false);
 
@@ -102,32 +93,23 @@ describe("FastDistributionsFacet", () => {
   });
 
   describe("createDistribution", async () => {
-    let token: string,
-      total: number,
-      blockLatch: string;
-
-    beforeEach(async () => {
-      // Probably a nicer way to handle this.
-      token = erc20.address;
-      total = 100;
-      blockLatch = "0x1";
-    });
+    const total = 100,
+      blockLatch = 0;
 
     it("requires FAST membership", async () => {
-      const subject = distributions.createDistribution(token, total, blockLatch);
-      // TODO: Parameterized error message?
-      await expect(subject).to.be.revertedWith("RequiresFastMembership");
+      const subject = distributions.createDistribution(erc20.address, total, blockLatch);
+      await expect(subject).to.be
+        .revertedWith("RequiresFastMembership");
     });
 
     it("checks for the ERC20 allowance to cover the distribution total", async () => {
       // Give insufficient allowance.
       erc20.allowance.reset();
-      erc20.allowance.returns(90);
+      erc20.allowance.returns(99);
 
-      // Make sure the caller is a member of the FAST.
       accessMock.isMember.whenCalledWith(governor.address).returns(true);
 
-      const subject = governorDistributions.createDistribution(token, total, blockLatch);
+      const subject = governorDistributions.createDistribution(erc20.address, total, blockLatch);
       // TODO: Parameterized error message?
       // This should be `InsufficientFund(10)` for example.
       await expect(subject).to.be.revertedWith("InsufficientFunds");
@@ -137,7 +119,7 @@ describe("FastDistributionsFacet", () => {
       setupSuccessfulDistribution();
 
       // Create the distribution.
-      await governorDistributions.createDistribution(token, total, blockLatch);
+      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
 
       // Get the first deployed distribution, get it's deployment params.
       const originalParams = await (await getFirstDeployedDistribution(fast)).params();
@@ -160,7 +142,7 @@ describe("FastDistributionsFacet", () => {
 
       // Create the distribution and check the tracked distributions.
       // TODO: We probably want to check this a different way, otherwise they're be test overlap.
-      await governorDistributions.createDistribution(token, total, blockLatch);
+      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
       const [values] = await governorDistributions.paginateDistributions(0, 1);
       expect(values.length).to.be.eq(1);
     });
@@ -169,7 +151,7 @@ describe("FastDistributionsFacet", () => {
       setupSuccessfulDistribution();
 
       // Create the distribution.
-      await governorDistributions.createDistribution(token, total, blockLatch);
+      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
 
       // Get the first deployed distribution, check it's Phase.
       const dist = await getFirstDeployedDistribution(fast);
@@ -184,7 +166,7 @@ describe("FastDistributionsFacet", () => {
       setupSuccessfulDistribution();
 
       // Create the distribution.
-      await governorDistributions.createDistribution(token, total, blockLatch);
+      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
 
       // Get the first deployed distribution, check it's Phase.
       const dist = await getFirstDeployedDistribution(fast);
@@ -195,7 +177,7 @@ describe("FastDistributionsFacet", () => {
     it("emits a DistributionDeployed event", async () => {
       setupSuccessfulDistribution();
 
-      const subject = governorDistributions.createDistribution(token, total, blockLatch);
+      const subject = governorDistributions.createDistribution(erc20.address, total, blockLatch);
       // TODO: Add withArgs().
       await expect(subject).to.emit(fast, "DistributionDeployed");
     });

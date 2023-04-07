@@ -260,10 +260,10 @@ contract Distribution {
    */
   function withdraw(address beneficiary)
       public onlyDuring(Phase.Withdrawal) {
-    if (withdrawn[beneficiary])
-      revert DuplicateEntry();
-    else if (!beneficiaries.contains(beneficiary))
+    if (!beneficiaries.contains(beneficiary))
       revert NonExistentEntry();
+    else if (withdrawn[beneficiary])
+      revert DuplicateEntry();
     // Memoize a few variables.
     uint256 amount = owings[beneficiary];
     // Make sure they can't do it again later... It is important
