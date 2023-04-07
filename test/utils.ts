@@ -65,7 +65,7 @@ export const BALANCE_IS_POSITIVE = "Balance is positive";
 
 // Distribution phases.
 export enum DistributionPhase {
-  Creation,
+  Funding,
   FeeSetup,
   BeneficiariesSetup,
   Withdrawal,

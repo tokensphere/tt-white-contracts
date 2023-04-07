@@ -23,13 +23,14 @@ import './FastAutomatonsFacet.sol';
 contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
-  error InternalMethod();
+  error RequiresFastCaller();
   error UnsupportedOperation();
   error InconsistentParameters();
   error InvalidBlockNumber(uint256 number);
 
   error RequiresFastMembership(address who);
-  error RequiresManager(address who);
+  error RequiresManagerCaller();
+  error TokenContractError();
 
   error InsufficientFunds(uint256 amount);
   error Overfunded(uint256 amount);
@@ -115,45 +116,14 @@ contract Distribution {
     creationBlock = block.number;
   }
 
-  /** 
-   * @notice Advances to the next phase when possible, reverts otherwise.
-   * Note that since this method calls the `token` contract, it **must be
-   * protected against reentrancy**.
-   */
-  function advance()
-      public {
-    // We are in the funding phase. Let's check that this contract is allowed to spend
-    // on behalf of the distributor. Note that only the distributor can call this function.
-    // Note that this transition requires that the caller is the distributor of the distribution.
-    if (phase == Phase.Funding) {
-      // Make sure the caller is the FAST contract.
-      requireFastCaller();
-      // Make sure that the current distribution has exactly the required amount locked.
-      uint256 balance = params.token.balanceOf(address(this));
-      if (balance != params.total)
-        revert InsufficientFunds(params.total - balance);
-      // Move to next phase.
-      emit Advance(phase = Phase.FeeSetup);
-    }
-
-    // If we are still in the BeneficiariesSetup phase, progress to Withdrawal phase.
-    // Note that only managers should be allowed to move from the BeneficiariesSetup phase.
-    else if (phase == Phase.BeneficiariesSetup) {
-      requireManager();
-      // If the distribution covers more than the sum of all proceeds, we want
-      // to prevent the distribution from advancing to the withdrawal phase.
-      if (available > 0)
-        revert Overfunded(available);
-      // Transfer the fee to the issuer contract.
-      require(params.token.transfer(params.issuer, fee));
-      // Move to next phase.
-      emit Advance(phase = Phase.Withdrawal);
-    }
-    // Any transition other than the ones specified here are not to be made using
-    // the `advance` method. For example, Moving manually from the fee setup phase
-    // isn't supported, the way to do this is to use the `setFee` method.
-    else
+  function advanceToFeeSetup()
+      public onlyDuring(Phase.Funding) onlyFastCaller {
+    // Make sure that the current distribution has exactly the required amount locked.
+    uint256 balance = params.token.balanceOf(address(this));
+    if (balance != params.total)
       revert UnsupportedOperation();
+    // Move to next phase.
+    emit Advance(phase = Phase.FeeSetup);
   }
 
   /**
@@ -164,12 +134,29 @@ contract Distribution {
    * call this method.
    * @param _fee is the amount that the `issuer` will receive.
    */
-  function setFee(uint256 _fee)
+  function advanceToBeneficiariesSetup(uint256 _fee)
       external onlyDuring(Phase.FeeSetup) onlyManager {
     fee = _fee;
     available -= fee;
     // Move to next phase.
     emit Advance(phase = Phase.BeneficiariesSetup);
+  }
+
+  /**
+   * @notice Advances the distribution to the `Phase.Withdrawal` phase.
+   * The distribution must be in the `Phase.BeneficiariesSetup` phase.
+   */
+  function advanceToWithdrawal()
+      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
+    // If the distribution covers more than the sum of all proceeds, we want
+    // to prevent the distribution from advancing to the withdrawal phase.
+    if (available > 0)
+      revert Overfunded(available);
+    // Transfer the fee to the issuer contract.
+    if (!params.token.transfer(params.issuer, fee))
+      revert TokenContractError();
+    // Move to next phase.
+    emit Advance(phase = Phase.Withdrawal);
   }
 
   /**
@@ -283,7 +270,8 @@ contract Distribution {
     // to do this before any call to `token` to prevent reentrancy.
     withdrawn[beneficiary] = true;
     // Transfer to the beneficiary all of their ownings.
-    require(params.token.transfer(beneficiary, amount));
+    if (!params.token.transfer(beneficiary, amount))
+      revert TokenContractError();
     // Emit!
     emit Withdrawal(msg.sender, beneficiary, amount);
   }
@@ -307,36 +295,23 @@ contract Distribution {
     params.token.transfer(params.distributor, params.token.balanceOf(address(this)));
   }
 
-  // Modifiers and ACLs.
-
-  function requireFastCaller()
-      internal view {
-    if (msg.sender != params.fast)
-      revert InternalMethod();
-  }
-
-  function requireManager()
-      internal view {
-    if (AHasMembers(params.issuer).isMember(msg.sender) ||
-        AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
-      return;
-    revert RequiresManager(msg.sender);
-  }
-
-  function requireDistributor()
-      internal view {
-    if (msg.sender != params.distributor)
-      revert InternalMethod();
-  }
-
-  modifier onlyManager() {
-    requireManager();
-    _;
-  }
+  // Modifiers.
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
       revert UnsupportedOperation();
+    _;
+  }
+
+  modifier onlyFastCaller() {
+    if (msg.sender != params.fast)
+      revert RequiresFastCaller();
+    _;
+  }
+
+  modifier onlyManager() {
+    if (!AHasMembers(params.issuer).isMember(msg.sender))
+      revert RequiresManagerCaller();
     _;
   }
 }
