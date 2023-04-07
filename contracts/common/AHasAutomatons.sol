@@ -4,7 +4,6 @@ pragma solidity 0.8.10;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../common/lib/LibHasAutomatons.sol';
-import '../interfaces/ICustomErrors.sol';
 
 
 /**
@@ -67,6 +66,11 @@ abstract contract AHasAutomatons {
       external view returns(uint32) {
     return LibHasAutomatons.data().automatonPrivileges[automaton];
   }
+
+  function automatonCan(address automaton, uint32 privilege)
+    external view returns(bool) {
+      return (LibHasAutomatons.data().automatonPrivileges[automaton] & privilege) != 0;
+    }
 
   /**
    * @notice Counts the numbers of automatons present in this Fast.

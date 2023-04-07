@@ -86,10 +86,10 @@ error RequiresNoFastMemberships(address who)
 error RequiresOwner(address who)
 ```
 
-### InsuficientFunds
+### InsufficientFunds
 
 ```solidity
-error InsuficientFunds(uint256 missing)
+error InsufficientFunds(uint256 missing)
 ```
 
 ### DuplicateEntry

@@ -5,6 +5,7 @@ import '../../lib/LibHelpers.sol';
 import '../../lib/LibAddressSet.sol';
 import '../../common/AHasGovernors.sol';
 import '../../common/AHasMembers.sol';
+import '../../common/AHasAutomatons.sol';
 import '../../interfaces/IHasActiveMembers.sol';
 import '../lib/LibFast.sol';
 import './IFastEvents.sol';
@@ -45,9 +46,9 @@ abstract contract AFastFacet is IFastEvents {
     return AHasMembers(address(this)).isMember(who);
   }
 
-  function _automatonHasPrivilege(address who, uint32 flag)
+  function _automatonCan(address who, uint32 flag)
       internal view returns(bool) {
-    return (AHasAutomatons(address(this)).automatonPrivileges(who) & flag) != 0;
+    return AHasAutomatons(address(this)).automatonCan(who, flag);
   }
 
   /// Modifiers.

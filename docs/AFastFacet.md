@@ -37,10 +37,10 @@ function _isGovernor(address who) internal view returns (bool)
 function _isMember(address who) internal view returns (bool)
 ```
 
-### _automatonHasPrivilege
+### _automatonCan
 
 ```solidity
-function _automatonHasPrivilege(address who, uint32 flag) internal view returns (bool)
+function _automatonCan(address who, uint32 flag) internal view returns (bool)
 ```
 
 ### onlyDiamondFacet
