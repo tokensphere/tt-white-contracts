@@ -43,7 +43,8 @@ contract FastDistributionsFacet is AFastFacet {
     LibFastDistributions.data().distributionSet.add(address(dist), false);
     // Transfer the ERC20 tokens to the distribution contract.
     require(token.transferFrom(msg.sender, address(dist), total));
-
+    // Advance to the FeeSetup phase - only the FAST contract can do that.
+    dist.advance();
     // Emit!
     emit DistributionDeployed(dist);
   }

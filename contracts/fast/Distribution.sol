@@ -6,7 +6,7 @@ import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../common/AHasMembers.sol';
 import '../common/AHasAutomatons.sol';
-import '../interfaces/ICustomErrors.sol';
+import './FastAutomatonsFacet.sol';
 
 
 /**
@@ -23,8 +23,22 @@ import '../interfaces/ICustomErrors.sol';
 contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
+  error InternalMethod();
+  error UnsupportedOperation();
+  error InconsistentParameters();
+  error InvalidBlockNumber(uint256 number);
+
+  error RequiresFastMembership(address who);
+  error RequiresManager(address who);
+
+  error InsufficientFunds(uint256 amount);
+  error Overfunded(uint256 amount);
+
+  error DuplicateEntry();
+  error NonExistentEntry();
+
   /// @notice The possible phases in which the contract is in.
-  enum Phase { Creation, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
+  enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
 
   /**
    * @notice Emited whenever the internal phase of this distribution changes.
@@ -72,7 +86,7 @@ contract Distribution {
   Params public params;
 
   /// @notice The phase at which the distribution is at.
-  Phase public phase = Phase.Creation;
+  Phase public phase = Phase.Funding;
   /// @notice When was the distribution created.
   uint256 public creationBlock;
   /// @notice How much the fee that will be distributed to `issuer` is.
@@ -94,22 +108,11 @@ contract Distribution {
   constructor(Params memory p) {
     // If the distribution is latched in the future, throw.
     if (p.blockLatch >= block.number)
-      revert ICustomErrors.UnsupportedOperation();
+      revert InvalidBlockNumber(p.blockLatch);
     // Store all parameters.
     params = p;
     available = p.total;
     creationBlock = block.number;
-
-    // We are in the funding phase. Let's check that this contract is allowed to spend
-    // on behalf of the distributor. Note that only the distributor can call this function.
-    // Note that this transition requires that the caller is the distributor of the distribution.
-
-    // Make sure that the current distribution has exactly the required amount locked.
-    uint256 balance = params.token.balanceOf(address(this));
-    if (balance != params.total)
-      revert ICustomErrors.InsufficientFunds(params.total - balance);
-    // Move to next phase.
-    emit Advance(phase = Phase.FeeSetup);
   }
 
   /** 
@@ -119,14 +122,28 @@ contract Distribution {
    */
   function advance()
       public {
+    // We are in the funding phase. Let's check that this contract is allowed to spend
+    // on behalf of the distributor. Note that only the distributor can call this function.
+    // Note that this transition requires that the caller is the distributor of the distribution.
+    if (phase == Phase.Funding) {
+      // Make sure the caller is the FAST contract.
+      requireFastCaller();
+      // Make sure that the current distribution has exactly the required amount locked.
+      uint256 balance = params.token.balanceOf(address(this));
+      if (balance != params.total)
+        revert InsufficientFunds(params.total - balance);
+      // Move to next phase.
+      emit Advance(phase = Phase.FeeSetup);
+    }
+
     // If we are still in the BeneficiariesSetup phase, progress to Withdrawal phase.
     // Note that only managers should be allowed to move from the BeneficiariesSetup phase.
-    if (phase == Phase.BeneficiariesSetup) {
-      requireManagerCaller();
+    else if (phase == Phase.BeneficiariesSetup) {
+      requireManager();
       // If the distribution covers more than the sum of all proceeds, we want
       // to prevent the distribution from advancing to the withdrawal phase.
       if (available > 0)
-        revert ICustomErrors.UnsupportedOperation();
+        revert Overfunded(available);
       // Transfer the fee to the issuer contract.
       require(params.token.transfer(params.issuer, fee));
       // Move to next phase.
@@ -136,7 +153,7 @@ contract Distribution {
     // the `advance` method. For example, Moving manually from the fee setup phase
     // isn't supported, the way to do this is to use the `setFee` method.
     else
-      revert ICustomErrors.UnsupportedOperation();
+      revert UnsupportedOperation();
   }
 
   /**
@@ -172,7 +189,7 @@ contract Distribution {
       public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Beneficiaries and amount sizes must match.
     if (_beneficiaries.length != _amounts.length)
-      revert ICustomErrors.UnsupportedOperation();
+      revert InconsistentParameters();
 
     // We will count how much is needed for all these beneficiaries.
     uint256 needed = 0;
@@ -183,7 +200,7 @@ contract Distribution {
       uint256 amount = _amounts[i];
       // Make sure the beneficiary is a member of the FAST.
       if (!AHasMembers(params.fast).isMember(beneficiary))
-        revert ICustomErrors.RequiresFastMembership(beneficiary);
+        revert RequiresFastMembership(beneficiary);
 
       // Add the beneficiary to our set.
       beneficiaries.add(beneficiary, false);
@@ -199,7 +216,7 @@ contract Distribution {
 
     // Make sure that there's enough to pay everyone.
     if (available < needed)
-      revert ICustomErrors.InsufficientFunds(needed - available);
+      revert InsufficientFunds(needed - available);
     // Decrease the amount of available funds.
     unchecked { available -= needed; }
   }
@@ -257,9 +274,9 @@ contract Distribution {
   function withdraw(address beneficiary)
       public onlyDuring(Phase.Withdrawal) {
     if (withdrawn[beneficiary])
-      revert ICustomErrors.DuplicateEntry();
+      revert DuplicateEntry();
     else if (!beneficiaries.contains(beneficiary))
-      revert ICustomErrors.NonExistentEntry();
+      revert NonExistentEntry();
     // Memoize a few variables.
     uint256 amount = owings[beneficiary];
     // Make sure they can't do it again later... It is important
@@ -286,32 +303,40 @@ contract Distribution {
     // re-entrancy attacks.
     emit Advance(phase = Phase.Terminated);
     available = 0;
-
     // Move all funds to the distributor account.
     params.token.transfer(params.distributor, params.token.balanceOf(address(this)));
   }
 
-  // Modifiers
+  // Modifiers and ACLs.
 
-  function requireManagerCaller()
+  function requireFastCaller()
       internal view {
-    if (!AHasMembers(params.issuer).isMember(msg.sender) && !AHasAutomatons(params.fast).isAutomaton(msg.sender))
-      revert ICustomErrors.RequiresIssuerMembership(msg.sender);
+    if (msg.sender != params.fast)
+      revert InternalMethod();
+  }
+
+  function requireManager()
+      internal view {
+    if (AHasMembers(params.issuer).isMember(msg.sender) ||
+        AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
+      return;
+    revert RequiresManager(msg.sender);
   }
 
   function requireDistributor()
       internal view {
-    require(msg.sender == params.distributor, "Distributorship needed.");
+    if (msg.sender != params.distributor)
+      revert InternalMethod();
   }
 
   modifier onlyManager() {
-    requireManagerCaller();
+    requireManager();
     _;
   }
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
-      revert ICustomErrors.UnsupportedOperation();
+      revert UnsupportedOperation();
     _;
   }
 }

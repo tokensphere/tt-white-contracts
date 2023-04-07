@@ -126,6 +126,8 @@ await token.mint(userSigner.address, 5000);
 // Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
 let issuer = await ethers.getContract('Issuer');
 let fast = await ethers.getContract('FastF01');
+// Add the automaton as a distribution manager.
+await fast.connect(issuerSigner).setAutomatonPrivileges(automaton, 2 /* FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS */);
 
 // Let our user approve 100 tokens to be spent by our FAST contract.
 await token.connect(userSigner).approve(fast.address, 110);
