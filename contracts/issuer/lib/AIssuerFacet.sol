@@ -12,13 +12,6 @@ import './IIssuerEvents.sol';
 * certain permissions.
 */
 abstract contract AIssuerFacet is IIssuerEvents {
-  /// Internal ACL functions.
-
-  function _isMember(address who)
-      internal view returns(bool) {
-    return AHasMembers(address(this)).isMember(who);
-  }
-
   /// Modifiers.
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
@@ -47,7 +40,7 @@ abstract contract AIssuerFacet is IIssuerEvents {
    * @param who The address to check.
    */
   modifier onlyMember(address who) {
-    if (!_isMember(who))
+    if (!AHasMembers(address(this)).isMember(who))
       revert ICustomErrors.RequiresIssuerMembership(who);
     _;
   }
