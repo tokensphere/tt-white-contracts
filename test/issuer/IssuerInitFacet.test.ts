@@ -77,9 +77,10 @@ describe("IssuerInitFacet", () => {
       expect(subject).to.eq(true);
     });
 
-    // TODO: Fix this.
-    // it("emits a MemberAdded event", async () => {
-    //   await expect(initTx).to.emit(issuer, "MemberAdded").withArgs(issuerMember.address);
-    // });
+    it("emits a MemberAdded event", async () => {
+      await expect(initTx).to
+        .emit(issuer, "MemberAdded")
+        .withArgs(issuerMember.address);
+    });
   });
 });

@@ -36,21 +36,6 @@ abstract contract AFastFacet is IFastEvents {
     return AHasMembers(LibFast.data().issuer).isMember(who);
   }
 
-  function _isGovernor(address who)
-      internal view returns(bool) {
-    return AHasGovernors(address(this)).isGovernor(who);
-  }
-
-  function _isMember(address who)
-      internal view returns(bool) {
-    return AHasMembers(address(this)).isMember(who);
-  }
-
-  function _automatonCan(address who, uint32 flag)
-      internal view returns(bool) {
-    return AHasAutomatons(address(this)).automatonCan(who, flag);
-  }
-
   /// Modifiers.
 
   /// @notice Ensures that a method can only be called by another facet of the same diamond.
@@ -108,7 +93,7 @@ abstract contract AFastFacet is IFastEvents {
    * @param who The address to check.
    */
   modifier onlyGovernor(address who) {
-    if (!_isGovernor(who))
+    if (!AHasGovernors(address(this)).isGovernor(who))
       revert ICustomErrors.RequiresFastGovernorship(who);
     _;
   }
@@ -118,7 +103,7 @@ abstract contract AFastFacet is IFastEvents {
    * @param who The address to check.
    */
   modifier onlyMember(address who) {
-    if (!_isMember(who))
+    if (!AHasMembers(address(this)).isMember(who))
       revert ICustomErrors.RequiresFastMembership(who);
     _;
   }

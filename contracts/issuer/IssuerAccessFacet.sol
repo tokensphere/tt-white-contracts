@@ -20,7 +20,7 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
 
   function isMembersManager(address who)
       internal view override(AHasMembers) returns(bool) {
-    return _isMember(who);
+    return AHasMembers(address(this)).isMember(who);
   }
 
   function isValidMember(address who)

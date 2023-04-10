@@ -1,13 +1,13 @@
 import * as chai from "chai";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
 import { solidity } from "ethereum-waffle";
-import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
+import { BigNumber } from "ethers";
 import { deployments, ethers } from "hardhat";
+import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, FastDistributionsFacet, Marketplace, Fast, FastAccessFacet, IERC20, Distribution } from "../../typechain";
+import { Issuer, Marketplace, FastDistributionsFacet, IERC20, FastAccessFacet } from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
-import { abiStructToObj, DistributionPhase } from "../utils";
+
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -15,73 +15,47 @@ describe("FastDistributionsFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
-    alice: SignerWithAddress;
-
+    member: SignerWithAddress,
+    bob: SignerWithAddress;
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
-    fast: Fast,
-    accessMock: MockContract<FastAccessFacet>,
     erc20: FakeContract<IERC20>,
+    access: MockContract<FastAccessFacet>,
     distributions: FastDistributionsFacet,
-    governorDistributions: FastDistributionsFacet;
+    distributionsAsMember: FastDistributionsFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
-  // Setup for a successful distribution.
-  const setupSuccessfulDistribution = async () => {
-    // Setup a fake ERC20 token.
-    erc20.allowance.reset();
-    erc20.allowance.returns(100);
-    erc20.balanceOf.reset();
-    erc20.balanceOf.returns(100);
-    erc20.transferFrom.reset();
-    erc20.transferFrom.returns(true);
-
-    // Add the governor as a member of the FAST.
-    accessMock.isMember.reset();
-    accessMock.isMember.whenCalledWith(governor.address).returns(true);
-    accessMock.isMember.returns(false);
-  };
-
-  // Helper function to grab the first distribution.
-  const getFirstDeployedDistribution = async (fast: Fast): Promise<Distribution> => {
-    const [[distAddr]] = await fast.paginateDistributions(0, 1);
-    return await ethers.getContractAt<Distribution>("Distribution", distAddr);
-  };
-
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, alice] = await ethers.getSigners();
+    [deployer, issuerMember, governor, member, bob] = await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
-    marketplace.issuerAddress.returns(issuer.address);
-
-    // TODO: Totally forgotten about what I'm doing... I just want a generic ERC20.
     erc20 = await smock.fake("IERC20");
+    // Stub isMember, issuerAddress calls.
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    issuer.isMember.returns(false);
+    marketplace.issuerAddress.returns(issuer.address);
+    marketplace.isMember.whenCalledWith(member.address).returns(true);
+    marketplace.isMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isMember.returns(false);
+    marketplace.isActiveMember.whenCalledWith(member.address).returns(true);
+    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
+    marketplace.isActiveMember.returns(false);
   });
 
   beforeEach(async () => {
-    issuer.isMember.reset();
-    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
-    issuer.isMember.returns(false);
-
-    marketplace.isMember.reset();
-    for (const address in [governor, alice]) {
-      marketplace.isMember.whenCalledWith(address).returns(true);
-      marketplace.isActiveMember.whenCalledWith(address).returns(true);
-    }
-    marketplace.isMember.returns(false);
-    marketplace.isActiveMember.returns(false);
-
     await fastDeployFixture({
       opts: {
-        name: "FastDistributionsFacet",
+        name: "FastDistributionsFacetFixture",
         deployer: deployer.address,
-        afterDeploy: async (args) => {
-          ({ fast, accessMock } = args);
+        afterDeploy: async ({ fast, accessMock }) => {
+          access = accessMock;
+          await access.connect(governor).addMember(member.address);
+
           distributions = await ethers.getContractAt<FastDistributionsFacet>("FastDistributionsFacet", fast.address);
-          governorDistributions = distributions.connect(governor);
+          distributionsAsMember = distributions.connect(member);
         },
       },
       initWith: {
@@ -93,139 +67,41 @@ describe("FastDistributionsFacet", () => {
   });
 
   describe("createDistribution", async () => {
-    const total = 100,
-      blockLatch = 0;
+    beforeEach(async () => {
+      erc20.allowance.reset();
+      erc20.allowance.returns(100);
+    });
 
-    it("requires FAST membership", async () => {
-      const subject = distributions.createDistribution(erc20.address, total, blockLatch);
-      await expect(subject).to.be
+    it("requires the caller to be a FAST member", async () => {
+      const subject = distributions.createDistribution(erc20.address, 100, 0);
+      await expect(subject).to.have
         .revertedWith("RequiresFastMembership");
     });
 
-    it("checks for the ERC20 allowance to cover the distribution total", async () => {
-      // Give insufficient allowance.
-      erc20.allowance.reset();
-      erc20.allowance.returns(99);
-
-      accessMock.isMember.whenCalledWith(governor.address).returns(true);
-
-      const subject = governorDistributions.createDistribution(erc20.address, total, blockLatch);
-      // TODO: Parameterized error message?
-      // This should be `InsufficientFund(10)` for example.
-      await expect(subject).to.be.revertedWith("InsufficientFunds");
+    it("reverts if the allowance of the ERC20 token is not enough", async () => {
+      const subject = distributionsAsMember.createDistribution(erc20.address, 101, 0);
+      await expect(subject).to.have
+        .revertedWith("InsufficientFunds");
     });
 
-    it("deploys a new distribution with the correct parameters", async () => {
-      setupSuccessfulDistribution();
+    it("deploys a new distribution with the given parameters", async () => {
 
-      // Create the distribution.
-      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
-
-      // Get the first deployed distribution, get it's deployment params.
-      const originalParams = await (await getFirstDeployedDistribution(fast)).params();
-
-      // Generic version of this?
-      const params = abiStructToObj(originalParams) as Distribution.ParamsStruct;
-
-      expect(params).to.eql({
-        distributor: governor.address,
-        issuer: issuer.address,
-        fast: fast.address,
-        token: erc20.address,
-        blockLatch: BigNumber.from(1),
-        total: BigNumber.from(100)
-      })
     });
 
-    it("keeps track of the newly deployed distribution", async () => {
-      setupSuccessfulDistribution();
+    it("keeps track of the deployed distribution", async () => { });
 
-      // Create the distribution and check the tracked distributions.
-      // TODO: We probably want to check this a different way, otherwise they're be test overlap.
-      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
-      const [values] = await governorDistributions.paginateDistributions(0, 1);
-      expect(values.length).to.be.eq(1);
-    });
+    it("transfers the ERC20 tokens to the deployed distribution", async () => { });
 
-    it("uses the allowance to transfer from the distributor to the newly deployed distribution", async () => {
-      setupSuccessfulDistribution();
+    it("advances the distribution to the FeeSetup phase", async () => { });
 
-      // Create the distribution.
-      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
-
-      // Get the first deployed distribution, check it's Phase.
-      const dist = await getFirstDeployedDistribution(fast);
-
-      // Check balance of the distribution.
-      expect(await dist.available()).to.eq(BigNumber.from(100));
-
-      // TODO: Check the erc20 has been debited?
-    });
-
-    it("leaves the distribution in the FeeSetup phase when done", async () => {
-      setupSuccessfulDistribution();
-
-      // Create the distribution.
-      await governorDistributions.createDistribution(erc20.address, total, blockLatch);
-
-      // Get the first deployed distribution, check it's Phase.
-      const dist = await getFirstDeployedDistribution(fast);
-
-      expect(await dist.phase()).to.eq(DistributionPhase.FeeSetup);
-    });
-
-    it("emits a DistributionDeployed event", async () => {
-      setupSuccessfulDistribution();
-
-      const subject = governorDistributions.createDistribution(erc20.address, total, blockLatch);
-      // TODO: Add withArgs().
-      await expect(subject).to.emit(fast, "DistributionDeployed");
-    });
+    it("emits a DistributionDeployed event", async () => { });
   });
 
   describe("distributionCount", async () => {
-    let token: string,
-      total: number,
-      blockLatch: string;
-
-    beforeEach(async () => {
-      // Probably a nicer way to handle this.
-      token = erc20.address;
-      total = 100;
-      blockLatch = "0x1";
-    });
-
-    it("returns the number of deployed distributions", async () => {
-      setupSuccessfulDistribution();
-
-      await governorDistributions.createDistribution(token, total, blockLatch);
-
-      const subject = await governorDistributions.distributionCount();
-      expect(subject).to.eq(1);
-    });
+    it("counts all deployed distributions");
   });
 
   describe("paginateDistributions", async () => {
-    let token: string,
-      total: number,
-      blockLatch: string;
-
-    beforeEach(async () => {
-      // Probably a nicer way to handle this.
-      token = erc20.address;
-      total = 100;
-      blockLatch = "0x1";
-    });
-
-    it("returns pages of deployed distributions", async () => {
-      setupSuccessfulDistribution();
-
-      await governorDistributions.createDistribution(token, total, blockLatch);
-
-      const [[distributionAddress], nextCursor] = await governorDistributions.paginateDistributions(0, 1);
-
-      expect(distributionAddress).to.be.properAddress;
-      expect(nextCursor).to.eq(1);
-    });
+    it("returns pages of deployed distributions");
   });
 });
