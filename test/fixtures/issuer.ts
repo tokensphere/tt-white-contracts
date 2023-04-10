@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { ContractTransaction } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
-import { toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
+import { deploymentSalt, toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock, oneMillion } from "../utils";
 import {
   Issuer,
@@ -49,7 +49,6 @@ export const issuerFixtureFunc: FixtureFunc<IssuerFixtureResult, IssuerFixtureFu
     from: deployer,
     owner: deployer,
     facets: [...ISSUER_FACETS, "IssuerInitFacet"],
-    // TODO: Find why this crashes.
     // deterministicSalt: deploymentSalt(hre)
   });
 

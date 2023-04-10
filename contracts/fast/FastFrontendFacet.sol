@@ -132,7 +132,7 @@ contract FastFrontendFacet is AFastFacet {
     return GovernorDetails({
       addr: governor,
       ethBalance: governor.balance,
-      isMember: _isMember(governor)
+      isMember: AHasMembers(address(this)).isMember(governor)
     });
   }
 

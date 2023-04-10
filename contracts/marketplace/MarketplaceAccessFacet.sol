@@ -85,7 +85,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    * @param candidate The address to check activation status on.
    */
   function isActiveMember(address candidate) external override(IHasActiveMembers) view returns(bool) {
-    return _isMember(candidate) &&
+    return AHasMembers(address(this)).isMember(candidate) &&
            !LibMarketplaceAccess.data().deactivatedMemberSet.contains(candidate);
   }
 

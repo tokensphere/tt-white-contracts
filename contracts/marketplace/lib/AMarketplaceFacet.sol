@@ -20,11 +20,6 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
     return AHasMembers(LibMarketplace.data().issuer).isMember(who);
   }
 
-  function _isMember(address who)
-      internal view returns(bool) {
-    return AHasMembers(address(this)).isMember(who);
-  }
-
   // Modifiers.
 
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
@@ -51,7 +46,7 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
    */
   modifier onlyMember(address who)
       virtual {
-    if (!_isMember(who))
+    if (!AHasMembers(address(this)).isMember(who))
       revert ICustomErrors.RequiresMarketplaceMembership(who);
     _;
   }

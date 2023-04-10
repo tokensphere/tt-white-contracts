@@ -68,7 +68,7 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
   function isMembersManager(address who)
       internal view override(AHasMembers) returns(bool) {
     // TODO: We could also allow automatons with privileges.
-    return _isGovernor(who);
+    return AHasGovernors(this).isGovernor(who);
   }
 
   function isValidMember(address who)
@@ -104,8 +104,8 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
   function flags(address a)
       external view returns(Flags memory) {
     return Flags({
-        isGovernor: _isGovernor(a),
-        isMember: _isMember(a)
+        isGovernor: AHasGovernors(address(this)).isGovernor(a),
+        isMember: AHasMembers(address(this)).isMember(a)
       });
   }
 }
