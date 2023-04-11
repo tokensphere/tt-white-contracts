@@ -1,0 +1,592 @@
+{
+  "address": "0x9Ad7358f634fAb4Cda1Af621119D556D173cA4E6",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "InternalMethod",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "Burnt",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "transfersDisabled",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "memberCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "governorCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalSupply",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "reserveBalance",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ethBalance",
+          "type": "uint256"
+        }
+      ],
+      "name": "DetailsChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Disapproval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract Distribution",
+          "name": "distribution",
+          "type": "address"
+        }
+      ],
+      "name": "DistributionDeployed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
+        }
+      ],
+      "name": "FastTransfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "Minted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "governor",
+          "type": "address"
+        }
+      ],
+      "name": "detailedGovernor",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isMember",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.GovernorDetails",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "detailedMember",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isGovernor",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.MemberDetails",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "details",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint8",
+              "name": "decimals",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isSemiPublic",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasFixedSupply",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "transfersDisabled",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "reserveBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "memberCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "governorCount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.Details",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "emitDetailsChanged",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "perPage",
+          "type": "uint256"
+        }
+      ],
+      "name": "paginateDetailedGovernors",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isMember",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.GovernorDetails[]",
+          "name": "",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "perPage",
+          "type": "uint256"
+        }
+      ],
+      "name": "paginateDetailedMembers",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ethBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isGovernor",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct FastFrontendFacet.MemberDetails[]",
+          "name": "",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xa6a97aa3049ff61528eacf80d52801647bbd0b3e71c0e5d7fe8a0df889589066",
+  "receipt": {
+    "to": "0x6DF2D25d8C6FD680730ee658b530A05a99BB769a",
+    "from": "0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE",
+    "contractAddress": null,
+    "transactionIndex": 7,
+    "gasUsed": "980201",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000008000000000000000000000008000000000000000000000000040000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000080000000000000000000000000000000000000000004000000000000000000001000000000100000000000000000000100000000000000000000000000000000400000000000000000000000000000000000000100000",
+    "blockHash": "0x3467a37d154c4afdadc633212787588aab8f2f77cc25889bdc2d2afee40a2af9",
+    "transactionHash": "0xa6a97aa3049ff61528eacf80d52801647bbd0b3e71c0e5d7fe8a0df889589066",
+    "logs": [
+      {
+        "transactionIndex": 7,
+        "blockNumber": 34242510,
+        "transactionHash": "0xa6a97aa3049ff61528eacf80d52801647bbd0b3e71c0e5d7fe8a0df889589066",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000717634cfe06ffab2ceaa7fcf1b9019813f4b25fe",
+          "0x0000000000000000000000003a22c8bc68e98b0faf40f349dd2b2890fae01484"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000592d37020b6200000000000000000000000000000000000000000000000003325df6a0de880af0000000000000000000000000000000000000000000005e7290e0117d338a8a700000000000000000000000000000000000000000000000033204c969dc7ca8f0000000000000000000000000000000000000000000005e7291393eb43595ec7",
+        "logIndex": 14,
+        "blockHash": "0x3467a37d154c4afdadc633212787588aab8f2f77cc25889bdc2d2afee40a2af9"
+      }
+    ],
+    "blockNumber": 34242510,
+    "cumulativeGasUsed": "4319844",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "7d604db1b1169f35d56bc4a72316a649",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"InternalMethod\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"ref\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"Burnt\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"transfersDisabled\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"memberCount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"governorCount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reserveBalance\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"}],\"name\":\"DetailsChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Disapproval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"contract Distribution\",\"name\":\"distribution\",\"type\":\"address\"}],\"name\":\"DistributionDeployed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"ref\",\"type\":\"string\"}],\"name\":\"FastTransfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"ref\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"governor\",\"type\":\"address\"}],\"name\":\"detailedGovernor\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isMember\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.GovernorDetails\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"detailedMember\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isGovernor\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.MemberDetails\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"details\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"totalSupply\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isSemiPublic\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"hasFixedSupply\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"transfersDisabled\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"reserveBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"memberCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"governorCount\",\"type\":\"uint256\"}],\"internalType\":\"struct FastFrontendFacet.Details\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"emitDetailsChanged\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"perPage\",\"type\":\"uint256\"}],\"name\":\"paginateDetailedGovernors\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isMember\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.GovernorDetails[]\",\"name\":\"\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"perPage\",\"type\":\"uint256\"}],\"name\":\"paginateDetailedMembers\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"balance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"ethBalance\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isGovernor\",\"type\":\"bool\"}],\"internalType\":\"struct FastFrontendFacet.MemberDetails[]\",\"name\":\"\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"detailedGovernor(address)\":{\"returns\":{\"_0\":\"GovernorDetails See: `GovernorDetails`.\"}},\"detailedMember(address)\":{\"returns\":{\"_0\":\"A FAST member's details, see `MemberDetails`.\"}},\"details()\":{\"returns\":{\"_0\":\"The details for the current FAST, see `Details`.\"}}},\"version\":1},\"userdoc\":{\"events\":{\"Approval(address,address,uint256)\":{\"notice\":\"See `ERC20.Approval`.\"},\"Burnt(uint256,string,address)\":{\"notice\":\"Emited whenever an burning happens in a FAST.\"},\"DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)\":{\"notice\":\"This is an event that is fired whenever any of some of the FAST parameters change, so that the frontend can react to it and refresh the general header for that fast as well as the baseball cards in the FASTs list.\"},\"Disapproval(address,address,uint256)\":{\"notice\":\"See `ERC20.Disapproval`.\"},\"DistributionDeployed(address)\":{\"notice\":\"Distribution related events.\"},\"FastTransfer(address,address,address,uint256,string)\":{\"notice\":\"As we augmented the ERC20 standard with a few concepts, we emit our custom events in addition to the ERC20 ones.\"},\"Minted(uint256,string,address)\":{\"notice\":\"Emited whenever an issuance happens in a FAST.\"},\"Transfer(address,address,uint256)\":{\"notice\":\"See `ERC20.Transfer`.\"}},\"kind\":\"user\",\"methods\":{\"detailedGovernor(address)\":{\"notice\":\"Gets detailed governor details.\"},\"detailedMember(address)\":{\"notice\":\"Gets detailed member details.\"},\"details()\":{\"notice\":\"Gets the details of a FAST.\"},\"emitDetailsChanged()\":{\"notice\":\"Called by diamond facets, signals that FAST details may have changed.  Business logic: - Modifiers:   - Requires the caller to be another facet of the diamond. Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`\"}},\"notice\":\"A facet dedicated to view / UI only methods. This facet should never hold any method that is not either `pure` or `view`, except to emit events.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/fast/FastFrontendFacet.sol\":\"FastFrontendFacet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1000000},\"remappings\":[]},\"sources\":{\"contracts/common/AHasAutomatons.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport '../common/lib/LibHasAutomatons.sol';\\n\\n\\n/**\\n * @title The Fast Smart Contract.\\n * @notice The Fast Automatons facet is in charge of keeping track of automaton accounts.\\n */\\nabstract contract AHasAutomatons {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Errors.\\n\\n  error RequiresAutomatonsManager(address who);\\n\\n  /// Events.\\n\\n  /**\\n   * @notice Emited when an automaton is added or changed.\\n   * @param automaton is the address of the automaton.\\n   * @param privileges is the new bitfield assigned to this automaton.\\n   */\\n  event AutomatonPrivilegesSet(address indexed automaton, uint32 indexed privileges);\\n\\n  /**\\n   * @notice Emited when an automaton is removed.\\n   * @param automaton is the address of the removed automaton.\\n   */\\n  event AutomatonRemoved(address indexed automaton);\\n\\n  // Must be overriden.\\n  function isAutomatonsManager(address who)\\n      virtual internal view\\n      returns(bool);\\n\\n  // May be overriden.\\n  function onAutomatonAdded(address member)\\n      virtual internal {}\\n  \\n  // May be overriden.\\n  function onAutomatonRemoved(address member)\\n      virtual internal {}\\n\\n  /// Automatons management.\\n\\n  /**\\n   * @notice Queries whether a given address is an automaton for this Fast or not.\\n   * @param candidate is the address to test.\\n   * @return A `boolean` flag.\\n   */\\n  function isAutomaton(address candidate)\\n      external view returns(bool) {\\n    return LibHasAutomatons.data().automatonSet.contains(candidate);\\n  }\\n\\n  /**\\n   * @notice Returns the privileges for a given automaton address, or zero if no privileges exist.\\n   * @param automaton is the address to test.\\n   * @return An `uint256` bitfield.\\n   */\\n  function automatonPrivileges(address automaton)\\n      external view returns(uint32) {\\n    return LibHasAutomatons.data().automatonPrivileges[automaton];\\n  }\\n\\n  function automatonCan(address automaton, uint32 privilege)\\n    external view returns(bool) {\\n      return (LibHasAutomatons.data().automatonPrivileges[automaton] & privilege) != 0;\\n    }\\n\\n  /**\\n   * @notice Counts the numbers of automatons present in this Fast.\\n   * @return The number of automatons in this marketplace.\\n   */\\n  function automatonCount()\\n      external view returns(uint256) {\\n    return LibHasAutomatons.data().automatonSet.values.length;\\n  }\\n\\n  /**\\n   * @notice Paginates the automatons of this Fast based on a starting cursor and a number of records per page.\\n   * @param cursor is the index at which to start.\\n   * @param perPage is how many records should be returned at most.\\n   * @return A `address[]` list of values at most `perPage` big.\\n   * @return A `uint256` index to the next page.\\n   */\\n  function paginateAutomatons(uint256 cursor, uint256 perPage)\\n    external view returns(address[] memory, uint256) {\\n    return LibPaginate.addresses(\\n      LibHasAutomatons.data().automatonSet.values,\\n      cursor,\\n      perPage\\n    );\\n  }\\n\\n  /**\\n   * @notice Sets privileges for a given automaton address.\\n   * @param candidate is the automaton address to which the privileges should be assigned.\\n   * @param privileges is a bitfield of privileges to apply.\\n   */\\n  function setAutomatonPrivileges(address candidate, uint32 privileges)\\n      external onlyAutomatonManager(msg.sender) {\\n    LibHasAutomatons.Data storage ds = LibHasAutomatons.data();\\n    ds.automatonSet.add(candidate, true);\\n    ds.automatonPrivileges[candidate] = privileges;\\n    emit AutomatonPrivilegesSet(candidate, privileges);\\n  }\\n\\n  /**\\n   * @notice Removes an automaton completely.\\n   * @param candidate is the automaton to remove.\\n   */\\n  function removeAutomaton(address candidate)\\n      external onlyAutomatonManager(msg.sender) {\\n    LibHasAutomatons.Data storage ds = LibHasAutomatons.data();\\n    ds.automatonSet.remove(candidate, false);\\n    delete ds.automatonPrivileges[candidate];\\n    emit AutomatonRemoved(candidate);\\n  }\\n\\n  /// Modifiers.\\n\\n  modifier onlyAutomatonManager(address who) {\\n    if (!isAutomatonsManager(who))\\n      revert RequiresAutomatonsManager(who);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0x886a21d0537b7a73957589c1ce4040fdc3ecf2976204cd53ebebfe9ff542b714\",\"license\":\"MIT\"},\"contracts/common/AHasGovernors.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport '../common/lib/LibHasGovernors.sol';\\nimport '../interfaces/ICustomErrors.sol';\\n\\n\\n/**\\n * @title The Fast Smart Contract.\\n * @notice The Fast Governors facet is in charge of keeping track of automaton accounts.\\n */\\nabstract contract AHasGovernors {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Errors.\\n\\n  error RequiresGovernorsManager(address who);\\n  error RequiresValidGovernor(address who);\\n\\n  /// Events.\\n\\n  /**\\n   * @notice Emited when a governor is added to the implementing contract.\\n   * @param governor is the address of the added governor.\\n   */\\n  event GovernorAdded(address indexed governor);\\n  /**\\n   * @notice Emited when a governor is removed to the implementing contract.\\n   * @param governor is the address of the removed member.\\n   */\\n  event GovernorRemoved(address indexed governor);\\n\\n  // Must be overriden.\\n  function isGovernorsManager(address who)\\n      virtual internal view\\n      returns(bool);\\n\\n  // Must be overriden.\\n  function isValidGovernor(address who)\\n      virtual internal view\\n      returns(bool);\\n\\n  // May be overriden.\\n  function onGovernorAdded(address governor)\\n      virtual internal {}\\n  \\n  // May be overriden.\\n  function onGovernorRemoved(address governor)\\n      virtual internal {}\\n  \\n  // Governors management.\\n\\n  /**\\n   * @notice Queries whether a given address is a governor or not.\\n   * @param who is the address to test.\\n   * @return A `bool` equal to `true` when `candidate` is a governor.\\n   */\\n  function isGovernor(address who)\\n      external view returns(bool) {\\n    return LibHasGovernors.data().governorSet.contains(who);\\n  }\\n\\n  /**\\n   * @notice Queries the number of governors.\\n   * @return An `uint256`.\\n   */\\n  function governorCount()\\n      external view returns(uint256) {\\n    return LibHasGovernors.data().governorSet.values.length;\\n  }\\n\\n  /**\\n   * @notice Queries pages of governors based on a start index and a page size.\\n   * @param index is the offset at which the pagination operation should start.\\n   * @param perPage is how many items should be returned.\\n   * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.\\n   */\\n  function paginateGovernors(uint256 index, uint256 perPage)\\n      external view returns(address[] memory, uint256) {\\n    return LibPaginate.addresses(LibHasGovernors.data().governorSet.values, index, perPage);\\n  }\\n\\n  /**\\n   * @notice Adds a governor to the list of known governors.\\n   * @param who is the address to be added.\\n   */\\n  function addGovernor(address payable who)\\n      external \\n      onlyGovernorManager(msg.sender) onlyValidGovernor(who) {\\n    // Add the governor.\\n    LibHasGovernors.data().governorSet.add(who, false);\\n    // Notify via callback.\\n    onGovernorAdded(who);\\n    // Emit!\\n    emit GovernorAdded(who);\\n  }\\n\\n  /**\\n   * @notice Removes a governor from this contract.\\n   * @param governor The address of the governor to be removed.\\n   * @notice Requires that the caller is a governor of this Issuer.\\n   * @notice Emits a `AHasGovernors.GovernorRemoved` event.\\n   */\\n  function removeGovernor(address governor)\\n      external \\n      onlyGovernorManager(msg.sender) {\\n    // Notify via callback.\\n    onGovernorRemoved(governor);\\n    // Remove governor.\\n    LibHasGovernors.data().governorSet.remove(governor, false);\\n    // Emit!\\n    emit GovernorRemoved(governor);\\n  }\\n\\n  /// Modifiers.\\n\\n  modifier onlyGovernorManager(address who) {\\n    if (!isGovernorsManager(who))\\n      revert RequiresGovernorsManager(who);\\n    _;\\n  }\\n\\n  modifier onlyValidGovernor(address who) {\\n    if (!isValidGovernor(who))\\n      revert RequiresValidGovernor(who);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0x64fd0bd10d886268c54a486d9988957c61c15a36000309f293f6310cdc44e2e6\",\"license\":\"MIT\"},\"contracts/common/AHasMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport '../common/lib/LibHasMembers.sol';\\nimport '../interfaces/ICustomErrors.sol';\\n\\n\\n/**\\n * @title The Fast Smart Contract.\\n * @notice The Fast Members facet is in charge of keeping track of automaton accounts.\\n */\\nabstract contract AHasMembers {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Errors.\\n\\n  error RequiresMembersManager(address who);\\n  error RequiresValidMember(address who);\\n\\n  /// Events.\\n\\n  /**\\n   * @notice Emited when a member is added to the implementing contract.\\n   * @param member is the address of the added member.\\n   */\\n  event MemberAdded(address indexed member);\\n  /**\\n   * @notice Emited when a member is removed to the implementing contract.\\n   * @param member is the address of the removed member.\\n   */\\n  event MemberRemoved(address indexed member);\\n\\n  // Must be overriden.\\n  function isMembersManager(address who)\\n      virtual internal view\\n      returns(bool);\\n\\n  // Must be overriden.\\n  function isValidMember(address who)\\n      virtual internal view\\n      returns(bool);\\n\\n  // May be overriden.\\n  function onMemberAdded(address member)\\n      virtual internal {}\\n  \\n  // May be overriden.\\n  function onMemberRemoved(address member)\\n      virtual internal {}\\n  \\n  // Members management.\\n\\n  /**\\n   * @notice Queries whether a given address is a member or not.\\n   * @param who is the address to test.\\n   * @return A `bool` equal to `true` when `candidate` is a member.\\n   */\\n  function isMember(address who)\\n      external view returns(bool) {\\n    return LibHasMembers.data().memberSet.contains(who);\\n  }\\n\\n  /**\\n   * @notice Queries the number of members.\\n   * @return An `uint256`.\\n   */\\n  function memberCount()\\n      external view returns(uint256) {\\n    return LibHasMembers.data().memberSet.values.length;\\n  }\\n\\n  /**\\n   * @notice Queries pages of members based on a start index and a page size.\\n   * @param index is the offset at which the pagination operation should start.\\n   * @param perPage is how many items should be returned.\\n   * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.\\n   */\\n  function paginateMembers(uint256 index, uint256 perPage)\\n      external view returns(address[] memory, uint256) {\\n    return LibPaginate.addresses(LibHasMembers.data().memberSet.values, index, perPage);\\n  }\\n\\n  /**\\n   * @notice Adds a member to the list of known members.\\n   * @param who is the address to be added.\\n   */\\n  function addMember(address payable who)\\n      external \\n      onlyMemberManager(msg.sender) onlyValidMember(who) {\\n    // Add the member.\\n    LibHasMembers.data().memberSet.add(who, false);\\n    // Notify via callback.\\n    onMemberAdded(who);\\n    // Emit!\\n    emit MemberAdded(who);\\n  }\\n\\n  /**\\n   * @notice Removes a member from this contract.\\n   * @param member The address of the member to be removed.\\n   * @notice Requires that the caller is a member of this Issuer.\\n   * @notice Emits a `AHasMembers.MemberRemoved` event.\\n   */\\n  function removeMember(address member)\\n      external \\n      onlyMemberManager(msg.sender) {\\n    // Notify via callback.\\n    onMemberRemoved(member);\\n    // Remove member.\\n    LibHasMembers.data().memberSet.remove(member, false);\\n    // Emit!\\n    emit MemberRemoved(member);\\n  }\\n\\n  /// Modifiers.\\n\\n  modifier onlyMemberManager(address who) {\\n    if (!isMembersManager(who))\\n      revert RequiresMembersManager(who);\\n    _;\\n  }\\n\\n  modifier onlyValidMember(address who) {\\n    if (!isValidMember(who))\\n      revert RequiresValidMember(who);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0x1bfb5f3d2b3a4e930b27b011bf9894f62925ec973ef188f6530133e25ac15098\",\"license\":\"MIT\"},\"contracts/common/lib/LibHasAutomatons.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\n\\nlibrary LibHasAutomatons {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is `keccak256('HasAutomatons.storage.Main')`.\\n  bytes32 internal constant STORAGE_SLOT = 0x3dfe1f2f995ddddfe9572dcdd01e4fb472ed2fb10a125c3b0156e94d073b9183;\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice This is where we hold our automatons data.\\n    LibAddressSet.Data automatonSet;\\n    /// @notice This is where we store privileges for each of our automaton account.\\n    mapping(address => uint32) automatonPrivileges;\\n  }\\n\\n  function data() internal pure\\n      returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x0dad1ab3437a67476d7480b7cc89258ea857e5f9320226f46fe78654a30e5953\",\"license\":\"MIT\"},\"contracts/common/lib/LibHasGovernors.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\n\\nlibrary LibHasGovernors {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is `keccak256('HasGovernors.storage.Main')`.\\n  bytes32 internal constant STORAGE_SLOT = 0xdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd4862975;\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice This is where we hold our automatons data.\\n    LibAddressSet.Data governorSet;\\n  }\\n\\n  function data() internal pure\\n      returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x67f9734a465b774ccae296f7ed930ffee2d46377333080c49baa0c0697f0db14\",\"license\":\"MIT\"},\"contracts/common/lib/LibHasMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\n\\nlibrary LibHasMembers {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is `keccak256('HasMembers.storage.Main')`.\\n  bytes32 internal constant STORAGE_SLOT = 0xd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb91;\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice This is where we hold our automatons data.\\n    LibAddressSet.Data memberSet;\\n  }\\n\\n  function data() internal pure\\n      returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x3c2d0885328df3aff3f7e8fd65f9bfe04ce43c5be28b376ea3803613d91b8bbe\",\"license\":\"MIT\"},\"contracts/fast/Distribution.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../interfaces/IERC20.sol';\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport '../common/AHasMembers.sol';\\nimport '../common/AHasAutomatons.sol';\\nimport './FastAutomatonsFacet.sol';\\n\\n\\n/**\\n * @title The `Distribution` FAST contract.\\n * @notice This contract allows for dividends or proceeds to be distributted amongst\\n * a list of beneficiaries. It has a lifecycle that can be described based on the\\n * following steps (or phases):\\n * - Funding, during which the sum to be distributed has to be credited to this contract.\\n * - FeeSetup, during which the oracle will define the fee to be paid upon distribution.\\n * - BeneficiariesSetup, during which the oracle can setup the beneficiaries.\\n * - Withdrawal, during which each beneficiary can withdraw their proceeds.\\n * - Terminated, during which nothing is possible.\\n */\\ncontract Distribution {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  error RequiresFastCaller();\\n  error UnsupportedOperation();\\n  error InconsistentParameters();\\n  error InvalidBlockNumber(uint256 number);\\n\\n  error RequiresFastMembership(address who);\\n  error RequiresManagerCaller();\\n  error TokenContractError();\\n\\n  error InsufficientFunds(uint256 amount);\\n  error Overfunded(uint256 amount);\\n\\n  error DuplicateEntry();\\n  error NonExistentEntry();\\n\\n  /// @notice The possible phases in which the contract is in.\\n  enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }\\n\\n  /**\\n   * @notice Emited whenever the internal phase of this distribution changes.\\n   * @param phase The new phase of this contract.\\n   */\\n  event Advance(Phase phase);\\n  /**\\n   * @notice Emited whenever a beneficiary is added to the distribution list.\\n   * @param beneficiary is the address of the beneficiary who was added.\\n   * @param amount is the amount in native target token that is owed to the beneficiary. \\n   */\\n  event BeneficiaryAdded(address indexed beneficiary, uint256 indexed amount);\\n  /**\\n   * @notice Emited whenever a beneficiary is removed from the distribution list.\\n   * @param beneficiary is the address of the beneficiary who was removed.\\n   */\\n  event BeneficiaryRemoved(address indexed beneficiary);\\n  /**\\n   * @notice Emited whenever a beneficiary withdraws their owings.\\n   * @param caller is the address who ordered the withdrawal.\\n   * @param beneficiary is the address of the beneficiary who performed the withdrawal.\\n   * @param amount is the amount that was withdrawn.\\n   */\\n  event Withdrawal(address indexed caller, address indexed beneficiary, uint256 amount);\\n\\n  /// @notice Parameters to be passed to this contract's constructor.\\n  struct Params {\\n    /// @notice The distributor of the distribution - eg the address who ordered its deployment.\\n    address distributor;\\n    /// @notice The Issuer contract address.\\n    address issuer;\\n    /// @notice To which FAST this Distribution belongs\\n    address fast;\\n    /// @notice The target ERC20 address to be distributed to the beneficiaries.\\n    IERC20 token;\\n    /// @notice Block latching.\\n    uint256 blockLatch;\\n    /// @notice How much is meant to be distributed.\\n    uint256 total;\\n  }\\n\\n  /// @notice A version identifier for us to track what's deployed.\\n  uint16 public constant VERSION = 1;\\n  /// @notice The initial params, as passed to the contract's constructor.\\n  Params public params;\\n\\n  /// @notice The phase at which the distribution is at.\\n  Phase public phase = Phase.Funding;\\n  /// @notice When was the distribution created.\\n  uint256 public creationBlock;\\n  /// @notice How much the fee that will be distributed to `issuer` is.\\n  uint256 public fee;\\n  /// @notice How much is left for distribution.\\n  uint256 public available;\\n\\n  /// @notice The list of beneficiaries known to the system.\\n  LibAddressSet.Data internal beneficiaries;\\n  /// @notice How much was set asside for a particular beneficiary.\\n  mapping(address => uint256) public owings;\\n  /// @notice Whether or not a benificiary has withdrawn yet.\\n  mapping(address => bool) public withdrawn;\\n\\n  /**\\n   * @notice Constructs a new `Distribution` contracts.\\n   * @param p is a `Params` structure.\\n   */\\n  constructor(Params memory p) {\\n    // If the distribution is latched in the future, throw.\\n    if (p.blockLatch >= block.number)\\n      revert InvalidBlockNumber(p.blockLatch);\\n    // Store all parameters.\\n    params = p;\\n    available = p.total;\\n    creationBlock = block.number;\\n  }\\n\\n  function advanceToFeeSetup()\\n      public onlyDuring(Phase.Funding) onlyFastCaller {\\n    // Make sure that the current distribution has exactly the required amount locked.\\n    uint256 balance = params.token.balanceOf(address(this));\\n    if (balance != params.total)\\n      revert UnsupportedOperation();\\n    // Move to next phase.\\n    emit Advance(phase = Phase.FeeSetup);\\n  }\\n\\n  /**\\n   * @notice Sets the fee to be taken upon distribution. Only available during the\\n   * `Phase.FeeSetup` phase, throws otherwise. This method automatically advances the\\n   * phase to `Phase.BeneficiariesSetup`, so it can only be called once.\\n   * Note that only a manager (issuer or automaton with the correct privileges) can\\n   * call this method.\\n   * @param _fee is the amount that the `issuer` will receive.\\n   */\\n  function advanceToBeneficiariesSetup(uint256 _fee)\\n      external onlyDuring(Phase.FeeSetup) onlyManager {\\n    fee = _fee;\\n    available -= fee;\\n    // Move to next phase.\\n    emit Advance(phase = Phase.BeneficiariesSetup);\\n  }\\n\\n  /**\\n   * @notice Advances the distribution to the `Phase.Withdrawal` phase.\\n   * The distribution must be in the `Phase.BeneficiariesSetup` phase.\\n   */\\n  function advanceToWithdrawal()\\n      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {\\n    // If the distribution covers more than the sum of all proceeds, we want\\n    // to prevent the distribution from advancing to the withdrawal phase.\\n    if (available > 0)\\n      revert Overfunded(available);\\n    // Transfer the fee to the issuer contract.\\n    if (!params.token.transfer(params.issuer, fee))\\n      revert TokenContractError();\\n    // Move to next phase.\\n    emit Advance(phase = Phase.Withdrawal);\\n  }\\n\\n  /**\\n   * @notice Adds beneficiaries and amounts to the distribution list. Both `_beneficiaries`\\n   * and `_amounts` arrays must be of the same size, or the method will revert.\\n   * This method is only available during the `Phase.BeneficiariesSetup` phase.\\n   * During execution, this method will make sure that the cumulated amounts for all\\n   * beneficiaries doesn't exceed the `total` amount available for distribution, or it\\n   * will simply throw.\\n   * Note that adding the same beneficiary twice will throw.\\n   * Note that only a manager (issuer or automaton with the correct privileges) can\\n   * call this method.\\n   * @param _beneficiaries is the list of beneficiaries to add.\\n   * @param _amounts is the list of amounts respective to each beneficiary.\\n   */\\n  function addBeneficiaries(address[] calldata _beneficiaries, uint256[] calldata _amounts)\\n      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {\\n    // Beneficiaries and amount sizes must match.\\n    if (_beneficiaries.length != _amounts.length)\\n      revert InconsistentParameters();\\n\\n    // We will count how much is needed for all these beneficiaries.\\n    uint256 needed = 0;\\n    // For each of the passed beneficiaries...\\n    for (uint256 i = 0; i < _beneficiaries.length;) {\\n      // Memoize a few variables...\\n      address beneficiary = _beneficiaries[i];\\n      uint256 amount = _amounts[i];\\n      // Make sure the beneficiary is a member of the FAST.\\n      if (!AHasMembers(params.fast).isMember(beneficiary))\\n        revert RequiresFastMembership(beneficiary);\\n\\n      // Add the beneficiary to our set.\\n      beneficiaries.add(beneficiary, false);\\n      // Keep track of the amount this beneficiary is entitled to.\\n      owings[beneficiary] = amount;\\n      // Accumulate how much is needed for these beneficiaries.\\n      needed += amount;\\n      // Emit!\\n      emit BeneficiaryAdded(beneficiary, amount);\\n      // Next iteration.\\n      unchecked { ++i; }\\n    }\\n\\n    // Make sure that there's enough to pay everyone.\\n    if (available < needed)\\n      revert InsufficientFunds(needed - available);\\n    // Decrease the amount of available funds.\\n    unchecked { available -= needed; }\\n  }\\n\\n  /**\\n   * @notice Removes a list of beneficiaries from the distribution list.\\n   * Note that removing a non-existent beneficiary will simply throw.\\n   * During execution, this method will increase the amount available for\\n   * distribution automatically.\\n   * Note that only a manager (issuer or automaton with the correct privileges) can\\n   * call this method.\\n   * @param _beneficiaries is the list of addresses to remove.\\n   */\\n  function removeBeneficiaries(address[] memory _beneficiaries)\\n      external onlyDuring(Phase.BeneficiariesSetup) onlyManager {\\n    // Remove all specified beneficiaries.\\n    for (uint256 i = 0; i < _beneficiaries.length;) {\\n      address beneficiary = _beneficiaries[i];\\n      // Remove the beneficiary from our list.\\n      beneficiaries.remove(beneficiary, false);\\n      // Increase the amount available for distribution, as it won't go to this beneficiary.\\n      available += owings[beneficiary];\\n      // Set the beneficiary's balance to zero.\\n      owings[beneficiary] = 0;\\n      // Emit!\\n      emit BeneficiaryRemoved(beneficiary);\\n      // Next iteration.\\n      unchecked { ++i; }\\n    }\\n  }\\n\\n  /**\\n   * @notice Queries pages of beneficiaries based on a start index and a page size.\\n   * Note that it is possible to query owings for each of these beneficiaries by\\n   * utilizing the `owings` and `withdrawn` public function.\\n   * @param index is the offset at which the pagination operation should start.\\n   * @param perPage is how many items should be returned.\\n   * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.\\n   */\\n  function paginateBeneficiaries(uint256 index, uint256 perPage)\\n      external view returns(address[] memory, uint256) {\\n    return LibPaginate.addresses(\\n      beneficiaries.values,\\n      index,\\n      perPage\\n    );\\n  }\\n\\n  /**\\n   * @notice This function allows any beneficiary to withdraw what they are owed. This\\n   * method can only be called during the `Phase.Withdrawal` phase.\\n   * Note that this function is protected from reentrancy as it operates on the `token`\\n   * methods.\\n   */\\n  function withdraw(address beneficiary)\\n      public onlyDuring(Phase.Withdrawal) {\\n    if (!beneficiaries.contains(beneficiary))\\n      revert NonExistentEntry();\\n    else if (withdrawn[beneficiary])\\n      revert DuplicateEntry();\\n    // Memoize a few variables.\\n    uint256 amount = owings[beneficiary];\\n    // Make sure they can't do it again later... It is important\\n    // to do this before any call to `token` to prevent reentrancy.\\n    withdrawn[beneficiary] = true;\\n    // Transfer to the beneficiary all of their ownings.\\n    if (!params.token.transfer(beneficiary, amount))\\n      revert TokenContractError();\\n    // Emit!\\n    emit Withdrawal(msg.sender, beneficiary, amount);\\n  }\\n\\n  /**\\n   * @notice A panic function that can only be called by the distributor of the distribution.\\n   * Upon calling this method, the contract will simply send back any funds still\\n   * available to it and set its internal state to a termination one.\\n   * Note that since this method calls the `token` contract, it **must be\\n   * protected against reentrancy**.\\n   */\\n  function terminate()\\n      public onlyManager {\\n    // Reset internal variables so that it's clear that the contract is terminated.\\n    // It is important to do this prior to any call to `token` methods to prevent\\n    // re-entrancy attacks.\\n    emit Advance(phase = Phase.Terminated);\\n    available = 0;\\n    // Move all funds to the distributor account.\\n    params.token.transfer(params.distributor, params.token.balanceOf(address(this)));\\n  }\\n\\n  // Modifiers.\\n\\n  modifier onlyDuring(Phase _phase) {\\n    if (_phase != phase)\\n      revert UnsupportedOperation();\\n    _;\\n  }\\n\\n  modifier onlyFastCaller() {\\n    if (msg.sender != params.fast)\\n      revert RequiresFastCaller();\\n    _;\\n  }\\n\\n  modifier onlyManager() {\\n    if (!AHasMembers(params.issuer).isMember(msg.sender) &&\\n        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))\\n      revert RequiresManagerCaller();\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0xfa044ab5d002c3ec68fa76bb7b013d70b31f2a11538098c39995e01895dd737b\",\"license\":\"MIT\"},\"contracts/fast/FastAutomatonsFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport './lib/AFastFacet.sol';\\nimport '../common/AHasAutomatons.sol';\\n\\n\\n// Privileges bits.\\nuint32 constant FAST_PRIVILEGE_MANAGE_MEMBERS = 1;\\nuint32 constant FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS = 2;\\n\\n/**\\n * @title The Fast Smart Contract.\\n * @notice The Fast Automatons facet is in charge of keeping track of automaton accounts.\\n */\\ncontract FastAutomatonsFacet is AFastFacet, AHasAutomatons {\\n  /// Constants etc.\\n\\n  /// Automatons management.\\n\\n  function isAutomatonsManager(address who)\\n      internal view override(AHasAutomatons)\\n      returns(bool) {\\n    return _isIssuerMember(who);\\n  }\\n}\\n\",\"keccak256\":\"0x3140b6b7c2989b7907b03b474f217d220847ff2487af2a05b0d10d744c096c35\",\"license\":\"MIT\"},\"contracts/fast/FastFrontendFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../lib/LibHelpers.sol';\\nimport '../lib/LibAddressSet.sol';\\nimport '../lib/LibPaginate.sol';\\nimport './lib/AFastFacet.sol';\\nimport './lib/LibFastToken.sol';\\n\\n\\n/**\\n * @notice A facet dedicated to view / UI only methods. This facet should never hold any method that\\n * is not either `pure` or `view`, except to emit events.\\n */\\ncontract FastFrontendFacet is AFastFacet {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Data structures.\\n\\n  /**\\n   * @notice This struct groups the common attributes of a FAST.\\n   * @dev This struct shouldn't be used in internal storage.\\n   */\\n  struct Details {\\n    /// @notice The `address` of the FAST.\\n    address addr;\\n    /// @notice The `name` of the FAST (ERC20).\\n    string name;\\n    /// @notice The `symbol` of the FAST (ERC20).\\n    string symbol;\\n    /// @notice The `decimals` of the FAST (ERC20).\\n    uint8 decimals;\\n    /// @notice The `totalSupply` of the FAST (ERC20).\\n    uint256 totalSupply;\\n    /// @notice Whether the FAST is semi public or not.\\n    bool isSemiPublic;\\n    /// @notice Whether the FAST has a fixed supply or continious.\\n    bool hasFixedSupply;\\n    /// @notice Whether the transfers are enabled or not for this FAST.\\n    bool transfersDisabled;\\n    /// @notice The reserve balance.\\n    uint256 reserveBalance;\\n    /// @notice The Ether balance.\\n    uint256 ethBalance;\\n    /// @notice The number of members the FAST has.\\n    uint256 memberCount;\\n    /// @notice The number of governors for the FAST.\\n    uint256 governorCount;\\n  }\\n\\n  /**\\n   * @notice Governor level details.\\n   * @dev Note that **this struct shouldn't be used in internal storage**.\\n   */\\n  struct GovernorDetails {\\n    /// @notice The Governor's address.\\n    address addr;\\n    uint256 ethBalance;\\n    /// @notice Whether the Governor is also a Member.\\n    bool isMember;\\n  }\\n\\n  /**\\n   * @notice Member level details.\\n   * @dev This struct shouldn't be used in internal storage.\\n   */\\n  struct MemberDetails {\\n    /// @notice The Member's address.\\n    address addr;\\n    /// @notice The Member's balance.\\n    uint256 balance;\\n    uint256 ethBalance;\\n    /// @notice Whether the Member is also a Governor.\\n    bool isGovernor;\\n  }\\n\\n  /// Emitters.\\n\\n  /**\\n   * @notice Called by diamond facets, signals that FAST details may have changed.\\n   * \\n   * Business logic:\\n   * - Modifiers:\\n   *   - Requires the caller to be another facet of the diamond.\\n   * Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`\\n   */\\n  function emitDetailsChanged()\\n      external onlyDiamondFacet {\\n    LibFastToken.Data storage tokenData = LibFastToken.data();\\n    emit DetailsChanged({\\n      transfersDisabled: LibFast.data().transfersDisabled,\\n      memberCount: LibHasMembers.data().memberSet.values.length,\\n      governorCount: LibHasGovernors.data().governorSet.values.length,\\n      totalSupply: tokenData.totalSupply,\\n      reserveBalance: tokenData.balances[LibHelpers.ZERO_ADDRESS],\\n      ethBalance: payable(address(this)).balance\\n    });\\n  }\\n\\n  /// Public functions.\\n\\n  /**\\n   * @notice Gets the details of a FAST.\\n   * @return The details for the current FAST, see `Details`.\\n   */\\n  function details()\\n      public view returns(Details memory) {\\n    LibFast.Data storage topStorage = LibFast.data();\\n    LibFastToken.Data storage tokenStorage = LibFastToken.data();\\n    return Details({\\n      addr: address(this),\\n      name: tokenStorage.name,\\n      symbol: tokenStorage.symbol,\\n      decimals: tokenStorage.decimals,\\n      totalSupply: tokenStorage.totalSupply,\\n      isSemiPublic: topStorage.isSemiPublic,\\n      hasFixedSupply: topStorage.hasFixedSupply,\\n      transfersDisabled: topStorage.transfersDisabled,\\n      reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],\\n      ethBalance: payable(address(this)).balance,\\n      memberCount: AHasMembers(address(this)).memberCount(),\\n      governorCount: LibHasGovernors.data().governorSet.values.length\\n    });\\n  }\\n\\n  /**\\n   * @notice Gets detailed governor details.\\n   * @return GovernorDetails See: `GovernorDetails`.\\n   */\\n  function detailedGovernor(address governor)\\n      public view returns(GovernorDetails memory) {\\n    return GovernorDetails({\\n      addr: governor,\\n      ethBalance: governor.balance,\\n      isMember: AHasMembers(address(this)).isMember(governor)\\n    });\\n  }\\n\\n  function paginateDetailedGovernors(uint256 index, uint256 perPage)\\n      external view returns(GovernorDetails[] memory, uint256) {\\n    (address[] memory governors, uint256 nextCursor) =\\n      LibPaginate.addresses(LibHasGovernors.data().governorSet.values, index, perPage);\\n    GovernorDetails[] memory values = new GovernorDetails[](governors.length);\\n    uint256 length =  governors.length;\\n    for (uint256 i = 0; i < length;) {\\n      values[i] = detailedGovernor(governors[i]);\\n      unchecked { ++i; }\\n    }\\n    return (values, nextCursor);\\n  }\\n\\n  /**\\n   * @notice Gets detailed member details.\\n   * @return A FAST member's details, see `MemberDetails`.\\n   */\\n  function detailedMember(address member)\\n      public view returns(MemberDetails memory) {\\n    return MemberDetails({\\n      addr: member,\\n      balance: LibFastToken.data().balances[member],\\n      ethBalance: member.balance,\\n      isGovernor: LibHasGovernors.data().governorSet.contains(member)\\n    });\\n  }\\n\\n  function paginateDetailedMembers(uint256 index, uint256 perPage)\\n      external view returns(MemberDetails[] memory, uint256) {\\n    LibHasMembers.Data storage membersData = LibHasMembers.data();\\n    (address[] memory members, uint256 nextCursor) =\\n      LibPaginate.addresses(membersData.memberSet.values, index, perPage);\\n    MemberDetails[] memory values = new MemberDetails[](members.length);\\n    uint256 length = members.length;\\n    for (uint256 i = 0; i < length;) {\\n      values[i] = detailedMember(members[i]);\\n      unchecked { ++i; }\\n    }\\n    return (values, nextCursor);\\n  }\\n}\\n\",\"keccak256\":\"0xaa010f873d59dae286c7948ae565b1a421a35f417ee638491084497721bb23b2\",\"license\":\"MIT\"},\"contracts/fast/lib/AFastFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../lib/LibHelpers.sol';\\nimport '../../lib/LibAddressSet.sol';\\nimport '../../common/AHasGovernors.sol';\\nimport '../../common/AHasMembers.sol';\\nimport '../../common/AHasAutomatons.sol';\\nimport '../../interfaces/IHasActiveMembers.sol';\\nimport '../lib/LibFast.sol';\\nimport './IFastEvents.sol';\\n\\n\\n/**\\n * @title Abstract FAST helper contract.\\n * @notice This abstract contract encapsulates modifiers allowing inheriting facets to guard against\\n * certain permissions.\\n */\\nabstract contract AFastFacet is IFastEvents {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Internal ACL functions.\\n\\n  function _isMarketplaceMember(address who)\\n      internal view returns(bool) {\\n    return AHasMembers(LibFast.data().marketplace).isMember(who);\\n  }\\n\\n  function _isMarketplaceActiveMember(address who)\\n      internal view returns(bool) {\\n    return IHasActiveMembers(LibFast.data().marketplace).isActiveMember(who);\\n  }\\n\\n  function _isIssuerMember(address who)\\n      internal view returns(bool) {\\n    return AHasMembers(LibFast.data().issuer).isMember(who);\\n  }\\n\\n  /// Modifiers.\\n\\n  /// @notice Ensures that a method can only be called by another facet of the same diamond.\\n  modifier onlyDiamondFacet() {\\n    if (!LibHelpers._isDiamondFacet(msg.sender))\\n      revert ICustomErrors.InternalMethod();\\n    _;\\n  }\\n\\n  /// @notice Ensures that a method can only be called by the owner of this diamond.\\n  modifier onlyDiamondOwner() {\\n    if (!LibHelpers._isDiamondOwner(msg.sender))\\n      revert ICustomErrors.RequiresDiamondOwnership(msg.sender);\\n    _;\\n  }\\n\\n  /// @notice Ensures that a method can only be called by the singleton deployer contract factory.\\n  modifier onlyDeployer() {\\n    if (!LibHelpers._isDeployer(msg.sender))\\n      revert ICustomErrors.InternalMethod();\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures that the given address is a member of the Marketplace.\\n   * @param who The address to check.\\n   */\\n  modifier onlyMarketplaceMember(address who) {\\n    if (!_isMarketplaceMember(who))\\n      revert ICustomErrors.RequiresMarketplaceMembership(who);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures a who is an active member of the Marketplace.\\n   * @param who The address to check.\\n   */\\n  modifier onlyMarketplaceActiveMember(address who) {\\n    if (!_isMarketplaceActiveMember(who))\\n      revert ICustomErrors.RequiresMarketplaceActiveMembership(who);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures that the message sender is a member of the Issuer.\\n   */\\n  modifier onlyIssuerMember() {\\n    if (!_isIssuerMember(msg.sender))\\n      revert ICustomErrors.RequiresIssuerMembership(msg.sender);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures that the given address is a governor of the FAST.\\n   * @param who The address to check.\\n   */\\n  modifier onlyGovernor(address who) {\\n    if (!AHasGovernors(address(this)).isGovernor(who))\\n      revert ICustomErrors.RequiresFastGovernorship(who);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures that the given address is a member of the FAST.\\n   * @param who The address to check.\\n   */\\n  modifier onlyMember(address who) {\\n    if (!AHasMembers(address(this)).isMember(who))\\n      revert ICustomErrors.RequiresFastMembership(who);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Ensures address `a` and `b` are different.\\n   * @param a Address a\\n   * @param b Address b\\n   */\\n  modifier differentAddresses(address a, address b) {\\n    if (a == b)\\n      revert ICustomErrors.RequiresDifferentSenderAndRecipient(a);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0x65d3de91cdbe5ddbd9440fa08b0974534cc138d60451329d78a8affeef082403\",\"license\":\"MIT\"},\"contracts/fast/lib/IFastEvents.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../fast/Distribution.sol';\\n\\n\\n/**\\n * @title FAST events inventory.\\n * @notice An interface allowing to use events within the Diamond pattern without name colisions.\\n * @dev The idea is that as several facets can emit the same events, we don't want to have to re-declare\\n * the same event several time. This interface is a per-diamond central place for such event declaration.\\n */\\ninterface IFastEvents {\\n  /// Issuance related events.\\n  \\n  /**\\n   * @notice Emited whenever an issuance happens in a FAST.\\n   * @param amount is the amount of tokens that have been minted.\\n   * @param ref is the reference associated with the minting operation.\\n   * @param who is the account from which the minting operation originated.\\n   */\\n  event Minted(uint256 indexed amount, string indexed ref, address indexed who);\\n  /**\\n   * @notice Emited whenever an burning happens in a FAST.\\n   * @param amount is the amount of tokens that have been burnt.\\n   * @param ref is the reference associated with the burning operation.\\n   * @param who is the account from which the burning operation originated.\\n   */\\n  event Burnt(uint256 indexed amount, string indexed ref, address indexed who);\\n\\n  /// Transfer and ERC20 stuff.\\n\\n  /// @notice See `ERC20.Transfer`.\\n  event Transfer(address indexed from, address indexed to, uint256 value);\\n  /// @notice See `ERC20.Approval`.\\n  event Approval(address indexed owner, address indexed spender, uint256 value);\\n  /// @notice See `ERC20.Disapproval`.\\n  event Disapproval(address indexed owner, address indexed spender, uint256 value);\\n  /**\\n   * @notice As we augmented the ERC20 standard with a few concepts, we emit our custom events\\n   * in addition to the ERC20 ones.\\n   * @param spender is the account who performed the transfer.\\n   * @param from is the account from which the tokens will be debited from.\\n   * @param to is the account to which the tokens will be credited to.\\n   * @param value is the amount of tokens transfered.\\n   * @param ref is the optional reference associated with the transfer.\\n   */\\n  event FastTransfer(address indexed spender, address indexed from, address indexed to, uint256 value, string ref);\\n\\n  /// Distribution related events.\\n\\n  event DistributionDeployed(Distribution indexed distribution);\\n\\n  /// General events.\\n\\n  /**\\n   * @notice This is an event that is fired whenever any of some of the FAST parameters\\n   * change, so that the frontend can react to it and refresh the general header\\n   * for that fast as well as the baseball cards in the FASTs list.\\n   * @param transfersDisabled marks whether or not transfers are disabled by an issuer member at FAST level.\\n   * @param memberCount is the number of members in the FAST.\\n   * @param governorCount is the number of governors in the FAST.\\n   * @param totalSupply is the amount of tokens in circulation in the FAST.\\n   * @param reserveBalance is the balance of the zero-address (aka reserve) for the FAST.\\n   * @param ethBalance is the amount of Eth locked in the FAST.\\n   */\\n  event DetailsChanged(\\n    bool transfersDisabled,\\n    uint256 memberCount,\\n    uint256 governorCount,\\n    uint256 totalSupply,\\n    uint256 reserveBalance,\\n    uint256 ethBalance\\n  );\\n}\\n\",\"keccak256\":\"0x59aab606ded87870666779ab4ad293dcb7a75006b9d0943c79f51257bca3203a\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFast.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n\\n/**\\n * @notice Top-level shared functionality for FAST diamonds.\\n * @dev Note that if you feel like a method should be created inside this library, you might want to really consider\\n * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode\\n * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. \\n */\\nlibrary LibFast {\\n  /// @notice The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  /// @notice This is keccak256('Fast.storage'):\\n  bytes32 internal constant STORAGE_SLOT = 0x80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705;\\n\\n  // Data structures.\\n\\n  /**\\n   * @notice The top-level data structure required for operating any given FAST diamond.\\n   * @dev The `version` field is used to ensure that storage is at a known version during upgrades.\\n   */\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice The internal pointer to the Issuer contract.\\n    address issuer;\\n    /// @notice The internal pointer to the Marketplace contract.\\n    address marketplace;\\n    /// @notice We have to track whether the token facet provides continuous minting or fixed supply.\\n    bool hasFixedSupply;\\n    /// @notice Whether or not this FAST requires to be a member to hold tokens.\\n    bool isSemiPublic;\\n    /// @notice A flag which when toggled to `true` disables all transfers across this FAST.\\n    bool transfersDisabled;\\n  }\\n\\n  /**\\n   * @notice Returns the top-level storage for the calling FAST.\\n   * @return s a struct pointer for top-level FAST data storage.\\n   */\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0xf97ea4e8187984eb5209dc6d4d455eaa1c2e46bdb8d1cf72cf88b5f5b9f7c174\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastHistory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n\\n/**\\n * @notice This library centralises shared functionality between FAST diamonds facets that have to do with transfer\\n * history tracking.\\n * @dev Note that if you feel like a method should be created inside this library, you might want to really consider\\n * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode\\n * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. \\n */\\nlibrary LibFastHistory {\\n  /// @notice The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  /// @notice This is keccak256('Fast.storage.History'):\\n  bytes32 internal constant STORAGE_SLOT = 0x6bc8b61a9dd5fc049ea98027492a801d74e35fdf4d80d7fecd551a16e88fdbb4;\\n\\n  // Storage structures.\\n\\n  /**\\n   * @notice The history data structure required for operating any given FAST diamond.\\n   * @dev The `version` field is used to ensure that storage is at a known version during upgrades.\\n   */\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice All minting proofs are kept here.\\n    SupplyProof[] supplyProofs;\\n    /// @notice All transfer proofs are kept here.\\n    TransferProof[] transferProofs;\\n    /// @notice All transfers indices involving a given address are kept here.\\n    mapping(address => uint256[]) transferProofInvolvements;\\n  }\\n\\n  // Other structures.\\n\\n  /// @notice A minting operation could either be to mint or burn tokens.\\n  enum SupplyOp { Mint, Burn }\\n\\n  /// @notice Minting operations are recorded for papertrail. This is the structure that keeps track of them.\\n  struct SupplyProof {\\n    /// @notice How...\\n    SupplyOp op;\\n    /// @notice How much...\\n    uint256 amount;\\n    /// @notice When...\\n    uint256 blockNumber;\\n    /// @notice Why...\\n    string ref;\\n  }\\n\\n  /// @notice Every transfer in is recorded. This is the structure that keeps track of them.\\n  struct TransferProof {\\n    /// @notice Who spent...\\n    address spender;\\n    /// @notice Who performed the transfer...\\n    address from;\\n    /// @notice Who received...\\n    address to;\\n    /// @notice How much...\\n    uint256 amount;\\n    /// @notice When...\\n    uint256 blockNumber;\\n    /// @notice Why...\\n    string ref;\\n  }\\n\\n  /**\\n   * @notice Returns the history storage for the calling FAST.\\n   * @return s a struct pointer for history FAST data storage.\\n   */\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x39b21b41198e6fa219cd8eec59124cda25395bf19174aa809c0c41d650765d73\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastToken.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../../lib/LibAddressSet.sol';\\n\\n\\n/**\\n * @notice This library centralises shared functionality between FAST diamonds facets that have to do with token related logic.\\n * @dev Note that if you feel like a method should be created inside this library, you might want to really consider\\n * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode\\n * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. \\n */\\nlibrary LibFastToken {\\n  /// @notice The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  /// @notice This is keccak256('Fast.storage.Token'):\\n  bytes32 internal constant STORAGE_SLOT = 0xb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261;\\n\\n  // Constants.\\n\\n  string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';\\n\\n  // Data structures.\\n\\n  /**\\n   * @notice The token data structure required for operating any given FAST diamond.\\n   * @dev The `version` field is used to ensure that storage is at a known version during upgrades.\\n   */\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    // ERC20 related properties for this FAST Token.\\n    /// @notice The name of the FAST.\\n    string name;\\n    /// @notice The symbol for this FAST.\\n    string symbol;\\n    /// @notice The decimal points used by this FAST.\\n    uint8 decimals;\\n    /// @notice The amount of tokens in circulation.\\n    uint256 totalSupply;\\n    /// @notice Legacy variable.\\n    uint256 LEGACY_transferCredits;\\n    /// @notice Our members balances are held here.\\n    mapping(address => uint256) balances;\\n    // Allowances are stored here.\\n    /// @notice Allowance amounts are stored in here, via mapping of `owner.spender.amount`\\n    mapping(address => mapping(address => uint256)) allowances;\\n    /// @notice A reverse lookup table allowing to retrieve allowances given by owner.\\n    mapping(address => LibAddressSet.Data) allowancesByOwner;\\n    /// @notice A reverse lookup table allowing to retrieve allowances given by spender.\\n    mapping(address => LibAddressSet.Data) allowancesBySpender;\\n    /// @notice All of this FAST token holders.\\n    LibAddressSet.Data tokenHolders;\\n  }\\n\\n  /**\\n   * @notice Returns the token storage for the calling FAST.\\n   * @return s a struct pointer for token FAST data storage.\\n   */\\n  function data()\\n      internal pure returns(Data storage s) {\\n    assembly {s.slot := STORAGE_SLOT}\\n  }\\n}\\n\",\"keccak256\":\"0x03817dcb731b24b60f2b72aa220c33b137c43dcc15cf34475e9b0652335ab657\",\"license\":\"MIT\"},\"contracts/interfaces/ICustomErrors.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n\\ninterface ICustomErrors {\\n  error AlreadyInitialized();\\n  error InternalMethod();\\n  error RequiresDiamondOwnership(address who);\\n  error RequiresFastContractCaller();\\n\\n  error RequiresTransfersEnabled();\\n  error RequiresIssuerMembership(address who);\\n  error RequiresMarketplaceMembership(address who);\\n  error RequiresMarketplaceActiveMembership(address who);\\n  error RequiresMarketplaceDeactivatedMember(address who);\\n\\n  error RequiresValidTokenHolder(address who);\\n  error RequiresFastGovernorship(address who);\\n  error RequiresFastMembership(address who);\\n  error RequiresNoFastMemberships(address who);\\n\\n  error RequiresOwner(address who);\\n\\n  error InsufficientFunds(uint256 missing);\\n\\n  error DuplicateEntry();\\n  error NonExistentEntry();\\n  error UnsupportedOperation();\\n  error CannotSelfRemove(address who);\\n  error ReentrancyError();\\n\\n  error RequiresContinuousSupply();\\n  error RequiresPositiveBalance(address holder);\\n  error RequiresDifferentSenderAndRecipient(address a);\\n}\\n\",\"keccak256\":\"0x488da257b5263041fb65c72b8f87b6dcf941749d82e232c88a3246b89c7e730f\",\"license\":\"MIT\"},\"contracts/interfaces/IERC173.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n/**\\n * @title ERC173 Contract Ownership Standard\\n * @dev The ERC165 identifier for this interface is 0x7f5828d0.\\n */\\ninterface IERC173 {\\n    /// @notice This emits when ownership of a contract changes.\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /// @notice Get the address of the owner\\n    /// @return owner_ The address of the owner.\\n    function owner() external view returns (address owner_);\\n\\n    /// @notice Set the address of the new owner of the contract\\n    /// @notice Set _newOwner to address(0) to renounce any ownership.\\n    /// @param _newOwner The address of the new owner of the contract\\n    function transferOwnership(address _newOwner) external;\\n}\\n\",\"keccak256\":\"0xdb5140cc2b82a3fa14aec9b29d77705e66a7b4ca5ea6ba6f4cd7364c636344df\",\"license\":\"MIT\"},\"contracts/interfaces/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n/// @title ERC20 standard as defined in the EIP.\\ninterface IERC20 {\\n  /**\\n   * @notice Allows to query the total number of tokens in circulation.\\n   * @return An `uint256` representing how many tokens are currently in circulation.\\n   */\\n  function totalSupply() external view returns (uint256);\\n\\n  /**\\n   * @notice Allows to query the balance of a given address.\\n   * @param account is the address for which the balance shall be queried.\\n   * @return An `uint256` - the balance for the given address.\\n   */\\n  function balanceOf(address account) external view returns (uint256);\\n\\n  /**\\n   * @notice Moves `amount` tokens from the caller's account to `recipient`.\\n   * @param recipient is the address to which the funds should be sent to, if successful.\\n   * @param amount is the amount of tokens to transfef.\\n   * @return A `bool` which value is `true` when the operation was successful.\\n   */\\n  function transfer(address recipient, uint256 amount) external returns (bool);\\n\\n  /**\\n   * @notice Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner`\\n   * through `transferFrom`. This is zero by default.\\n   * @dev This value changes when `approve`, `disapprove` and `transferFrom` / `transferFromWithRef` are called.\\n   * @param owner is the owner of the funds.\\n   * @param spender is the address for which the allowance should be queried.\\n   * @return A `uint256` representing the remaining allowance of `spender` over `owner`'s funds.\\n   */\\n  function allowance(address owner, address spender) external view returns (uint256);\\n\\n  /**\\n   * @notice Increases the allowance of `spender` by `amount`.\\n   * @param spender is the address towards which the allowance should be given.\\n   * @return A `bool` set to `true` when the operation was successful.\\n   */\\n  function approve(address spender, uint256 amount) external returns (bool);\\n\\n  /**\\n   * @notice Attempts to transfer `amount` tokens from `sender` to `recipient` using the\\n   * allowance mechanism. `amount` is then deducted from the caller's allowance.\\n   * @return A `bool` set to `true` when the operation was successful.\\n   */\\n  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);\\n}\\n\",\"keccak256\":\"0x79731c983219a24087d3bb925b9dd5c3cb3c85ebfdcd45afce5826bc2d53710f\",\"license\":\"MIT\"},\"contracts/interfaces/IHasActiveMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n\\n/// @title An interface signifying that the inheriting contract implements the concept of active memberships.\\ninterface IHasActiveMembers {\\n  /**\\n   * @notice Queries whether a given account is a member of the marketplace and flagged as active.\\n   * @param member is the address to query.\\n   * @return A `bool` set to `true` if the candidate is an active member.\\n   */\\n  function isActiveMember(address member) external view returns(bool);\\n\\n  /**\\n   * @notice Deactivates a given member address.\\n   * @param member is the address to deactivate.\\n   */\\n  function deactivateMember(address payable member) external;\\n\\n  /**\\n   * @notice Activates a given member address.\\n   * @param member is the address to activate.\\n   */\\n  function activateMember(address member) external;\\n}\\n\",\"keccak256\":\"0xd6e4d8a9c09973877ab59d155dfd99c881b0e19fdf428aa9d5bf78d292f44234\",\"license\":\"MIT\"},\"contracts/lib/LibAddressSet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n\\nlibrary LibAddressSet {\\n  /// @notice Represents a list of addresses.\\n  struct Data {\\n    mapping(address => uint256) indices;\\n    address[] values;\\n  }\\n\\n  /**\\n   * @notice Adds an item into the storage set. If the address already exists in the set, the method reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be added.\\n   */\\n  function add(Data storage d, address key, bool noThrow)\\n      internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && exists) { return; }\\n    require(!exists, 'Address already in set');\\n    d.indices[key] = d.values.length;\\n    d.values.push(key);\\n  }\\n\\n  /**\\n   * @notice Removes an item from the storage set. If the address does not exist in the set, the method reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be removed.\\n   */\\n  function remove(Data storage d, address key, bool noThrow)\\n      internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && !exists) { return; }\\n    require(exists, 'Address does not exist in set');\\n    address keyToMove = d.values[d.values.length - 1];\\n    uint256 idxToReplace = d.indices[key];\\n    d.indices[keyToMove] = idxToReplace;\\n    d.values[idxToReplace] = keyToMove;\\n\\n    delete d.indices[key];\\n    d.values.pop();\\n  }\\n\\n  /**\\n   * @notice Tests whether or not a given item already exists in the set.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to test.\\n   * @return a boolean.\\n   */\\n  function contains(Data storage d, address key)\\n      internal view returns(bool) {\\n    return d.values.length == 0\\n      ? false\\n      : d.values[d.indices[key]] == key;\\n  }\\n}\\n\",\"keccak256\":\"0x7411b83b6853f77fd7b0fef32c5367edad2396ec83f82c45c81297e1d1376e50\",\"license\":\"MIT\"},\"contracts/lib/LibHelpers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport './LibHelpers.sol';\\nimport '../interfaces/IERC173.sol';\\n\\nlibrary LibHelpers {\\n  address internal constant ZERO_ADDRESS = address(0);\\n  address internal constant DEPLOYER_CONTRACT = 0x6DF2D25d8C6FD680730ee658b530A05a99BB769a;\\n\\n  function _isDiamondFacet(address who)\\n      internal view returns(bool) {\\n    return who == address(this);\\n  }\\n  \\n  function _isDiamondOwner(address who)\\n      internal view returns(bool) {\\n    return who == IERC173(address(this)).owner();\\n  }\\n\\n  function _isDeployer(address who)\\n      internal pure returns(bool) {\\n    return who == LibHelpers.DEPLOYER_CONTRACT;\\n  }\\n}\\n\",\"keccak256\":\"0xe49c0442da7b7cce1940847f70bc6c77e85f97b5ae8e580e612b4f027d2c7dc4\",\"license\":\"MIT\"},\"contracts/lib/LibPaginate.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport '../fast/lib/LibFastHistory.sol';\\n\\n\\nlibrary LibPaginate {\\n  function addresses(address[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(address[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      address[] memory values = new address[](length);\\n      for (uint256 i = 0; i < length;) {\\n        values[i] = collection[cursor + i];\\n        unchecked { ++i; }\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function uint256s(uint256[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(uint256[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      uint256[] memory values = new uint256[](length);\\n      for (uint256 i = 0; i < length;) {\\n        values[i] = collection[cursor + i];\\n        unchecked { ++i; }\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function supplyProofs(LibFastHistory.SupplyProof[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(LibFastHistory.SupplyProof[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      LibFastHistory.SupplyProof[] memory values = new LibFastHistory.SupplyProof[](length);\\n      for (uint256 i = 0; i < length;) {\\n        values[i] = collection[cursor + i];\\n        unchecked { ++i; }\\n      }\\n      return (values, cursor + length);\\n  }\\n\\n  function transferProofs(LibFastHistory.TransferProof[] storage collection, uint256 cursor, uint256 perPage)\\n    internal view returns(LibFastHistory.TransferProof[] memory, uint256) {\\n      uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n      LibFastHistory.TransferProof[] memory values = new LibFastHistory.TransferProof[](length);\\n      for (uint256 i = 0; i < length;) {\\n        values[i] = collection[cursor + i];\\n        unchecked { ++i; }\\n      }\\n      return (values, cursor + length);\\n  }\\n}\",\"keccak256\":\"0xb1c624707faa2688853bce5e4ad8e073bb67968a9de5134dfa80bb29fb73c8f4\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506110cb806100206000396000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c806388a915241161005057806388a91524146100bf57806398d55d68146100df5780639f4c440b1461010057600080fd5b80634f2274c014610077578063565974d314610081578063677d9a681461009f575b600080fd5b61007f610121565b005b6100896102ca565b6040516100969190610c54565b60405180910390f35b6100b26100ad366004610d64565b61063c565b6040516100969190610da1565b6100d26100cd366004610d64565b61070c565b6040516100969190610dda565b6100f26100ed366004610e1d565b6107df565b604051610096929190610e3f565b61011361010e366004610e1d565b610900565b604051610096929190610ebf565b30331461015a576040517f12e9ad3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e706547fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb93547fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd4862977547fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826554600080527fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826760209081527f46c1c84a085e09f9e9a4265c25fbada4be722ba2683afd74e0ddd9e11b58aaa9546040805160ff7601000000000000000000000000000000000000000000009098049790971615158752918601949094528481019290925260608401526080830191909152303160a0830152517fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261917f59e5927a7b608a245cdd6689f7334b92ae80e151dcd9a1b08c77bb17aeee20a3919081900360c00190a150565b61034d604051806101800160405280600073ffffffffffffffffffffffffffffffffffffffff1681526020016060815260200160608152602001600060ff16815260200160008152602001600015158152602001600015158152602001600015158152602001600081526020016000815260200160008152602001600081525090565b6040805161018081019091523081527fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826280547f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705927fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb82619290916020830191906103d490610f4a565b80601f016020809104026020016040519081016040528092919081815260200182805461040090610f4a565b801561044d5780601f106104225761010080835404028352916020019161044d565b820191906000526020600020905b81548152906001019060200180831161043057829003601f168201915b5050505050815260200182600201805461046690610f4a565b80601f016020809104026020016040519081016040528092919081815260200182805461049290610f4a565b80156104df5780601f106104b4576101008083540402835291602001916104df565b820191906000526020600020905b8154815290600101906020018083116104c257829003601f168201915b5050509183525050600383015460ff9081166020808401919091526004808601546040808601919091526001880154750100000000000000000000000000000000000000000081048516151560608701527401000000000000000000000000000000000000000081048516151560808701527601000000000000000000000000000000000000000000009004909316151560a085015260008080526006870183528390205460c085015230803160e086015283517f11aee38000000000000000000000000000000000000000000000000000000000815293516101009095019490936311aee38093818401939092918290030181865afa1580156105e7573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061060b9190610f9e565b81527fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd4862977546020909101529392505050565b60408051606081018252600080825260208201819052918101919091526040805160608101825273ffffffffffffffffffffffffffffffffffffffff84168082528031602083015282517fa230c52400000000000000000000000000000000000000000000000000000000815260048101919091529091820190309063a230c52490602401602060405180830381865afa1580156106de573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107029190610fb7565b1515905292915050565b60408051608081018252600080825260208201819052918101829052606081019190915260405180608001604052808373ffffffffffffffffffffffffffffffffffffffff16815260200161077e7fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826190565b73ffffffffffffffffffffffffffffffffffffffff851660008181526006929092016020908152604092839020548452903190830152016107027fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd486297685610a4a565b6060600080806108107fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd48629778787610ac8565b915091506000825167ffffffffffffffff81111561083057610830610fd9565b60405190808252806020026020018201604052801561089957816020015b60408051606081018252600080825260208083018290529282015282527fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff90920191018161084e5790505b50835190915060005b818110156108f1576108cc8582815181106108bf576108bf611008565b602002602001015161063c565b8382815181106108de576108de611008565b60209081029190910101526001016108a2565b50909791965090945050505050565b606060007fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb9181806109527fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb938888610ac8565b915091506000825167ffffffffffffffff81111561097257610972610fd9565b6040519080825280602002602001820160405280156109e257816020015b6040805160808101825260008082526020808301829052928201819052606082015282527fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9092019101816109905790505b50835190915060005b81811015610a3a57610a15858281518110610a0857610a08611008565b602002602001015161070c565b838281518110610a2757610a27611008565b60209081029190910101526001016109eb565b5090989197509095505050505050565b600182015460009015610abc5773ffffffffffffffffffffffffffffffffffffffff82166000818152602085905260409020546001850180549091908110610a9457610a94611008565b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff1614610abf565b60005b90505b92915050565b6060600080848680549050610add9190611066565b8411610ae95783610af6565b8554610af6908690611066565b905060008167ffffffffffffffff811115610b1357610b13610fd9565b604051908082528060200260200182016040528015610b3c578160200160208202803683370190505b50905060005b82811015610bcf5787610b55828961107d565b81548110610b6557610b65611008565b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16828281518110610ba257610ba2611008565b73ffffffffffffffffffffffffffffffffffffffff90921660209283029190910190910152600101610b42565b5080610bdb838861107d565b935093505050935093915050565b6000815180845260005b81811015610c0f57602081850181015186830182015201610bf3565b81811115610c21576000602083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b60208152610c7b60208201835173ffffffffffffffffffffffffffffffffffffffff169052565b60006020830151610180806040850152610c996101a0850183610be9565b915060408501517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0858403016060860152610cd48382610be9565b9250506060850151610ceb608086018260ff169052565b50608085015160a085015260a0850151610d0960c086018215159052565b5060c085015180151560e08601525060e0850151610100610d2d8187018315159052565b8601516101208681019190915286015161014080870191909152860151610160808701919091529095015193019290925250919050565b600060208284031215610d7657600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610d9a57600080fd5b9392505050565b815173ffffffffffffffffffffffffffffffffffffffff1681526020808301519082015260408083015115159082015260608101610ac2565b815173ffffffffffffffffffffffffffffffffffffffff168152602080830151908201526040808301519082015260608083015115159082015260808101610ac2565b60008060408385031215610e3057600080fd5b50508035926020909101359150565b60408082528351908201819052600090606090818401906020808801855b83811015610eac57610e9c858351805173ffffffffffffffffffffffffffffffffffffffff168252602080820151908301526040908101511515910152565b9385019390820190600101610e5d565b5050949094019490945250919392505050565b604080825283519082018190526000906020906060840190828701845b82811015610f3b57610f2884835173ffffffffffffffffffffffffffffffffffffffff815116825260208101516020830152604081015160408301526060810151151560608301525050565b6080939093019290840190600101610edc565b50505092019290925292915050565b600181811c90821680610f5e57607f821691505b60208210811415610f98577f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b50919050565b600060208284031215610fb057600080fd5b5051919050565b600060208284031215610fc957600080fd5b81518015158114610d9a57600080fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60008282101561107857611078611037565b500390565b6000821982111561109057611090611037565b50019056fea26469706673582212202ad113e429b7e46f8f2f5b7eaf7724c7f34a169cbbb4f89aa040af74d661938964736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100725760003560e01c806388a915241161005057806388a91524146100bf57806398d55d68146100df5780639f4c440b1461010057600080fd5b80634f2274c014610077578063565974d314610081578063677d9a681461009f575b600080fd5b61007f610121565b005b6100896102ca565b6040516100969190610c54565b60405180910390f35b6100b26100ad366004610d64565b61063c565b6040516100969190610da1565b6100d26100cd366004610d64565b61070c565b6040516100969190610dda565b6100f26100ed366004610e1d565b6107df565b604051610096929190610e3f565b61011361010e366004610e1d565b610900565b604051610096929190610ebf565b30331461015a576040517f12e9ad3300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e706547fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb93547fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd4862977547fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826554600080527fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826760209081527f46c1c84a085e09f9e9a4265c25fbada4be722ba2683afd74e0ddd9e11b58aaa9546040805160ff7601000000000000000000000000000000000000000000009098049790971615158752918601949094528481019290925260608401526080830191909152303160a0830152517fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb8261917f59e5927a7b608a245cdd6689f7334b92ae80e151dcd9a1b08c77bb17aeee20a3919081900360c00190a150565b61034d604051806101800160405280600073ffffffffffffffffffffffffffffffffffffffff1681526020016060815260200160608152602001600060ff16815260200160008152602001600015158152602001600015158152602001600015158152602001600081526020016000815260200160008152602001600081525090565b6040805161018081019091523081527fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826280547f80c187ea6f955fd624c41fb7a18011cc87d98c6f4c06d897b59142f65707e705927fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb82619290916020830191906103d490610f4a565b80601f016020809104026020016040519081016040528092919081815260200182805461040090610f4a565b801561044d5780601f106104225761010080835404028352916020019161044d565b820191906000526020600020905b81548152906001019060200180831161043057829003601f168201915b5050505050815260200182600201805461046690610f4a565b80601f016020809104026020016040519081016040528092919081815260200182805461049290610f4a565b80156104df5780601f106104b4576101008083540402835291602001916104df565b820191906000526020600020905b8154815290600101906020018083116104c257829003601f168201915b5050509183525050600383015460ff9081166020808401919091526004808601546040808601919091526001880154750100000000000000000000000000000000000000000081048516151560608701527401000000000000000000000000000000000000000081048516151560808701527601000000000000000000000000000000000000000000009004909316151560a085015260008080526006870183528390205460c085015230803160e086015283517f11aee38000000000000000000000000000000000000000000000000000000000815293516101009095019490936311aee38093818401939092918290030181865afa1580156105e7573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061060b9190610f9e565b81527fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd4862977546020909101529392505050565b60408051606081018252600080825260208201819052918101919091526040805160608101825273ffffffffffffffffffffffffffffffffffffffff84168082528031602083015282517fa230c52400000000000000000000000000000000000000000000000000000000815260048101919091529091820190309063a230c52490602401602060405180830381865afa1580156106de573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107029190610fb7565b1515905292915050565b60408051608081018252600080825260208201819052918101829052606081019190915260405180608001604052808373ffffffffffffffffffffffffffffffffffffffff16815260200161077e7fb098747b87c5c0e2a32eb9b06725e9bad4263809bcda628ceadc1a686bcb826190565b73ffffffffffffffffffffffffffffffffffffffff851660008181526006929092016020908152604092839020548452903190830152016107027fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd486297685610a4a565b6060600080806108107fdac4df64cf6992e5f0fa766abc48a6698b638db4d8eeee68133c41fdd48629778787610ac8565b915091506000825167ffffffffffffffff81111561083057610830610fd9565b60405190808252806020026020018201604052801561089957816020015b60408051606081018252600080825260208083018290529282015282527fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff90920191018161084e5790505b50835190915060005b818110156108f1576108cc8582815181106108bf576108bf611008565b602002602001015161063c565b8382815181106108de576108de611008565b60209081029190910101526001016108a2565b50909791965090945050505050565b606060007fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb9181806109527fd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb938888610ac8565b915091506000825167ffffffffffffffff81111561097257610972610fd9565b6040519080825280602002602001820160405280156109e257816020015b6040805160808101825260008082526020808301829052928201819052606082015282527fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9092019101816109905790505b50835190915060005b81811015610a3a57610a15858281518110610a0857610a08611008565b602002602001015161070c565b838281518110610a2757610a27611008565b60209081029190910101526001016109eb565b5090989197509095505050505050565b600182015460009015610abc5773ffffffffffffffffffffffffffffffffffffffff82166000818152602085905260409020546001850180549091908110610a9457610a94611008565b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff1614610abf565b60005b90505b92915050565b6060600080848680549050610add9190611066565b8411610ae95783610af6565b8554610af6908690611066565b905060008167ffffffffffffffff811115610b1357610b13610fd9565b604051908082528060200260200182016040528015610b3c578160200160208202803683370190505b50905060005b82811015610bcf5787610b55828961107d565b81548110610b6557610b65611008565b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16828281518110610ba257610ba2611008565b73ffffffffffffffffffffffffffffffffffffffff90921660209283029190910190910152600101610b42565b5080610bdb838861107d565b935093505050935093915050565b6000815180845260005b81811015610c0f57602081850181015186830182015201610bf3565b81811115610c21576000602083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b60208152610c7b60208201835173ffffffffffffffffffffffffffffffffffffffff169052565b60006020830151610180806040850152610c996101a0850183610be9565b915060408501517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0858403016060860152610cd48382610be9565b9250506060850151610ceb608086018260ff169052565b50608085015160a085015260a0850151610d0960c086018215159052565b5060c085015180151560e08601525060e0850151610100610d2d8187018315159052565b8601516101208681019190915286015161014080870191909152860151610160808701919091529095015193019290925250919050565b600060208284031215610d7657600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610d9a57600080fd5b9392505050565b815173ffffffffffffffffffffffffffffffffffffffff1681526020808301519082015260408083015115159082015260608101610ac2565b815173ffffffffffffffffffffffffffffffffffffffff168152602080830151908201526040808301519082015260608083015115159082015260808101610ac2565b60008060408385031215610e3057600080fd5b50508035926020909101359150565b60408082528351908201819052600090606090818401906020808801855b83811015610eac57610e9c858351805173ffffffffffffffffffffffffffffffffffffffff168252602080820151908301526040908101511515910152565b9385019390820190600101610e5d565b5050949094019490945250919392505050565b604080825283519082018190526000906020906060840190828701845b82811015610f3b57610f2884835173ffffffffffffffffffffffffffffffffffffffff815116825260208101516020830152604081015160408301526060810151151560608301525050565b6080939093019290840190600101610edc565b50505092019290925292915050565b600181811c90821680610f5e57607f821691505b60208210811415610f98577f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b50919050565b600060208284031215610fb057600080fd5b5051919050565b600060208284031215610fc957600080fd5b81518015158114610d9a57600080fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60008282101561107857611078611037565b500390565b6000821982111561109057611090611037565b50019056fea26469706673582212202ad113e429b7e46f8f2f5b7eaf7724c7f34a169cbbb4f89aa040af74d661938964736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "detailedGovernor(address)": {
+        "returns": {
+          "_0": "GovernorDetails See: `GovernorDetails`."
+        }
+      },
+      "detailedMember(address)": {
+        "returns": {
+          "_0": "A FAST member's details, see `MemberDetails`."
+        }
+      },
+      "details()": {
+        "returns": {
+          "_0": "The details for the current FAST, see `Details`."
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "Approval(address,address,uint256)": {
+        "notice": "See `ERC20.Approval`."
+      },
+      "Burnt(uint256,string,address)": {
+        "notice": "Emited whenever an burning happens in a FAST."
+      },
+      "DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)": {
+        "notice": "This is an event that is fired whenever any of some of the FAST parameters change, so that the frontend can react to it and refresh the general header for that fast as well as the baseball cards in the FASTs list."
+      },
+      "Disapproval(address,address,uint256)": {
+        "notice": "See `ERC20.Disapproval`."
+      },
+      "DistributionDeployed(address)": {
+        "notice": "Distribution related events."
+      },
+      "FastTransfer(address,address,address,uint256,string)": {
+        "notice": "As we augmented the ERC20 standard with a few concepts, we emit our custom events in addition to the ERC20 ones."
+      },
+      "Minted(uint256,string,address)": {
+        "notice": "Emited whenever an issuance happens in a FAST."
+      },
+      "Transfer(address,address,uint256)": {
+        "notice": "See `ERC20.Transfer`."
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "detailedGovernor(address)": {
+        "notice": "Gets detailed governor details."
+      },
+      "detailedMember(address)": {
+        "notice": "Gets detailed member details."
+      },
+      "details()": {
+        "notice": "Gets the details of a FAST."
+      },
+      "emitDetailsChanged()": {
+        "notice": "Called by diamond facets, signals that FAST details may have changed.  Business logic: - Modifiers:   - Requires the caller to be another facet of the diamond. Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`"
+      }
+    },
+    "notice": "A facet dedicated to view / UI only methods. This facet should never hold any method that is not either `pure` or `view`, except to emit events.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
