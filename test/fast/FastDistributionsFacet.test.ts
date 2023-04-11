@@ -108,8 +108,7 @@ describe("FastDistributionsFacet", () => {
         dist: Distribution;
 
       beforeEach(async () => {
-        tx = distributionsAsMember.createDistribution(erc20.address, 100, 0);
-        await tx;
+        await (tx = distributionsAsMember.createDistribution(erc20.address, 100, 0));
         const [dists] = await distributions.paginateDistributions(0, 1);
         distAddr = dists[0];
         dist = await ethers.getContractAt("Distribution", distAddr);

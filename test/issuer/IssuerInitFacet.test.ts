@@ -61,7 +61,7 @@ describe("IssuerInitFacet", () => {
         IDiamondCut: await issuer.supportsInterface("0x1f931c1c"),
         IDiamondLoupe: await issuer.supportsInterface("0x48e2b093"),
         AHasMembers: await issuer.supportsInterface("0xb4bb4f46"),
-        AHasAutomatons: await issuer.supportsInterface("0x1a0d3515")
+        AHasAutomatons: await issuer.supportsInterface("0x7b763e88")
       }).to.be.eql({
         IERC165: true,
         IERC173: true,
