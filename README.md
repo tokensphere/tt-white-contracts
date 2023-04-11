@@ -140,15 +140,15 @@ await fast.connect(userSigner).createDistribution(token.address, 110, 0);
 let [[distAddr]] = await fast.paginateDistributions(0, 1);
 let dist = await ethers.getContractAt('Distribution', distAddr);
 // At this point, the fee needs to be set.
-await dist.connect(automatonSigner).setFee(10);
+await dist.connect(issuerSigner).advanceToBeneficiariesSetup(10);
 // Set them up as beneficiaries of the distribution.
-await dist.connect(automatonSigner).addBeneficiaries([user2, user3, user4], [10, 20, 30]);
+await dist.connect(issuerSigner).addBeneficiaries([user2, user3, user4], [10, 20, 30]);
 // Advance to the Withdrawal phase - it should fail, since the fee plus all amounts doesn't take all the available funds.
-await dist.connect(automatonSigner).advance();
+await dist.connect(issuerSigner).advanceToWithdrawal();
 // Add a beneficiary to make sure all available funds are distributed.
-await dist.connect(automatonSigner).addBeneficiaries([user5], [40]);
+await dist.connect(issuerSigner).addBeneficiaries([user5], [40]);
 // Advance to the Withdrawal phase - this time it should succeed.
-await dist.connect(automatonSigner).advance();
+await dist.connect(issuerSigner).advanceToWithdrawal();
 // At this point, the issuer should already have received their fee - it should be 10.
 (await token.balanceOf(issuer.address)).toString();
 
