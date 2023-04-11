@@ -276,7 +276,6 @@ contract Distribution {
     emit Withdrawal(msg.sender, beneficiary, amount);
   }
 
-  // TODO: Only allow the termination after a certain number of blocks have ellapsed.
   /**
    * @notice A panic function that can only be called by the distributor of the distribution.
    * Upon calling this method, the contract will simply send back any funds still

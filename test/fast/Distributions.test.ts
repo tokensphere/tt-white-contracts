@@ -104,12 +104,6 @@ describe("Distributions", () => {
     }
   });
 
-  // After each test, we want to stop impersonating the FAST contract address and unfund it.
-  afterEach(async () => {
-    // hre.network.provider.request({ method: "hardhat_stopImpersonatingAccount", params: [fast.address] });
-    // await ethers.provider.send("hardhat_setBalance", [fast.address, "0x0"]);
-  });
-
   describe("various synthesized getters", async () => {
     beforeEach(async () => {
       await deployDistribution(validDistributionParams);
