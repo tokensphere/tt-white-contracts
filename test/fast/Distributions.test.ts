@@ -569,14 +569,91 @@ describe("Distributions", () => {
   });
 
   describe("terminate", async () => {
-    it("can be called during the Funding phase");
-    it("can be called during the FeeSetup phase");
-    it("can be called during the BeneficiariesSetup phase");
-    it("can be called during the Withdrawal phase");
-    it("can be called during the Terminated phase");
-    it("requires that the caller is a manager");
-    it("sets the available amount to zero");
-    it("calls the ERC20.transfer method to return the remaining balance to the distributor");
-    it("emits an Advance event");
+    beforeEach(async () => {
+      await deployDistribution(validDistributionParams);
+
+      erc20.balanceOf.reset();
+      erc20.balanceOf.whenCalledWith(distribution.address).returns(validDistributionParams.total);
+    });
+
+    it("can be called during the Funding phase", async () => {
+      const beforePhase = await distribution.phase();
+
+      await distributionAsIssuer.terminate();
+      const afterPhase = await distribution.phase();
+      expect([beforePhase, afterPhase]).to
+        .eql([DistributionPhase.Funding, DistributionPhase.Terminated]);
+    });
+
+    it("can be called during the FeeSetup phase", async () => {
+      await distribution.advanceToFeeSetup();
+      const beforePhase = await distribution.phase();
+
+      await distributionAsIssuer.terminate();
+      const afterPhase = await distribution.phase();
+      expect([beforePhase, afterPhase]).to
+        .eql([DistributionPhase.FeeSetup, DistributionPhase.Terminated]);
+    });
+
+    it("can be called during the BeneficiariesSetup phase", async () => {
+      await distribution.advanceToFeeSetup();
+      await distributionAsIssuer.advanceToBeneficiariesSetup(10);
+      const beforePhase = await distribution.phase();
+
+      await distributionAsIssuer.terminate();
+      const afterPhase = await distribution.phase();
+      expect([beforePhase, afterPhase]).to
+        .eql([DistributionPhase.BeneficiariesSetup, DistributionPhase.Terminated]);
+    });
+
+    it("can be called during the Withdrawal phase", async () => {
+      await distribution.advanceToFeeSetup();
+      await distributionAsIssuer.advanceToBeneficiariesSetup(10);
+      await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], [40, 50])
+      erc20.transfer.reset();
+      erc20.transfer.returns(true);
+      await distributionAsIssuer.advanceToWithdrawal();
+      const beforePhase = await distribution.phase();
+
+      await distributionAsIssuer.terminate();
+      const afterPhase = await distribution.phase();
+      expect([beforePhase, afterPhase]).to
+        .eql([DistributionPhase.Withdrawal, DistributionPhase.Terminated]);
+    });
+
+    it("can be called during the Terminated phase", async () => {
+      await distributionAsIssuer.terminate();
+      const beforePhase = await distribution.phase();
+
+      await distributionAsIssuer.terminate();
+      const afterPhase = await distribution.phase();
+      expect([beforePhase, afterPhase]).to
+        .eql([DistributionPhase.Terminated, DistributionPhase.Terminated]);
+    });
+
+    it("requires that the caller is a manager", async () => {
+      const subject = distribution.terminate();
+      await expect(subject).to.have
+        .revertedWith("RequiresManagerCaller");
+    });
+
+    it("sets the available amount to zero", async () => {
+      await distributionAsIssuer.terminate();
+      const subject = await distribution.available();
+      expect(subject).to.be.eq(0);
+    });
+
+    it("calls the ERC20.transfer method to return the remaining balance to the distributor", async () => {
+      await distributionAsIssuer.terminate();
+      expect(erc20.transfer).to.have.been
+        .calledOnceWith(governor.address, 100);
+    });
+
+    it("emits an Advance event", async () => {
+      const subject = distributionAsIssuer.terminate();
+      await expect(subject).to
+        .emit(distribution, "Advance")
+        .withArgs(DistributionPhase.Terminated);
+    });
   });
 });
