@@ -2,9 +2,9 @@ import * as chai from "chai";
 import { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
-import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
+import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastAccessFacet, FastTokenFacet, FastFrontendFacet, Fast, FastDistributionsFacet, IERC20, Distribution } from "../../typechain";
+import { Issuer, Marketplace, FastAccessFacet, FastDistributionsFacet, IERC20, Distribution } from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 import { DistributionPhase } from "../utils";
 chai.use(solidity);
@@ -63,10 +63,11 @@ describe("FastDistributionsFacet", () => {
       opts: {
         name: "FastDistributionsFixture",
         deployer: deployer.address,
-        afterDeploy: async ({ fast, accessMock }) => {
+        afterDeploy: async ({ fast }) => {
           distributions = await ethers.getContractAt<FastDistributionsFacet>("FastDistributionsFacet", fast.address);
           distributionsAsMember = distributions.connect(alice);
-          await accessMock.connect(governor).addMember(alice.address);
+          const access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
+          await access.connect(governor).addMember(alice.address);
         },
       },
       initWith: {
