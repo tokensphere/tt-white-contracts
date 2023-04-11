@@ -108,9 +108,6 @@ export const toUnpaddedHexString = (amount: BigNumber) => amount.toHexString().r
 
 // =================================================== //
 
-export const nodeUrl = (networkName: string): string =>
-  process.env[`ETH_NODE_URI_${networkName.toUpperCase()}`] as string;
-
 export const accounts = (networkName: string): string[] => {
   try {
     return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, "utf8"));

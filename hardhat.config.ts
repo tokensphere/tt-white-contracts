@@ -6,7 +6,7 @@ import "hardhat-diamond-abi";
 import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "solidity-docgen";
-import { DEPLOYER_FACTORY_COMMON, accounts, nodeUrl, abiFilter } from "./src/utils";
+import { DEPLOYER_FACTORY_COMMON, accounts, abiFilter } from "./src/utils";
 import { ISSUER_FACETS } from "./tasks/issuer";
 import { MARKETPLACE_FACETS } from "./tasks/marketplace";
 import { FAST_FACETS } from "./tasks/fast";
@@ -99,7 +99,7 @@ const config: HardhatUserConfig = {
     dev: {
       live: true,
       saveDeployments: true,
-      url: nodeUrl("dev"),
+      url: "http://localhost:8546",
       chainId: 18021980,
       accounts: accounts("dev"),
     },
