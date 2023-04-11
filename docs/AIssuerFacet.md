@@ -5,14 +5,6 @@
 This abstract contract encapsulates modifiers allowing inheriting facets to guard against
 certain permissions.
 
-### _isMember
-
-```solidity
-function _isMember(address who) internal view returns (bool)
-```
-
-Internal ACL functions.
-
 ### onlyDiamondFacet
 
 ```solidity
