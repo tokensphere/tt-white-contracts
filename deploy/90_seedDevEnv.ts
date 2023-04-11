@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { ethers, getNamedAccounts } from "hardhat";
+import { deployments, ethers, getNamedAccounts } from "hardhat";
 import { Marketplace } from "../typechain";
 import { FastAutomatonPrivilege, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
 
@@ -12,7 +12,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
   console.log("------------------------------------------------ 90_seedDevEnv");
 
-  const { fastGovernor, issuerMember, automaton, user1, user2, user3, user4, user5, user6, user7, user8, user9 } =
+  const { deployer, fastGovernor, issuerMember, automaton, user1, user2, user3, user4, user5, user6, user7, user8, user9 } =
     await getNamedAccounts();
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
@@ -20,6 +20,16 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // Grab handles to the Marketplace.
   const marketplace = await ethers.getContract<Marketplace>("Marketplace");
   const issuerMemberMarketplace = marketplace.connect(issuerMemberSigner);
+
+  console.log("Deploying DDD...");
+  {
+    const ddd = await deployments.deploy("ERC20", {
+      from: deployer,
+      args: ["Dummy Dumb Dividends", "DDD"],
+      deterministicDeployment: true,
+    });
+    console.log(`DDD deployed at ${ddd.address}.`);
+  }
 
   console.log("Adding user[1-10] to the Marketplace as members...");
   for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9]) {

@@ -28,16 +28,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // Add the fast governor to the marketplace.
   marketplace.connect(issuerMemberSigner).addMember(fastGovernor);
 
-  console.log("Deploying DDD...");
-  {
-    const ddd = await deployments.deploy("ERC20", {
-      from: deployer,
-      args: ["Dummy Dumb Dividends", "DDD"],
-      deterministicDeployment: true,
-    });
-    console.log(`DDD deployed at ${ddd.address}.`);
-  }
-
   {
     const deploy = await deployments.getOrNull("FastF01");
     if (deploy) {
