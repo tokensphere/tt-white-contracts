@@ -310,12 +310,8 @@ contract Distribution {
   }
 
   modifier onlyManager() {
-    // TODO: Replace with this:
-    // if (!AHasMembers(params.issuer).isMember(msg.sender) &&
-    //     !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
-    //   revert RequiresManagerCaller();
-
-    if (!AHasMembers(params.issuer).isMember(msg.sender))
+    if (!AHasMembers(params.issuer).isMember(msg.sender) &&
+        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
       revert RequiresManagerCaller();
     _;
   }
