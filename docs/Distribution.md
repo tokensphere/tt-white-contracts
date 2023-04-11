@@ -11,10 +11,10 @@ following steps (or phases):
 - Withdrawal, during which each beneficiary can withdraw their proceeds.
 - Terminated, during which nothing is possible.
 
-### InternalMethod
+### RequiresFastCaller
 
 ```solidity
-error InternalMethod()
+error RequiresFastCaller()
 ```
 
 ### UnsupportedOperation
@@ -41,10 +41,16 @@ error InvalidBlockNumber(uint256 number)
 error RequiresFastMembership(address who)
 ```
 
-### RequiresManager
+### RequiresManagerCaller
 
 ```solidity
-error RequiresManager(address who)
+error RequiresManagerCaller()
+```
+
+### TokenContractError
+
+```solidity
+error TokenContractError()
 ```
 
 ### InsufficientFunds
@@ -241,20 +247,16 @@ Constructs a new `Distribution` contracts.
 | ---- | ---- | ----------- |
 | p | struct Distribution.Params | is a `Params` structure. |
 
-### advance
+### advanceToFeeSetup
 
 ```solidity
-function advance() public
+function advanceToFeeSetup() public
 ```
 
-Advances to the next phase when possible, reverts otherwise.
-Note that since this method calls the `token` contract, it **must be
-protected against reentrancy**.
-
-### setFee
+### advanceToBeneficiariesSetup
 
 ```solidity
-function setFee(uint256 _fee) external
+function advanceToBeneficiariesSetup(uint256 _fee) external
 ```
 
 Sets the fee to be taken upon distribution. Only available during the
@@ -268,6 +270,15 @@ call this method.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | _fee | uint256 | is the amount that the `issuer` will receive. |
+
+### advanceToWithdrawal
+
+```solidity
+function advanceToWithdrawal() public
+```
+
+Advances the distribution to the `Phase.Withdrawal` phase.
+The distribution must be in the `Phase.BeneficiariesSetup` phase.
 
 ### addBeneficiaries
 
@@ -358,33 +369,21 @@ available to it and set its internal state to a termination one.
 Note that since this method calls the `token` contract, it **must be
 protected against reentrancy**.
 
-### requireFastCaller
+### onlyDuring
 
 ```solidity
-function requireFastCaller() internal view
+modifier onlyDuring(enum Distribution.Phase _phase)
 ```
 
-### requireManager
+### onlyFastCaller
 
 ```solidity
-function requireManager() internal view
-```
-
-### requireDistributor
-
-```solidity
-function requireDistributor() internal view
+modifier onlyFastCaller()
 ```
 
 ### onlyManager
 
 ```solidity
 modifier onlyManager()
-```
-
-### onlyDuring
-
-```solidity
-modifier onlyDuring(enum Distribution.Phase _phase)
 ```
 

@@ -25,24 +25,6 @@ function _isMarketplaceActiveMember(address who) internal view returns (bool)
 function _isIssuerMember(address who) internal view returns (bool)
 ```
 
-### _isGovernor
-
-```solidity
-function _isGovernor(address who) internal view returns (bool)
-```
-
-### _isMember
-
-```solidity
-function _isMember(address who) internal view returns (bool)
-```
-
-### _automatonCan
-
-```solidity
-function _automatonCan(address who, uint32 flag) internal view returns (bool)
-```
-
 ### onlyDiamondFacet
 
 ```solidity

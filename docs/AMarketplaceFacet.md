@@ -13,12 +13,6 @@ function _isIssuerMember(address who) internal view returns (bool)
 
 Internal ACL functions.
 
-### _isMember
-
-```solidity
-function _isMember(address who) internal view returns (bool)
-```
-
 ### onlyDeployer
 
 ```solidity
