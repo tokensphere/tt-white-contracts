@@ -158,7 +158,7 @@ describe("FastFrontendFacet", () => {
       expect(memberAObj).to.eql({
         addr: member.address,
         balance: zero,
-        ethBalance: tenThousand,
+        ethBalance: await member.getBalance(),
         isGovernor: false,
       });
 
