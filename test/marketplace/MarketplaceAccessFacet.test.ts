@@ -11,6 +11,8 @@ import { toUnpaddedHexString } from "../../src/utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
+// TODO: Test that automatons with MARKETPLACE_PRIVILEGE_MANAGE_MEMBERS can add / remove members.
+// TODO: Test that automatons without MARKETPLACE_PRIVILEGE_MANAGE_MEMBERS cannot add / remove members.
 describe("MarketplaceAccessFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
