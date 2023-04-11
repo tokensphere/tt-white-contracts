@@ -7,7 +7,6 @@ import '../common/AHasAutomatons.sol';
 
 // Privileges bits.
 uint32 constant MARKETPLACE_PRIVILEGE_MANAGE_MEMBERS = 1;
-uint32 constant MARKETPLACE_PRIVILEGE_ACTIVATE_MEMBERS = 2;
 
 /**
  * @title The Marketplace Smart Contract.
