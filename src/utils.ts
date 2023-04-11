@@ -13,8 +13,7 @@ export const DEPLOYER_FACTORY_COMMON = {
 };
 
 export const MarketplaceAutomatonPrivilege = {
-  ManageMembers: 1,
-  ActivateMembers: 2
+  ManageMembers: 1
 };
 
 export const FastAutomatonPrivilege = {

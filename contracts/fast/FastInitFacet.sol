@@ -66,9 +66,6 @@ contract FastInitFacet is AFastFacet {
     ds.supportedInterfaces[type(IERC173).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
-    ds.supportedInterfaces[type(AHasGovernors).interfaceId] = true;
-    ds.supportedInterfaces[type(AHasMembers).interfaceId] = true;
-    ds.supportedInterfaces[type(AHasAutomatons).interfaceId] = true;
 
     // ------------------------------------- //
 
