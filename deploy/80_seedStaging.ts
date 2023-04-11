@@ -18,7 +18,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
   console.log("------------------------------------------------ 10_seedStaging");
 
-  const { deployer, fastGovernor, issuerMember } = await getNamedAccounts();
+  const { fastGovernor, issuerMember } = await getNamedAccounts();
 
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
