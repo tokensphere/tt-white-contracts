@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers, getNamedAccounts } from "hardhat";
 import { Marketplace } from "../typechain";
-import { FAST_AUTOMATON_PRIVILEGES, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
+import { FastAutomatonPrivilege, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
@@ -32,7 +32,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const governedF01 = (await ethers.getContract("FastF01")).connect(fastGovernorSigner);
   const issuerMemberF01 = (await ethers.getContract("FastF01")).connect(issuerMemberSigner);
   console.log("Adding automaton to F01 FAST...");
-  await issuerMemberF01.setAutomatonPrivileges(automaton, FAST_AUTOMATON_PRIVILEGES.MANAGE_DISTRIBUTIONS);
+  await issuerMemberF01.setAutomatonPrivileges(automaton, FastAutomatonPrivilege.ManageDistributions);
   console.log("Adding user[1-5] as members of the F01 FAST...");
   for (const addr of [user1, user2, user3, user4, user5]) {
     console.log(`  ${addr}...`);

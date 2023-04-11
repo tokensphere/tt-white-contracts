@@ -79,7 +79,7 @@ describe("FastFrontendFacet", () => {
       await subject;
 
       // Get the other details from a standard `details` function call.
-      // const detailsObj = abiStructToObj(await frontend.details());
+      const detailsObj = abiStructToObj(await frontend.details());
 
       // TODO: Fix this. The problem here is that the detailsObj has an ethBalance calculated mid-flight
       // and very difficult to keep consistent track of.

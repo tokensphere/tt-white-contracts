@@ -15,6 +15,7 @@ import {
   Fast,
 } from "../../typechain";
 import { abiStructToObj, DistributionPhase } from "../utils";
+import { FastAutomatonPrivilege } from "../../src/utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -35,6 +36,7 @@ describe("Distributions", () => {
     fast: FakeContract<Fast>,
     distribution: Distribution,
     distributionAsIssuer: Distribution,
+    distributionAsAutomaton: Distribution,
     deployDistribution: (params: Distribution.ParamsStruct) => void,
     validDistributionParams: Distribution.ParamsStruct,
     erc20: FakeContract<IERC20>;
@@ -74,7 +76,6 @@ describe("Distributions", () => {
     fast.isMember.whenCalledWith(bob.address).returns(true);
     fast.isMember.whenCalledWith(paul.address).returns(true);
     fast.automatonCan.reset();
-    fast.automatonCan.returns(true);
 
     erc20.balanceOf.reset();
     erc20.transfer.reset();
@@ -99,6 +100,7 @@ describe("Distributions", () => {
           .connect(await ethers.getSigner(fast.address))
           .deploy({ ...params, fast: fast.address });
       distributionAsIssuer = distribution.connect(issuerMember);
+      distributionAsAutomaton = distribution.connect(automaton);
     }
   });
 
@@ -264,6 +266,18 @@ describe("Distributions", () => {
         await expect(subject).to.have.revertedWith("RequiresManagerCaller");
       });
 
+      it("is allowed for an automaton with the right privileges", async () => {
+        fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
+        await distributionAsAutomaton.advanceToBeneficiariesSetup(validDistributionParams.total);
+        const subject = await distribution.phase();
+        expect(subject).to.eq(DistributionPhase.BeneficiariesSetup);
+      });
+
+      it("is forbidden for an automaton with the wrong privileges", async () => {
+        fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
+        const subject = distributionAsAutomaton.advanceToBeneficiariesSetup(validDistributionParams.total);
+        await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+      });
 
       it("sets the fee", async () => {
         await distributionAsIssuer.advanceToBeneficiariesSetup(10);
