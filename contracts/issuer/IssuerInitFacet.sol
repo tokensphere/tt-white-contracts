@@ -65,7 +65,7 @@ contract IssuerInitFacet is AIssuerFacet {
     membersData.version = LibHasMembers.STORAGE_VERSION;
     // Add the member and emit.
     membersData.memberSet.add(params.member, false);
-    // TODO: Find a way...
+    // Emit!
     emit MemberAdded(params.member);
 
     // Initialize automatons storage.

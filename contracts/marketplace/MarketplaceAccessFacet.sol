@@ -22,7 +22,6 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
 
   function isMembersManager(address who)
       internal view override(AHasMembers) returns(bool) {
-    // TODO: We could also allow automatons with privileges.
     return
       _isIssuerMember(who) ||
       AHasAutomatons(address(this)).automatonCan(who, MARKETPLACE_PRIVILEGE_MANAGE_MEMBERS);

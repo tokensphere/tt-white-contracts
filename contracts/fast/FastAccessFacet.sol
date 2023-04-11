@@ -68,7 +68,6 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
 
   function isMembersManager(address who)
       internal view override(AHasMembers) returns(bool) {
-    // TODO: We could also allow automatons with privileges.
     return
       AHasGovernors(this).isGovernor(who) ||
       AHasAutomatons(address(this)).automatonCan(who, FAST_PRIVILEGE_MANAGE_MEMBERS);

@@ -104,7 +104,6 @@ contract IssuerTopFacet is AIssuerFacet {
     return LibPaginate.addresses(LibIssuer.data().fastSet.values, cursor, perPage);
   }
 
-  // TODO: TEST.
   /**
    * @notice Allows an issuer member to move collected ERC20 fees from this contract
    * to an arbitrary address.

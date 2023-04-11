@@ -21,7 +21,6 @@ describe("FastDistributionsFacet", () => {
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     erc20: FakeContract<IERC20>,
-    access: FastAccessFacet,
     distributions: FastDistributionsFacet,
     distributionsAsMember: FastDistributionsFacet;
 
@@ -64,12 +63,10 @@ describe("FastDistributionsFacet", () => {
       opts: {
         name: "FastDistributionsFixture",
         deployer: deployer.address,
-        afterDeploy: async ({ fast }) => {
+        afterDeploy: async ({ fast, accessMock }) => {
           distributions = await ethers.getContractAt<FastDistributionsFacet>("FastDistributionsFacet", fast.address);
           distributionsAsMember = distributions.connect(alice);
-
-          access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
-          await access.connect(governor).addMember(alice.address);
+          await accessMock.connect(governor).addMember(alice.address);
         },
       },
       initWith: {
