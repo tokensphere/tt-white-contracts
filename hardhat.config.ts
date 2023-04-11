@@ -123,25 +123,18 @@ const config: HardhatUserConfig = {
     // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
     deployer: {
       default: 0,
-      staging: "0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE",
-      production: "0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE",
     },
     // The account who will be the first member of the ISSUER contract.
     issuerMember: {
       default: 1,
-      staging: "0xd786f085c53E1674afFcEe9252Bb3E7044698267",
-      production: "0xb1004872B989ec8894F8Dd07da85437Dff9ddb37",
     },
     // Used to hold genesis Eth in our live environments.
     storage: {
       default: 2,
-      staging: "0x459afD5DC396d24Fa4843a42276e5260c73A62f1",
-      production: "0x459afD5DC396d24Fa4843a42276e5260c73A62f1",
     },
     // Used exclusively in dev environments when deploying test FAST contracts.
     fastGovernor: {
       default: 3,
-      staging: "0x626a705C4DE35d2035c3E6A663A3711369d87D1a",
     },
     automaton: { default: 4 },
     user1: { default: 5 },
