@@ -143,7 +143,7 @@ describe("FastInitFacet", () => {
         IDiamondLoupe: await fast.supportsInterface("0x48e2b093"),
         AHasGovernors: await fast.supportsInterface("0x84378070"),
         AHasMembers: await fast.supportsInterface("0xb4bb4f46"),
-        AHasAutomatons: await fast.supportsInterface("0x1a0d3515")
+        AHasAutomatons: await fast.supportsInterface("0x7b763e88")
       }).to.be.eql({
         IERC20: true,
         IERC165: true,
