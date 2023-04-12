@@ -117,7 +117,7 @@ const config: HardhatUserConfig = {
       url: "https://polygon-rpc.com/",
       chainId: 137,
       accounts: accounts("polygon"),
-    },
+    }
   },
   namedAccounts: {
     // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
@@ -162,18 +162,6 @@ const config: HardhatUserConfig = {
       ...DEPLOYER_FACTORY_COMMON,
       signedTx:
         "0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdba01590b43af70aef60a9342a33eaf1536b07df9ba36e96f0e5102485b4f23f7720a01e6266145487736a1809cf67cbc0a86d9eee3438cc97e0bd523694f3f3e9e1cb",
-    },
-    // CV Testnet.
-    18021981: {
-      ...DEPLOYER_FACTORY_COMMON,
-      signedTx:
-        "0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdea06ad52d72e9acaacd578c2c0582df2f9793dfba35f20bf7a36e5c3ff36b81dba5a07f4012aa24648095dc422bb1aff8918cad962c367c1ab4643f04dff97fdee941",
-    },
-    // CV Mainnet.
-    18021982: {
-      ...DEPLOYER_FACTORY_COMMON,
-      signedTx:
-        "0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdfa008e1c44962bf042ecfc8957cbe4becaef17ef447c04b7307fefdc88f5deff596a0549894bfc3037be469ad6784c988110fb8ae8d3f8a5258d1180fd965890b7267",
     },
     // Polygon Testnet.
     80001: {
