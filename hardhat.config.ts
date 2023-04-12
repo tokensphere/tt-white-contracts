@@ -89,12 +89,8 @@ const config: HardhatUserConfig = {
   ],
   networks: {
     // Built-in for tests etc.
-    hardhat: {
-      saveDeployments: false
-    },
-    localhost: {
-      saveDeployments: false
-    },
+    hardhat: { saveDeployments: true },
+    localhost: { saveDeployments: true },
     // Typically a Geth local dev net.
     dev: {
       live: true,
