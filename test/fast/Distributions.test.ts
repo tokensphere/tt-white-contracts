@@ -197,15 +197,28 @@ describe("Distributions", () => {
     });
   });
 
-  describe("in the Funding phase", async () => {
+  describe("advanceToFeeSetup", async () => {
     beforeEach(async () => {
       await deployDistribution(validDistributionParams);
       erc20.balanceOf.whenCalledWith(distribution.address).returns(validDistributionParams.total);
     });
 
-    describe("advanceToFeeSetup", async () => {
-      it("requires the distribution to be in the Funding phase");
+    describe("from an invalid phase", async () => {
+      beforeEach(async () => {
+        // Mock balance.
+        erc20.balanceOf.returns(validDistributionParams.total);
+        // Advance to correct phase.
+        await distribution.advanceToFeeSetup();
+      });
 
+      it("reverts", async () => {
+        const subject = distribution.advanceToFeeSetup();
+        await expect(subject).to.have
+          .revertedWith("UnsupportedOperation");
+      });
+    });
+
+    describe("from the Funding phase", async () => {
       it("requires the caller to be the FAST contract", async () => {
         const subject = distribution.connect(bob).advanceToFeeSetup();
         await expect(subject).to.have
@@ -242,18 +255,27 @@ describe("Distributions", () => {
     });
   });
 
-  describe("in the FeeSetup phase", async () => {
+  describe("advanceToBeneficiariesSetup", async () => {
     beforeEach(async () => {
-      // Deploy.
-      await deployDistribution(validDistributionParams);
-      // Mock balance.
-      erc20.balanceOf.returns(validDistributionParams.total);
-      // Advance to correct phase.
-      await distribution.advanceToFeeSetup();
-    });
+      beforeEach(async () => {
+        // Deploy.
+        await deployDistribution(validDistributionParams);
+        // Mock balance.
+        erc20.balanceOf.returns(validDistributionParams.total);
+      });
 
-    describe("advanceToBeneficiariesSetup", async () => {
-      it("requires the distribution to be in the FeeSetup phase");
+      describe("from an invalid phase", async () => {
+        it("reverts", async () => {
+          const subject = distribution.advanceToBeneficiariesSetup(validDistributionParams.total);
+          await expect(subject).to.have
+            .revertedWith("UnsupportedOperation");
+        });
+      });
+
+      describe("from the FeeSetup phase", async () => {
+        // Advance to correct phase.
+        await distribution.advanceToFeeSetup();
+      });
 
       it("requires the caller to be a manager", async () => {
         const subject = distribution.advanceToBeneficiariesSetup(validDistributionParams.total);
@@ -397,11 +419,11 @@ describe("Distributions", () => {
         it("keeps track of the owings", async () => {
           const owings = [BigNumber.from(1), BigNumber.from(2)];
           await distributionAsIssuer.addBeneficiaries([alice.address, bob.address], owings);
-          const amounts = await Promise.all([
+          const subject = await Promise.all([
             distribution.owings(alice.address),
             distribution.owings(bob.address)
           ]);
-          expect(amounts).to
+          expect(subject).to
             .eql(owings);
         });
 
