@@ -1,11 +1,12 @@
-import { task } from "hardhat/config";
+import { ContractTransaction } from "ethers";
+import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { COMMON_DIAMOND_FACETS, deploymentSalt } from "../src/utils";
 import { Marketplace } from "../typechain";
 
 // Tasks.
 
-interface MarketplaceDeployParams {}
+interface MarketplaceDeployParams { }
 
 task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
   async (_params: MarketplaceDeployParams, hre) => {
@@ -14,7 +15,7 @@ task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
   },
 );
 
-interface MarketplaceUpdateFacetsParams {}
+interface MarketplaceUpdateFacetsParams { }
 
 task("marketplace-update-facets", "Updates facets of our Marketplace").setAction(
   async (_params: MarketplaceUpdateFacetsParams, hre) => {
@@ -31,6 +32,17 @@ task("marketplace-update-facets", "Updates facets of our Marketplace").setAction
     });
   },
 );
+
+interface MarketplaceAddMemberTaskParams {
+  readonly address: string;
+}
+
+task("marketplace-add-member", "Adds an address as a Marketplace member")
+  .addParam("address", "The address of the member to be added.", undefined, types.string)
+  .setAction(async ({ address }: MarketplaceAddMemberTaskParams, hre) => {
+    console.log(`Adding ${address} as a Marketplace member...`);
+    await addMarketplaceMember(hre, address);
+  });
 
 // Reusable functions.
 
@@ -68,5 +80,14 @@ const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: str
   // Return a handle to the diamond.
   return await ethers.getContract<Marketplace>("Marketplace");
 };
+
+const addMarketplaceMember = async (hre: HardhatRuntimeEnvironment, address: string): Promise<ContractTransaction> => {
+  const { ethers, getNamedAccounts } = hre;
+  const { issuerMember } = await getNamedAccounts();
+  const issuerMemberSigner = await ethers.getSigner(issuerMember);
+
+  const marketplace = (await ethers.getContract<Marketplace>("Marketplace")).connect(issuerMemberSigner);
+  return marketplace.addMember(address);
+}
 
 export { MARKETPLACE_FACETS, deployMarketplace };
