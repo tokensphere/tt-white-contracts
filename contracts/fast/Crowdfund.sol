@@ -16,6 +16,7 @@ import '@openzeppelin/contracts/utils/math/Math.sol';
 contract Crowdfund {
   using LibAddressSet for LibAddressSet.Data;
 
+  error InvalidPhase();
   error UnsupportedOperation();
   error InconsistentParameters();
 
@@ -76,7 +77,7 @@ contract Crowdfund {
   uint256 public collected;
 
   /// @notice The set of addresses that have pledged to this crowdfund.
-  LibAddressSet.Data internal pledgers;
+  LibAddressSet.Data internal pledgerSet;
   /// @notice The mapping of pledgers to their pledged amounts.
   mapping(address => uint256) public pledges;
 
@@ -129,10 +130,11 @@ contract Crowdfund {
     if (amount == 0)
       revert InconsistentParameters();
     // Make sure that the message sender gave us allowance for at least this amount.
-    else if (params.token.allowance(msg.sender, address(this)) < amount)
-      revert InsufficientFunds(amount);
+    uint256 allowance = params.token.allowance(msg.sender, address(this));
+    if (allowance < amount)
+      revert InsufficientFunds(amount - allowance);
     // Keep track of the pledger - don't throw if already present.
-    pledgers.add(msg.sender, true);
+    pledgerSet.add(msg.sender, true);
     // Add the pledged amount to the existing pledge.
     pledges[msg.sender] += amount;
     // Update the collected amount.
@@ -142,6 +144,26 @@ contract Crowdfund {
       revert TokenContractError();
     // Emit!
     emit Pledge(msg.sender, amount);
+  }
+
+  /**
+   * @notice Queries the number of members.
+   * @return An `uint256`.
+   */
+  function pledgerCount()
+      external view returns(uint256) {
+    return pledgerSet.values.length;
+  }
+
+  /**
+   * @notice Queries pages of pledgers based on a start index and a page size.
+   * @param index is the offset at which the pagination operation should start.
+   * @param perPage is how many items should be returned.
+   * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
+   */
+  function paginatePledgers(uint256 index, uint256 perPage)
+      external view returns(address[] memory, uint256) {
+    return LibPaginate.addresses(pledgerSet.values, index, perPage);
   }
 
   /**
@@ -177,7 +199,7 @@ contract Crowdfund {
   function withdraw(address pledger)
       public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
-    if (!pledgers.contains(pledger))
+    if (!pledgerSet.contains(pledger))
       revert UnsupportedOperation();
     // Store the amount of the pledger's pledge.
     uint256 amount = pledges[pledger];
@@ -197,7 +219,7 @@ contract Crowdfund {
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
-      revert UnsupportedOperation();
+      revert InvalidPhase();
     _;
   }
 

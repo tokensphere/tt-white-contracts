@@ -23,11 +23,12 @@ import './FastAutomatonsFacet.sol';
 contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
-  error RequiresFastCaller();
+  error InvalidPhase();
   error UnsupportedOperation();
   error InconsistentParameters();
   error InvalidBlockNumber(uint256 number);
 
+  error RequiresFastCaller();
   error RequiresFastMembership(address who);
   error RequiresManagerCaller();
   error TokenContractError();
@@ -298,7 +299,7 @@ contract Distribution {
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
-      revert UnsupportedOperation();
+      revert InvalidPhase();
     _;
   }
 
