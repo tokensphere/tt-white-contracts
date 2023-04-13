@@ -4,11 +4,11 @@ pragma solidity 0.8.10;
 import '../../lib/LibAddressSet.sol';
 
 
-library LibFastDistributions {
+library LibFastCrowdfunds {
   /// @notice The current version of the storage.
   uint16 internal constant STORAGE_VERSION = 1;
-  /// @notice This is keccak256('Fast.storage.Distributions'):
-  bytes32 internal constant STORAGE_SLOT = 0xe865e85b076245a187a9d3cc15c47264cd0b46df4afd899817bd2e16523485ad;
+  /// @notice This is keccak256('Fast.storage.Crowdfunds'):
+  bytes32 internal constant STORAGE_SLOT = 0xc843fbb8f0f5694376d391c1687b800112a6eed97820d8e7a2b82618dd1b69ed;
 
   /**
    * @notice The access data structure required for operating any given FAST diamond.
@@ -17,8 +17,8 @@ library LibFastDistributions {
   struct Data {
     /// @notice The latest intializer version that was called.
     uint16 version;
-    /// @notice Every deployed distribution contract is held here.
-    LibAddressSet.Data distributionSet;
+    /// @notice Every deployed crowdfund contract is held here.
+    LibAddressSet.Data crowdfundSet;
   }
 
   /**

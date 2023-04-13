@@ -2,6 +2,7 @@
 pragma solidity 0.8.10;
 
 import '../../fast/Distribution.sol';
+import '../../fast/Crowdfund.sol';
 
 
 /**
@@ -50,6 +51,10 @@ interface IFastEvents {
   /// Distribution related events.
 
   event DistributionDeployed(Distribution indexed distribution);
+
+  /// Crowdfund related events.
+
+  event CrowdfundDeployed(Crowdfund indexed crowdfund);
 
   /// General events.
 

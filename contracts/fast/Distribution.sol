@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../interfaces/IERC20.sol';
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
+import '../interfaces/IERC20.sol';
 import '../common/AHasMembers.sol';
 import '../common/AHasAutomatons.sol';
 import './FastAutomatonsFacet.sol';
@@ -83,9 +83,9 @@ contract Distribution {
 
   /// @notice A version identifier for us to track what's deployed.
   uint16 public constant VERSION = 1;
+
   /// @notice The initial params, as passed to the contract's constructor.
   Params public params;
-
   /// @notice The phase at which the distribution is at.
   Phase public phase = Phase.Funding;
   /// @notice When was the distribution created.
@@ -294,7 +294,7 @@ contract Distribution {
     params.token.transfer(params.distributor, params.token.balanceOf(address(this)));
   }
 
-  // Modifiers.
+  /// Modifiers.
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
