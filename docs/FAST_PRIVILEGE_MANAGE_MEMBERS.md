@@ -1,8 +1,0 @@
-# Solidity API
-
-## FAST_PRIVILEGE_MANAGE_MEMBERS
-
-```solidity
-uint32 FAST_PRIVILEGE_MANAGE_MEMBERS
-```
-

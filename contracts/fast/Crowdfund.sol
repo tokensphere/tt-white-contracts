@@ -82,6 +82,7 @@ contract Crowdfund {
 
   /**
    * @notice The constructor for this contract.
+   * Note that the constructor places the contract into the setup phase.
    * @param p The parameters to be passed to this contract's constructor.
    */
   constructor(Params memory p) {
@@ -93,14 +94,23 @@ contract Crowdfund {
     // Check that the beneficiary is a member of the FAST contract.
     else if (!isFastMember(p.beneficiary))
       revert RequiresFastMembership(p.beneficiary);
+    // Keep creation block handy.
+    creationBlock = block.number;
+  }
+
+  /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
+  function feeAmount()
+      public view returns(uint256) {
+    return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
   }
 
   /**
    * @notice Advances the campaign to the funding phase.
+   * Note that this method is only available during the setup phase.
    * @param _basisPointsFee The fee expressed in basis points - eg ten thousandths.
    */
   function advanceToFunding(uint256 _basisPointsFee)
-      external onlyManager {
+      external onlyDuring(Phase.Setup) onlyManager {
     // Make sure the fee doesn't exceed a hundred percent.
     if (_basisPointsFee > 10_000)
       revert InconsistentParameters();
@@ -110,6 +120,7 @@ contract Crowdfund {
 
   /**
    * @notice Allows a pledger to pledge tokens to this crowdfund.
+   * Note that this method is only available during the funding phase.
    * @param amount The amount of tokens to pledge.
    */
   function pledge(uint256 amount)
@@ -118,7 +129,7 @@ contract Crowdfund {
     if (amount == 0)
       revert InconsistentParameters();
     // Make sure that the message sender gave us allowance for at least this amount.
-    if (params.token.allowance(msg.sender, address(this)) < amount)
+    else if (params.token.allowance(msg.sender, address(this)) < amount)
       revert InsufficientFunds(amount);
     // Keep track of the pledger - don't throw if already present.
     pledgers.add(msg.sender, true);
@@ -135,10 +146,12 @@ contract Crowdfund {
 
   /**
    * @notice Allows an issuer member to terminate the crowdfunding given a success flag.
+   * Note that this method is available during any phase and can be used as a panic
+   * button to terminate the crowdfunding prematurely.
    * @param success Whether the crowdfunding was successful or not.
    */
   function terminate(bool success)
-      public onlyDuring(Phase.Funding) onlyManager {
+      public onlyManager {
     // If the crowdfunding was successful...
     if (success) {
       // Transfer the fee to the issuer contract if there is one.
@@ -158,6 +171,7 @@ contract Crowdfund {
 
   /**
    * @notice Allows a pledger to withdraw their funds if the crowdfunding failed.
+   * Note that this method is only available during the failure phase.
    * @param pledger The address of the pledger to withdraw funds for.
    */
   function withdraw(address pledger)
@@ -170,15 +184,8 @@ contract Crowdfund {
     // Track that the pledger has withdrawn their funds.
     pledges[pledger] = 0;
     // Transfer the tokens to the pledger.
-    if (amount > 0)
-      if (!params.token.transfer(pledger, amount))
-        revert TokenContractError();
-  }
-
-  /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
-  function feeAmount()
-      public view returns(uint256) {
-    return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
+    if (!params.token.transfer(pledger, amount))
+      revert TokenContractError();
   }
 
   /// Modifiers and ACL functions.
@@ -202,7 +209,7 @@ contract Crowdfund {
 
   modifier onlyManager() {
     if (!AHasMembers(params.issuer).isMember(msg.sender) &&
-        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
+        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_CROWDFUNDS))
       revert RequiresManagerCaller();
     _;
   }

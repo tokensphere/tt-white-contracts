@@ -155,8 +155,6 @@ describe("Distributions", () => {
         await deployDistribution(validDistributionParams);
       });
 
-      it("requires the caller to be the FAST contract");
-
       it("stores its initial parameters", async () => {
         const subject = abiStructToObj(await distribution.params());
 

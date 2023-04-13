@@ -12,7 +12,7 @@ import './Crowdfund.sol';
  * @title The Fast Smart Contract.
  * @notice The Fast Crowdfunds facet is in charge of deploying and keeping track of crowdfunds.
  */
-contract FastCrowdFundingsFacet is AFastFacet {
+contract FastCrowdfundsFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
   /**
