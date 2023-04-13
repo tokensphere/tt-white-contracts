@@ -19,7 +19,7 @@ import { FastAutomatonPrivilege } from "../../src/utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
-describe("Distributions", () => {
+describe("Distribution", () => {
   let
     deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
@@ -212,7 +212,7 @@ describe("Distributions", () => {
       it("reverts", async () => {
         const subject = distribution.advanceToFeeSetup();
         await expect(subject).to.have
-          .revertedWith("UnsupportedOperation");
+          .revertedWith("InvalidPhase");
       });
     });
 
@@ -266,7 +266,7 @@ describe("Distributions", () => {
         it("reverts", async () => {
           const subject = distribution.advanceToBeneficiariesSetup(validParams.total);
           await expect(subject).to.have
-            .revertedWith("UnsupportedOperation");
+            .revertedWith("InvalidPhase");
         });
       });
 
