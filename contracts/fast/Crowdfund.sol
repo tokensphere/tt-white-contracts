@@ -11,6 +11,7 @@ import '@openzeppelin/contracts/utils/math/Math.sol';
 
 /**
  * @title The `Crowdfund` FAST contract.
+ * @notice This contract is used to manage a crowdfunding campaign.
  */
 contract Crowdfund {
   using LibAddressSet for LibAddressSet.Data;
@@ -25,11 +26,25 @@ contract Crowdfund {
   error InsufficientFunds(uint256 amount);
 
   /**
-   * @notice Emited whenever the internal phase of this distribution changes.
+   * @notice Emited whenever the internal phase of this crowdfund changes.
    * @param phase The new phase of this contract.
    */
   event Advance(Phase phase);
 
+  /**
+   * @notice Emited whenever a plege is made.
+   * @param pledger The address of the pledger.
+   * @param amount The amount of tokens pledged.
+   */
+  event Pledge(address indexed pledger, uint256 amount);
+
+  /**
+   * @notice Emited when the crowdfunding is terminated.
+   * @param success Whether the crowdfunding was successful or not.
+   */
+  event Terminated(bool indexed success);
+
+  /// @notice The different phases of the crowdfund.
   enum Phase { Setup, Funding, Success, Failure }
 
   /// @notice Parameters to be passed to this contract's constructor.
@@ -60,9 +75,15 @@ contract Crowdfund {
   /// @notice How much was collected so far.
   uint256 public collected;
 
+  /// @notice The set of addresses that have pledged to this crowdfund.
   LibAddressSet.Data internal pledgers;
+  /// @notice The mapping of pledgers to their pledged amounts.
   mapping(address => uint256) public pledges;
 
+  /**
+   * @notice The constructor for this contract.
+   * @param p The parameters to be passed to this contract's constructor.
+   */
   constructor(Params memory p) {
     // Check that the owner is a member of the FAST contract.
     if (!AHasMembers(p.fast).isMember(p.owner))
@@ -74,7 +95,10 @@ contract Crowdfund {
     params = p;
   }
 
-  // Allows an issuer member to agree to the parameters and set the fee percentage.
+  /**
+   * @notice Advances the campaign to the funding phase.
+   * @param _basisPointsFee The fee expressed in basis points - eg ten thousandths.
+   */
   function advanceToFunding(uint256 _basisPointsFee)
       external onlyManager {
     // Make sure the fee doesn't exceed a hundred percent.
@@ -84,6 +108,10 @@ contract Crowdfund {
     emit Advance(phase = Phase.Funding);
   }
 
+  /**
+   * @notice Allows a pledger to pledge tokens to this crowdfund.
+   * @param amount The amount of tokens to pledge.
+   */
   function pledge(uint256 amount)
       public onlyDuring(Phase.Funding) onlyFastMember {
     // Make sure the amount is non-zero.
@@ -96,11 +124,19 @@ contract Crowdfund {
     pledgers.add(msg.sender, true);
     // Add the pledged amount to the existing pledge.
     pledges[msg.sender] += amount;
+    // Update the collected amount.
+    collected += amount;
     // Transfer the tokens to this contract.
     if (!params.token.transferFrom(msg.sender, address(this), amount))
       revert TokenContractError();
+    // Emit!
+    emit Pledge(msg.sender, amount);
   }
 
+  /**
+   * @notice Allows an issuer member to terminate the crowdfunding given a success flag.
+   * @param success Whether the crowdfunding was successful or not.
+   */
   function terminate(bool success)
       public onlyDuring(Phase.Funding) onlyManager {
     // If the crowdfunding was successful...
@@ -115,16 +151,15 @@ contract Crowdfund {
       if (payout > 0)
         if (!params.token.transfer(params.beneficiary, payout))
           revert TokenContractError();
-      // Advance to the success phase and emit.
-      emit Advance(phase = Phase.Success);
     }
-    // Crowdfunding is a failure - we need to return the funds in pull-based fashion.
-    else {
-      // Advance to the failure phase and emit.
-      emit Advance(phase = Phase.Failure);
-    }
+    // Advance to next phase.
+    emit Advance(phase = success ? Phase.Success : Phase.Failure);
   }
 
+  /**
+   * @notice Allows a pledger to withdraw their funds if the crowdfunding failed.
+   * @param pledger The address of the pledger to withdraw funds for.
+   */
   function withdraw(address pledger)
       public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
@@ -140,7 +175,7 @@ contract Crowdfund {
         revert TokenContractError();
   }
 
-  // Given a total and a fee percentage, returns the fee amount rounded up.
+  /// @dev Given a total and a fee percentage, returns the fee amount rounded up.
   function feeAmount()
       public view returns(uint256) {
     return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
