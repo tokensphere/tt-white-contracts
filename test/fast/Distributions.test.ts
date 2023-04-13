@@ -34,12 +34,12 @@ describe("Distributions", () => {
     issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     fast: FakeContract<Fast>,
+    erc20: FakeContract<IERC20>,
     distribution: Distribution,
     distributionAsIssuer: Distribution,
     distributionAsAutomaton: Distribution,
-    deployDistribution: (params: Distribution.ParamsStruct) => void,
-    validDistributionParams: Distribution.ParamsStruct,
-    erc20: FakeContract<IERC20>;
+    validParams: Distribution.ParamsStruct,
+    deployDistribution: (params: Distribution.ParamsStruct) => void;
 
   before(async () => {
     // Keep track of a few signers.
@@ -83,7 +83,7 @@ describe("Distributions", () => {
     await hre.network.provider.request({ method: "hardhat_impersonateAccount", params: [fast.address] });
     await ethers.provider.send("hardhat_setBalance", [fast.address, "0xfffffffffffffffffff"]);
 
-    validDistributionParams = {
+    validParams = {
       distributor: governor.address,
       issuer: issuer.address,
       fast: fast.address,
@@ -106,7 +106,7 @@ describe("Distributions", () => {
 
   describe("various synthesized getters", async () => {
     beforeEach(async () => {
-      await deployDistribution(validDistributionParams);
+      await deployDistribution(validParams);
     });
 
     it("expose VERSION", async () => {
@@ -122,8 +122,8 @@ describe("Distributions", () => {
         issuer: issuer.address,
         fast: fast.address,
         token: erc20.address,
-        total: BigNumber.from(validDistributionParams.total),
-        blockLatch: BigNumber.from(validDistributionParams.blockLatch)
+        total: BigNumber.from(validParams.total),
+        blockLatch: BigNumber.from(validParams.blockLatch)
       });
     });
 
@@ -145,14 +145,14 @@ describe("Distributions", () => {
 
     it("expose available", async () => {
       const subject = await distribution.available()
-      expect(subject).to.be.eq(validDistributionParams.total);
+      expect(subject).to.be.eq(validParams.total);
     });
   });
 
   describe("constructor", async () => {
     describe("with the correct params passed", async () => {
       beforeEach(async () => {
-        await deployDistribution(validDistributionParams);
+        await deployDistribution(validParams);
       });
 
       it("stores its initial parameters", async () => {
@@ -163,14 +163,14 @@ describe("Distributions", () => {
           issuer: issuer.address,
           fast: fast.address,
           token: erc20.address,
-          total: validDistributionParams.total,
-          blockLatch: validDistributionParams.blockLatch
+          total: validParams.total,
+          blockLatch: validParams.blockLatch
         });
       });
 
       it("initializes the `available` funds using the initial `total`", async () => {
         const subject = await distribution.available();
-        expect(subject).to.eq(validDistributionParams.total);
+        expect(subject).to.eq(validParams.total);
       });
 
       it("stores the creation block", async () => {
@@ -188,7 +188,7 @@ describe("Distributions", () => {
     describe("with invalid parameters", async () => {
       it("reverts if the latched block is in the future", async () => {
         const latestBlockNumber = (await ethers.provider.getBlock("latest")).number;
-        const subject = deployDistribution({ ...validDistributionParams, blockLatch: latestBlockNumber + 10 });
+        const subject = deployDistribution({ ...validParams, blockLatch: latestBlockNumber + 10 });
         await expect(subject).to.have.been
           .revertedWith("InvalidBlockNumber");
       });
@@ -197,14 +197,14 @@ describe("Distributions", () => {
 
   describe("advanceToFeeSetup", async () => {
     beforeEach(async () => {
-      await deployDistribution(validDistributionParams);
-      erc20.balanceOf.whenCalledWith(distribution.address).returns(validDistributionParams.total);
+      await deployDistribution(validParams);
+      erc20.balanceOf.whenCalledWith(distribution.address).returns(validParams.total);
     });
 
     describe("from an invalid phase", async () => {
       beforeEach(async () => {
         // Mock balance.
-        erc20.balanceOf.returns(validDistributionParams.total);
+        erc20.balanceOf.returns(validParams.total);
         // Advance to correct phase.
         await distribution.advanceToFeeSetup();
       });
@@ -230,7 +230,7 @@ describe("Distributions", () => {
 
       it("checks that the token balance is equal to the total (minus)", async () => {
         // Make the ERC20 balance too low.
-        erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validDistributionParams.total).sub(1));
+        erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validParams.total).sub(1));
         const subject = distribution.advanceToFeeSetup();
         expect(subject).to.have
           .revertedWith("UnsupportedOperation");
@@ -238,7 +238,7 @@ describe("Distributions", () => {
 
       it("checks that the token balance is equal to the total (plus)", async () => {
         // Make the ERC20 balance too low.
-        erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validDistributionParams.total).add(1));
+        erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validParams.total).add(1));
         const subject = distribution.advanceToFeeSetup();
         expect(subject).to.have
           .revertedWith("UnsupportedOperation");
@@ -257,14 +257,14 @@ describe("Distributions", () => {
     beforeEach(async () => {
       beforeEach(async () => {
         // Deploy.
-        await deployDistribution(validDistributionParams);
+        await deployDistribution(validParams);
         // Mock balance.
-        erc20.balanceOf.returns(validDistributionParams.total);
+        erc20.balanceOf.returns(validParams.total);
       });
 
       describe("from an invalid phase", async () => {
         it("reverts", async () => {
-          const subject = distribution.advanceToBeneficiariesSetup(validDistributionParams.total);
+          const subject = distribution.advanceToBeneficiariesSetup(validParams.total);
           await expect(subject).to.have
             .revertedWith("UnsupportedOperation");
         });
@@ -276,20 +276,20 @@ describe("Distributions", () => {
       });
 
       it("requires the caller to be a manager", async () => {
-        const subject = distribution.advanceToBeneficiariesSetup(validDistributionParams.total);
+        const subject = distribution.advanceToBeneficiariesSetup(validParams.total);
         await expect(subject).to.have.revertedWith("RequiresManagerCaller");
       });
 
       it("is allowed for an automaton with the right privileges", async () => {
         fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
-        await distributionAsAutomaton.advanceToBeneficiariesSetup(validDistributionParams.total);
+        await distributionAsAutomaton.advanceToBeneficiariesSetup(validParams.total);
         const subject = await distribution.phase();
         expect(subject).to.eq(DistributionPhase.BeneficiariesSetup);
       });
 
       it("is forbidden for an automaton with the wrong privileges", async () => {
         fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
-        const subject = distributionAsAutomaton.advanceToBeneficiariesSetup(validDistributionParams.total);
+        const subject = distributionAsAutomaton.advanceToBeneficiariesSetup(validParams.total);
         await expect(subject).to.have.revertedWith("RequiresManagerCaller");
       });
 
@@ -300,7 +300,7 @@ describe("Distributions", () => {
       });
 
       it("underflow if the fee is too large", async () => {
-        const subject = distributionAsIssuer.advanceToBeneficiariesSetup(BigNumber.from(validDistributionParams.total).add(1));
+        const subject = distributionAsIssuer.advanceToBeneficiariesSetup(BigNumber.from(validParams.total).add(1));
         await expect(subject).to.have.revertedWith("panic code 0x11");
       });
 
@@ -318,9 +318,9 @@ describe("Distributions", () => {
 
     beforeEach(async () => {
       // Deploy.
-      await deployDistribution(validDistributionParams);
+      await deployDistribution(validParams);
       // Mock ERC20 to have the right balance.
-      erc20.balanceOf.returns(validDistributionParams.total);
+      erc20.balanceOf.returns(validParams.total);
       // Move to the correct phase.
       await distribution.advanceToFeeSetup();
       await distributionAsIssuer.advanceToBeneficiariesSetup(fee);
@@ -511,9 +511,9 @@ describe("Distributions", () => {
 
     beforeEach(async () => {
       // Deploy.
-      await deployDistribution(validDistributionParams);
+      await deployDistribution(validParams);
       // Mock ERC20 to have the right balance.
-      erc20.balanceOf.returns(validDistributionParams.total);
+      erc20.balanceOf.returns(validParams.total);
       // Move to the correct phase.
       await distribution.advanceToFeeSetup();
       await distributionAsIssuer.advanceToBeneficiariesSetup(fee);
@@ -584,10 +584,10 @@ describe("Distributions", () => {
 
   describe("terminate", async () => {
     beforeEach(async () => {
-      await deployDistribution(validDistributionParams);
+      await deployDistribution(validParams);
 
       erc20.balanceOf.reset();
-      erc20.balanceOf.whenCalledWith(distribution.address).returns(validDistributionParams.total);
+      erc20.balanceOf.whenCalledWith(distribution.address).returns(validParams.total);
     });
 
     it("can be called during the Funding phase", async () => {

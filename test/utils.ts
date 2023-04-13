@@ -65,12 +65,20 @@ export const BALANCE_IS_POSITIVE = "Balance is positive";
 
 // Distribution phases.
 export enum DistributionPhase {
-  Funding,
-  FeeSetup,
-  BeneficiariesSetup,
-  Withdrawal,
-  Terminated
-}
+  Funding = 0,
+  FeeSetup = 1,
+  BeneficiariesSetup = 2,
+  Withdrawal = 3,
+  Terminated = 4
+};
+
+// Crowdfund phases.
+export enum CrowdFundPhase {
+  Setup = 0,
+  Funding = 1,
+  Success = 2,
+  Failure = 3
+};
 
 // Get a POJO from a struct.
 export const abiStructToObj = ({ ...struct }) => {
