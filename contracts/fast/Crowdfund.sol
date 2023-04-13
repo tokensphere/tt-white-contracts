@@ -15,20 +15,14 @@ import '@openzeppelin/contracts/utils/math/Math.sol';
 contract Crowdfund {
   using LibAddressSet for LibAddressSet.Data;
 
-  error RequiresFastCaller();
   error UnsupportedOperation();
   error InconsistentParameters();
-  error InvalidBlockNumber(uint256 number);
 
   error RequiresFastMembership(address who);
   error RequiresManagerCaller();
   error TokenContractError();
 
   error InsufficientFunds(uint256 amount);
-  error Overfunded(uint256 amount);
-
-  error DuplicateEntry();
-  error NonExistentEntry();
 
   /**
    * @notice Emited whenever the internal phase of this distribution changes.
@@ -124,12 +118,26 @@ contract Crowdfund {
       // Advance to the success phase and emit.
       emit Advance(phase = Phase.Success);
     }
-
     // Crowdfunding is a failure - we need to return the funds in pull-based fashion.
     else {
       // Advance to the failure phase and emit.
       emit Advance(phase = Phase.Failure);
     }
+  }
+
+  function withdraw(address pledger)
+      public onlyDuring(Phase.Failure) {
+    // Make sure the pledger is in the set.
+    if (!pledgers.contains(pledger))
+      revert UnsupportedOperation();
+    // Store the amount of the pledger's pledge.
+    uint256 amount = pledges[pledger];
+    // Track that the pledger has withdrawn their funds.
+    pledges[pledger] = 0;
+    // Transfer the tokens to the pledger.
+    if (amount > 0)
+      if (!params.token.transfer(pledger, amount))
+        revert TokenContractError();
   }
 
   // Given a total and a fee percentage, returns the fee amount rounded up.
@@ -143,12 +151,6 @@ contract Crowdfund {
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
       revert UnsupportedOperation();
-    _;
-  }
-
-  modifier onlyFastCaller() {
-    if (msg.sender != params.fast)
-      revert RequiresFastCaller();
     _;
   }
 
