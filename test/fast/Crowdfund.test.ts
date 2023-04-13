@@ -372,17 +372,72 @@ describe("Crowdfunds", () => {
   });
 
   describe("terminate", async () => {
-    describe("upon success", async () => {
-      it("requires the caller to be a manager");
-      it("calculates and transfers the fee to the issuer contract");
-      it("reverts if the ERC20 fee transfer fails");
-      it("transfers the rest of the funds to the beneficiary");
-      it("reverts if the ERC20 beneficiary transfer fails");
-      it("advances to the Success phase");
+    beforeEach(async () => {
+      await deployCrowdfund(validParams);
+      await crowdfundAsIssuer.advanceToFunding(2_000);
+      // Have a few pledges made
+      erc20.allowance.returns(100_000);
+      erc20.transferFrom.returns(true);
+      await Promise.all([alice, bob, paul].map((user) => crowdfund.connect(user).pledge(50)));
     });
+
+    describe("upon success", async () => {
+      it("requires the caller to be a manager", async () => {
+        const subject = crowdfund.terminate(true);
+        await expect(subject).to.have
+          .revertedWith("RequiresManagerCaller");
+      });
+
+      it("calculates and transfers the fee to the issuer contract", async () => {
+        erc20.transfer.returns(true);
+        await crowdfundAsIssuer.terminate(true);
+        // The fee should be 20% of 150, which is 30.
+        expect(erc20.transfer).to.have.been
+          .calledWith(issuer.address, BigNumber.from(30));
+      });
+
+      it("reverts if the ERC20 fee transfer fails", async () => {
+        erc20.transfer.whenCalledWith(issuer.address, 30).returns(false);
+        const subject = crowdfundAsIssuer.terminate(true);
+        await expect(subject).to.have
+          .revertedWith("TokenContractError");
+      });
+
+      it("transfers the rest of the funds to the beneficiary", async () => {
+        erc20.transfer.returns(true);
+        await crowdfundAsIssuer.terminate(true);
+        // The rest of the funds should be 120.
+        expect(erc20.transfer).to.have.been
+          .calledWith(validParams.beneficiary, BigNumber.from(120));
+      });
+
+      it("reverts if the ERC20 beneficiary transfer fails", async () => {
+        erc20.transfer.whenCalledWith(validParams.beneficiary, 120).returns(false);
+        const subject = crowdfundAsIssuer.terminate(true);
+        await expect(subject).to.have
+          .revertedWith("TokenContractError");
+      });
+
+      it("advances to the success phase", async () => {
+        erc20.transfer.returns(true);
+        await crowdfundAsIssuer.terminate(true);
+        const subject = await crowdfund.phase();
+        expect(subject).to.eq(CrowdFundPhase.Success);
+      });
+    });
+
     describe("upon failure", async () => {
-      it("requires the caller to be a manager");
-      it("advances to the Failure phase");
+      it("requires the caller to be a manager", async () => {
+        const subject = crowdfund.terminate(false);
+        await expect(subject).to.have
+          .revertedWith("RequiresManagerCaller");
+      });
+
+      it("advances to the Failure phase", async () => {
+        await crowdfundAsIssuer.terminate(false);
+        const subject = await crowdfund.phase();
+        expect(subject).to.eq(CrowdFundPhase.Failure);
+      });
     });
   });
 
@@ -393,8 +448,11 @@ describe("Crowdfunds", () => {
 
     describe("from the Failure phase", async () => {
       it("requires the beneficiary to be in the list of pledgers");
+
       it("sets the pledger's amount to zero");
+
       it("uses the ERC20 token to transfer the funds back to the pledger");
+
       it("reverts if the ERC20 transfer fails");
     });
   });
