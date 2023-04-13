@@ -85,14 +85,14 @@ contract Crowdfund {
    * @param p The parameters to be passed to this contract's constructor.
    */
   constructor(Params memory p) {
-    // Check that the owner is a member of the FAST contract.
-    if (!AHasMembers(p.fast).isMember(p.owner))
-      revert RequiresFastMembership(p.owner);
-    // Check that the beneficiary is a member of the FAST contract.
-    else if (!AHasMembers(p.fast).isMember(p.beneficiary))
-      revert RequiresFastMembership(p.beneficiary);
     // Store parameters.
     params = p;
+    // Check that the owner is a member of the FAST contract.
+    if (!isFastMember(p.owner))
+      revert RequiresFastMembership(p.owner);
+    // Check that the beneficiary is a member of the FAST contract.
+    else if (!isFastMember(p.beneficiary))
+      revert RequiresFastMembership(p.beneficiary);
   }
 
   /**
@@ -181,7 +181,12 @@ contract Crowdfund {
     return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
   }
 
-  /// Modifiers.
+  /// Modifiers and ACL functions.
+
+  function isFastMember(address who)
+      internal view returns(bool) {
+    return AHasMembers(params.fast).isMember(who);
+  }
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
@@ -190,7 +195,7 @@ contract Crowdfund {
   }
 
   modifier onlyFastMember() {
-    if (!AHasMembers(params.fast).isMember(msg.sender))
+    if (!isFastMember(msg.sender))
       revert RequiresFastMembership(msg.sender);
     _;
   }
