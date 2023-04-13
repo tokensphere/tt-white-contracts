@@ -447,13 +447,42 @@ describe("Crowdfunds", () => {
     });
 
     describe("from the Failure phase", async () => {
-      it("requires the beneficiary to be in the list of pledgers");
+      beforeEach(async () => {
+        await deployCrowdfund(validParams);
+        await crowdfundAsIssuer.advanceToFunding(2_000);
+        // Have a few pledges made
+        erc20.allowance.returns(100_000);
+        erc20.transfer.returns(true);
+        erc20.transferFrom.returns(true);
+        await Promise.all([alice, bob, paul].map((user) => crowdfund.connect(user).pledge(50)));
+        await crowdfundAsIssuer.terminate(false);
+      });
 
-      it("sets the pledger's amount to zero");
+      it("requires the beneficiary to be in the list of pledgers", async () => {
+        const subject = crowdfund.withdraw(ben.address);
+        await expect(subject).to.have
+          .revertedWith("UnsupportedOperation");
+      });
 
-      it("uses the ERC20 token to transfer the funds back to the pledger");
+      it("sets the pledger's amount to zero", async () => {
+        await crowdfund.withdraw(alice.address);
+        const subject = await crowdfund.pledges(alice.address);
+        expect(subject).to.eq(0);
+      });
 
-      it("reverts if the ERC20 transfer fails");
+      it("uses the ERC20 token to transfer the funds back to the pledger", async () => {
+        erc20.transfer.returns(true);
+        await crowdfund.withdraw(alice.address);
+        expect(erc20.transfer).to.have.been
+          .calledWith(alice.address, 50);
+      });
+
+      it("reverts if the ERC20 transfer fails", async () => {
+        erc20.transfer.returns(false);
+        const subject = crowdfund.withdraw(alice.address);
+        await expect(subject).to.have
+          .revertedWith("TokenContractError");
+      });
     });
   });
 });
