@@ -175,7 +175,7 @@ contract Crowdfund {
         revert TokenContractError();
   }
 
-  /// @dev Given a total and a fee percentage, returns the fee amount rounded up.
+  /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
   function feeAmount()
       public view returns(uint256) {
     return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
