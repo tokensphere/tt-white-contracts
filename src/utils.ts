@@ -12,13 +12,16 @@ export const DEPLOYER_FACTORY_COMMON = {
   funding: "10000000000000000",
 };
 
+// Marketplace privilege bits.
 export const MarketplaceAutomatonPrivilege = {
   ManageMembers: 1
 };
 
+// FAST privilege bits.
 export const FastAutomatonPrivilege = {
   ManageMembers: 1,
-  ManageDistributions: 2
+  ManageDistributions: 2,
+  ManageCrowdfunds: 4
 };
 
 export const COMMON_DIAMOND_FACETS = [];

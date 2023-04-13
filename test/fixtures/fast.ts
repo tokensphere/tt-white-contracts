@@ -13,6 +13,7 @@ import {
   FastFrontendFacet,
   FastAutomatonsFacet,
   FastDistributionsFacet,
+  FastCrowdfundsFacet,
   FastTopFacet__factory,
   FastAccessFacet__factory,
   FastTokenFacet__factory,
@@ -20,6 +21,7 @@ import {
   FastFrontendFacet__factory,
   FastAutomatonsFacet__factory,
   FastDistributionsFacet__factory,
+  FastCrowdfundsFacet__factory,
 } from "../../typechain";
 import { FAST_FACETS } from "../../tasks/fast";
 
@@ -43,6 +45,7 @@ interface FastFixtureResult {
   readonly frontendMock: MockContract<FastFrontendFacet>;
   readonly automatonsMock: MockContract<FastAutomatonsFacet>;
   readonly distributionsMock: MockContract<FastDistributionsFacet>;
+  readonly crowdfundsMock: MockContract<FastCrowdfundsFacet>;
 }
 
 interface FastFixtureOpts {
@@ -88,6 +91,7 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
     frontendMock: await facetMock<FastFrontendFacet__factory>(fast, "FastFrontendFacet"),
     automatonsMock: await facetMock<FastAutomatonsFacet__factory>(fast, "FastAutomatonsFacet"),
     distributionsMock: await facetMock<FastDistributionsFacet__factory>(fast, "FastDistributionsFacet"),
+    crowdfundsMock: await facetMock<FastCrowdfundsFacet__factory>(fast, "FastCrowdfundsFacet"),
   };
   // Callback!
   await afterDeploy.apply(this, [result]);

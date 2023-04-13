@@ -126,11 +126,12 @@ const FAST_FACETS = [
   ...COMMON_DIAMOND_FACETS,
   "FastTopFacet",
   "FastAccessFacet",
+  "FastAutomatonsFacet",
   "FastTokenFacet",
   "FastHistoryFacet",
   "FastFrontendFacet",
   "FastDistributionsFacet",
-  "FastAutomatonsFacet",
+  "FastCrowdfundsFacet",
 ];
 
 interface FastDeployParams {
