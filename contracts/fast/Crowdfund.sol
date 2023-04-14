@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import '../lib/LibAddressSet.sol';
 import '../interfaces/IERC20.sol';
 import '../common/AHasMembers.sol';
+import '../common/AHasGovernors.sol';
 import '../common/AHasAutomatons.sol';
 import './FastAutomatonsFacet.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
@@ -16,14 +17,29 @@ import '@openzeppelin/contracts/utils/math/Math.sol';
 contract Crowdfund {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// @notice Happens when a function requires an unmet phase.
   error InvalidPhase();
+  /// @notice Happens when a duplicate entry is found.
+  error DuplicateEntry();
+  /// @notice Happens when a function requires an unmet condition.
   error UnsupportedOperation();
+  /// @notice Happens when inconsistent parametters are detected.
   error InconsistentParameters();
 
+  /// @notice Happens when an address is not an issuer member.
+  error RequiresIssuerMembership(address who);
+  /// @notice Happens when an address is not a FAST governor.
+  error RequiresFastGovernorship(address who);
+  /// @notice Happens when an address is not a FAST member.
   error RequiresFastMembership(address who);
-  error RequiresManagerCaller();
+  /// @notice Happens when an address is not crowdfund manager.
+  error RequiresManagerCaller(address who);
+  /// @notice Happens when an address is not a crowdfund pledger.
+  error UnknownPledger();
+  /// @notice Happens when a call to the ERC20 token contract fails.
   error TokenContractError();
 
+  /// @notice Happens when there are insufficient funds somewhere.
   error InsufficientFunds(uint256 amount);
 
   /**
@@ -92,8 +108,8 @@ contract Crowdfund {
     // Store parameters.
     params = p;
     // Check that the owner is a member of the FAST contract.
-    if (!isFastMember(p.owner))
-      revert RequiresFastMembership(p.owner);
+    if (!isFastGovernor(p.owner))
+      revert RequiresFastGovernorship(p.owner);
     // Check that the beneficiary is a member of the FAST contract.
     else if (!isFastMember(p.beneficiary))
       revert RequiresFastMembership(p.beneficiary);
@@ -113,7 +129,7 @@ contract Crowdfund {
    * @param _basisPointsFee The fee expressed in basis points - eg ten thousandths.
    */
   function advanceToFunding(uint256 _basisPointsFee)
-      external onlyDuring(Phase.Setup) onlyManager {
+      external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
     if (_basisPointsFee > 10_000)
       revert InconsistentParameters();
@@ -175,7 +191,7 @@ contract Crowdfund {
    * @param success Whether the crowdfunding was successful or not.
    */
   function terminate(bool success)
-      public onlyManager {
+      public onlyIssuerMember {
     // If the crowdfunding was successful...
     if (success) {
       // Transfer the fee to the issuer contract if there is one.
@@ -185,8 +201,13 @@ contract Crowdfund {
           revert TokenContractError();
       // Transfer the payout to the beneficiary.
       uint256 payout = collected - finalFee;
+      // If there's a payout for the beneficiary, transfer it.
       if (payout > 0)
-        if (!params.token.transfer(params.beneficiary, payout))
+        // Make sure that the beneficiary is **still** a member of the FAST contract.
+        if (!isFastMember(params.beneficiary))
+          revert RequiresFastMembership(params.beneficiary);
+        // Attempt to transfer to the beneficiary.
+        else if (!params.token.transfer(params.beneficiary, payout))
           revert TokenContractError();
     }
     // Advance to next phase.
@@ -202,20 +223,28 @@ contract Crowdfund {
       public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
     if (!pledgerSet.contains(pledger))
-      revert UnsupportedOperation();
+      revert UnknownPledger();
     // Pledger has already been refunded...
     else if (refunded[pledger])
-      revert UnsupportedOperation();
-    // Store the amount of the pledger's pledge.
-    uint256 amount = pledges[pledger];
+      revert DuplicateEntry();
     // Track that the pledger has been refunded.
     refunded[pledger] = true;
     // Transfer the tokens to the pledger.
-    if (!params.token.transfer(pledger, amount))
+    if (!params.token.transfer(pledger, pledges[pledger]))
       revert TokenContractError();
   }
 
   /// Modifiers and ACL functions.
+
+  /**
+   * @notice Checks whether the given address is a governor of the FAST contract.
+   * @param who The address to check.
+   * @return A `bool` indicating whether the address is a governor of the FAST contract.
+   */
+  function isFastGovernor(address who)
+      internal view returns(bool) {
+    return AHasGovernors(params.fast).isGovernor(who);
+  }
 
   /**
    * @dev Checks whether the given address is a member of the FAST contract.
@@ -233,6 +262,12 @@ contract Crowdfund {
     _;
   }
 
+  modifier onlyIssuerMember() {
+    if (!AHasMembers(params.issuer).isMember(msg.sender))
+      revert RequiresIssuerMembership(msg.sender);
+    _;
+  }
+
   modifier onlyFastMember() {
     if (!isFastMember(msg.sender))
       revert RequiresFastMembership(msg.sender);
@@ -242,7 +277,7 @@ contract Crowdfund {
   modifier onlyManager() {
     if (!AHasMembers(params.issuer).isMember(msg.sender) &&
         !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_CROWDFUNDS))
-      revert RequiresManagerCaller();
+      revert RequiresManagerCaller(msg.sender);
     _;
   }
 }
