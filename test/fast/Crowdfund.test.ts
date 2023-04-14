@@ -260,7 +260,7 @@ describe("Crowdfunds", () => {
       it("requires that the fee basis points is set bellow 100%", async () => {
         const subject = crowdfundAsIssuer.advanceToFunding(10_001);
         await expect(subject).to.have
-          .revertedWith("InconsistentParameters");
+          .revertedWith("InconsistentParameter");
       });
 
       it("stores basisPointsFee", async () => {
@@ -312,7 +312,7 @@ describe("Crowdfunds", () => {
       it("requires the amount to not be zero", async () => {
         const subject = crowdfund.connect(alice).pledge(0);
         await expect(subject).to.have
-          .revertedWith("InconsistentParameters");
+          .revertedWith("InconsistentParameter");
       });
 
       it("checks the allowance of the crowdfunding contract with the ERC20 contract", async () => {

@@ -11,7 +11,6 @@ import './lib/AIssuerFacet.sol';
 import './lib/LibIssuer.sol';
 
 import '@openzeppelin/contracts/utils/math/Math.sol';
-import 'hardhat/console.sol';
 
 
 contract IssuerTopFacet is AIssuerFacet {

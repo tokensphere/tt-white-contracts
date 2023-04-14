@@ -28,7 +28,7 @@ contract Distribution {
   /// @notice Happens when a duplicate entry is found.
   error DuplicateEntry();
   /// @notice Happens when inconsistent parametters are detected.
-  error InconsistentParameters(string param);
+  error InconsistentParameter(string param);
   /// @notice Happens when a call to the ERC20 token contract fails.
   error TokenContractError();
   /// @notice Happens when there are insufficient funds somewhere.
@@ -116,7 +116,7 @@ contract Distribution {
   constructor(Params memory p) {
     // If the distribution is latched in the future, throw.
     if (p.blockLatch >= block.number)
-      revert InconsistentParameters("blockLatch");
+      revert InconsistentParameter("blockLatch");
     // Store all parameters.
     params = p;
     available = p.total;
@@ -128,7 +128,7 @@ contract Distribution {
     // Make sure that the current distribution has exactly the required amount locked.
     uint256 balance = params.token.balanceOf(address(this));
     if (balance != params.total)
-      revert InconsistentParameters("balance");
+      revert InconsistentParameter("balance");
     // Move to next phase.
     emit Advance(phase = Phase.FeeSetup);
   }
@@ -183,7 +183,7 @@ contract Distribution {
       public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Beneficiaries and amount sizes must match.
     if (_beneficiaries.length != _amounts.length)
-      revert InconsistentParameters("lengths");
+      revert InconsistentParameter("lengths");
 
     // We will count how much is needed for all these beneficiaries.
     uint256 needed = 0;

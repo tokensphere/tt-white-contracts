@@ -22,7 +22,7 @@ contract Crowdfund {
   /// @notice Happens when a duplicate entry is found.
   error DuplicateEntry();
   /// @notice Happens when inconsistent parametters are detected.
-  error InconsistentParameters(string param);
+  error InconsistentParameter(string param);
   /// @notice Happens when an address is not a crowdfund pledger.
   error UnknownPledger(address who);
   /// @notice Happens when a call to the ERC20 token contract fails.
@@ -131,7 +131,7 @@ contract Crowdfund {
       external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
     if (_basisPointsFee > 10_000)
-      revert InconsistentParameters("basisPointsFee");
+      revert InconsistentParameter("basisPointsFee");
     basisPointsFee = _basisPointsFee;
     emit Advance(phase = Phase.Funding);
   }
@@ -145,7 +145,7 @@ contract Crowdfund {
       public onlyDuring(Phase.Funding) onlyFastMember {
     // Make sure the amount is non-zero.
     if (amount == 0)
-      revert InconsistentParameters("amount");
+      revert InconsistentParameter("amount");
     // Make sure that the message sender gave us allowance for at least this amount.
     uint256 allowance = params.token.allowance(msg.sender, address(this));
     if (allowance < amount)
