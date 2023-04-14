@@ -179,9 +179,8 @@ Here are an end-to-end scenarios showcasing how to use crowdfunds.
 
 ```typescript
 // We'll use the `user1` named account to be the owner of the distribution.
-let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let { issuerMember, user1, user2, user3, user4 } = await getNamedAccounts();
 let issuerSigner = await ethers.getSigner(issuerMember);
-let automatonSigner = await ethers.getSigner(automaton);
 let userSigner = await ethers.getSigner(user1);
 let [user1Signer, user2Signer, user3Signer] = await Promise.all([user1, user2, user3].map(user => ethers.getSigner(user)));
 
@@ -192,8 +191,6 @@ await Promise.all([user1, user2, user3].map(user => token.mint(user, 5000)));
 // Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
 let issuer = await ethers.getContract('Issuer');
 let fast = await ethers.getContract('FastF01');
-// Add the automaton as a distribution manager.
-await fast.connect(issuerSigner).setAutomatonPrivileges(automaton, 4 /* FAST_PRIVILEGE_MANAGE_CROWDFUNDS */);
 
 // We're ready to start a crowdfund.
 await fast.connect(user1Signer).createCrowdfund(token.address, user4);
@@ -228,9 +225,8 @@ await crowdfund.refund(user1);
 
 ```typescript
 // We'll use the `user1` named account to be the owner of the distribution.
-let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let { issuerMember, user1, user2, user3, user4 } = await getNamedAccounts();
 let issuerSigner = await ethers.getSigner(issuerMember);
-let automatonSigner = await ethers.getSigner(automaton);
 let userSigner = await ethers.getSigner(user1);
 let [user1Signer, user2Signer, user3Signer] = await Promise.all([user1, user2, user3].map(user => ethers.getSigner(user)));
 
@@ -241,15 +237,13 @@ await Promise.all([user1, user2, user3].map(user => token.mint(user, 5000)));
 // Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
 let issuer = await ethers.getContract('Issuer');
 let fast = await ethers.getContract('FastF01');
-// Add the automaton as a distribution manager.
-await fast.connect(issuerSigner).setAutomatonPrivileges(automaton, 4 /* FAST_PRIVILEGE_MANAGE_CROWDFUNDS */);
 
 // We're ready to start a crowdfund.
 await fast.connect(user1Signer).createCrowdfund(token.address, user4);
 let [[crowdfundAddr]] = await fast.paginateCrowdfunds(0, 1);
 let crowdfund = await ethers.getContractAt('Crowdfund', crowdfundAddr);
 // Have the issuer set a 20% fee (expressed in basis point - 2_000).
-await crowdfund.connect(automatonSigner).advanceToFunding(2_000);
+await crowdfund.connect(issuerSigner).advanceToFunding(2_000);
 
 // Have each user pledge.
 await Promise.all([user1Signer, user2Signer, user3Signer].map((user) => {
@@ -261,7 +255,7 @@ await Promise.all([user1Signer, user2Signer, user3Signer].map((user) => {
 (await crowdfund.feeAmount()).toString();
 
 // Have the issuer declare the crowdfund a success.
-await crowdfund.connect(automatonSigner).terminate(false);
+await crowdfund.connect(issuerSigner).terminate(false);
 // The crowdfund should now be terminated with Failure.
 await crowdfund.phase();
 // The issuer contract should **not** have received the fee.
