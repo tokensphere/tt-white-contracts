@@ -280,14 +280,14 @@ describe("Distribution", () => {
         await expect(subject).to.have.revertedWith("RequiresManagerCaller");
       });
 
-      it("is allowed for an automaton with the right privileges", async () => {
+      it("is allowed by an automaton with the right privileges", async () => {
         fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
         await distributionAsAutomaton.advanceToBeneficiariesSetup(validParams.total);
         const subject = await distribution.phase();
         expect(subject).to.eq(DistributionPhase.BeneficiariesSetup);
       });
 
-      it("is forbidden for an automaton with the wrong privileges", async () => {
+      it("requires the right privileges for an automaton", async () => {
         fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
         const subject = distributionAsAutomaton.advanceToBeneficiariesSetup(validParams.total);
         await expect(subject).to.have.revertedWith("RequiresManagerCaller");
@@ -339,6 +339,9 @@ describe("Distribution", () => {
           const subject = distribution.advanceToWithdrawal();
           await expect(subject).to.have.revertedWith("RequiresManagerCaller");
         });
+
+        it("is allowed by an automaton with the right privileges");
+        it("requires the right privileges for an automaton");
 
         it("requires that all available funds have been attributed", async () => {
           await distributionAsIssuer.removeBeneficiaries([bob.address])
@@ -452,6 +455,9 @@ describe("Distribution", () => {
           await expect(subject).to.have
             .revertedWith("RequiresManagerCaller");
         });
+
+        it("is allowed by an automaton with the right privileges");
+        it("requires the right privileges for an automaton");
 
         it("removes the beneficiaries from the list", async () => {
           await distributionAsIssuer.removeBeneficiaries([alice.address, paul.address]);
@@ -650,6 +656,9 @@ describe("Distribution", () => {
       await expect(subject).to.have
         .revertedWith("RequiresManagerCaller");
     });
+
+    it("is allowed by an automaton with the right privileges");
+    it("requires the right privileges for an automaton");
 
     it("sets the available amount to zero", async () => {
       await distributionAsIssuer.terminate();

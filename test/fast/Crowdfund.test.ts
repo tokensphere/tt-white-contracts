@@ -248,11 +248,14 @@ describe("Crowdfunds", () => {
         await deployCrowdfund(validParams);
       });
 
-      it("requires the caller to be an issuer member", async () => {
+      it("requires the caller to be an manager", async () => {
         const subject = crowdfund.connect(alice).advanceToFunding(100_000);
         await expect(subject).to.have
           .revertedWith("RequiresManagerCaller");
       });
+
+      it("is allowed by an automaton with the right privileges");
+      it("requires the right privileges for an automaton");
 
       it("requires that the fee basis points is set bellow 100%", async () => {
         const subject = crowdfundAsIssuer.advanceToFunding(10_001);
@@ -388,6 +391,9 @@ describe("Crowdfunds", () => {
           .revertedWith("RequiresManagerCaller");
       });
 
+      it("is allowed by an automaton with the right privileges");
+      it("requires the right privileges for an automaton");
+
       it("calculates and transfers the fee to the issuer contract", async () => {
         erc20.transfer.returns(true);
         await crowdfundAsIssuer.terminate(true);
@@ -432,6 +438,9 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have
           .revertedWith("RequiresManagerCaller");
       });
+
+      it("is allowed by an automaton with the right privileges");
+      it("requires the right privileges for an automaton");
 
       it("advances to the Failure phase", async () => {
         await crowdfundAsIssuer.terminate(false);
