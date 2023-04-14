@@ -190,7 +190,7 @@ describe("Distribution", () => {
         const latestBlockNumber = (await ethers.provider.getBlock("latest")).number;
         const subject = deployDistribution({ ...validParams, blockLatch: latestBlockNumber + 10 });
         await expect(subject).to.have.been
-          .revertedWith("InvalidBlockNumber");
+          .revertedWith("InconsistentParameter");
       });
     });
   });
@@ -232,16 +232,16 @@ describe("Distribution", () => {
         // Make the ERC20 balance too low.
         erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validParams.total).sub(1));
         const subject = distribution.advanceToFeeSetup();
-        expect(subject).to.have
-          .revertedWith("UnsupportedOperation");
+        await expect(subject).to.have
+          .revertedWith("InconsistentParameter");
       });
 
       it("checks that the token balance is equal to the total (plus)", async () => {
         // Make the ERC20 balance too low.
         erc20.balanceOf.whenCalledWith(distribution.address).returns(BigNumber.from(validParams.total).add(1));
         const subject = distribution.advanceToFeeSetup();
-        expect(subject).to.have
-          .revertedWith("UnsupportedOperation");
+        await expect(subject).to.have
+          .revertedWith("InconsistentParameter");
       });
 
       it("emits advancing to the FeeSetup phase", async () => {
@@ -385,7 +385,7 @@ describe("Distribution", () => {
         it("checks the length of beneficiaries and amounts", async () => {
           const subject = distributionAsIssuer.addBeneficiaries([alice.address], []);
           await expect(subject).to.have
-            .revertedWith("InconsistentParameters");
+            .revertedWith("InconsistentParameter");
         });
 
         it("delegates to the FAST contract for membership checks", async () => {
@@ -553,7 +553,7 @@ describe("Distribution", () => {
         it("reverts if the beneficiary is unknown", async () => {
           const subject = distribution.withdraw(ben.address);
           await expect(subject).to.have
-            .revertedWith("NonExistentEntry");
+            .revertedWith("UnknownBeneficiary");
         });
 
         it("requires that the beneficiary hasn't already withdrawn", async () => {
