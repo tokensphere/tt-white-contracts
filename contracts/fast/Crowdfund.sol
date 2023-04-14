@@ -5,7 +5,6 @@ import '../lib/LibAddressSet.sol';
 import '../interfaces/IERC20.sol';
 import '../common/AHasMembers.sol';
 import '../common/AHasGovernors.sol';
-import './FastAutomatonsFacet.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
 
 
