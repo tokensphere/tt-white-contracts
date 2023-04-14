@@ -21,26 +21,25 @@ contract Crowdfund {
   error InvalidPhase();
   /// @notice Happens when a duplicate entry is found.
   error DuplicateEntry();
-  /// @notice Happens when a function requires an unmet condition.
-  error UnsupportedOperation();
   /// @notice Happens when inconsistent parametters are detected.
-  error InconsistentParameters();
-
-  /// @notice Happens when an address is not an issuer member.
-  error RequiresIssuerMembership(address who);
-  /// @notice Happens when an address is not a FAST governor.
-  error RequiresFastGovernorship(address who);
-  /// @notice Happens when an address is not a FAST member.
-  error RequiresFastMembership(address who);
-  /// @notice Happens when an address is not crowdfund manager.
-  error RequiresManagerCaller(address who);
+  error InconsistentParameters(string param);
   /// @notice Happens when an address is not a crowdfund pledger.
-  error UnknownPledger();
+  error UnknownPledger(address who);
   /// @notice Happens when a call to the ERC20 token contract fails.
   error TokenContractError();
-
   /// @notice Happens when there are insufficient funds somewhere.
   error InsufficientFunds(uint256 amount);
+
+  /// @notice Happens when an address is not an issuer member.
+  error RequiresIssuerMemberCaller();
+  /// @notice Happens when an address is not a FAST member.
+  error RequiresFastMemberCaller();
+  /// @notice Happens when an address is not crowdfund manager.
+  error RequiresManagerCaller();
+  /// @notice Happens when a parameter has to be a FAST governor.
+  error RequiresFastGovernorship(address who);
+  /// @notice Happens when a parameter has to be a FAST member.
+  error RequiresFastMembership(address who);
 
   /**
    * @notice Emited whenever the internal phase of this crowdfund changes.
@@ -132,7 +131,7 @@ contract Crowdfund {
       external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
     if (_basisPointsFee > 10_000)
-      revert InconsistentParameters();
+      revert InconsistentParameters("basisPointsFee");
     basisPointsFee = _basisPointsFee;
     emit Advance(phase = Phase.Funding);
   }
@@ -146,7 +145,7 @@ contract Crowdfund {
       public onlyDuring(Phase.Funding) onlyFastMember {
     // Make sure the amount is non-zero.
     if (amount == 0)
-      revert InconsistentParameters();
+      revert InconsistentParameters("amount");
     // Make sure that the message sender gave us allowance for at least this amount.
     uint256 allowance = params.token.allowance(msg.sender, address(this));
     if (allowance < amount)
@@ -223,7 +222,7 @@ contract Crowdfund {
       public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
     if (!pledgerSet.contains(pledger))
-      revert UnknownPledger();
+      revert UnknownPledger(pledger);
     // Pledger has already been refunded...
     else if (refunded[pledger])
       revert DuplicateEntry();
@@ -264,20 +263,20 @@ contract Crowdfund {
 
   modifier onlyIssuerMember() {
     if (!AHasMembers(params.issuer).isMember(msg.sender))
-      revert RequiresIssuerMembership(msg.sender);
+      revert RequiresIssuerMemberCaller();
     _;
   }
 
   modifier onlyFastMember() {
     if (!isFastMember(msg.sender))
-      revert RequiresFastMembership(msg.sender);
+      revert RequiresFastMemberCaller();
     _;
   }
 
   modifier onlyManager() {
     if (!AHasMembers(params.issuer).isMember(msg.sender) &&
         !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_CROWDFUNDS))
-      revert RequiresManagerCaller(msg.sender);
+      revert RequiresManagerCaller();
     _;
   }
 }

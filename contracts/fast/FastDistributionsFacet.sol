@@ -15,6 +15,11 @@ import './Distribution.sol';
 contract FastDistributionsFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// @notice Happens when a call to the ERC20 token contract fails.
+  error TokenContractError();
+  /// @notice Happens when there are insufficient funds somewhere.
+  error InsufficientFunds(uint256 amount);
+
   /**
    * @notice Creates a distribution contract.
    * @param token is the address of the ERC20 token that should be distributed.
@@ -27,7 +32,8 @@ contract FastDistributionsFacet is AFastFacet {
     // Make sure the current FAST contract has at least `total` allowance over the user's ERC20 tokens.
     uint256 allowance = token.allowance(msg.sender, address(this));
     if (allowance < total)
-      revert ICustomErrors.InsufficientFunds(total - allowance);
+      revert InsufficientFunds(total - allowance);
+
     // Deploy a new Distribution contract locked onto the current FAST and target currency token.
     Distribution dist = new Distribution(
       Distribution.Params({
@@ -42,7 +48,8 @@ contract FastDistributionsFacet is AFastFacet {
     // Register our newly created distribution and keep track of it.
     LibFastDistributions.data().distributionSet.add(address(dist), false);
     // Transfer the ERC20 tokens to the distribution contract.
-    require(token.transferFrom(msg.sender, address(dist), total));
+    if (!token.transferFrom(msg.sender, address(dist), total))
+      revert TokenContractError();
     // Advance to the FeeSetup phase - only the FAST contract can do that.
     dist.advanceToFeeSetup();
     // Emit!
