@@ -113,6 +113,8 @@ yarn hardhat fast-balance SAF \
 
 ## Distributions
 
+Here is an end-to-end scenario showcasing how to use distributions.
+
 ```typescript
 // We'll use the `user1` named account to be the owner of the distribution.
 let { issuerMember, automaton, user1, user2, user3, user4, user5 } = await getNamedAccounts();
@@ -167,6 +169,110 @@ await Promise.all([issuer.address, user2, user3, user4, user5].map((u) => token.
 );
 // The issuer contract should now have no ERC20 tokens, while the issuer member should have them all.
 (await Promise.all([issuer.address, issuerMember].map(u => token.balanceOf(u)))).map(b => b.toString());
+```
+
+## Crowdfunds
+
+Here are an end-to-end scenarios showcasing how to use crowdfunds.
+
+### Successful Crowdfund
+
+```typescript
+// We'll use the `user1` named account to be the owner of the distribution.
+let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let issuerSigner = await ethers.getSigner(issuerMember);
+let automatonSigner = await ethers.getSigner(automaton);
+let userSigner = await ethers.getSigner(user1);
+let [user1Signer, user2Signer, user3Signer] = await Promise.all([user1, user2, user3].map(user => ethers.getSigner(user)));
+
+// Get our dummy ERC20 token, and bind it to our user as the caller.
+let token = (await ethers.getContract('ERC20')).connect(userSigner);
+// Mint 5000 tokens for our users.
+await Promise.all([user1, user2, user3].map(user => token.mint(user, 5000)));
+// Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
+let issuer = await ethers.getContract('Issuer');
+let fast = await ethers.getContract('FastF01');
+// Add the automaton as a distribution manager.
+await fast.connect(issuerSigner).setAutomatonPrivileges(automaton, 2 /* FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS */);
+
+// We're ready to start a crowdfund.
+await fast.connect(user1Signer).createCrowdfund(token.address, user4);
+let [[crowdfundAddr]] = await fast.paginateCrowdfunds(0, 1);
+let crowdfund = await ethers.getContractAt('Crowdfund', crowdfundAddr);
+// Have the issuer set a 20% fee (expressed in basis point - 2_000).
+await crowdfund.connect(issuerSigner).advanceToFunding(2_000);
+
+// Have each user pledge.
+await Promise.all([user1Signer, user2Signer, user3Signer].map((user) => {
+  token.connect(user).approve(crowdfundAddr, 500).then(() => crowdfund.connect(user).pledge(500))
+}));
+// At this point, the total pledge should be 1500.
+(await crowdfund.collected()).toString();
+// The fee should be 20% of 1500: 300.
+(await crowdfund.feeAmount()).toString();
+
+// Have the issuer declare the crowdfund a success.
+await crowdfund.connect(issuerSigner).terminate(true);
+// The crowdfund should now be terminated with Success.
+await crowdfund.phase();
+// The issuer contract should have received the fee.
+(await token.balanceOf(issuer.address)).toString();
+// The beneficiary should have received the rest.
+(await token.balanceOf(user4)).toString();
+
+// Users should not be able to withdraw.
+await crowdfund.withdraw(user1);
+```
+
+### Failed Crowdfund
+
+```typescript
+// We'll use the `user1` named account to be the owner of the distribution.
+let { issuerMember, automaton, user1, user2, user3, user4 } = await getNamedAccounts();
+let issuerSigner = await ethers.getSigner(issuerMember);
+let automatonSigner = await ethers.getSigner(automaton);
+let userSigner = await ethers.getSigner(user1);
+let [user1Signer, user2Signer, user3Signer] = await Promise.all([user1, user2, user3].map(user => ethers.getSigner(user)));
+
+// Get our dummy ERC20 token, and bind it to our user as the caller.
+let token = (await ethers.getContract('ERC20')).connect(userSigner);
+// Mint 5000 tokens for our users.
+await Promise.all([user1, user2, user3].map(user => token.mint(user, 5000)));
+// Get a handle to the Issuer contract and `F01` FAST, and bind it to our user as the caller.
+let issuer = await ethers.getContract('Issuer');
+let fast = await ethers.getContract('FastF01');
+// Add the automaton as a distribution manager.
+await fast.connect(issuerSigner).setAutomatonPrivileges(automaton, 2 /* FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS */);
+
+// We're ready to start a crowdfund.
+await fast.connect(user1Signer).createCrowdfund(token.address, user4);
+let [[crowdfundAddr]] = await fast.paginateCrowdfunds(0, 1);
+let crowdfund = await ethers.getContractAt('Crowdfund', crowdfundAddr);
+// Have the issuer set a 20% fee (expressed in basis point - 2_000).
+await crowdfund.connect(issuerSigner).advanceToFunding(2_000);
+
+// Have each user pledge.
+await Promise.all([user1Signer, user2Signer, user3Signer].map((user) => {
+  token.connect(user).approve(crowdfundAddr, 500).then(() => crowdfund.connect(user).pledge(500))
+}));
+// At this point, the total pledge should be 1500.
+(await crowdfund.collected()).toString();
+// The fee should be 20% of 1500: 300.
+(await crowdfund.feeAmount()).toString();
+
+// Have the issuer declare the crowdfund a success.
+await crowdfund.connect(issuerSigner).terminate(false);
+// The crowdfund should now be terminated with Failure.
+await crowdfund.phase();
+// The issuer contract should **not** have received the fee.
+(await token.balanceOf(issuer.address)).toString();
+// The beneficiary should **not** have received the rest.
+(await token.balanceOf(user4)).toString();
+
+// Users should not be able to withdraw.
+await Promise.all([user1, user2, user3].map(user => crowdfund.withdraw(user)));
+// Balances should have been reverted for all pledgers.
+(await Promise.all([user1, user2, user3].map(user => token.balanceOf(user)))).map(balance => balance.toString());
 ```
 
 ## Hardhat Cheat-Sheet
