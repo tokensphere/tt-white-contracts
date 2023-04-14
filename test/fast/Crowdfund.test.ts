@@ -321,10 +321,21 @@ describe("Crowdfunds", () => {
           .calledWith(bob.address, crowdfund.address);
       });
 
-      it("delegates to the ERC20 token to transfer the funds to the crowdfunding contract");
+      it("delegates to the ERC20 token to transfer the funds to the crowdfunding contract", async () => {
+        erc20.allowance.returns(10_000);
+        erc20.transferFrom.returns(true);
+        await crowdfund.connect(alice).pledge(200);
+        expect(erc20.transferFrom).to.have.been
+          .calledWith(alice.address, crowdfund.address, 200);
+      });
 
-      it("reverts if the ERC20 transfer fails");
-
+      it("reverts if the ERC20 transfer fails", async () => {
+        erc20.allowance.returns(100_000);
+        erc20.transferFrom.whenCalledWith(alice.address, crowdfund.address, 500).returns(false);
+        const subject = crowdfund.connect(alice).pledge(500);
+        await expect(subject).to.have.been
+          .revertedWith("TokenContractError");
+      });
 
       it("reverts if the ERC20 allowance is insufficient", async () => {
         erc20.allowance.returns(100_000);
@@ -397,11 +408,25 @@ describe("Crowdfunds", () => {
           .calledWith(issuer.address, BigNumber.from(30));
       });
 
+      it("doesn't transfer if the final fee is 0")
+
       it("reverts if the ERC20 fee transfer fails", async () => {
         erc20.transfer.whenCalledWith(issuer.address, 30).returns(false);
         const subject = crowdfundAsIssuer.terminate(true);
         await expect(subject).to.have
           .revertedWith("TokenContractError");
+      });
+
+      it("doesn't transfer if the payout is 0")
+
+      it("reverts if the beneficiary is not a FAST member", async () => {
+        erc20.transfer.returns(true);
+        // Mark the beneficiary as a non-FAST member.
+        fast.isMember.whenCalledWith(validParams.beneficiary).returns(false);
+
+        const subject = crowdfundAsIssuer.terminate(true);
+        await expect(subject).to.have.been
+          .revertedWith("RequiresFastMembership");
       });
 
       it("transfers the rest of the funds to the beneficiary", async () => {
@@ -443,8 +468,43 @@ describe("Crowdfunds", () => {
   });
 
   describe("refund", async () => {
-    describe("from an invalid phase", async () => {
-      it("reverts");
+    describe("from the Setup phase", async () => {
+      it("reverts", async () => {
+        await deployCrowdfund(validParams);
+
+        const subject = crowdfund.refund(bob.address);
+        await expect(subject).to.have
+          .revertedWith("InvalidPhase");
+
+        expect(await crowdfund.phase()).to.be.eq(CrowdFundPhase.Setup);
+      });
+    });
+
+    describe("from the Funding phase", async () => {
+      it("reverts", async () => {
+        await deployCrowdfund(validParams);
+        await crowdfundAsIssuer.advanceToFunding(2_000);
+
+        const subject = crowdfund.refund(bob.address);
+        await expect(subject).to.have
+          .revertedWith("InvalidPhase");
+
+        expect(await crowdfund.phase()).to.be.eq(CrowdFundPhase.Funding);
+      });
+    });
+
+    describe("from the Success phase", async () => {
+      it("reverts", async () => {
+        await deployCrowdfund(validParams);
+        await crowdfundAsIssuer.advanceToFunding(2_000);
+        await crowdfundAsIssuer.terminate(true);
+
+        const subject = crowdfund.refund(bob.address);
+        await expect(subject).to.have
+          .revertedWith("InvalidPhase");
+
+        expect(await crowdfund.phase()).to.be.eq(CrowdFundPhase.Success);
+      });
     });
 
     describe("from the Failure phase", async () => {
