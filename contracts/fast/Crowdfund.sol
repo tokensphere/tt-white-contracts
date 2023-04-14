@@ -212,6 +212,11 @@ contract Crowdfund {
 
   /// Modifiers and ACL functions.
 
+  /**
+   * @dev Checks whether the given address is a member of the FAST contract.
+   * @param who The address to check.
+   * @return A `bool` indicating whether the address is a member of the FAST contract.
+   */
   function isFastMember(address who)
       internal view returns(bool) {
     return AHasMembers(params.fast).isMember(who);

@@ -9,14 +9,16 @@ import '../interfaces/ICustomErrors.sol';
 
 /**
  * @title The Fast Smart Contract.
- * @notice The Fast Governors facet is in charge of keeping track of automaton accounts.
+ * @notice The Fast Governors abstract contract is in charge of keeping track of automaton accounts.
  */
 abstract contract AHasGovernors {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Errors.
 
+  /// @notice Happens when a function is called by an address that is not a governors manager.
   error RequiresGovernorsManager(address who);
+  /// @notice Happens when an address is used as a governor but is not valid.
   error RequiresValidGovernor(address who);
 
   /// Events.
@@ -32,21 +34,37 @@ abstract contract AHasGovernors {
    */
   event GovernorRemoved(address indexed governor);
 
-  // Must be overriden.
+  /**
+   * @notice Checks whether the caller is a governor manager or not.
+   * @dev Must be implemented by the inheriting contract.
+   * @param who is the address to test.
+   */
   function isGovernorsManager(address who)
       virtual internal view
       returns(bool);
 
-  // Must be overriden.
+  /**
+   * @notice Checks whether the given address can be added as a governor or not.
+   * @dev Must be implemented by the inheriting contract.
+   * @param who is the address to test.
+   */
   function isValidGovernor(address who)
       virtual internal view
       returns(bool);
 
-  // May be overriden.
+  /**
+   * @notice This callback is called when a governor is added to the contract.
+   * @dev May be overriden by the inheriting contract.
+   * @param governor is the address which was added.
+   */
   function onGovernorAdded(address governor)
       virtual internal {}
   
-  // May be overriden.
+  /**
+   * @notice This callback is called when a governor is removed to the contract.
+   * @dev May be overriden by the inheriting contract.
+   * @param governor is the address which was removed.
+   */
   function onGovernorRemoved(address governor)
       virtual internal {}
   

@@ -8,7 +8,7 @@ import '../common/lib/LibHasAutomatons.sol';
 
 /**
  * @title The Fast Smart Contract.
- * @notice The Fast Automatons facet is in charge of keeping track of automaton accounts.
+ * @notice The Fast Automatons abstract contract is in charge of keeping track of automaton accounts.
  */
 abstract contract AHasAutomatons {
   using LibAddressSet for LibAddressSet.Data;
