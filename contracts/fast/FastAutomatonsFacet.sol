@@ -8,7 +8,6 @@ import '../common/AHasAutomatons.sol';
 // Privileges bits.
 uint32 constant FAST_PRIVILEGE_MANAGE_MEMBERS = 1;
 uint32 constant FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS = 2;
-uint32 constant FAST_PRIVILEGE_MANAGE_CROWDFUNDS = 4;
 
 /**
  * @title The Fast Smart Contract.

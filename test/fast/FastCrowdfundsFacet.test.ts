@@ -80,7 +80,7 @@ describe("FastCrowdfundsFacet", () => {
   /// Governorship related stuff.
 
   describe("createCrowdfund", async () => {
-    it("requires the caller to be a FAST member");
+    it("requires the caller to be a FAST governor");
     it("deploys a new crowdfund with the given parameters");
     describe("deploys a crowdfund and", async () => {
       it("keeps track of the deployed crowdfund");

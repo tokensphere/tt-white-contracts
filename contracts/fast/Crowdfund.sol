@@ -5,7 +5,6 @@ import '../lib/LibAddressSet.sol';
 import '../interfaces/IERC20.sol';
 import '../common/AHasMembers.sol';
 import '../common/AHasGovernors.sol';
-import '../common/AHasAutomatons.sol';
 import './FastAutomatonsFacet.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
 
@@ -34,8 +33,6 @@ contract Crowdfund {
   error RequiresIssuerMemberCaller();
   /// @notice Happens when an address is not a FAST member.
   error RequiresFastMemberCaller();
-  /// @notice Happens when an address is not crowdfund manager.
-  error RequiresManagerCaller();
   /// @notice Happens when a parameter has to be a FAST governor.
   error RequiresFastGovernorship(address who);
   /// @notice Happens when a parameter has to be a FAST member.
@@ -270,13 +267,6 @@ contract Crowdfund {
   modifier onlyFastMember() {
     if (!isFastMember(msg.sender))
       revert RequiresFastMemberCaller();
-    _;
-  }
-
-  modifier onlyManager() {
-    if (!AHasMembers(params.issuer).isMember(msg.sender) &&
-        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_CROWDFUNDS))
-      revert RequiresManagerCaller();
     _;
   }
 }

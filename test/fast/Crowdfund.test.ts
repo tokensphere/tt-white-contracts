@@ -60,10 +60,12 @@ describe("Crowdfunds", () => {
     marketplace.issuerAddress.reset();
     marketplace.issuerAddress.returns(issuer.address);
     marketplace.isMember.reset();
+    // Governor, Alice, Bob and Paul are all Marketplace members.
     marketplace.isMember.whenCalledWith(governor.address).returns(true);
     marketplace.isMember.whenCalledWith(alice.address).returns(true);
     marketplace.isMember.whenCalledWith(bob.address).returns(true);
     marketplace.isMember.whenCalledWith(paul.address).returns(true);
+    // Anyone else isn't a Marketplace member.
     marketplace.isMember.returns(false);
     marketplace.isActiveMember.reset();
     marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
@@ -74,7 +76,10 @@ describe("Crowdfunds", () => {
     fast.marketplaceAddress.reset();
     fast.marketplaceAddress.returns(marketplace.address);
     fast.isMember.reset();
+    // Alice is both a FAST governor and a FAST member.
+    fast.isGovernor.whenCalledWith(alice.address).returns(true);
     fast.isMember.whenCalledWith(alice.address).returns(true);
+    // Bob and Paul are FAST members.
     fast.isMember.whenCalledWith(bob.address).returns(true);
     fast.isMember.whenCalledWith(paul.address).returns(true);
     fast.automatonCan.reset();
@@ -177,10 +182,10 @@ describe("Crowdfunds", () => {
     });
 
     describe("with invalid parameters", async () => {
-      it("requires the owner to be a member of the FAST contract", async () => {
+      it("requires the owner to be a governor of the FAST contract", async () => {
         const subject = deployCrowdfund({ ...validParams, owner: ben.address });
         await expect(subject).to.have
-          .revertedWith("RequiresFastMembership");
+          .revertedWith("RequiresFastGovernorship");
       });
 
       it("requires the beneficiary to be a member of the FAST contract", async () => {
@@ -248,10 +253,10 @@ describe("Crowdfunds", () => {
         await deployCrowdfund(validParams);
       });
 
-      it("requires the caller to be an manager", async () => {
+      it("requires the caller to be an issuer member", async () => {
         const subject = crowdfund.connect(alice).advanceToFunding(100_000);
         await expect(subject).to.have
-          .revertedWith("RequiresManagerCaller");
+          .revertedWith("RequiresIssuerMemberCaller");
       });
 
       it("is allowed by an automaton with the right privileges");
@@ -306,7 +311,7 @@ describe("Crowdfunds", () => {
       it("requires the caller to be a member of the FAST contract", async () => {
         const subject = crowdfund.connect(ben).pledge(100_000);
         await expect(subject).to.have
-          .revertedWith("RequiresFastMembership");
+          .revertedWith("RequiresFastMemberCaller");
       });
 
       it("requires the amount to not be zero", async () => {
@@ -318,9 +323,9 @@ describe("Crowdfunds", () => {
       it("checks the allowance of the crowdfunding contract with the ERC20 contract", async () => {
         erc20.allowance.returns(100_000);
         erc20.transferFrom.returns(true);
-        await crowdfund.connect(alice).pledge(500);
+        await crowdfund.connect(bob).pledge(500);
         expect(erc20.allowance).to.have.been
-          .calledWith(alice.address, crowdfund.address);
+          .calledWith(bob.address, crowdfund.address);
       });
 
       it("delegates to the ERC20 token to transfer the funds to the crowdfunding contract");
@@ -385,10 +390,10 @@ describe("Crowdfunds", () => {
     });
 
     describe("upon success", async () => {
-      it("requires the caller to be a manager", async () => {
+      it("requires the caller to be an issuer member", async () => {
         const subject = crowdfund.terminate(true);
         await expect(subject).to.have
-          .revertedWith("RequiresManagerCaller");
+          .revertedWith("RequiresIssuerMemberCaller");
       });
 
       it("is allowed by an automaton with the right privileges");
@@ -433,10 +438,10 @@ describe("Crowdfunds", () => {
     });
 
     describe("upon failure", async () => {
-      it("requires the caller to be a manager", async () => {
+      it("requires the caller to be a issuer member", async () => {
         const subject = crowdfund.terminate(false);
         await expect(subject).to.have
-          .revertedWith("RequiresManagerCaller");
+          .revertedWith("RequiresIssuerMemberCaller");
       });
 
       it("is allowed by an automaton with the right privileges");
@@ -470,32 +475,32 @@ describe("Crowdfunds", () => {
       it("requires the beneficiary to be in the list of pledgers", async () => {
         const subject = crowdfund.refund(ben.address);
         await expect(subject).to.have
-          .revertedWith("UnsupportedOperation");
+          .revertedWith("UnknownPledger");
       });
 
       it("requires that the refund hasn't already been made", async () => {
-        await crowdfund.refund(alice.address);
-        const subject = crowdfund.refund(alice.address);
+        await crowdfund.refund(bob.address);
+        const subject = crowdfund.refund(bob.address);
         await expect(subject).to.have
-          .revertedWith("UnsupportedOperation");
+          .revertedWith("DuplicateEntry");
       });
 
       it("marks the refund as done", async () => {
-        await crowdfund.refund(alice.address);
-        const subject = await crowdfund.refunded(alice.address);
+        await crowdfund.refund(bob.address);
+        const subject = await crowdfund.refunded(bob.address);
         expect(subject).to.be.true;
       });
 
       it("uses the ERC20 token to transfer the funds back to the pledger", async () => {
         erc20.transfer.returns(true);
-        await crowdfund.refund(alice.address);
+        await crowdfund.refund(bob.address);
         expect(erc20.transfer).to.have.been
-          .calledWith(alice.address, 50);
+          .calledWith(bob.address, 50);
       });
 
       it("reverts if the ERC20 transfer fails", async () => {
         erc20.transfer.returns(false);
-        const subject = crowdfund.refund(alice.address);
+        const subject = crowdfund.refund(bob.address);
         await expect(subject).to.have
           .revertedWith("TokenContractError");
       });
