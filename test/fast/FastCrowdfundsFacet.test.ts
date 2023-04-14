@@ -21,7 +21,8 @@ describe("FastCrowdfundsFacet", () => {
     marketplace: FakeContract<Marketplace>,
     erc20: FakeContract<IERC20>,
     crowdfunds: FastCrowdfundsFacet,
-    crowdfundsAsMember: FastCrowdfundsFacet;
+    crowdfundsAsMember: FastCrowdfundsFacet,
+    crowdfundsAsGovernor: FastCrowdfundsFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -65,6 +66,7 @@ describe("FastCrowdfundsFacet", () => {
         afterDeploy: async ({ fast }) => {
           crowdfunds = await ethers.getContractAt<FastCrowdfundsFacet>("FastCrowdfundsFacet", fast.address);
           crowdfundsAsMember = crowdfunds.connect(alice);
+          crowdfundsAsGovernor = crowdfunds.connect(governor);
           const access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
           await access.connect(governor).addMember(alice.address);
         },
@@ -80,19 +82,64 @@ describe("FastCrowdfundsFacet", () => {
   /// Governorship related stuff.
 
   describe("createCrowdfund", async () => {
-    it("requires the caller to be a FAST governor");
-    it("deploys a new crowdfund with the given parameters");
+    it("requires the caller to be a FAST governor", async () => {
+      const subject = crowdfunds.createCrowdfund(erc20.address, alice.address);
+      await expect(subject).to.have
+        .revertedWith("RequiresFastGovernorship");
+    });
+
+    it("deploys a new crowdfund with the given parameters", async () => {
+      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
+      const [page] = await crowdfundsAsGovernor.paginateCrowdfunds(0, 1);
+      expect(page.length).to.eq(1);
+    });
+
     describe("deploys a crowdfund and", async () => {
-      it("keeps track of the deployed crowdfund");
-      it("emits a CrowdfundDeployed event");
+      let
+        tx: any,
+        crowdfundAddr: string,
+        crowdfund: Crowdfund;
+
+      beforeEach(async () => {
+        await (tx = crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address));
+        const [crowdfundings] = await crowdfunds.paginateCrowdfunds(0, 1);
+        crowdfundAddr = crowdfundings[0];
+        crowdfund = await ethers.getContractAt<Crowdfund>("Crowdfund", crowdfundAddr);
+      });
+
+      it("keeps track of the deployed crowdfund", async () => {
+        await Promise.all([1, 2].map(() => crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address)));
+        const [page] = await crowdfunds.paginateCrowdfunds(0, 10);
+        expect(page.length).to.eq(3);
+      });
+
+      it("emits a CrowdfundDeployed event", async () => {
+        await expect(tx).to
+          .emit(crowdfunds, "CrowdfundDeployed")
+          .withArgs(crowdfundAddr);
+      });
     });
   });
 
   describe("crowdfundCount", async () => {
-    it("counts all deployed crowdfunds");
+    beforeEach(async () => {
+      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
+    });
+
+    it("counts all deployed crowdfunds", async () => {
+      const subject = await crowdfunds.crowdfundCount();
+      expect(subject).to.eq(1);
+    });
   });
 
   describe("paginateCrowdfunds", async () => {
-    it("returns pages of deployed crowdfunds");
+    beforeEach(async () => {
+      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
+    })
+
+    it("returns pages of deployed crowdfunds", async () => {
+      const [page] = await crowdfunds.paginateCrowdfunds(0, 10);
+      expect(page.length).to.eq(1);
+    });
   });
 });

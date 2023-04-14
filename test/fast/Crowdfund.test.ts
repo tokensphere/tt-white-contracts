@@ -408,7 +408,13 @@ describe("Crowdfunds", () => {
           .calledWith(issuer.address, BigNumber.from(30));
       });
 
-      it("doesn't transfer if the final fee is 0")
+      it("does not transfer ERC20 if the final fee is 0", async () => {
+        await deployCrowdfund(validParams);
+        await crowdfundAsIssuer.advanceToFunding(0);
+        await crowdfundAsIssuer.terminate(true);
+        expect(erc20.transfer).to.not.have.been
+          .calledWith(validParams.issuer, 0);
+      });
 
       it("reverts if the ERC20 fee transfer fails", async () => {
         erc20.transfer.whenCalledWith(issuer.address, 30).returns(false);
@@ -417,7 +423,17 @@ describe("Crowdfunds", () => {
           .revertedWith("TokenContractError");
       });
 
-      it("doesn't transfer if the payout is 0")
+      it("does not transfer ERC20 if the payout is 0", async () => {
+        erc20.allowance.returns(10_000);
+        erc20.transfer.whenCalledWith(issuer.address, 50).returns(true);
+        await deployCrowdfund(validParams);
+        await crowdfundAsIssuer.advanceToFunding(10_000);
+        await crowdfund.connect(alice).pledge(50);
+
+        await crowdfundAsIssuer.terminate(true);
+        expect(erc20.transfer).to.not.have.been
+          .calledWith(validParams.beneficiary, 0);
+      });
 
       it("reverts if the beneficiary is not a FAST member", async () => {
         erc20.transfer.returns(true);
