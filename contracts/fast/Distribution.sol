@@ -23,21 +23,27 @@ import './FastAutomatonsFacet.sol';
 contract Distribution {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// @notice Happens when a function requires an unmet phase.
   error InvalidPhase();
-  error UnsupportedOperation();
-  error InconsistentParameters();
-  error InvalidBlockNumber(uint256 number);
-
-  error RequiresFastCaller();
-  error RequiresFastMembership(address who);
-  error RequiresManagerCaller();
-  error TokenContractError();
-
-  error InsufficientFunds(uint256 amount);
-  error Overfunded(uint256 amount);
-
+  /// @notice Happens when a duplicate entry is found.
   error DuplicateEntry();
-  error NonExistentEntry();
+  /// @notice Happens when inconsistent parametters are detected.
+  error InconsistentParameters(string param);
+  /// @notice Happens when a call to the ERC20 token contract fails.
+  error TokenContractError();
+  /// @notice Happens when there are insufficient funds somewhere.
+  error InsufficientFunds(uint256 amount);
+  /// @notice Happens when the distribution has been overfunded.
+  error Overfunded(uint256 amount);
+  /// @notice Happens when a beneficiary is not found.
+  error UnknownBeneficiary(address who);
+
+  /// @notice Happens when a function must be called by the FAST contract.
+  error RequiresFastCaller();
+  /// @notice Happens when an address is not crowdfund manager.
+  error RequiresManagerCaller();
+  /// @notice Happens when a parameter has to be a FAST member.
+  error RequiresFastMembership(address who);
 
   /// @notice The possible phases in which the contract is in.
   enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
@@ -110,7 +116,7 @@ contract Distribution {
   constructor(Params memory p) {
     // If the distribution is latched in the future, throw.
     if (p.blockLatch >= block.number)
-      revert InvalidBlockNumber(p.blockLatch);
+      revert InconsistentParameters("blockLatch");
     // Store all parameters.
     params = p;
     available = p.total;
@@ -122,7 +128,7 @@ contract Distribution {
     // Make sure that the current distribution has exactly the required amount locked.
     uint256 balance = params.token.balanceOf(address(this));
     if (balance != params.total)
-      revert UnsupportedOperation();
+      revert InconsistentParameters("balance");
     // Move to next phase.
     emit Advance(phase = Phase.FeeSetup);
   }
@@ -177,7 +183,7 @@ contract Distribution {
       public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Beneficiaries and amount sizes must match.
     if (_beneficiaries.length != _amounts.length)
-      revert InconsistentParameters();
+      revert InconsistentParameters("lengths");
 
     // We will count how much is needed for all these beneficiaries.
     uint256 needed = 0;
@@ -262,7 +268,7 @@ contract Distribution {
   function withdraw(address beneficiary)
       public onlyDuring(Phase.Withdrawal) {
     if (!beneficiaries.contains(beneficiary))
-      revert NonExistentEntry();
+      revert UnknownBeneficiary(beneficiary);
     else if (withdrawn[beneficiary])
       revert DuplicateEntry();
     // Memoize a few variables.
