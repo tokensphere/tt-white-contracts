@@ -10,7 +10,7 @@
   "scripts": {
     "local-node": "yarn hardhat node",
     "console": "yarn hardhat console",
-    "test": "yarn hardhat test",
+    "test": "yarn hardhat test --network test",
     "coverage": "yarn hardhat coverage",
     "postinstall": "yarn build",
     "build": "yarn build:contracts && yarn build:abi && yarn build:types",
