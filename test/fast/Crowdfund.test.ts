@@ -23,7 +23,6 @@ describe("Crowdfunds", () => {
     deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
-    automaton: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     paul: SignerWithAddress,
@@ -36,13 +35,12 @@ describe("Crowdfunds", () => {
     erc20: FakeContract<IERC20>,
     crowdfund: Crowdfund,
     crowdfundAsIssuer: Crowdfund,
-    crowdfundAsAutomaton: Crowdfund,
     validParams: Crowdfund.ParamsStruct,
     deployCrowdfund: (params: Crowdfund.ParamsStruct) => void;
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, automaton, alice, bob, paul, ben] = await ethers.getSigners();
+    [deployer, issuerMember, governor, alice, bob, paul, ben] = await ethers.getSigners();
   });
 
   // Before each test, we want to allow impersonating the FAST contract address and fund it.
@@ -82,7 +80,6 @@ describe("Crowdfunds", () => {
     // Bob and Paul are FAST members.
     fast.isMember.whenCalledWith(bob.address).returns(true);
     fast.isMember.whenCalledWith(paul.address).returns(true);
-    fast.automatonCan.reset();
 
     erc20.balanceOf.reset();
     erc20.transfer.reset();
@@ -107,7 +104,6 @@ describe("Crowdfunds", () => {
           .connect(await ethers.getSigner(fast.address))
           .deploy({ ...params, fast: fast.address });
       crowdfundAsIssuer = crowdfund.connect(issuerMember);
-      crowdfundAsAutomaton = crowdfund.connect(automaton);
     }
   });
 
@@ -259,9 +255,6 @@ describe("Crowdfunds", () => {
           .revertedWith("RequiresIssuerMemberCaller");
       });
 
-      it("is allowed by an automaton with the right privileges");
-      it("requires the right privileges for an automaton");
-
       it("requires that the fee basis points is set bellow 100%", async () => {
         const subject = crowdfundAsIssuer.advanceToFunding(10_001);
         await expect(subject).to.have
@@ -396,9 +389,6 @@ describe("Crowdfunds", () => {
           .revertedWith("RequiresIssuerMemberCaller");
       });
 
-      it("is allowed by an automaton with the right privileges");
-      it("requires the right privileges for an automaton");
-
       it("calculates and transfers the fee to the issuer contract", async () => {
         erc20.transfer.returns(true);
         await crowdfundAsIssuer.terminate(true);
@@ -443,9 +433,6 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have
           .revertedWith("RequiresIssuerMemberCaller");
       });
-
-      it("is allowed by an automaton with the right privileges");
-      it("requires the right privileges for an automaton");
 
       it("advances to the Failure phase", async () => {
         await crowdfundAsIssuer.terminate(false);
