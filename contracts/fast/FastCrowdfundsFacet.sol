@@ -20,8 +20,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @param token is the address of the ERC20 token that should be collected.
    */
   function createCrowdfund(IERC20 token, address beneficiary)
-      external
-      onlyMember(msg.sender) {
+      external {
     // Deploy a new Crowdfund contract.
     Crowdfund crowdfund = new Crowdfund(
       Crowdfund.Params({
