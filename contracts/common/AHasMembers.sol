@@ -9,14 +9,16 @@ import '../interfaces/ICustomErrors.sol';
 
 /**
  * @title The Fast Smart Contract.
- * @notice The Fast Members facet is in charge of keeping track of automaton accounts.
+ * @notice The Fast Members abstract contract is in charge of keeping track of automaton accounts.
  */
 abstract contract AHasMembers {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Errors.
 
+  /// @notice Happens when a function is called by an address that is not a members manager.
   error RequiresMembersManager(address who);
+  /// @notice Happens when an address is used as a member but is not valid.
   error RequiresValidMember(address who);
 
   /// Events.
@@ -32,21 +34,37 @@ abstract contract AHasMembers {
    */
   event MemberRemoved(address indexed member);
 
-  // Must be overriden.
+  /**
+   * @notice Checks whether the given address is a members manager or not.
+   * @dev Must be implemented by the inheriting contract.
+   * @param who is the address to test.
+   */
   function isMembersManager(address who)
       virtual internal view
       returns(bool);
 
-  // Must be overriden.
+  /**
+   * @notice Checks whether the given address can be added as a member or not.
+   * @dev Must be implemented by the inheriting contract.
+   * @param who is the address to test.
+   */
   function isValidMember(address who)
       virtual internal view
       returns(bool);
 
-  // May be overriden.
+  /**
+   * @notice This callback is called when a member is added to the contract.
+   * @dev May be overriden by the inheriting contract.
+   * @param member is the address which was added.
+   */
   function onMemberAdded(address member)
       virtual internal {}
   
-  // May be overriden.
+  /**
+   * @notice This callback is called when a member is removed to the contract.
+   * @dev May be overriden by the inheriting contract.
+   * @param member is the address which was removed.
+   */
   function onMemberRemoved(address member)
       virtual internal {}
   
