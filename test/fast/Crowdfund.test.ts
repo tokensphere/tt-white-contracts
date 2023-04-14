@@ -441,7 +441,7 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("withdraw", async () => {
+  describe("refund", async () => {
     describe("from an invalid phase", async () => {
       it("reverts");
     });
@@ -459,27 +459,34 @@ describe("Crowdfunds", () => {
       });
 
       it("requires the beneficiary to be in the list of pledgers", async () => {
-        const subject = crowdfund.withdraw(ben.address);
+        const subject = crowdfund.refund(ben.address);
         await expect(subject).to.have
           .revertedWith("UnsupportedOperation");
       });
 
-      it("sets the pledger's amount to zero", async () => {
-        await crowdfund.withdraw(alice.address);
-        const subject = await crowdfund.pledges(alice.address);
-        expect(subject).to.eq(0);
+      it("requires that the refund hasn't already been made", async () => {
+        await crowdfund.refund(alice.address);
+        const subject = crowdfund.refund(alice.address);
+        await expect(subject).to.have
+          .revertedWith("UnsupportedOperation");
+      });
+
+      it("marks the refund as done", async () => {
+        await crowdfund.refund(alice.address);
+        const subject = await crowdfund.refunded(alice.address);
+        expect(subject).to.be.true;
       });
 
       it("uses the ERC20 token to transfer the funds back to the pledger", async () => {
         erc20.transfer.returns(true);
-        await crowdfund.withdraw(alice.address);
+        await crowdfund.refund(alice.address);
         expect(erc20.transfer).to.have.been
           .calledWith(alice.address, 50);
       });
 
       it("reverts if the ERC20 transfer fails", async () => {
         erc20.transfer.returns(false);
-        const subject = crowdfund.withdraw(alice.address);
+        const subject = crowdfund.refund(alice.address);
         await expect(subject).to.have
           .revertedWith("TokenContractError");
       });

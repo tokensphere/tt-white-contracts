@@ -80,6 +80,8 @@ contract Crowdfund {
   LibAddressSet.Data internal pledgerSet;
   /// @notice The mapping of pledgers to their pledged amounts.
   mapping(address => uint256) public pledges;
+  /// @notice Mapping of pledgers to whether they have been refunded or not.
+  mapping(address => bool) public refunded;
 
   /**
    * @notice The constructor for this contract.
@@ -192,19 +194,22 @@ contract Crowdfund {
   }
 
   /**
-   * @notice Allows a pledger to withdraw their funds if the crowdfunding failed.
+   * @notice Allows a pledger to be refunded if the crowdfunding failed.
    * Note that this method is only available during the failure phase.
-   * @param pledger The address of the pledger to withdraw funds for.
+   * @param pledger The address of the pledger to refund.
    */
-  function withdraw(address pledger)
+  function refund(address pledger)
       public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
     if (!pledgerSet.contains(pledger))
       revert UnsupportedOperation();
+    // Pledger has already been refunded...
+    else if (refunded[pledger])
+      revert UnsupportedOperation();
     // Store the amount of the pledger's pledge.
     uint256 amount = pledges[pledger];
-    // Track that the pledger has withdrawn their funds.
-    pledges[pledger] = 0;
+    // Track that the pledger has been refunded.
+    refunded[pledger] = true;
     // Transfer the tokens to the pledger.
     if (!params.token.transfer(pledger, amount))
       revert TokenContractError();

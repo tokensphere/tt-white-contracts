@@ -220,8 +220,8 @@ await crowdfund.phase();
 // The beneficiary should have received the rest.
 (await token.balanceOf(user4)).toString();
 
-// Users should not be able to withdraw.
-await crowdfund.withdraw(user1);
+// Users should not be able to get their refund.
+await crowdfund.refund(user1);
 ```
 
 ### Failed Crowdfund
@@ -269,8 +269,8 @@ await crowdfund.phase();
 // The beneficiary should **not** have received the rest.
 (await token.balanceOf(user4)).toString();
 
-// Users should not be able to withdraw.
-await Promise.all([user1, user2, user3].map(user => crowdfund.withdraw(user)));
+// Users should not be able to get their refund.
+await Promise.all([user1, user2, user3].map(user => crowdfund.refund(user)));
 // Balances should have been reverted for all pledgers.
 (await Promise.all([user1, user2, user3].map(user => token.balanceOf(user)))).map(balance => balance.toString());
 ```
