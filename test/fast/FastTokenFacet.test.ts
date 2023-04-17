@@ -605,11 +605,59 @@ describe("FastTokenFacet", () => {
       });
 
       describe("for a zero amount", async () => {
-        it("does not impact balances");
-        it("does not impact allowances");
-        it("does not delegate to MarketplaceTokenHoldersFacet.fastBalanceChanged");
-        it("delegates to FastHistoryFacet.transfered");
-        it("emits a Transfer event");
+        let tx: any;
+        let allowance: BigNumber;
+        let args: {
+          spender: string;
+          from: string;
+          to: string;
+          amount: BigNumber;
+          ref: string;
+        };
+
+        beforeEach(async () => {
+          historyMock.transfered.reset();
+          tokenMock.performTransfer.reset();
+
+          args = {
+            spender: bob.address,
+            from: alice.address,
+            to: bob.address,
+            amount: BigNumber.from(0),
+            ref: "Some useful ref",
+          };
+
+          allowance = BigNumber.from(10);
+          await token.connect(alice).approve(args.spender, allowance);
+
+          tx = (await token.connect(alice).transferFromWithRef(args.from, args.to, args.amount, args.ref));
+        });
+
+        it("does not impact balances", async () => {
+          expect(tx).to
+            .changeEtherBalances([alice, bob], [0, 0]);
+        });
+
+        it("does not impact allowances", async () => {
+          const subject = await token.allowance(alice.address, bob.address);
+          expect(subject).to.be.eql(allowance);
+        });
+
+        it("does not delegate to MarketplaceTokenHoldersFacet.fastBalanceChanged", async () => {
+          expect(marketplace.fastBalanceChanged).to.not.have.been
+            .calledOnce;
+        });
+
+        it("delegates to FastHistoryFacet.transfered", async () => {
+          expect(historyMock.transfered).to.have.been
+            .calledOnceWith(alice.address, alice.address, bob.address, args.amount, args.ref);
+        });
+
+        it("emits a Transfer event", async () => {
+          expect(tx).to
+            .emit(fast, "Transfer")
+            .withArgs(args.from, args.to, args.amount);
+        });
       });
 
       describe("when member deactivated", async () => {
