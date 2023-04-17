@@ -340,8 +340,19 @@ describe("Distribution", () => {
           await expect(subject).to.have.revertedWith("RequiresManagerCaller");
         });
 
-        it("is allowed by an automaton with the right privileges");
-        it("requires the right privileges for an automaton");
+        it("is allowed by an automaton with the right privileges", async () => {
+          erc20.transfer.returns(true);
+          fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
+          await distributionAsAutomaton.advanceToWithdrawal();
+          const subject = await distribution.phase();
+          expect(subject).to.be.eq(DistributionPhase.Withdrawal);
+        });
+
+        it("requires the right privileges for an automaton", async () => {
+          fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
+          const subject = distributionAsAutomaton.advanceToWithdrawal();
+          await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+        });
 
         it("requires that all available funds have been attributed", async () => {
           await distributionAsIssuer.removeBeneficiaries([bob.address])
@@ -390,14 +401,12 @@ describe("Distribution", () => {
 
         it("delegates to the FAST contract for membership checks", async () => {
           await distributionAsIssuer.addBeneficiaries([alice.address], [1]);
-          // Yes, two expectations here, I know.
           expect(fast.isMember).to.have.been
             .calledOnce;
         });
 
         it("reverts when a beneficiary isn't a member of the FAST", async () => {
           const subject = distributionAsIssuer.addBeneficiaries([ben.address], [1]);
-          // Yes, two expectations here, I know.
           await expect(subject).to.have
             .revertedWith("RequiresFastMembership");
         });
@@ -456,8 +465,19 @@ describe("Distribution", () => {
             .revertedWith("RequiresManagerCaller");
         });
 
-        it("is allowed by an automaton with the right privileges");
-        it("requires the right privileges for an automaton");
+        it("is allowed by an automaton with the right privileges", async () => {
+          fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
+          await distributionAsAutomaton.removeBeneficiaries([alice.address, bob.address]);
+          const [subject] = await distributionAsAutomaton.paginateBeneficiaries(0, 2);
+          expect(subject).to
+            .eql([paul.address]);
+        });
+
+        it("requires the right privileges for an automaton", async () => {
+          fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
+          const subject = distributionAsAutomaton.removeBeneficiaries([alice.address]);
+          await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+        });
 
         it("removes the beneficiaries from the list", async () => {
           await distributionAsIssuer.removeBeneficiaries([alice.address, paul.address]);
@@ -657,8 +677,18 @@ describe("Distribution", () => {
         .revertedWith("RequiresManagerCaller");
     });
 
-    it("is allowed by an automaton with the right privileges");
-    it("requires the right privileges for an automaton");
+    it("is allowed by an automaton with the right privileges", async () => {
+      fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(true);
+      await distributionAsAutomaton.terminate();
+      const subject = await distribution.phase();
+      expect(subject).to.be.eq(DistributionPhase.Terminated);
+    });
+
+    it("requires the right privileges for an automaton", async () => {
+      fast.automatonCan.whenCalledWith(automaton.address, FastAutomatonPrivilege.ManageDistributions).returns(false);
+      const subject = distributionAsAutomaton.terminate();
+      await expect(subject).to.have.revertedWith("RequiresManagerCaller");
+    });
 
     it("sets the available amount to zero", async () => {
       await distributionAsIssuer.terminate();
