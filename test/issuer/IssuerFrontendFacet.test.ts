@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
-import { Issuer, Marketplace, Fast, IssuerFrontendFacet, FastFrontendFacet } from "../../typechain";
+import { Issuer, Marketplace, Fast, FastFrontendFacet } from "../../typechain";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import { BigNumber } from "ethers";
 import { FAST_INIT_DEFAULTS } from "../fixtures/fast";
@@ -21,15 +21,16 @@ const FAST_DETAILS_DEFAULTS: FastFrontendFacet.DetailsStruct = {
   addr: ZERO_ADDRESS,
   totalSupply: BigNumber.from(20),
   reserveBalance: BigNumber.from(40),
-  ethBalance: BigNumber.from(0),
   memberCount: BigNumber.from(1),
   governorCount: BigNumber.from(2),
   transfersDisabled: false,
 };
 
 describe("IssuerFrontendFacet", () => {
-  let deployer: Readonly<SignerWithAddress>, issuerMember: Readonly<SignerWithAddress>;
-  let marketplace: Readonly<FakeContract<Marketplace>>, fasts: ReadonlyArray<FakeContract<Fast>>;
+  let deployer: Readonly<SignerWithAddress>,
+    issuerMember: Readonly<SignerWithAddress>;
+  let marketplace: Readonly<FakeContract<Marketplace>>,
+    fasts: ReadonlyArray<FakeContract<Fast>>;
   let issuer: Readonly<Issuer>, issuerMemberIssuer: Readonly<Issuer>;
 
   const issuerDeployFixture = deployments.createFixture(issuerFixtureFunc);
@@ -73,8 +74,12 @@ describe("IssuerFrontendFacet", () => {
 
   describe("paginateDetailedFasts", async () => {
     it("returns a paginated list of detailed FAST details", async () => {
-      const [, nextCursor] = await issuerMemberIssuer.paginateDetailedFasts(0, 5);
-      for (const fast of fasts) expect(fast.details).to.have.been.calledOnceWith();
+      const [, nextCursor] = await issuerMemberIssuer.paginateDetailedFasts(
+        0,
+        5
+      );
+      for (const fast of fasts)
+        expect(fast.details).to.have.been.calledOnceWith();
       expect(nextCursor).to.eq(3);
     });
   });

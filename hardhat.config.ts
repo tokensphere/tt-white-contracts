@@ -48,7 +48,14 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresIssuerMembership(address)"],
         ["Facet$", "RequiresFastContractCaller()"],
       ]),
-      include: ["IERC165", "IERC173", "IDiamondCut", "IDiamondLoupe", "IIssuerEvents", ...ISSUER_FACETS],
+      include: [
+        "IERC165",
+        "IERC173",
+        "IDiamondCut",
+        "IDiamondLoupe",
+        "IIssuerEvents",
+        ...ISSUER_FACETS,
+      ],
     },
     {
       name: "Marketplace",
@@ -60,7 +67,14 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresFastContractCaller()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
       ]),
-      include: ["IERC165", "IERC173", "IDiamondCut", "IDiamondLoupe", "IMarketplaceEvents", ...MARKETPLACE_FACETS],
+      include: [
+        "IERC165",
+        "IERC173",
+        "IDiamondCut",
+        "IDiamondLoupe",
+        "IMarketplaceEvents",
+        ...MARKETPLACE_FACETS,
+      ],
     },
     {
       name: "Fast",
@@ -74,7 +88,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "Transfer(address,address,uint256)"],
         ["Facet$", "Approval(address,address,uint256)"],
         ["Facet$", "Disapproval(address,address,uint256)"],
-        ["Facet$", "DetailsChanged(bool,uint256,uint256,uint256,uint256,uint256)"],
+        ["Facet$", "DetailsChanged(bool,uint256,uint256,uint256,uint256)"],
         ["Facet$", "DistributionDeployed(address)"],
         ["Facet$", "CrowdfundDeployed(address)"],
         // Error types.
@@ -85,7 +99,14 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresFastGovernorship(address)"],
         ["Facet$", "UnsupportedOperation()"],
       ]),
-      include: ["IERC165", "IERC173", "IDiamondCut", "IDiamondLoupe", "IFastEvents", ...FAST_FACETS],
+      include: [
+        "IERC165",
+        "IERC173",
+        "IDiamondCut",
+        "IDiamondLoupe",
+        "IFastEvents",
+        ...FAST_FACETS,
+      ],
     },
   ],
   networks: {
@@ -114,7 +135,7 @@ const config: HardhatUserConfig = {
       url: "https://polygon-rpc.com/",
       chainId: 137,
       accounts: accounts("polygon"),
-    }
+    },
   },
   namedAccounts: {
     // The one in charge of all ops. It will also be the owner of the deployed proxies and contracts.
