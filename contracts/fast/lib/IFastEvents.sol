@@ -67,14 +67,12 @@ interface IFastEvents {
    * @param governorCount is the number of governors in the FAST.
    * @param totalSupply is the amount of tokens in circulation in the FAST.
    * @param reserveBalance is the balance of the zero-address (aka reserve) for the FAST.
-   * @param ethBalance is the amount of Eth locked in the FAST.
    */
   event DetailsChanged(
     bool transfersDisabled,
     uint256 memberCount,
     uint256 governorCount,
     uint256 totalSupply,
-    uint256 reserveBalance,
-    uint256 ethBalance
+    uint256 reserveBalance
   );
 }

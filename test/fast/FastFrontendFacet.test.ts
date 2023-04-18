@@ -5,7 +5,12 @@ import { BigNumber } from "ethers";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { zero, tenThousand, abiStructToObj, oneHundred, impersonateContract } from "../utils";
+import {
+  zero,
+  abiStructToObj,
+  oneHundred,
+  impersonateContract,
+} from "../utils";
 import { Issuer, Marketplace, Fast, FastFrontendFacet } from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 import { toUnpaddedHexString } from "../../src/utils";
@@ -50,7 +55,10 @@ describe("FastFrontendFacet", () => {
         name: "FastFrontendFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
-          frontend = await ethers.getContractAt<FastFrontendFacet>("FastFrontendFacet", fast.address);
+          frontend = await ethers.getContractAt<FastFrontendFacet>(
+            "FastFrontendFacet",
+            fast.address
+          );
           // Add members.
           governedFast = fast.connect(governor);
           issuerMemberFast = fast.connect(issuerMember);
@@ -81,24 +89,24 @@ describe("FastFrontendFacet", () => {
       // Get the other details from a standard `details` function call.
       const detailsObj = abiStructToObj(await frontend.details());
 
-      // TODO: Fix this. The problem here is that the detailsObj has an ethBalance calculated mid-flight
-      // and very difficult to keep consistent track of.
-      // await expect(subject).to
-      //   .emit(frontend, 'DetailsChanged')
-      //   .withArgs(
-      //     detailsObj.transfersDisabled,
-      //     detailsObj.memberCount,
-      //     detailsObj.governorCount,
-      //     detailsObj.totalSupply,
-      //     detailsObj.reserveBalance,
-      //     detailsObj.ethBalance
-      //   );
+      await expect(subject)
+        .to.emit(frontend, "DetailsChanged")
+        .withArgs(
+          detailsObj.transfersDisabled,
+          detailsObj.memberCount,
+          detailsObj.governorCount,
+          detailsObj.totalSupply,
+          detailsObj.reserveBalance
+        );
     });
   });
 
   describe("details", async () => {
     it("returns a populated details struct", async () => {
-      await ethers.provider.send("hardhat_setBalance", [frontend.address, toUnpaddedHexString(oneHundred)]);
+      await ethers.provider.send("hardhat_setBalance", [
+        frontend.address,
+        toUnpaddedHexString(oneHundred),
+      ]);
       const subject = await frontend.details();
       const subjectObj = abiStructToObj(subject);
 
@@ -112,7 +120,6 @@ describe("FastFrontendFacet", () => {
         hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
         transfersDisabled: false,
         reserveBalance: zero,
-        ethBalance: oneHundred,
         memberCount: BigNumber.from(2),
         governorCount: BigNumber.from(1),
       });
@@ -127,7 +134,6 @@ describe("FastFrontendFacet", () => {
       expect(memberObj).to.eql({
         addr: issuerMember.address,
         balance: zero,
-        ethBalance: await issuerMember.getBalance(),
         isGovernor: false,
       });
     });
@@ -142,7 +148,6 @@ describe("FastFrontendFacet", () => {
       const subject = await frontend.detailedGovernor(member.address);
       expect(abiStructToObj(subject)).to.eql({
         addr: member.address,
-        ethBalance: await ethers.provider.getBalance(member.address),
         isMember: true,
       });
     });
@@ -150,7 +155,10 @@ describe("FastFrontendFacet", () => {
 
   describe("paginateDetailedMembers", async () => {
     it("returns member details with next cursor", async () => {
-      const [members, nextCursor] = await frontend.paginateDetailedMembers(0, 5);
+      const [members, nextCursor] = await frontend.paginateDetailedMembers(
+        0,
+        5
+      );
       // Convert the structs to objects.
       const [memberAObj, memberBObj] = members.map(abiStructToObj);
 
@@ -158,7 +166,6 @@ describe("FastFrontendFacet", () => {
       expect(memberAObj).to.eql({
         addr: member.address,
         balance: zero,
-        ethBalance: await member.getBalance(),
         isGovernor: false,
       });
 
@@ -166,7 +173,6 @@ describe("FastFrontendFacet", () => {
       expect(memberBObj).to.eql({
         addr: governor.address,
         balance: zero,
-        ethBalance: await governor.getBalance(),
         isGovernor: true,
       });
 
@@ -184,7 +190,6 @@ describe("FastFrontendFacet", () => {
       expect(memberAObj).to.eql({
         addr: governor.address,
         balance: zero,
-        ethBalance: await governor.getBalance(),
         isGovernor: true,
       });
     });
@@ -196,11 +201,11 @@ describe("FastFrontendFacet", () => {
     });
 
     it("returns governor details with next cursor", async () => {
-      const [[, /*defaultGovernor*/ subject], nextCursor] = await frontend.paginateDetailedGovernors(0, 2);
+      const [[, /*defaultGovernor*/ subject], nextCursor] =
+        await frontend.paginateDetailedGovernors(0, 2);
 
       expect(abiStructToObj(subject)).to.eql({
         addr: member.address,
-        ethBalance: await ethers.provider.getBalance(member.address),
         isMember: true,
       });
 

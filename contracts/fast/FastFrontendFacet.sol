@@ -40,8 +40,6 @@ contract FastFrontendFacet is AFastFacet {
     bool transfersDisabled;
     /// @notice The reserve balance.
     uint256 reserveBalance;
-    /// @notice The Ether balance.
-    uint256 ethBalance;
     /// @notice The number of members the FAST has.
     uint256 memberCount;
     /// @notice The number of governors for the FAST.
@@ -55,7 +53,6 @@ contract FastFrontendFacet is AFastFacet {
   struct GovernorDetails {
     /// @notice The Governor's address.
     address addr;
-    uint256 ethBalance;
     /// @notice Whether the Governor is also a Member.
     bool isMember;
   }
@@ -69,7 +66,6 @@ contract FastFrontendFacet is AFastFacet {
     address addr;
     /// @notice The Member's balance.
     uint256 balance;
-    uint256 ethBalance;
     /// @notice Whether the Member is also a Governor.
     bool isGovernor;
   }
@@ -92,8 +88,7 @@ contract FastFrontendFacet is AFastFacet {
       memberCount: LibHasMembers.data().memberSet.values.length,
       governorCount: LibHasGovernors.data().governorSet.values.length,
       totalSupply: tokenData.totalSupply,
-      reserveBalance: tokenData.balances[LibHelpers.ZERO_ADDRESS],
-      ethBalance: payable(address(this)).balance
+      reserveBalance: tokenData.balances[LibHelpers.ZERO_ADDRESS]
     });
   }
 
@@ -117,7 +112,6 @@ contract FastFrontendFacet is AFastFacet {
       hasFixedSupply: topStorage.hasFixedSupply,
       transfersDisabled: topStorage.transfersDisabled,
       reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],
-      ethBalance: payable(address(this)).balance,
       memberCount: AHasMembers(address(this)).memberCount(),
       governorCount: LibHasGovernors.data().governorSet.values.length
     });
@@ -131,7 +125,6 @@ contract FastFrontendFacet is AFastFacet {
       public view returns(GovernorDetails memory) {
     return GovernorDetails({
       addr: governor,
-      ethBalance: governor.balance,
       isMember: AHasMembers(address(this)).isMember(governor)
     });
   }
@@ -158,7 +151,6 @@ contract FastFrontendFacet is AFastFacet {
     return MemberDetails({
       addr: member,
       balance: LibFastToken.data().balances[member],
-      ethBalance: member.balance,
       isGovernor: LibHasGovernors.data().governorSet.contains(member)
     });
   }
