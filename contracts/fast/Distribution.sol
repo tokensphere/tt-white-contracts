@@ -243,6 +243,16 @@ contract Distribution {
   }
 
   /**
+   * 
+   * @notice Returns the number of beneficiaries added so far.
+   * @return The count.
+   */
+  function beneficiaryCount()
+      external view returns(uint256) {
+    return beneficiaries.values.length;
+  }
+
+  /**
    * @notice Queries pages of beneficiaries based on a start index and a page size.
    * Note that it is possible to query owings for each of these beneficiaries by
    * utilizing the `owings` and `withdrawn` public function.
