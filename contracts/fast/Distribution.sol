@@ -294,7 +294,8 @@ contract Distribution {
   }
 
   /**
-   * @notice A panic function that can only be called by the distributor of the distribution.
+   * @notice A panic function that can only be called by the distribution manager
+   * (either an issuer member or an automaton with the right privileges).
    * Upon calling this method, the contract will simply send back any funds still
    * available to it and set its internal state to a termination one.
    * Note that since this method calls the `token` contract, it **must be
