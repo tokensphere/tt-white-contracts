@@ -4,6 +4,22 @@
 
 The Fast Distributions facet is in charge of deploying and keeping track of distributions.
 
+### TokenContractError
+
+```solidity
+error TokenContractError()
+```
+
+Happens when a call to the ERC20 token contract fails.
+
+### InsufficientFunds
+
+```solidity
+error InsufficientFunds(uint256 amount)
+```
+
+Happens when there are insufficient funds somewhere.
+
 ### createDistribution
 
 ```solidity

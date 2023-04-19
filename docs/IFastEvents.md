@@ -101,7 +101,7 @@ Crowdfund related events.
 ### DetailsChanged
 
 ```solidity
-event DetailsChanged(bool transfersDisabled, uint256 memberCount, uint256 governorCount, uint256 totalSupply, uint256 reserveBalance, uint256 ethBalance)
+event DetailsChanged(bool transfersDisabled, uint256 memberCount, uint256 governorCount, uint256 totalSupply, uint256 reserveBalance)
 ```
 
 This is an event that is fired whenever any of some of the FAST parameters
@@ -117,5 +117,4 @@ for that fast as well as the baseball cards in the FASTs list.
 | governorCount | uint256 | is the number of governors in the FAST. |
 | totalSupply | uint256 | is the amount of tokens in circulation in the FAST. |
 | reserveBalance | uint256 | is the balance of the zero-address (aka reserve) for the FAST. |
-| ethBalance | uint256 | is the amount of Eth locked in the FAST. |
 

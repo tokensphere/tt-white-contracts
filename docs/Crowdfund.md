@@ -10,29 +10,31 @@ This contract is used to manage a crowdfunding campaign.
 error InvalidPhase()
 ```
 
-### UnsupportedOperation
+Happens when a function requires an unmet phase.
+
+### DuplicateEntry
 
 ```solidity
-error UnsupportedOperation()
+error DuplicateEntry()
 ```
 
-### InconsistentParameters
+Happens when a duplicate entry is found.
+
+### InconsistentParameter
 
 ```solidity
-error InconsistentParameters()
+error InconsistentParameter(string param)
 ```
 
-### RequiresFastMembership
+Happens when inconsistent parametters are detected.
+
+### UnknownPledger
 
 ```solidity
-error RequiresFastMembership(address who)
+error UnknownPledger(address who)
 ```
 
-### RequiresManagerCaller
-
-```solidity
-error RequiresManagerCaller()
-```
+Happens when an address is not a crowdfund pledger.
 
 ### TokenContractError
 
@@ -40,11 +42,47 @@ error RequiresManagerCaller()
 error TokenContractError()
 ```
 
+Happens when a call to the ERC20 token contract fails.
+
 ### InsufficientFunds
 
 ```solidity
 error InsufficientFunds(uint256 amount)
 ```
+
+Happens when there are insufficient funds somewhere.
+
+### RequiresIssuerMemberCaller
+
+```solidity
+error RequiresIssuerMemberCaller()
+```
+
+Happens when an address is not an issuer member.
+
+### RequiresFastMemberCaller
+
+```solidity
+error RequiresFastMemberCaller()
+```
+
+Happens when an address is not a FAST member.
+
+### RequiresFastGovernorship
+
+```solidity
+error RequiresFastGovernorship(address who)
+```
+
+Happens when a parameter has to be a FAST governor.
+
+### RequiresFastMembership
+
+```solidity
+error RequiresFastMembership(address who)
+```
+
+Happens when a parameter has to be a FAST member.
 
 ### Advance
 
@@ -176,6 +214,14 @@ mapping(address => uint256) pledges
 
 The mapping of pledgers to their pledged amounts.
 
+### refunded
+
+```solidity
+mapping(address => bool) refunded
+```
+
+Mapping of pledgers to whether they have been refunded or not.
+
 ### constructor
 
 ```solidity
@@ -281,20 +327,40 @@ button to terminate the crowdfunding prematurely.
 | ---- | ---- | ----------- |
 | success | bool | Whether the crowdfunding was successful or not. |
 
-### withdraw
+### refund
 
 ```solidity
-function withdraw(address pledger) public
+function refund(address pledger) public
 ```
 
-Allows a pledger to withdraw their funds if the crowdfunding failed.
+Allows a pledger to be refunded if the crowdfunding failed.
 Note that this method is only available during the failure phase.
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| pledger | address | The address of the pledger to withdraw funds for. |
+| pledger | address | The address of the pledger to refund. |
+
+### isFastGovernor
+
+```solidity
+function isFastGovernor(address who) internal view returns (bool)
+```
+
+Checks whether the given address is a governor of the FAST contract.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| who | address | The address to check. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | A `bool` indicating whether the address is a governor of the FAST contract. |
 
 ### isFastMember
 
@@ -322,15 +388,15 @@ _Checks whether the given address is a member of the FAST contract._
 modifier onlyDuring(enum Crowdfund.Phase _phase)
 ```
 
+### onlyIssuerMember
+
+```solidity
+modifier onlyIssuerMember()
+```
+
 ### onlyFastMember
 
 ```solidity
 modifier onlyFastMember()
-```
-
-### onlyManager
-
-```solidity
-modifier onlyManager()
 ```
 

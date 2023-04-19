@@ -18,7 +18,6 @@ struct Details {
   bool hasFixedSupply;
   bool transfersDisabled;
   uint256 reserveBalance;
-  uint256 ethBalance;
   uint256 memberCount;
   uint256 governorCount;
 }
@@ -29,7 +28,6 @@ struct Details {
 ```solidity
 struct GovernorDetails {
   address addr;
-  uint256 ethBalance;
   bool isMember;
 }
 ```
@@ -40,7 +38,6 @@ struct GovernorDetails {
 struct MemberDetails {
   address addr;
   uint256 balance;
-  uint256 ethBalance;
   bool isGovernor;
 }
 ```

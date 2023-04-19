@@ -17,59 +17,7 @@ following steps (or phases):
 error InvalidPhase()
 ```
 
-### UnsupportedOperation
-
-```solidity
-error UnsupportedOperation()
-```
-
-### InconsistentParameters
-
-```solidity
-error InconsistentParameters()
-```
-
-### InvalidBlockNumber
-
-```solidity
-error InvalidBlockNumber(uint256 number)
-```
-
-### RequiresFastCaller
-
-```solidity
-error RequiresFastCaller()
-```
-
-### RequiresFastMembership
-
-```solidity
-error RequiresFastMembership(address who)
-```
-
-### RequiresManagerCaller
-
-```solidity
-error RequiresManagerCaller()
-```
-
-### TokenContractError
-
-```solidity
-error TokenContractError()
-```
-
-### InsufficientFunds
-
-```solidity
-error InsufficientFunds(uint256 amount)
-```
-
-### Overfunded
-
-```solidity
-error Overfunded(uint256 amount)
-```
+Happens when a function requires an unmet phase.
 
 ### DuplicateEntry
 
@@ -77,11 +25,71 @@ error Overfunded(uint256 amount)
 error DuplicateEntry()
 ```
 
-### NonExistentEntry
+Happens when a duplicate entry is found.
+
+### InconsistentParameter
 
 ```solidity
-error NonExistentEntry()
+error InconsistentParameter(string param)
 ```
+
+Happens when inconsistent parametters are detected.
+
+### TokenContractError
+
+```solidity
+error TokenContractError()
+```
+
+Happens when a call to the ERC20 token contract fails.
+
+### InsufficientFunds
+
+```solidity
+error InsufficientFunds(uint256 amount)
+```
+
+Happens when there are insufficient funds somewhere.
+
+### Overfunded
+
+```solidity
+error Overfunded(uint256 amount)
+```
+
+Happens when the distribution has been overfunded.
+
+### UnknownBeneficiary
+
+```solidity
+error UnknownBeneficiary(address who)
+```
+
+Happens when a beneficiary is not found.
+
+### RequiresFastCaller
+
+```solidity
+error RequiresFastCaller()
+```
+
+Happens when a function must be called by the FAST contract.
+
+### RequiresManagerCaller
+
+```solidity
+error RequiresManagerCaller()
+```
+
+Happens when an address is not crowdfund manager.
+
+### RequiresFastMembership
+
+```solidity
+error RequiresFastMembership(address who)
+```
+
+Happens when a parameter has to be a FAST member.
 
 ### Phase
 
@@ -327,6 +335,20 @@ call this method.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | _beneficiaries | address[] | is the list of addresses to remove. |
+
+### beneficiaryCount
+
+```solidity
+function beneficiaryCount() external view returns (uint256)
+```
+
+Returns the number of beneficiaries added so far.
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | The count. |
 
 ### paginateBeneficiaries
 
