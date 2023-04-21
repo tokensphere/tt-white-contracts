@@ -1,35 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-
 interface ICustomErrors {
-  error AlreadyInitialized();
-  error InternalMethod();
-  error RequiresDiamondOwnership(address who);
-  error RequiresFastContractCaller();
-
-  error RequiresTransfersEnabled();
-  error RequiresIssuerMembership(address who);
-  error RequiresMarketplaceMembership(address who);
-  error RequiresMarketplaceActiveMembership(address who);
-  error RequiresMarketplaceDeactivatedMember(address who);
-
-  error RequiresValidTokenHolder(address who);
-  error RequiresFastGovernorship(address who);
-  error RequiresFastMembership(address who);
-  error RequiresNoFastMemberships(address who);
-
-  error RequiresOwner(address who);
-
-  error InsufficientFunds(uint256 missing);
-
-  error DuplicateEntry();
-  error NonExistentEntry();
-  error UnsupportedOperation();
-  error CannotSelfRemove(address who);
-  error ReentrancyError();
-
-  error RequiresContinuousSupply();
-  error RequiresPositiveBalance(address holder);
-  error RequiresDifferentSenderAndRecipient(address a);
+    error AlreadyInitialized();
+    error CannotSelfRemove(address who);
+    error DuplicateEntry();
+    error InconsistentParameter(string param);
+    error InsufficientFunds(uint256 amount);
+    error InternalMethod();
+    error InvalidPhase();
+    error NonExistentEntry();
+    error Overfunded(uint256 amount);
+    error ReentrancyError();
+    error RequiresAutomatonsManager(address who);
+    error RequiresContinuousSupply();
+    error RequiresDiamondOwnership(address who);
+    error RequiresDifferentSenderAndRecipient(address a);
+    error RequiresFastCaller();
+    error RequiresFastContractCaller();
+    error RequiresFastGovernorship(address who);
+    error RequiresFastMemberCaller();
+    error RequiresFastMembership(address who);
+    error RequiresGovernorsManager(address who);
+    error RequiresIssuerMemberCaller();
+    error RequiresIssuerMembership(address who);
+    error RequiresManagerCaller();
+    error RequiresMarketplaceActiveMembership(address who);
+    error RequiresMarketplaceDeactivatedMember(address who);
+    error RequiresMarketplaceMembership(address who);
+    error RequiresMembersManager(address who);
+    error RequiresNoFastMemberships(address who);
+    error RequiresOwner(address who);
+    error RequiresPositiveBalance(address holder);
+    error RequiresTransfersEnabled();
+    error RequiresValidGovernor(address who);
+    error RequiresValidMember(address who);
+    error RequiresValidTokenHolder(address who);
+    error TokenContractError();
+    error UnknownBeneficiary(address who);
+    error UnknownPledger(address who);
+    error UnsupportedOperation();
 }
