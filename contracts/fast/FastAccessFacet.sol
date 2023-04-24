@@ -45,7 +45,7 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
 
   function isValidGovernor(address who)
       internal view override(AHasGovernors) returns(bool) {
-    return _isMarketplaceMember(who);
+    return _isMarketplaceMember(who) && AHasMembers(address(this)).isMember(who);
   }
 
   function onGovernorAdded(address governor)

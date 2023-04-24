@@ -150,6 +150,7 @@ describe("FastInitFacet", () => {
       });
     });
 
+    it("adds the given governor address to the members list");
     it("adds the given governor address to the governors list");
 
     describe("when running...", async () => {
@@ -188,6 +189,8 @@ describe("FastInitFacet", () => {
         // Should have failed.
         await expect(subject).to.be.revertedWith(`RequiresMarketplaceActiveMembership`);
       });
+
+      it('emits a MemberAdded event');
 
       it("emits a GovernorAdded event", async () => {
         // Try and initialize.

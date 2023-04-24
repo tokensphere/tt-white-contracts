@@ -145,6 +145,8 @@ describe("FastAccessFacet", () => {
         await expect(subject).to.be.revertedWith(`RequiresValidGovernor`);
       });
 
+      it("requires that the address is already a member of the FAST");
+
       it("requires that the address is not a governor yet", async () => {
         await issuerMemberAccess.addGovernor(alice.address);
         const subject = issuerMemberAccess.addGovernor(alice.address);
