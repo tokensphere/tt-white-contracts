@@ -1,0 +1,339 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ICustomErrors",
+  "sourceName": "contracts/interfaces/ICustomErrors.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "CannotSelfRemove",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DuplicateEntry",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "param",
+          "type": "string"
+        }
+      ],
+      "name": "InconsistentParameter",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "InsufficientFunds",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InternalMethod",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPhase",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NonExistentEntry",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Overfunded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReentrancyError",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresAutomatonsManager",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresContinuousSupply",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresDiamondOwnership",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "a",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresDifferentSenderAndRecipient",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresFastCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresFastContractCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresFastGovernorship",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresFastMemberCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresFastMembership",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresGovernorsManager",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresIssuerMemberCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresIssuerMembership",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresManagerCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresMarketplaceActiveMembership",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresMarketplaceDeactivatedMember",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresMarketplaceMembership",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresMembersManager",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresNoFastMemberships",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "holder",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresPositiveBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RequiresTransfersEnabled",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresValidGovernor",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresValidMember",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresValidTokenHolder",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TokenContractError",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "UnknownBeneficiary",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "UnknownPledger",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnsupportedOperation",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

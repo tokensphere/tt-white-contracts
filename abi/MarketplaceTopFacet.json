@@ -1,0 +1,50 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MarketplaceTopFacet",
+  "sourceName": "contracts/marketplace/MarketplaceTopFacet.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberActivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberDeactivated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "issuerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b5060ca8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063a63234e014602d575b600080fd5b7fb59ec141376cee83f618e10e881bbb4789cdeee27e0d441a8c37ead3cb8b93c15462010000900473ffffffffffffffffffffffffffffffffffffffff1660405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f3fea26469706673582212209c0d1a05b950f06934c440df3e3a3e68cb86080193fbf58abcfe7385a1a8822e64736f6c634300080a0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063a63234e014602d575b600080fd5b7fb59ec141376cee83f618e10e881bbb4789cdeee27e0d441a8c37ead3cb8b93c15462010000900473ffffffffffffffffffffffffffffffffffffffff1660405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f3fea26469706673582212209c0d1a05b950f06934c440df3e3a3e68cb86080193fbf58abcfe7385a1a8822e64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
