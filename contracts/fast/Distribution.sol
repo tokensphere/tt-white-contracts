@@ -302,7 +302,7 @@ contract Distribution {
    * protected against reentrancy**.
    */
   function terminate()
-      public onlyManager {
+      public onlyManager exceptDuring(Phase.Terminated) {
     // Reset internal variables so that it's clear that the contract is terminated.
     // It is important to do this prior to any call to `token` methods to prevent
     // re-entrancy attacks.
@@ -316,6 +316,12 @@ contract Distribution {
 
   modifier onlyDuring(Phase _phase) {
     if (_phase != phase)
+      revert InvalidPhase();
+    _;
+  }
+
+  modifier exceptDuring(Phase _phase) {
+    if (_phase == phase)
       revert InvalidPhase();
     _;
   }
