@@ -31,7 +31,8 @@ contract FastInitFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
   /// Events.
 
-  // Duplicated from AHasGovernors.
+  // Duplicated from AHasMembers and AHasGovernors.
+  event MemberAdded(address indexed member);
   event GovernorAdded(address indexed governor);
 
   /// Initializers.
@@ -101,10 +102,13 @@ contract FastInitFacet is AFastFacet {
 
     // Initialize governors storage.
     LibHasGovernors.Data storage governorsData = LibHasGovernors.data();
+    LibHasMembers.Data storage membersData = LibHasMembers.data();
     governorsData.version = LibHasGovernors.STORAGE_VERSION;
-    // Add the governor and emit.
+    // Add the governor address as a member and governor.
     governorsData.governorSet.add(params.governor, true);
+    membersData.memberSet.add(params.governor, true);
     // Emit governor addition event.
+    emit MemberAdded(params.governor);
     emit GovernorAdded(params.governor);
 
     // Initialize members storage.

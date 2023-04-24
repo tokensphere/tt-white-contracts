@@ -735,6 +735,8 @@ describe("Distribution", () => {
         .returns(validParams.total);
     });
 
+    it("reverts if the distribution has already been terminated");
+
     it("can be called during the Funding phase", async () => {
       const beforePhase = await distribution.phase();
 
