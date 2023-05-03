@@ -90,6 +90,12 @@ event DistributionDeployed(contract Distribution distribution)
 
 Distribution related events.
 
+### DistributionRemoved
+
+```solidity
+event DistributionRemoved(contract Distribution distribution)
+```
+
 ### CrowdfundDeployed
 
 ```solidity
@@ -97,6 +103,12 @@ event CrowdfundDeployed(contract Crowdfund crowdfund)
 ```
 
 Crowdfund related events.
+
+### CrowdfundRemoved
+
+```solidity
+event CrowdfundRemoved(contract Crowdfund crowdfund)
+```
 
 ### DetailsChanged
 

@@ -8,15 +8,23 @@ import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import { Issuer, Marketplace, Fast, FastInitFacet } from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 import { FAST_FACETS } from "../../tasks/fast";
-import { DEPLOYER_FACTORY_COMMON, deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
+import {
+  DEPLOYER_FACTORY_COMMON,
+  deploymentSalt,
+  ZERO_ADDRESS,
+} from "../../src/utils";
 import { BigNumber } from "ethers";
 chai.use(solidity);
 chai.use(smock.matchers);
 
-const numberToBytes32 = (bn: BigNumber) => ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
+const numberToBytes32 = (bn: BigNumber) =>
+  ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
 
 describe("FastInitFacet", () => {
-  let deployer: SignerWithAddress, issuerMember: SignerWithAddress, governor: SignerWithAddress, bob: SignerWithAddress;
+  let deployer: SignerWithAddress,
+    issuerMember: SignerWithAddress,
+    governor: SignerWithAddress,
+    bob: SignerWithAddress;
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     fast: Fast,
@@ -59,7 +67,10 @@ describe("FastInitFacet", () => {
             facets: [...FAST_FACETS, "FastInitFacet"],
             deterministicSalt: deploymentSalt(hre),
           });
-          initFacet = await ethers.getContractAt<FastInitFacet>("FastInitFacet", fast.address);
+          initFacet = await ethers.getContractAt<FastInitFacet>(
+            "FastInitFacet",
+            fast.address
+          );
         },
       },
       initWith: {
@@ -80,9 +91,14 @@ describe("FastInitFacet", () => {
         params: [DEPLOYER_FACTORY_COMMON.factory],
       });
       // Give it a bit of Eth to fund the transaction.
-      await ethers.provider.send("hardhat_setBalance", [DEPLOYER_FACTORY_COMMON.factory, "0xffffffffffffffffff"]);
+      await ethers.provider.send("hardhat_setBalance", [
+        DEPLOYER_FACTORY_COMMON.factory,
+        "0xffffffffffffffffff",
+      ]);
       // Get the factory signer so that we can act on its behalf.
-      const factorySigner = await ethers.getSigner(DEPLOYER_FACTORY_COMMON.factory);
+      const factorySigner = await ethers.getSigner(
+        DEPLOYER_FACTORY_COMMON.factory
+      );
       initFacetAsDeployer = initFacet.connect(factorySigner);
     });
 
@@ -98,38 +114,71 @@ describe("FastInitFacet", () => {
 
     it("sets LibFast storage version", async () => {
       const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage"]);
-      const data = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const data = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       const subject = ethers.utils.hexDataSlice(data, 30, 32);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("sets LibFastToken storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Token"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["Fast.storage.Token"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("sets LibFastHistory storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.History"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["Fast.storage.History"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("sets LibFastDistributions storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage.Distributions"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["Fast.storage.Distributions"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("sets LibHasGovernors storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["HasGovernors.storage.Main"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["HasGovernors.storage.Main"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
     it("sets LibHasMembers storage version", async () => {
-      const slot = ethers.utils.solidityKeccak256(["string"], ["HasMembers.storage.Main"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [fast.address, slot]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["HasMembers.storage.Main"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        fast.address,
+        slot,
+      ]);
       expect(BigNumber.from(subject)).to.eq(1);
     });
 
@@ -156,14 +205,23 @@ describe("FastInitFacet", () => {
     describe("when running...", async () => {
       beforeEach(async () => {
         // We reset the version to zero before each run, so that the facet thinks it's not initialized yet.
-        const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage"]);
-        await ethers.provider.send("hardhat_setStorageAt", [fast.address, slot, numberToBytes32(BigNumber.from(0))]);
+        const slot = ethers.utils.solidityKeccak256(
+          ["string"],
+          ["Fast.storage"]
+        );
+        await ethers.provider.send("hardhat_setStorageAt", [
+          fast.address,
+          slot,
+          numberToBytes32(BigNumber.from(0)),
+        ]);
       });
 
       it("reverts when the passed governor address is not a marketplace member", async () => {
         // Pretend that our governor isn't part of the marketplace.
         marketplace.isMember.whenCalledWith(governor.address).returns(false);
-        marketplace.isActiveMember.whenCalledWith(governor.address).returns(false);
+        marketplace.isActiveMember
+          .whenCalledWith(governor.address)
+          .returns(false);
         // Try and initialize.
         const subject = initFacetAsDeployer.initialize({
           ...FAST_INIT_DEFAULTS,
@@ -172,13 +230,17 @@ describe("FastInitFacet", () => {
           governor: governor.address,
         });
         // Should have failed.
-        await expect(subject).to.be.revertedWith(`RequiresMarketplaceActiveMembership`);
+        await expect(subject).to.be.revertedWith(
+          `RequiresMarketplaceActiveMembership`
+        );
       });
 
       it("reverts when the passed governor address is deactivated in the marketplace", async () => {
         // Pretend that our governor is a marketplace member, but deactivated.
         marketplace.isMember.whenCalledWith(governor.address).returns(true);
-        marketplace.isActiveMember.whenCalledWith(governor.address).returns(false);
+        marketplace.isActiveMember
+          .whenCalledWith(governor.address)
+          .returns(false);
         // Try and initialize.
         const subject = initFacetAsDeployer.initialize({
           ...FAST_INIT_DEFAULTS,
@@ -187,10 +249,12 @@ describe("FastInitFacet", () => {
           governor: governor.address,
         });
         // Should have failed.
-        await expect(subject).to.be.revertedWith(`RequiresMarketplaceActiveMembership`);
+        await expect(subject).to.be.revertedWith(
+          `RequiresMarketplaceActiveMembership`
+        );
       });
 
-      it('emits a MemberAdded event');
+      it("emits a MemberAdded event");
 
       it("emits a GovernorAdded event", async () => {
         // Try and initialize.
@@ -200,7 +264,9 @@ describe("FastInitFacet", () => {
           marketplace: marketplace.address,
           governor: governor.address,
         });
-        await expect(subject).to.emit(initFacet, "GovernorAdded").withArgs(governor.address);
+        await expect(subject)
+          .to.emit(initFacet, "GovernorAdded")
+          .withArgs(governor.address);
       });
     });
   });

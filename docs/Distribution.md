@@ -172,6 +172,7 @@ struct Params {
   contract IERC20 token;
   uint256 blockLatch;
   uint256 total;
+  string ref;
 }
 ```
 
@@ -391,7 +392,8 @@ methods.
 function terminate() public
 ```
 
-A panic function that can only be called by the distributor of the distribution.
+A panic function that can only be called by the distribution manager
+(either an issuer member or an automaton with the right privileges).
 Upon calling this method, the contract will simply send back any funds still
 available to it and set its internal state to a termination one.
 Note that since this method calls the `token` contract, it **must be
@@ -404,6 +406,12 @@ modifier onlyDuring(enum Distribution.Phase _phase)
 ```
 
 Modifiers.
+
+### exceptDuring
+
+```solidity
+modifier exceptDuring(enum Distribution.Phase _phase)
+```
 
 ### onlyFastCaller
 

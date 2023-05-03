@@ -70,6 +70,19 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "contract Crowdfund",
+          "name": "crowdfund",
+          "type": "address"
+        }
+      ],
+      "name": "CrowdfundRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "bool",
           "name": "transfersDisabled",
@@ -139,6 +152,19 @@
         }
       ],
       "name": "DistributionDeployed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract Distribution",
+          "name": "distribution",
+          "type": "address"
+        }
+      ],
+      "name": "DistributionRemoved",
       "type": "event"
     },
     {

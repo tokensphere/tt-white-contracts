@@ -4,7 +4,14 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastAccessFacet, FastDistributionsFacet, IERC20, Distribution } from "../../typechain";
+import {
+  Issuer,
+  Marketplace,
+  FastAccessFacet,
+  FastDistributionsFacet,
+  IERC20,
+  Distribution,
+} from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 import { DistributionPhase } from "../utils";
 chai.use(solidity);
@@ -28,7 +35,8 @@ describe("FastDistributionsFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, issuerMember, governor, alice, bob, rob, john] =
+      await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
@@ -57,16 +65,25 @@ describe("FastDistributionsFacet", () => {
     erc20.transferFrom.reset();
     erc20.transferFrom.returns(true);
 
-    await ethers.provider.send("hardhat_setBalance", [alice.address, '0xffffffffffffffffffff']);
+    await ethers.provider.send("hardhat_setBalance", [
+      alice.address,
+      "0xffffffffffffffffffff",
+    ]);
 
     await fastDeployFixture({
       opts: {
         name: "FastDistributionsFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
-          distributions = await ethers.getContractAt<FastDistributionsFacet>("FastDistributionsFacet", fast.address);
+          distributions = await ethers.getContractAt<FastDistributionsFacet>(
+            "FastDistributionsFacet",
+            fast.address
+          );
           distributionsAsMember = distributions.connect(alice);
-          const access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
+          const access = await ethers.getContractAt<FastAccessFacet>(
+            "FastAccessFacet",
+            fast.address
+          );
           await access.connect(governor).addMember(alice.address);
         },
       },
@@ -82,45 +99,72 @@ describe("FastDistributionsFacet", () => {
 
   describe("createDistribution", async () => {
     it("requires the caller to be a FAST member", async () => {
-      const subject = distributions.createDistribution(erc20.address, 100, 0);
-      await expect(subject).to.have
-        .revertedWith("RequiresFastMembership");
+      const subject = distributions.createDistribution(
+        erc20.address,
+        100,
+        0,
+        "Blah"
+      );
+      await expect(subject).to.have.revertedWith("RequiresFastMembership");
     });
 
     it("reverts if the allowance of the ERC20 token is not enough", async () => {
-      const subject = distributionsAsMember.createDistribution(erc20.address, 101, 0);
-      await expect(subject).to.have
-        .revertedWith("InsufficientFunds");
+      const subject = distributionsAsMember.createDistribution(
+        erc20.address,
+        101,
+        0,
+        "Blah"
+      );
+      await expect(subject).to.have.revertedWith("InsufficientFunds");
     });
 
     it("deploys a new distribution with the given parameters", async () => {
-      await distributionsAsMember.createDistribution(erc20.address, 100, 0);
+      await distributionsAsMember.createDistribution(
+        erc20.address,
+        100,
+        0,
+        "Blah"
+      );
       const [page] = await distributions.paginateDistributions(0, 10);
       expect(page.length).to.eq(1);
     });
 
     describe("deploys a distribution and", async () => {
-      let
-        tx: any,
-        distAddr: string,
-        dist: Distribution;
+      let tx: any, distAddr: string, dist: Distribution;
 
       beforeEach(async () => {
-        await (tx = distributionsAsMember.createDistribution(erc20.address, 100, 0));
+        await (tx = distributionsAsMember.createDistribution(
+          erc20.address,
+          100,
+          0,
+          "Blah"
+        ));
         const [dists] = await distributions.paginateDistributions(0, 1);
         distAddr = dists[0];
         dist = await ethers.getContractAt("Distribution", distAddr);
       });
 
       it("keeps track of the deployed distribution", async () => {
-        await Promise.all([1, 2].map(() => distributionsAsMember.createDistribution(erc20.address, 100, 0)));
+        await Promise.all(
+          [1, 2].map(() =>
+            distributionsAsMember.createDistribution(
+              erc20.address,
+              100,
+              0,
+              "Blah"
+            )
+          )
+        );
         const [page] = await distributions.paginateDistributions(0, 10);
         expect(page.length).to.eq(3);
       });
 
       it("call the ERC20.transferFrom with the correct arguments", async () => {
-        expect(erc20.transferFrom).to.have.been
-          .calledOnceWith(alice.address, distAddr, 100);
+        expect(erc20.transferFrom).to.have.been.calledOnceWith(
+          alice.address,
+          distAddr,
+          100
+        );
       });
 
       it("advances the distribution to the FeeSetup phase", async () => {
@@ -129,16 +173,32 @@ describe("FastDistributionsFacet", () => {
       });
 
       it("emits a DistributionDeployed event", async () => {
-        await expect(tx).to
-          .emit(distributions, "DistributionDeployed")
+        await expect(tx)
+          .to.emit(distributions, "DistributionDeployed")
           .withArgs(distAddr);
       });
     });
   });
 
+  describe("removeDistribution", async () => {
+    it("requires the caller to be an issuer member");
+    it("removes the distribution from the list of deployed distributions");
+    it("emits a DistributionRemoved event");
+    it("reverts when the distribution does not exist");
+  });
+
   describe("distributionCount", async () => {
     beforeEach(async () => {
-      await Promise.all([1, 2, 3, 4, 5].map(() => distributionsAsMember.createDistribution(erc20.address, 100, 0)));
+      await Promise.all(
+        [1, 2, 3, 4, 5].map(() =>
+          distributionsAsMember.createDistribution(
+            erc20.address,
+            100,
+            0,
+            "Blah"
+          )
+        )
+      );
     });
 
     it("counts all deployed distributions", async () => {

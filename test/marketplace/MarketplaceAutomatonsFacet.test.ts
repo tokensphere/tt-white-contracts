@@ -4,7 +4,11 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, MarketplaceAutomatonsFacet, Marketplace } from "../../typechain";
+import {
+  Issuer,
+  MarketplaceAutomatonsFacet,
+  Marketplace,
+} from "../../typechain";
 import { abiStructToObj } from "../utils";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 chai.use(solidity);
@@ -28,7 +32,9 @@ describe("MarketplaceAutomatonsFacet", () => {
     readonly privileges: number;
   }>;
 
-  const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
+  const marketplaceDeployFixture = deployments.createFixture(
+    marketplaceFixtureFunc
+  );
 
   const resetIssuerMock = () => {
     issuer.isMember.reset();
@@ -60,7 +66,7 @@ describe("MarketplaceAutomatonsFacet", () => {
           ({ marketplace } = args);
           automatons = await ethers.getContractAt<MarketplaceAutomatonsFacet>(
             "MarketplaceAutomatonsFacet",
-            marketplace.address,
+            marketplace.address
           );
           issuerAutomatons = await automatons.connect(issuerMember);
 
@@ -143,8 +149,13 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
 
       it("emits a AutomatonPrivilegesSet event", async () => {
-        const subject = await issuerAutomatons.setAutomatonPrivileges(john.address, 0b111);
-        await expect(subject).to.emit(marketplace, "AutomatonPrivilegesSet").withArgs(john.address, 0b111);
+        const subject = await issuerAutomatons.setAutomatonPrivileges(
+          john.address,
+          0b111
+        );
+        await expect(subject)
+          .to.emit(marketplace, "AutomatonPrivilegesSet")
+          .withArgs(john.address, 0b111);
       });
     });
 
@@ -162,7 +173,9 @@ describe("MarketplaceAutomatonsFacet", () => {
 
       it("emits a AutomatonRemoved event", async () => {
         const subject = await issuerAutomatons.removeAutomaton(alice.address);
-        await expect(subject).to.emit(marketplace, "AutomatonRemoved").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(marketplace, "AutomatonRemoved")
+          .withArgs(alice.address);
       });
     });
   });

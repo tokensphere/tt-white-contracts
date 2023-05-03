@@ -17,9 +17,10 @@ import {
 } from "../../typechain";
 import { MARKETPLACE_FACETS } from "../../tasks/marketplace";
 
-export const MARKETPLACE_INIT_DEFAULTS: MarketplaceInitFacet.InitializerParamsStruct = {
-  issuer: ZERO_ADDRESS,
-};
+export const MARKETPLACE_INIT_DEFAULTS: MarketplaceInitFacet.InitializerParamsStruct =
+  {
+    issuer: ZERO_ADDRESS,
+  };
 
 interface MarketplaceFixtureResult {
   marketplace: Marketplace;
@@ -38,10 +39,10 @@ interface MarketplaceFixtureFuncArgs {
   readonly opts: MarketplaceFixtureOpts;
 }
 
-export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, MarketplaceFixtureFuncArgs> = async (
-  hre,
-  opts,
-) => {
+export const marketplaceFixtureFunc: FixtureFunc<
+  MarketplaceFixtureResult,
+  MarketplaceFixtureFuncArgs
+> = async (hre, opts) => {
   // opts could be `undefined`.
   if (!opts) throw Error("You must provide Marketplace fixture options.");
   const {
@@ -49,30 +50,45 @@ export const marketplaceFixtureFunc: FixtureFunc<MarketplaceFixtureResult, Marke
     initWith,
   } = opts;
   // Deploy diamond.
-  const { address: marketplaceAddr } = await hre.deployments.diamond.deploy(name, {
-    from: deployer,
-    owner: deployer,
-    facets: [...MARKETPLACE_FACETS, "MarketplaceInitFacet"],
-    execute: {
-      contract: "MarketplaceInitFacet",
-      methodName: "initialize",
-      args: [{ ...MARKETPLACE_INIT_DEFAULTS, ...initWith }],
-    },
-    deterministicSalt: deploymentSalt(hre),
-  });
+  const { address: marketplaceAddr } = await hre.deployments.diamond.deploy(
+    name,
+    {
+      from: deployer,
+      owner: deployer,
+      facets: [...MARKETPLACE_FACETS, "MarketplaceInitFacet"],
+      execute: {
+        contract: "MarketplaceInitFacet",
+        methodName: "initialize",
+        args: [{ ...MARKETPLACE_INIT_DEFAULTS, ...initWith }],
+      },
+      deterministicSalt: deploymentSalt(hre),
+    }
+  );
 
   // Get a Marketplace typed pointer.
-  const marketplace = await ethers.getContractAt<Marketplace>("Marketplace", marketplaceAddr);
+  const marketplace = await ethers.getContractAt<Marketplace>(
+    "Marketplace",
+    marketplaceAddr
+  );
   // Build result.
   const result: MarketplaceFixtureResult = {
     marketplace,
-    topMock: await facetMock<MarketplaceTopFacet__factory>(marketplace, "MarketplaceTopFacet"),
-    accessMock: await facetMock<MarketplaceAccessFacet__factory>(marketplace, "MarketplaceAccessFacet"),
+    topMock: await facetMock<MarketplaceTopFacet__factory>(
+      marketplace,
+      "MarketplaceTopFacet"
+    ),
+    accessMock: await facetMock<MarketplaceAccessFacet__factory>(
+      marketplace,
+      "MarketplaceAccessFacet"
+    ),
     tokenHoldersMock: await facetMock<MarketplaceTokenHoldersFacet__factory>(
       marketplace,
-      "MarketplaceTokenHoldersFacet",
+      "MarketplaceTokenHoldersFacet"
     ),
-    automatonsMock: await facetMock<MarketplaceAutomatonsFacet__factory>(marketplace, "MarketplaceAutomatonsFacet"),
+    automatonsMock: await facetMock<MarketplaceAutomatonsFacet__factory>(
+      marketplace,
+      "MarketplaceAutomatonsFacet"
+    ),
   };
   // Callback!
   await afterDeploy.apply(this, [result]);

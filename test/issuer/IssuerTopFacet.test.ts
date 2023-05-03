@@ -29,7 +29,10 @@ describe("IssuerTopFacet", () => {
         afterDeploy: async (args) => {
           ({ issuer } = args);
           issuerMemberIssuer = issuer.connect(issuerMember);
-          top = await ethers.getContractAt<IssuerTopFacet>("IssuerTopFacet", issuer.address);
+          top = await ethers.getContractAt<IssuerTopFacet>(
+            "IssuerTopFacet",
+            issuer.address
+          );
         },
       },
       initWith: {
@@ -41,7 +44,9 @@ describe("IssuerTopFacet", () => {
   /// FAST management stuff.
 
   describe("FAST management", async () => {
-    let f01: FakeContract<Fast>, f02: FakeContract<Fast>, f03: FakeContract<Fast>;
+    let f01: FakeContract<Fast>,
+      f02: FakeContract<Fast>,
+      f03: FakeContract<Fast>;
 
     beforeEach(async () => {
       // Two fasts are registered with the Issuer.
@@ -106,7 +111,9 @@ describe("IssuerTopFacet", () => {
 
       it("emits a FastRegistered event", async () => {
         const subject = issuerMemberIssuer.registerFast(f03.address);
-        await expect(subject).to.emit(issuer, "FastRegistered").withArgs(f03.address);
+        await expect(subject)
+          .to.emit(issuer, "FastRegistered")
+          .withArgs(f03.address);
       });
     });
 
@@ -135,7 +142,9 @@ describe("IssuerTopFacet", () => {
 
       it("emits a FastUnregistered event", async () => {
         const subject = issuerMemberIssuer.unregisterFast(f01.address);
-        await expect(subject).to.emit(issuer, "FastUnregistered").withArgs(f01.address);
+        await expect(subject)
+          .to.emit(issuer, "FastUnregistered")
+          .withArgs(f01.address);
       });
     });
 

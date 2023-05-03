@@ -2,7 +2,11 @@ import { ethers } from "hardhat";
 import { ContractTransaction } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
-import { deploymentSalt, toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
+import {
+  deploymentSalt,
+  toUnpaddedHexString,
+  ZERO_ADDRESS,
+} from "../../src/utils";
 import { facetMock, oneMillion } from "../utils";
 import {
   Issuer,
@@ -37,7 +41,10 @@ interface IssuerFixtureResult {
   frontendMock: MockContract<IssuerFrontendFacet>;
 }
 
-export const issuerFixtureFunc: FixtureFunc<IssuerFixtureResult, IssuerFixtureFuncArgs> = async (hre, opts) => {
+export const issuerFixtureFunc: FixtureFunc<
+  IssuerFixtureResult,
+  IssuerFixtureFuncArgs
+> = async (hre, opts) => {
   // opts could be `undefined`.
   if (!opts) throw Error("You must provide Issuer fixture options.");
   const {
@@ -53,20 +60,32 @@ export const issuerFixtureFunc: FixtureFunc<IssuerFixtureResult, IssuerFixtureFu
   });
 
   // Provision the Issuer with a load of eth.
-  await ethers.provider.send("hardhat_setBalance", [issuerAddr, toUnpaddedHexString(oneMillion)]);
+  await ethers.provider.send("hardhat_setBalance", [
+    issuerAddr,
+    toUnpaddedHexString(oneMillion),
+  ]);
 
   // Get a Issuer typed pointer.
   const issuer = await ethers.getContractAt<Issuer>("Issuer", issuerAddr);
   // Initialize the facet, and store the transaction result.
   const init = await ethers.getContractAt("IssuerInitFacet", issuerAddr);
-  const initTx = await init.initialize({ ...ISSUER_INIT_DEFAULTS, ...initWith });
+  const initTx = await init.initialize({
+    ...ISSUER_INIT_DEFAULTS,
+    ...initWith,
+  });
   // Build result.
   const result: IssuerFixtureResult = {
     issuer,
     initTx,
     topMock: await facetMock<IssuerTopFacet__factory>(issuer, "IssuerTopFacet"),
-    accessMock: await facetMock<IssuerAccessFacet__factory>(issuer, "IssuerAccessFacet"),
-    frontendMock: await facetMock<IssuerFrontendFacet__factory>(issuer, "IssuerFrontendFacet"),
+    accessMock: await facetMock<IssuerAccessFacet__factory>(
+      issuer,
+      "IssuerAccessFacet"
+    ),
+    frontendMock: await facetMock<IssuerFrontendFacet__factory>(
+      issuer,
+      "IssuerFrontendFacet"
+    ),
   };
   // Callback!
   await afterDeploy.apply(this, [result]);

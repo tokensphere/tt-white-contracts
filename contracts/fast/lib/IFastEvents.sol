@@ -51,10 +51,12 @@ interface IFastEvents {
   /// Distribution related events.
 
   event DistributionDeployed(Distribution indexed distribution);
+  event DistributionRemoved(Distribution indexed distribution);
 
   /// Crowdfund related events.
 
   event CrowdfundDeployed(Crowdfund indexed crowdfund);
+  event CrowdfundRemoved(Crowdfund indexed crowdfund);
 
   /// General events.
 

@@ -8,10 +8,70 @@
 error AlreadyInitialized()
 ```
 
+### CannotSelfRemove
+
+```solidity
+error CannotSelfRemove(address who)
+```
+
+### DuplicateEntry
+
+```solidity
+error DuplicateEntry()
+```
+
+### InconsistentParameter
+
+```solidity
+error InconsistentParameter(string param)
+```
+
+### InsufficientFunds
+
+```solidity
+error InsufficientFunds(uint256 amount)
+```
+
 ### InternalMethod
 
 ```solidity
 error InternalMethod()
+```
+
+### InvalidPhase
+
+```solidity
+error InvalidPhase()
+```
+
+### NonExistentEntry
+
+```solidity
+error NonExistentEntry()
+```
+
+### Overfunded
+
+```solidity
+error Overfunded(uint256 amount)
+```
+
+### ReentrancyError
+
+```solidity
+error ReentrancyError()
+```
+
+### RequiresAutomatonsManager
+
+```solidity
+error RequiresAutomatonsManager(address who)
+```
+
+### RequiresContinuousSupply
+
+```solidity
+error RequiresContinuousSupply()
 ```
 
 ### RequiresDiamondOwnership
@@ -20,16 +80,52 @@ error InternalMethod()
 error RequiresDiamondOwnership(address who)
 ```
 
+### RequiresDifferentSenderAndRecipient
+
+```solidity
+error RequiresDifferentSenderAndRecipient(address a)
+```
+
+### RequiresFastCaller
+
+```solidity
+error RequiresFastCaller()
+```
+
 ### RequiresFastContractCaller
 
 ```solidity
 error RequiresFastContractCaller()
 ```
 
-### RequiresTransfersEnabled
+### RequiresFastGovernorship
 
 ```solidity
-error RequiresTransfersEnabled()
+error RequiresFastGovernorship(address who)
+```
+
+### RequiresFastMemberCaller
+
+```solidity
+error RequiresFastMemberCaller()
+```
+
+### RequiresFastMembership
+
+```solidity
+error RequiresFastMembership(address who)
+```
+
+### RequiresGovernorsManager
+
+```solidity
+error RequiresGovernorsManager(address who)
+```
+
+### RequiresIssuerMemberCaller
+
+```solidity
+error RequiresIssuerMemberCaller()
 ```
 
 ### RequiresIssuerMembership
@@ -38,10 +134,10 @@ error RequiresTransfersEnabled()
 error RequiresIssuerMembership(address who)
 ```
 
-### RequiresMarketplaceMembership
+### RequiresManagerCaller
 
 ```solidity
-error RequiresMarketplaceMembership(address who)
+error RequiresManagerCaller()
 ```
 
 ### RequiresMarketplaceActiveMembership
@@ -56,22 +152,16 @@ error RequiresMarketplaceActiveMembership(address who)
 error RequiresMarketplaceDeactivatedMember(address who)
 ```
 
-### RequiresValidTokenHolder
+### RequiresMarketplaceMembership
 
 ```solidity
-error RequiresValidTokenHolder(address who)
+error RequiresMarketplaceMembership(address who)
 ```
 
-### RequiresFastGovernorship
+### RequiresMembersManager
 
 ```solidity
-error RequiresFastGovernorship(address who)
-```
-
-### RequiresFastMembership
-
-```solidity
-error RequiresFastMembership(address who)
+error RequiresMembersManager(address who)
 ```
 
 ### RequiresNoFastMemberships
@@ -86,57 +176,57 @@ error RequiresNoFastMemberships(address who)
 error RequiresOwner(address who)
 ```
 
-### InsufficientFunds
-
-```solidity
-error InsufficientFunds(uint256 missing)
-```
-
-### DuplicateEntry
-
-```solidity
-error DuplicateEntry()
-```
-
-### NonExistentEntry
-
-```solidity
-error NonExistentEntry()
-```
-
-### UnsupportedOperation
-
-```solidity
-error UnsupportedOperation()
-```
-
-### CannotSelfRemove
-
-```solidity
-error CannotSelfRemove(address who)
-```
-
-### ReentrancyError
-
-```solidity
-error ReentrancyError()
-```
-
-### RequiresContinuousSupply
-
-```solidity
-error RequiresContinuousSupply()
-```
-
 ### RequiresPositiveBalance
 
 ```solidity
 error RequiresPositiveBalance(address holder)
 ```
 
-### RequiresDifferentSenderAndRecipient
+### RequiresTransfersEnabled
 
 ```solidity
-error RequiresDifferentSenderAndRecipient(address a)
+error RequiresTransfersEnabled()
+```
+
+### RequiresValidGovernor
+
+```solidity
+error RequiresValidGovernor(address who)
+```
+
+### RequiresValidMember
+
+```solidity
+error RequiresValidMember(address who)
+```
+
+### RequiresValidTokenHolder
+
+```solidity
+error RequiresValidTokenHolder(address who)
+```
+
+### TokenContractError
+
+```solidity
+error TokenContractError()
+```
+
+### UnknownBeneficiary
+
+```solidity
+error UnknownBeneficiary(address who)
+```
+
+### UnknownPledger
+
+```solidity
+error UnknownPledger(address who)
+```
+
+### UnsupportedOperation
+
+```solidity
+error UnsupportedOperation()
 ```
 

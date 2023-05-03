@@ -493,6 +493,11 @@
           "internalType": "address",
           "name": "beneficiary",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
         }
       ],
       "name": "createCrowdfund",
@@ -545,6 +550,19 @@
     {
       "inputs": [
         {
+          "internalType": "contract Crowdfund",
+          "name": "crowdfund",
+          "type": "address"
+        }
+      ],
+      "name": "removeCrowdfund",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
@@ -574,6 +592,11 @@
           "internalType": "uint256",
           "name": "blockLatch",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "ref",
+          "type": "string"
         }
       ],
       "name": "createDistribution",
@@ -621,6 +644,19 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract Distribution",
+          "name": "distribution",
+          "type": "address"
+        }
+      ],
+      "name": "removeDistribution",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1918,6 +1954,19 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "contract Crowdfund",
+          "name": "crowdfund",
+          "type": "address"
+        }
+      ],
+      "name": "CrowdfundRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "bool",
           "name": "transfersDisabled",
@@ -1987,6 +2036,19 @@
         }
       ],
       "name": "DistributionDeployed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "contract Distribution",
+          "name": "distribution",
+          "type": "address"
+        }
+      ],
+      "name": "DistributionRemoved",
       "type": "event"
     },
     {

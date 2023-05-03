@@ -86,10 +86,12 @@ contract Distribution {
     uint256 blockLatch;
     /// @notice How much is meant to be distributed.
     uint256 total;
+    /// @notice An arbitrary reference string.
+    string ref;
   }
 
   /// @notice A version identifier for us to track what's deployed.
-  uint16 public constant VERSION = 2;
+  uint16 public constant VERSION = 3;
 
   /// @notice The initial params, as passed to the contract's constructor.
   Params public params;

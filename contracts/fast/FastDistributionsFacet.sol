@@ -26,7 +26,7 @@ contract FastDistributionsFacet is AFastFacet {
    * @param total is the amount of ERC20 tokens to distribute.
    * @param blockLatch is the block to consider the historical point of truth to calculate the proceeds.
    */
-  function createDistribution(IERC20 token, uint256 total, uint256 blockLatch)
+  function createDistribution(IERC20 token, uint256 total, uint256 blockLatch, string memory ref)
       external
       onlyMember(msg.sender) {
     // Make sure the current FAST contract has at least `total` allowance over the user's ERC20 tokens.
@@ -42,7 +42,8 @@ contract FastDistributionsFacet is AFastFacet {
         blockLatch: blockLatch,
         distributor: msg.sender,
         token: token,
-        total: total
+        total: total,
+        ref: ref
       })
     );
     // Register our newly created distribution and keep track of it.
@@ -54,6 +55,12 @@ contract FastDistributionsFacet is AFastFacet {
     dist.advanceToFeeSetup();
     // Emit!
     emit DistributionDeployed(dist);
+  }
+
+  function removeDistribution(Distribution distribution)
+      public onlyIssuerMember {
+    LibFastDistributions.data().distributionSet.remove(address(distribution), false);
+    emit DistributionRemoved(distribution);
   }
 
   /**

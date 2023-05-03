@@ -71,10 +71,12 @@ contract Crowdfund {
     address beneficiary;
     /// @notice The token contract address.
     IERC20 token;
+    /// @notice An arbitrary reference string to keep track of.
+    string ref;
   }
 
   /// @notice A version identifier for us to track what's deployed.
-  uint16 public constant VERSION = 1;
+  uint16 public constant VERSION = 2;
 
   /// @notice The initial params, as passed to the contract's constructor.
   Params public params;

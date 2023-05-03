@@ -11,7 +11,10 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 describe("IssuerAccessFacet", () => {
-  let deployer: SignerWithAddress, issuerMember: SignerWithAddress, bob: SignerWithAddress, alice: SignerWithAddress;
+  let deployer: SignerWithAddress,
+    issuerMember: SignerWithAddress,
+    bob: SignerWithAddress,
+    alice: SignerWithAddress;
   let issuer: Issuer,
     fast: FakeContract<Fast>,
     issuerMemberIssuer: Issuer,
@@ -35,7 +38,10 @@ describe("IssuerAccessFacet", () => {
         afterDeploy: async (args) => {
           ({ issuer } = args);
           issuerMemberIssuer = issuer.connect(issuerMember);
-          access = await ethers.getContractAt<IssuerAccessFacet>("IssuerAccessFacet", issuer.address);
+          access = await ethers.getContractAt<IssuerAccessFacet>(
+            "IssuerAccessFacet",
+            issuer.address
+          );
           issuerMemberAccess = access.connect(issuerMember);
         },
       },
@@ -77,7 +83,11 @@ describe("IssuerAccessFacet", () => {
         await issuerMemberAccess.addMember(alice.address);
 
         const [members] = await access.paginateMembers(0, 3);
-        expect(members).to.eql([issuerMember.address, bob.address, alice.address]);
+        expect(members).to.eql([
+          issuerMember.address,
+          bob.address,
+          alice.address,
+        ]);
       });
     });
 
@@ -100,7 +110,9 @@ describe("IssuerAccessFacet", () => {
 
       it("emits a MemberAdded event", async () => {
         const subject = issuerMemberAccess.addMember(bob.address);
-        await expect(subject).to.emit(access, "MemberAdded").withArgs(bob.address);
+        await expect(subject)
+          .to.emit(access, "MemberAdded")
+          .withArgs(bob.address);
       });
 
       it("calls back onMemberAdded");
@@ -124,12 +136,16 @@ describe("IssuerAccessFacet", () => {
 
       it("reverts if the member is not in the list", async () => {
         const subject = issuerMemberAccess.removeMember(alice.address);
-        await expect(subject).to.be.revertedWith("Address does not exist in set");
+        await expect(subject).to.be.revertedWith(
+          "Address does not exist in set"
+        );
       });
 
       it("emits a MemberRemoved event", async () => {
         const subject = issuerMemberAccess.removeMember(bob.address);
-        await expect(subject).to.emit(access, "MemberRemoved").withArgs(bob.address);
+        await expect(subject)
+          .to.emit(access, "MemberRemoved")
+          .withArgs(bob.address);
       });
 
       it("calls back onMemberRemoved");
@@ -149,7 +165,9 @@ describe("IssuerAccessFacet", () => {
   describe("governorAddedToFast", async () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = issuer.governorAddedToFast(alice.address);
-      await expect(subject).to.have.been.revertedWith("RequiresFastContractCaller");
+      await expect(subject).to.have.been.revertedWith(
+        "RequiresFastContractCaller"
+      );
     });
 
     it("adds the given member to the FAST governorship tracking data structure", async () => {
@@ -159,7 +177,11 @@ describe("IssuerAccessFacet", () => {
       const issuerAsFast = await impersonateContract(issuer, fast.address);
       await issuerAsFast.governorAddedToFast(alice.address);
       // Expecting the FAST address to be included in FASTs Alice is a governor of.
-      const [subject /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
+      const [subject /* nextCursor */] = await access.paginateGovernorships(
+        alice.address,
+        0,
+        10
+      );
       expect(subject).to.be.eql([fast.address]);
     });
 
@@ -173,14 +195,18 @@ describe("IssuerAccessFacet", () => {
       // Add then remove Alice.
       const subject = issuerAsFast.governorAddedToFast(alice.address);
 
-      await expect(subject).to.emit(access, "GovernorshipAdded").withArgs(fast.address, alice.address);
+      await expect(subject)
+        .to.emit(access, "GovernorshipAdded")
+        .withArgs(fast.address, alice.address);
     });
   });
 
   describe("governorRemovedFromFast", async () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = issuer.governorAddedToFast(alice.address);
-      await expect(subject).to.have.been.revertedWith("RequiresFastContractCaller");
+      await expect(subject).to.have.been.revertedWith(
+        "RequiresFastContractCaller"
+      );
     });
 
     it("adds the given member to the FAST governorship tracking data structure", async () => {
@@ -195,7 +221,11 @@ describe("IssuerAccessFacet", () => {
       await issuerAsFast.governorRemovedFromFast(alice.address);
 
       // Expecting the FAST address to not be included in FASTs Alice is a governor of.
-      const [subject /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
+      const [subject /* nextCursor */] = await access.paginateGovernorships(
+        alice.address,
+        0,
+        10
+      );
       expect(subject).to.be.empty;
     });
 
@@ -210,7 +240,9 @@ describe("IssuerAccessFacet", () => {
       await issuerAsFast.governorAddedToFast(alice.address);
       const subject = issuerAsFast.governorRemovedFromFast(alice.address);
 
-      await expect(subject).to.emit(access, "GovernorshipRemoved").withArgs(fast.address, alice.address);
+      await expect(subject)
+        .to.emit(access, "GovernorshipRemoved")
+        .withArgs(fast.address, alice.address);
     });
   });
 
@@ -225,7 +257,11 @@ describe("IssuerAccessFacet", () => {
     });
 
     it("given an address, returns the list of FASTs that it is a governor of", async () => {
-      const [subject /* nextCursor */] = await access.paginateGovernorships(alice.address, 0, 10);
+      const [subject /* nextCursor */] = await access.paginateGovernorships(
+        alice.address,
+        0,
+        10
+      );
       expect(subject).to.be.eql([fast.address]);
     });
   });

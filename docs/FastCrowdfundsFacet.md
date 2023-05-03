@@ -7,7 +7,7 @@ The Fast Crowdfunds facet is in charge of deploying and keeping track of crowdfu
 ### createCrowdfund
 
 ```solidity
-function createCrowdfund(contract IERC20 token, address beneficiary) external
+function createCrowdfund(contract IERC20 token, address beneficiary, string ref) external
 ```
 
 Creates a crowdfund contract.
@@ -18,6 +18,13 @@ Creates a crowdfund contract.
 | ---- | ---- | ----------- |
 | token | contract IERC20 | is the address of the ERC20 token that should be collected. |
 | beneficiary | address |  |
+| ref | string |  |
+
+### removeCrowdfund
+
+```solidity
+function removeCrowdfund(contract Crowdfund crowdfund) public
+```
 
 ### crowdfundCount
 

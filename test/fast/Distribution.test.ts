@@ -95,6 +95,7 @@ describe("Distribution", () => {
       token: erc20.address,
       total: BigNumber.from(100),
       blockLatch: BigNumber.from(0),
+      ref: "Some reference",
     };
 
     deployDistribution = async (params) => {
@@ -116,7 +117,7 @@ describe("Distribution", () => {
     });
 
     it("expose VERSION", async () => {
-      expect(await distribution.VERSION()).to.be.eq(1);
+      expect(await distribution.VERSION()).to.be.eq(3);
     });
 
     it("expose initial params", async () => {
@@ -130,6 +131,7 @@ describe("Distribution", () => {
         token: erc20.address,
         total: BigNumber.from(validParams.total),
         blockLatch: BigNumber.from(validParams.blockLatch),
+        ref: validParams.ref,
       });
     });
 
@@ -172,6 +174,7 @@ describe("Distribution", () => {
           token: erc20.address,
           total: validParams.total,
           blockLatch: validParams.blockLatch,
+          ref: validParams.ref,
         });
       });
 
@@ -793,16 +796,10 @@ describe("Distribution", () => {
       ]);
     });
 
-    it("can be called during the Terminated phase", async () => {
+    it("cannot be called during the Terminated phase", async () => {
       await distributionAsIssuer.terminate();
-      const beforePhase = await distribution.phase();
-
-      await distributionAsIssuer.terminate();
-      const afterPhase = await distribution.phase();
-      expect([beforePhase, afterPhase]).to.eql([
-        DistributionPhase.Terminated,
-        DistributionPhase.Terminated,
-      ]);
+      const subject = distributionAsIssuer.terminate();
+      await expect(subject).to.have.revertedWith("InvalidPhase");
     });
 
     it("requires that the caller is a manager", async () => {

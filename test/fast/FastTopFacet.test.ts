@@ -4,13 +4,23 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastTopFacet, Fast, FastFrontendFacet, FastTokenFacet } from "../../typechain";
+import {
+  Issuer,
+  Marketplace,
+  FastTopFacet,
+  Fast,
+  FastFrontendFacet,
+  FastTokenFacet,
+} from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 chai.use(solidity);
 chai.use(smock.matchers);
 
 describe("FastTopFacet", () => {
-  let deployer: SignerWithAddress, issuerMember: SignerWithAddress, governor: SignerWithAddress, bob: SignerWithAddress;
+  let deployer: SignerWithAddress,
+    issuerMember: SignerWithAddress,
+    governor: SignerWithAddress,
+    bob: SignerWithAddress;
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     fast: Fast,
@@ -49,7 +59,10 @@ describe("FastTopFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ fast, frontendMock, tokenMock } = args);
-          top = await ethers.getContractAt<FastTopFacet>("FastTopFacet", fast.address);
+          top = await ethers.getContractAt<FastTopFacet>(
+            "FastTopFacet",
+            fast.address
+          );
           issuerMemberTop = top.connect(issuerMember);
         },
       },

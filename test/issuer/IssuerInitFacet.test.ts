@@ -29,7 +29,10 @@ describe("IssuerInitFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ issuer, initTx } = args);
-          access = await ethers.getContractAt<IssuerAccessFacet>("IssuerAccessFacet", issuer.address);
+          access = await ethers.getContractAt<IssuerAccessFacet>(
+            "IssuerAccessFacet",
+            issuer.address
+          );
         },
       },
       initWith: {
@@ -41,15 +44,25 @@ describe("IssuerInitFacet", () => {
   describe("initialize", async () => {
     it("requires that it is not initialized", async () => {
       // Attempt to re-initialize.
-      const initIssuer = await ethers.getContractAt<IssuerInitFacet>("IssuerInitFacet", issuer.address);
+      const initIssuer = await ethers.getContractAt<IssuerInitFacet>(
+        "IssuerInitFacet",
+        issuer.address
+      );
       const subject = initIssuer.initialize({ member: ZERO_ADDRESS });
       await expect(subject).to.be.revertedWith("AlreadyInitialized");
     });
 
     it("set various storage versions", async () => {
       // Query the slot and parse out the STORAGE_VERSION.
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Issuer.storage"]);
-      const subject = await ethers.provider.send("eth_getStorageAt", [issuer.address, slot, "latest"]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["Issuer.storage"]
+      );
+      const subject = await ethers.provider.send("eth_getStorageAt", [
+        issuer.address,
+        slot,
+        "latest",
+      ]);
       // Expectations.
       expect(BigNumber.from(subject).toString()).to.eq("1");
     });
@@ -74,8 +87,8 @@ describe("IssuerInitFacet", () => {
     });
 
     it("emits a MemberAdded event", async () => {
-      await expect(initTx).to
-        .emit(issuer, "MemberAdded")
+      await expect(initTx)
+        .to.emit(issuer, "MemberAdded")
         .withArgs(issuerMember.address);
     });
   });
