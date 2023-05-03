@@ -90,7 +90,9 @@ const config: HardhatUserConfig = {
         ["Facet$", "Disapproval(address,address,uint256)"],
         ["Facet$", "DetailsChanged(bool,uint256,uint256,uint256,uint256)"],
         ["Facet$", "DistributionDeployed(address)"],
+        ["Facet$", "DistributionRemoved(address)"],
         ["Facet$", "CrowdfundDeployed(address)"],
+        ["Facet$", "CrowdfundRemoved(address)"],
         // Error types.
         ["Facet$", "InternalMethod()"],
         ["Facet$", "RequiresIssuerMembership(address)"],

@@ -4,7 +4,14 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastAccessFacet, FastCrowdfundsFacet, IERC20, Crowdfund } from "../../typechain";
+import {
+  Issuer,
+  Marketplace,
+  FastAccessFacet,
+  FastCrowdfundsFacet,
+  IERC20,
+  Crowdfund,
+} from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -28,7 +35,8 @@ describe("FastCrowdfundsFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, issuerMember, governor, alice, bob, rob, john] =
+      await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
@@ -57,17 +65,26 @@ describe("FastCrowdfundsFacet", () => {
     erc20.transferFrom.reset();
     erc20.transferFrom.returns(true);
 
-    await ethers.provider.send("hardhat_setBalance", [alice.address, '0xffffffffffffffffffff']);
+    await ethers.provider.send("hardhat_setBalance", [
+      alice.address,
+      "0xffffffffffffffffffff",
+    ]);
 
     await fastDeployFixture({
       opts: {
         name: "FastCrowdfundsFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
-          crowdfunds = await ethers.getContractAt<FastCrowdfundsFacet>("FastCrowdfundsFacet", fast.address);
+          crowdfunds = await ethers.getContractAt<FastCrowdfundsFacet>(
+            "FastCrowdfundsFacet",
+            fast.address
+          );
           crowdfundsAsMember = crowdfunds.connect(alice);
           crowdfundsAsGovernor = crowdfunds.connect(governor);
-          const access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
+          const access = await ethers.getContractAt<FastAccessFacet>(
+            "FastAccessFacet",
+            fast.address
+          );
           await access.connect(governor).addMember(alice.address);
         },
       },
@@ -83,47 +100,77 @@ describe("FastCrowdfundsFacet", () => {
 
   describe("createCrowdfund", async () => {
     it("requires the caller to be a FAST governor", async () => {
-      const subject = crowdfunds.createCrowdfund(erc20.address, alice.address);
-      await expect(subject).to.have
-        .revertedWith("RequiresFastGovernorship");
+      const subject = crowdfunds.createCrowdfund(
+        erc20.address,
+        alice.address,
+        "Blah"
+      );
+      await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
     });
 
     it("deploys a new crowdfund with the given parameters", async () => {
-      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
+      await crowdfundsAsGovernor.createCrowdfund(
+        erc20.address,
+        alice.address,
+        "Blah"
+      );
       const [page] = await crowdfundsAsGovernor.paginateCrowdfunds(0, 1);
       expect(page.length).to.eq(1);
     });
 
     describe("deploys a crowdfund and", async () => {
-      let
-        tx: any,
-        crowdfundAddr: string,
-        crowdfund: Crowdfund;
+      let tx: any, crowdfundAddr: string, crowdfund: Crowdfund;
 
       beforeEach(async () => {
-        await (tx = crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address));
+        await (tx = crowdfundsAsGovernor.createCrowdfund(
+          erc20.address,
+          alice.address,
+          "Blah"
+        ));
         const [crowdfundings] = await crowdfunds.paginateCrowdfunds(0, 1);
         crowdfundAddr = crowdfundings[0];
-        crowdfund = await ethers.getContractAt<Crowdfund>("Crowdfund", crowdfundAddr);
+        crowdfund = await ethers.getContractAt<Crowdfund>(
+          "Crowdfund",
+          crowdfundAddr
+        );
       });
 
       it("keeps track of the deployed crowdfund", async () => {
-        await Promise.all([1, 2].map(() => crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address)));
+        await Promise.all(
+          [1, 2].map(() =>
+            crowdfundsAsGovernor.createCrowdfund(
+              erc20.address,
+              alice.address,
+              "Blah"
+            )
+          )
+        );
         const [page] = await crowdfunds.paginateCrowdfunds(0, 10);
         expect(page.length).to.eq(3);
       });
 
       it("emits a CrowdfundDeployed event", async () => {
-        await expect(tx).to
-          .emit(crowdfunds, "CrowdfundDeployed")
+        await expect(tx)
+          .to.emit(crowdfunds, "CrowdfundDeployed")
           .withArgs(crowdfundAddr);
       });
     });
   });
 
+  describe("removeCrowdfund", async () => {
+    it("requires the caller to be an issuer member");
+    it("removes the crowdfund from the list of deployed crowdfunds");
+    it("emits a CrowdfundRemoved event");
+    it("reverts when the crowdfund does not exist");
+  });
+
   describe("crowdfundCount", async () => {
     beforeEach(async () => {
-      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
+      await crowdfundsAsGovernor.createCrowdfund(
+        erc20.address,
+        alice.address,
+        "Blah"
+      );
     });
 
     it("counts all deployed crowdfunds", async () => {
@@ -134,8 +181,12 @@ describe("FastCrowdfundsFacet", () => {
 
   describe("paginateCrowdfunds", async () => {
     beforeEach(async () => {
-      await crowdfundsAsGovernor.createCrowdfund(erc20.address, alice.address);
-    })
+      await crowdfundsAsGovernor.createCrowdfund(
+        erc20.address,
+        alice.address,
+        "Blah"
+      );
+    });
 
     it("returns pages of deployed crowdfunds", async () => {
       const [page] = await crowdfunds.paginateCrowdfunds(0, 10);

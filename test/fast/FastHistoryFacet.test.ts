@@ -33,9 +33,27 @@ describe("FastHistoryFacet", () => {
 
   const createTransferProofs = async () => {
     // Add a bunch of transfer proofs.
-    await historyAsItself.transfered(alice.address, alice.address, john.address, 100, "One");
-    await historyAsItself.transfered(alice.address, bob.address, john.address, 200, "Two");
-    await historyAsItself.transfered(john.address, alice.address, bob.address, 300, "Three");
+    await historyAsItself.transfered(
+      alice.address,
+      alice.address,
+      john.address,
+      100,
+      "One"
+    );
+    await historyAsItself.transfered(
+      alice.address,
+      bob.address,
+      john.address,
+      200,
+      "Two"
+    );
+    await historyAsItself.transfered(
+      john.address,
+      alice.address,
+      bob.address,
+      300,
+      "Three"
+    );
   };
 
   before(async () => {
@@ -58,7 +76,10 @@ describe("FastHistoryFacet", () => {
         name: "FastHistoryFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
-          history = await ethers.getContractAt<FastHistoryFacet>("FastHistoryFacet", fast.address);
+          history = await ethers.getContractAt<FastHistoryFacet>(
+            "FastHistoryFacet",
+            fast.address
+          );
           governedHistory = history.connect(governor);
         },
       },
@@ -88,7 +109,8 @@ describe("FastHistoryFacet", () => {
     describe("as the diamond", async () => {
       it("adds an entry to the supply proof list", async () => {
         await historyAsItself.minted(3, "Three");
-        const [[{ amount, ref, blockNumber }]] = await history.paginateSupplyProofs(0, 1);
+        const [[{ amount, ref, blockNumber }]] =
+          await history.paginateSupplyProofs(0, 1);
         expect(amount).to.eq(3);
         expect(ref).to.eq("Three");
         expect(blockNumber.toNumber()).to.be.greaterThan(1);
@@ -110,7 +132,8 @@ describe("FastHistoryFacet", () => {
     describe("as the diamond", async () => {
       it("adds an entry to the supply proof list", async () => {
         await historyAsItself.burnt(3, "Three");
-        const [[{ amount, ref, blockNumber }]] = await history.paginateSupplyProofs(0, 1);
+        const [[{ amount, ref, blockNumber }]] =
+          await history.paginateSupplyProofs(0, 1);
         expect(amount).to.eq(3);
         expect(ref).to.eq("Three");
         expect(blockNumber.toNumber()).to.be.greaterThan(1);
@@ -145,7 +168,9 @@ describe("FastHistoryFacet", () => {
     it("returns the supply proofs in the order they were added", async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
       const [proofs] = await history.paginateSupplyProofs(0, 10);
-      const proofsWithoutBlockNumbers = proofs.map(abiStructToObj).map(({ blockNumber, ...rest }) => rest);
+      const proofsWithoutBlockNumbers = proofs
+        .map(abiStructToObj)
+        .map(({ blockNumber, ...rest }) => rest);
       expect(proofsWithoutBlockNumbers).to.eql([
         {
           amount: BigNumber.from(1_000),
@@ -170,19 +195,33 @@ describe("FastHistoryFacet", () => {
 
   describe("transfered", async () => {
     it("requires that the caller is the token (anonymous)", async () => {
-      const subject = history.transfered(alice.address, bob.address, john.address, 100, "Attempt 1");
+      const subject = history.transfered(
+        alice.address,
+        bob.address,
+        john.address,
+        100,
+        "Attempt 1"
+      );
       await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
     it("requires that the caller is the token (governor)", async () => {
-      const subject = governedHistory.transfered(alice.address, bob.address, john.address, 100, "Attempt 2");
+      const subject = governedHistory.transfered(
+        alice.address,
+        bob.address,
+        john.address,
+        100,
+        "Attempt 2"
+      );
       await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
     it("adds an entry to the transfer proof list", async () => {
       await createTransferProofs();
       const [proofs] = await history.paginateTransferProofs(0, 1);
-      const [proofWithoutBlockNumber] = proofs.map(abiStructToObj).map(({ blockNumber, ...rest }) => rest);
+      const [proofWithoutBlockNumber] = proofs
+        .map(abiStructToObj)
+        .map(({ blockNumber, ...rest }) => rest);
       expect(proofWithoutBlockNumber).to.be.eql({
         spender: alice.address,
         from: alice.address,
@@ -219,7 +258,9 @@ describe("FastHistoryFacet", () => {
     it("returns the transfer proofs in the order they were added", async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
       const [proofs] = await history.paginateTransferProofs(0, 10);
-      const proofsWithoutBlockNumbers = proofs.map(abiStructToObj).map(({ blockNumber, ...rest }) => rest);
+      const proofsWithoutBlockNumbers = proofs
+        .map(abiStructToObj)
+        .map(({ blockNumber, ...rest }) => rest);
       // Check all proofs in order.
       expect(proofsWithoutBlockNumbers).to.eql([
         {
@@ -258,24 +299,33 @@ describe("FastHistoryFacet", () => {
 
     it("returns the cursor to the next page", async () => {
       // We're testing the pagination library here... Not too good. But hey, we're in a rush.
-      const [, /* proofs */ nextCursor] = await history.paginateTransferProofsByInvolvee(john.address, 0, 2);
+      const [, /* proofs */ nextCursor] =
+        await history.paginateTransferProofsByInvolvee(john.address, 0, 2);
       expect(nextCursor).to.eq(2);
     });
 
     it("does not crash when overflowing and returns the correct cursor (bob)", async () => {
-      const [, /* proofs */ nextCursor] = await history.paginateTransferProofsByInvolvee(bob.address, 1, 10);
+      const [, /* proofs */ nextCursor] =
+        await history.paginateTransferProofsByInvolvee(bob.address, 1, 10);
       expect(nextCursor).to.eq(2);
     });
 
     it("does not crash when overflowing and returns the correct cursor (john)", async () => {
-      const [, /* proofs */ nextCursor] = await history.paginateTransferProofsByInvolvee(john.address, 1, 10);
+      const [, /* proofs */ nextCursor] =
+        await history.paginateTransferProofsByInvolvee(john.address, 1, 10);
       expect(nextCursor).to.eq(2);
     });
 
-    it("counts the proofs regardless of the involvement (sender and recipient)");
+    it(
+      "counts the proofs regardless of the involvement (sender and recipient)"
+    );
 
     it("categorizes the proofs for the senders", async () => {
-      const [proofs] = await history.paginateTransferProofsByInvolvee(bob.address, 0, 10);
+      const [proofs] = await history.paginateTransferProofsByInvolvee(
+        bob.address,
+        0,
+        10
+      );
       const proofsAsObjs = proofs.map(abiStructToObj);
 
       // Check all proofs.
@@ -314,7 +364,8 @@ describe("FastHistoryFacet", () => {
     beforeEach(createTransferProofs);
 
     it("returns a paginated list of addresses and cursor", async () => {
-      const [proofs, nextCursor] = await history.paginateTransferProofIndicesByInvolvee(bob.address, 0, 5);
+      const [proofs, nextCursor] =
+        await history.paginateTransferProofIndicesByInvolvee(bob.address, 0, 5);
 
       // Expecting 2 proof indexes.
       expect(proofs).to.be.eql([BigNumber.from(1), BigNumber.from(2)]);

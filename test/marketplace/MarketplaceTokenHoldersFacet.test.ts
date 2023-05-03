@@ -4,7 +4,12 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Fast, MarketplaceTokenHoldersFacet, Marketplace } from "../../typechain";
+import {
+  Issuer,
+  Fast,
+  MarketplaceTokenHoldersFacet,
+  Marketplace,
+} from "../../typechain";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 import { ten, zero, impersonateContract } from "../utils";
 import { ZERO_ADDRESS } from "../../src/utils";
@@ -19,7 +24,9 @@ describe("MarketplaceTokenHoldersFacet", () => {
     tokenHolders: MarketplaceTokenHoldersFacet,
     tokenHoldersAsFast: MarketplaceTokenHoldersFacet;
 
-  const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
+  const marketplaceDeployFixture = deployments.createFixture(
+    marketplaceFixtureFunc
+  );
 
   before(async () => {
     // Keep track of a few signers.
@@ -36,10 +43,11 @@ describe("MarketplaceTokenHoldersFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ marketplace } = args);
-          tokenHolders = await ethers.getContractAt<MarketplaceTokenHoldersFacet>(
-            "MarketplaceTokenHoldersFacet",
-            marketplace.address,
-          );
+          tokenHolders =
+            await ethers.getContractAt<MarketplaceTokenHoldersFacet>(
+              "MarketplaceTokenHoldersFacet",
+              marketplace.address
+            );
         },
       },
       initWith: {

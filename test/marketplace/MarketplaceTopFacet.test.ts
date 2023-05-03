@@ -13,7 +13,9 @@ describe("MarketplaceTopFacet", () => {
   let deployer: SignerWithAddress;
   let issuer: FakeContract<Issuer>, marketplace: Marketplace;
 
-  const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
+  const marketplaceDeployFixture = deployments.createFixture(
+    marketplaceFixtureFunc
+  );
 
   before(async () => {
     // Keep track of a few signers.

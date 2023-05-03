@@ -19,7 +19,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
    */
-  function createCrowdfund(IERC20 token, address beneficiary)
+  function createCrowdfund(IERC20 token, address beneficiary, string memory ref)
       external {
     // Deploy a new Crowdfund contract.
     Crowdfund crowdfund = new Crowdfund(
@@ -28,13 +28,20 @@ contract FastCrowdfundsFacet is AFastFacet {
         issuer: FastTopFacet(address(this)).issuerAddress(),
         fast: address(this),
         beneficiary: beneficiary,
-        token: token
+        token: token,
+        ref: ref
       })
     );
     // Register our newly created crowdfund and keep track of it.
     LibFastCrowdfunds.data().crowdfundSet.add(address(crowdfund), false);
     // Emit!
     emit CrowdfundDeployed(crowdfund);
+  }
+
+  function removeCrowdfund(Crowdfund crowdfund)
+      public onlyIssuerMember {
+    LibFastCrowdfunds.data().crowdfundSet.remove(address(crowdfund), false);
+    emit CrowdfundRemoved(crowdfund);
   }
 
   /**

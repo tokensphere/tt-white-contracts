@@ -63,7 +63,6 @@ describe("FastFrontendFacet", () => {
           governedFast = fast.connect(governor);
           issuerMemberFast = fast.connect(issuerMember);
           await governedFast.addMember(member.address);
-          await governedFast.addMember(governor.address);
         },
       },
       initWith: {
@@ -164,16 +163,16 @@ describe("FastFrontendFacet", () => {
 
       // Member A details.
       expect(memberAObj).to.eql({
-        addr: member.address,
+        addr: governor.address,
         balance: zero,
-        isGovernor: false,
+        isGovernor: true,
       });
 
       // Member B details.
       expect(memberBObj).to.eql({
-        addr: governor.address,
+        addr: member.address,
         balance: zero,
-        isGovernor: true,
+        isGovernor: false,
       });
 
       // Next cursor.
@@ -188,9 +187,9 @@ describe("FastFrontendFacet", () => {
 
       // Expect Member B.
       expect(memberAObj).to.eql({
-        addr: governor.address,
+        addr: member.address,
         balance: zero,
-        isGovernor: true,
+        isGovernor: false,
       });
     });
   });

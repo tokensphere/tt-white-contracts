@@ -71,6 +71,8 @@ contract Crowdfund {
     address beneficiary;
     /// @notice The token contract address.
     IERC20 token;
+    /// @notice An arbitrary reference string to keep track of.
+    string ref;
   }
 
   /// @notice A version identifier for us to track what's deployed.

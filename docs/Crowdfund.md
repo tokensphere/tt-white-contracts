@@ -147,6 +147,7 @@ struct Params {
   address fast;
   address beneficiary;
   contract IERC20 token;
+  string ref;
 }
 ```
 

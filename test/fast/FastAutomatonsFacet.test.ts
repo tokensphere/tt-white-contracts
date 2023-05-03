@@ -4,7 +4,12 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, FastAutomatonsFacet, Fast, Marketplace } from "../../typechain";
+import {
+  Issuer,
+  FastAutomatonsFacet,
+  Fast,
+  Marketplace,
+} from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -38,7 +43,8 @@ describe("FastAutomatonsFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, issuerMember, governor, alice, bob, rob, john] =
+      await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
@@ -72,7 +78,10 @@ describe("FastAutomatonsFacet", () => {
         name: "FastAutomatonsFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
-          automatons = await ethers.getContractAt<FastAutomatonsFacet>("FastAutomatonsFacet", fast.address,);
+          automatons = await ethers.getContractAt<FastAutomatonsFacet>(
+            "FastAutomatonsFacet",
+            fast.address
+          );
           issuerAutomatons = await automatons.connect(issuerMember);
 
           for (const {
@@ -156,8 +165,13 @@ describe("FastAutomatonsFacet", () => {
       });
 
       it("emits a AutomatonPrivilegesSet event", async () => {
-        const subject = await issuerAutomatons.setAutomatonPrivileges(john.address, 0b111);
-        await expect(subject).to.emit(issuerAutomatons, "AutomatonPrivilegesSet").withArgs(john.address, 0b111);
+        const subject = await issuerAutomatons.setAutomatonPrivileges(
+          john.address,
+          0b111
+        );
+        await expect(subject)
+          .to.emit(issuerAutomatons, "AutomatonPrivilegesSet")
+          .withArgs(john.address, 0b111);
       });
     });
 
@@ -175,7 +189,9 @@ describe("FastAutomatonsFacet", () => {
 
       it("emits a AutomatonRemoved event", async () => {
         const subject = await issuerAutomatons.removeAutomaton(alice.address);
-        await expect(subject).to.emit(issuerAutomatons, "AutomatonRemoved").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(issuerAutomatons, "AutomatonRemoved")
+          .withArgs(alice.address);
       });
     });
   });

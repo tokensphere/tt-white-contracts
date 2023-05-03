@@ -4,7 +4,14 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastAccessFacet, FastTokenFacet, FastFrontendFacet, Fast } from "../../typechain";
+import {
+  Issuer,
+  Marketplace,
+  FastAccessFacet,
+  FastTokenFacet,
+  FastFrontendFacet,
+  Fast,
+} from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -30,7 +37,8 @@ describe("FastAccessFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, alice, bob, rob, john] = await ethers.getSigners();
+    [deployer, issuerMember, governor, alice, bob, rob, john] =
+      await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
@@ -57,7 +65,10 @@ describe("FastAccessFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ fast, tokenMock, frontendMock } = args);
-          access = await ethers.getContractAt<FastAccessFacet>("FastAccessFacet", fast.address);
+          access = await ethers.getContractAt<FastAccessFacet>(
+            "FastAccessFacet",
+            fast.address
+          );
           governedAccess = access.connect(governor);
           issuerMemberAccess = access.connect(issuerMember);
         },
@@ -87,6 +98,7 @@ describe("FastAccessFacet", () => {
 
     describe("governorCount", async () => {
       beforeEach(async () => {
+        await governedAccess.addMember(alice.address);
         await issuerMemberAccess.addGovernor(alice.address);
       });
 
@@ -99,7 +111,16 @@ describe("FastAccessFacet", () => {
     describe("paginateGovernors", async () => {
       beforeEach(async () => {
         // Add 4 governors - so there is a total of 5.
-        await Promise.all([alice, bob, rob, john].map(async ({ address }) => issuerMemberAccess.addGovernor(address)));
+        await Promise.all(
+          [alice, bob, rob, john].map(async ({ address }) =>
+            governedAccess.addMember(address)
+          )
+        );
+        await Promise.all(
+          [alice, bob, rob, john].map(async ({ address }) =>
+            issuerMemberAccess.addGovernor(address)
+          )
+        );
       });
 
       it("returns the cursor to the next page", async () => {
@@ -117,11 +138,21 @@ describe("FastAccessFacet", () => {
       it("returns the governors in the order they were added", async () => {
         // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
         const [values] = await access.paginateGovernors(0, 5);
-        expect(values).to.be.ordered.members([governor.address, alice.address, bob.address, rob.address, john.address]);
+        expect(values).to.be.ordered.members([
+          governor.address,
+          alice.address,
+          bob.address,
+          rob.address,
+          john.address,
+        ]);
       });
     });
 
     describe("addGovernor", async () => {
+      beforeEach(async () => {
+        await governedAccess.addMember(alice.address);
+      });
+
       it("requires Issuer membership (anonymous)", async () => {
         const subject = access.addGovernor(alice.address);
         await expect(subject).to.be.revertedWith(`RequiresGovernorsManager`);
@@ -145,7 +176,10 @@ describe("FastAccessFacet", () => {
         await expect(subject).to.be.revertedWith(`RequiresValidGovernor`);
       });
 
-      it("requires that the address is already a member of the FAST");
+      it("requires that the address is a member of this FAST", async () => {
+        const subject = issuerMemberAccess.addGovernor(bob.address);
+        await expect(subject).to.be.revertedWith(`RequiresValidGovernor`);
+      });
 
       it("requires that the address is not a governor yet", async () => {
         await issuerMemberAccess.addGovernor(alice.address);
@@ -167,7 +201,9 @@ describe("FastAccessFacet", () => {
 
       it("emits a GovernorAdded event", async () => {
         const subject = await issuerMemberAccess.addGovernor(alice.address);
-        await expect(subject).to.emit(access, "GovernorAdded").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "GovernorAdded")
+          .withArgs(alice.address);
       });
 
       it("calls back onGovernorAdded");
@@ -176,6 +212,7 @@ describe("FastAccessFacet", () => {
     describe("removeGovernor", async () => {
       beforeEach(async () => {
         // We want alice to be a governor for these tests.
+        await governedAccess.addMember(alice.address);
         await issuerMemberAccess.addGovernor(alice.address);
       });
 
@@ -198,7 +235,9 @@ describe("FastAccessFacet", () => {
 
       it("requires that the address is an existing governor", async () => {
         const subject = issuerMemberAccess.removeGovernor(bob.address);
-        await expect(subject).to.be.revertedWith("Address does not exist in set");
+        await expect(subject).to.be.revertedWith(
+          "Address does not exist in set"
+        );
       });
 
       it("removes the given address as a governor", async () => {
@@ -215,7 +254,9 @@ describe("FastAccessFacet", () => {
 
       it("emits a GovernorRemoved event", async () => {
         const subject = await issuerMemberAccess.removeGovernor(alice.address);
-        await expect(subject).to.emit(access, "GovernorRemoved").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "GovernorRemoved")
+          .withArgs(alice.address);
       });
 
       it("calls back onGovernorRemoved");
@@ -256,13 +297,18 @@ describe("FastAccessFacet", () => {
 
       it("returns the current count of members", async () => {
         const subject = await access.memberCount();
-        expect(subject).to.eq(1);
+        expect(subject).to.eq(2);
       });
     });
 
     describe("paginateMembers", async () => {
       beforeEach(async () => {
-        await Promise.all([alice, bob, rob, john].map(async ({ address }) => governedAccess.addMember(address)));
+        await Promise.all(
+          // Remember - `governor` is already a member.
+          [alice, bob, rob, john].map(async ({ address }) =>
+            governedAccess.addMember(address)
+          )
+        );
       });
 
       it("returns the cursor to the next page", async () => {
@@ -274,13 +320,19 @@ describe("FastAccessFacet", () => {
       it("does not crash when overflowing and returns the correct cursor", async () => {
         // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
         const [, /*members*/ cursor] = await access.paginateMembers(1, 10);
-        expect(cursor).to.eq(4);
+        expect(cursor).to.eq(5);
       });
 
       it("returns the members in the order they were added", async () => {
         // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
         const [values] = await access.paginateMembers(0, 5);
-        expect(values).to.be.ordered.members([alice.address, bob.address, rob.address, john.address]);
+        expect(values).to.be.ordered.members([
+          governor.address,
+          alice.address,
+          bob.address,
+          rob.address,
+          john.address,
+        ]);
       });
     });
 
@@ -316,7 +368,9 @@ describe("FastAccessFacet", () => {
       it("delegates to the Marketplace contract to signal the membership addition", async () => {
         marketplace.memberAddedToFast.reset();
         await governedAccess.addMember(alice.address);
-        expect(marketplace.memberAddedToFast).to.be.calledOnceWith(alice.address);
+        expect(marketplace.memberAddedToFast).to.be.calledOnceWith(
+          alice.address
+        );
       });
 
       it("calls FastFrontendFacet.emitDetailsChanged", async () => {
@@ -327,7 +381,9 @@ describe("FastAccessFacet", () => {
 
       it("emits a MemberAdded event", async () => {
         const subject = await governedAccess.addMember(alice.address);
-        await expect(subject).to.emit(access, "MemberAdded").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "MemberAdded")
+          .withArgs(alice.address);
       });
 
       it("calls back onMemberAdded");
@@ -351,7 +407,9 @@ describe("FastAccessFacet", () => {
 
       it("requires that the address is an existing member", async () => {
         const subject = governedAccess.removeMember(bob.address);
-        await expect(subject).to.be.revertedWith("Address does not exist in set");
+        await expect(subject).to.be.revertedWith(
+          "Address does not exist in set"
+        );
       });
 
       it("removes the given address as a member", async () => {
@@ -363,13 +421,17 @@ describe("FastAccessFacet", () => {
       it("delegates to the token contract", async () => {
         tokenMock.beforeRemovingMember.reset();
         await governedAccess.removeMember(alice.address);
-        expect(tokenMock.beforeRemovingMember).to.be.calledOnceWith(alice.address).delegatedFrom(fast.address);
+        expect(tokenMock.beforeRemovingMember)
+          .to.be.calledOnceWith(alice.address)
+          .delegatedFrom(fast.address);
       });
 
       it("delegates to the Marketplace contract to signal the membership addition", async () => {
         marketplace.memberRemovedFromFast.reset();
         await governedAccess.removeMember(alice.address);
-        expect(marketplace.memberRemovedFromFast).to.be.calledOnceWith(alice.address);
+        expect(marketplace.memberRemovedFromFast).to.be.calledOnceWith(
+          alice.address
+        );
       });
 
       it("calls FastFrontendFacet.emitDetailsChanged", async () => {
@@ -380,7 +442,9 @@ describe("FastAccessFacet", () => {
 
       it("emits a MemberRemoved event", async () => {
         const subject = await governedAccess.removeMember(alice.address);
-        await expect(subject).to.emit(access, "MemberRemoved").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "MemberRemoved")
+          .withArgs(alice.address);
       });
 
       it("calls back onMemberRemoved");
@@ -399,18 +463,11 @@ describe("FastAccessFacet", () => {
 
   describe("flags", async () => {
     it("is accurate when all flags set", async () => {
-      await issuerMemberAccess.addGovernor(alice.address);
       await governedAccess.addMember(alice.address);
+      await issuerMemberAccess.addGovernor(alice.address);
       const { isGovernor, isMember } = await access.flags(alice.address);
       expect(isGovernor).to.eq(true);
       expect(isMember).to.eq(true);
-    });
-
-    it("is accurate when only isGovernor is set", async () => {
-      await issuerMemberAccess.addGovernor(alice.address);
-      const { isGovernor, isMember } = await access.flags(alice.address);
-      expect(isGovernor).to.eq(true);
-      expect(isMember).to.eq(false);
     });
 
     it("is accurate when only isMember is set", async () => {

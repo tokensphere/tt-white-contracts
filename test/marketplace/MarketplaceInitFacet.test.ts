@@ -4,7 +4,12 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, MarketplaceTopFacet, Marketplace, MarketplaceInitFacet } from "../../typechain";
+import {
+  Issuer,
+  MarketplaceTopFacet,
+  Marketplace,
+  MarketplaceInitFacet,
+} from "../../typechain";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 import { BigNumber } from "ethers";
 import { impersonateContract } from "../utils";
@@ -14,9 +19,13 @@ chai.use(smock.matchers);
 
 describe("MarketplaceInitFacet", () => {
   let deployer: SignerWithAddress;
-  let issuer: FakeContract<Issuer>, marketplace: Marketplace, top: MarketplaceTopFacet;
+  let issuer: FakeContract<Issuer>,
+    marketplace: Marketplace,
+    top: MarketplaceTopFacet;
 
-  const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
+  const marketplaceDeployFixture = deployments.createFixture(
+    marketplaceFixtureFunc
+  );
 
   before(async () => {
     // Keep track of a few signers.
@@ -32,7 +41,10 @@ describe("MarketplaceInitFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ marketplace } = args);
-          top = await ethers.getContractAt<MarketplaceTopFacet>("MarketplaceTopFacet", marketplace.address);
+          top = await ethers.getContractAt<MarketplaceTopFacet>(
+            "MarketplaceTopFacet",
+            marketplace.address
+          );
         },
       },
       initWith: {
@@ -46,9 +58,12 @@ describe("MarketplaceInitFacet", () => {
       // Attempt to re-initialize.
       const marketplaceInit = await ethers.getContractAt<MarketplaceInitFacet>(
         "MarketplaceInitFacet",
-        marketplace.address,
+        marketplace.address
       );
-      const marketplaceInitAsItself = await impersonateContract(marketplaceInit, DEPLOYER_FACTORY_COMMON.factory);
+      const marketplaceInitAsItself = await impersonateContract(
+        marketplaceInit,
+        DEPLOYER_FACTORY_COMMON.factory
+      );
       const subject = marketplaceInitAsItself.initialize({
         issuer: issuer.address,
       });
@@ -58,8 +73,15 @@ describe("MarketplaceInitFacet", () => {
 
     it("set various storage versions", async () => {
       // Query the slot and parse out the STORAGE_VERSION.
-      const slot = ethers.utils.solidityKeccak256(["string"], ["Marketplace.storage"]);
-      const data = await ethers.provider.send("eth_getStorageAt", [marketplace.address, slot, "latest"]);
+      const slot = ethers.utils.solidityKeccak256(
+        ["string"],
+        ["Marketplace.storage"]
+      );
+      const data = await ethers.provider.send("eth_getStorageAt", [
+        marketplace.address,
+        slot,
+        "latest",
+      ]);
       // Slice out the final 2 bytes to get the version.
       const subject = ethers.utils.hexDataSlice(data, 30, 32);
 

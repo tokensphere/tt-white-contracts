@@ -4,7 +4,12 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Fast, MarketplaceAccessFacet, Marketplace } from "../../typechain";
+import {
+  Issuer,
+  Fast,
+  MarketplaceAccessFacet,
+  Marketplace,
+} from "../../typechain";
 import { one, impersonateContract } from "../utils";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 import { toUnpaddedHexString } from "../../src/utils";
@@ -27,7 +32,9 @@ describe("MarketplaceAccessFacet", () => {
     access: MarketplaceAccessFacet,
     issuerMemberAccess: MarketplaceAccessFacet;
 
-  const marketplaceDeployFixture = deployments.createFixture(marketplaceFixtureFunc);
+  const marketplaceDeployFixture = deployments.createFixture(
+    marketplaceFixtureFunc
+  );
 
   const resetIssuerMock = () => {
     issuer.isMember.reset();
@@ -56,7 +63,10 @@ describe("MarketplaceAccessFacet", () => {
         deployer: deployer.address,
         afterDeploy: async (args) => {
           ({ marketplace } = args);
-          access = await ethers.getContractAt<MarketplaceAccessFacet>("MarketplaceAccessFacet", marketplace.address);
+          access = await ethers.getContractAt<MarketplaceAccessFacet>(
+            "MarketplaceAccessFacet",
+            marketplace.address
+          );
           issuerMemberAccess = access.connect(issuerMember);
         },
       },
@@ -121,7 +131,12 @@ describe("MarketplaceAccessFacet", () => {
       it("returns the governors in the order they were added", async () => {
         // We're testing the pagination library here... Not too good. But hey, we're in a rush.
         const [values] = await marketplace.paginateMembers(0, 5);
-        expect(values).to.be.ordered.members([alice.address, bob.address, rob.address, john.address]);
+        expect(values).to.be.ordered.members([
+          alice.address,
+          bob.address,
+          rob.address,
+          john.address,
+        ]);
       });
     });
 
@@ -150,7 +165,9 @@ describe("MarketplaceAccessFacet", () => {
 
       it("emits a MemberAdded event", async () => {
         const subject = issuerMemberAccess.addMember(alice.address);
-        await expect(subject).to.emit(access, "MemberAdded").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "MemberAdded")
+          .withArgs(alice.address);
       });
 
       it("calls back onMemberAdded");
@@ -175,12 +192,19 @@ describe("MarketplaceAccessFacet", () => {
 
       it("requires that the address is an existing member - calls LibAddressSet", async () => {
         const subject = issuerMemberAccess.removeMember(bob.address);
-        await expect(subject).to.be.revertedWith("Address does not exist in set");
+        await expect(subject).to.be.revertedWith(
+          "Address does not exist in set"
+        );
       });
 
       it("requires that the given member has no FAST memberships", async () => {
-        await ethers.provider.send("hardhat_setBalance", [fast.address, toUnpaddedHexString(one)]);
-        await marketplace.connect(await ethers.getSigner(fast.address)).memberAddedToFast(alice.address);
+        await ethers.provider.send("hardhat_setBalance", [
+          fast.address,
+          toUnpaddedHexString(one),
+        ]);
+        await marketplace
+          .connect(await ethers.getSigner(fast.address))
+          .memberAddedToFast(alice.address);
 
         const subject = issuerMemberAccess.removeMember(alice.address);
         await expect(subject).to.be.revertedWith(`RequiresNoFastMemberships`);
@@ -194,7 +218,9 @@ describe("MarketplaceAccessFacet", () => {
 
       it("emits a MemberRemoved event", async () => {
         const subject = issuerMemberAccess.removeMember(alice.address);
-        await expect(subject).to.emit(access, "MemberRemoved").withArgs(alice.address);
+        await expect(subject)
+          .to.emit(access, "MemberRemoved")
+          .withArgs(alice.address);
       });
 
       it("calls back onMemberRemoved");
@@ -216,20 +242,31 @@ describe("MarketplaceAccessFacet", () => {
       issuer.isFastRegistered.whenCalledWith(fast.address).returns(true);
 
       // Add calling FAST to the list of FASTs a member belongs to.
-      const marketplaceAsFast = await impersonateContract(marketplace, fast.address);
+      const marketplaceAsFast = await impersonateContract(
+        marketplace,
+        fast.address
+      );
       await marketplaceAsFast.memberAddedToFast(alice.address);
     });
 
     it("returns an array of FASTs a given user belongs to along with a cursor", async () => {
       // Check which FASTs Alice belongs to, expect membership of 1 FAST.
-      const [[memberFast], nextCursor] = await marketplace.fastMemberships(alice.address, 0, 10);
+      const [[memberFast], nextCursor] = await marketplace.fastMemberships(
+        alice.address,
+        0,
+        10
+      );
       expect(memberFast).to.be.eq(fast.address);
       expect(nextCursor).to.be.eq(1);
     });
 
     it("does not return FASTs the given user does not belong to", async () => {
       // Check fast memberships for Bob, expect there to be none.
-      const [fastMemberships, nextCursor] = await marketplace.fastMemberships(bob.address, 0, 10);
+      const [fastMemberships, nextCursor] = await marketplace.fastMemberships(
+        bob.address,
+        0,
+        10
+      );
       expect(fastMemberships).to.be.empty;
       expect(nextCursor).to.be.eq(0);
     });
@@ -238,7 +275,9 @@ describe("MarketplaceAccessFacet", () => {
   describe("memberAddedToFast", async () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = marketplace.memberAddedToFast(alice.address);
-      await expect(subject).to.have.been.revertedWith("RequiresFastContractCaller");
+      await expect(subject).to.have.been.revertedWith(
+        "RequiresFastContractCaller"
+      );
     });
 
     it("adds the given member to the FAST membership tracking data structure", async () => {
@@ -247,11 +286,18 @@ describe("MarketplaceAccessFacet", () => {
       issuer.isFastRegistered.whenCalledWith(fast.address).returns(true);
 
       // Call memberAddedToFast on the Marketplace contract, as the FAST contract.
-      const marketplaceAsFast = await impersonateContract(marketplace, fast.address);
+      const marketplaceAsFast = await impersonateContract(
+        marketplace,
+        fast.address
+      );
       await marketplaceAsFast.memberAddedToFast(alice.address);
 
       // Expecting the FAST address to be included in FASTs Alice belongs to.
-      const [[member]] = await marketplace.fastMemberships(alice.address, 0, 10);
+      const [[member]] = await marketplace.fastMemberships(
+        alice.address,
+        0,
+        10
+      );
       expect(member).to.be.eq(fast.address);
     });
   });
@@ -259,7 +305,9 @@ describe("MarketplaceAccessFacet", () => {
   describe("memberRemovedFromFast", async () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = marketplace.memberRemovedFromFast(alice.address);
-      await expect(subject).to.have.been.revertedWith("RequiresFastContractCaller");
+      await expect(subject).to.have.been.revertedWith(
+        "RequiresFastContractCaller"
+      );
     });
 
     it("removes the FAST contract from the list of Fast members", async () => {
@@ -267,14 +315,18 @@ describe("MarketplaceAccessFacet", () => {
       issuer.isFastRegistered.reset();
       issuer.isFastRegistered.whenCalledWith(fast.address).returns(true);
 
-      const marketplaceAsFast = await impersonateContract(marketplace, fast.address);
+      const marketplaceAsFast = await impersonateContract(
+        marketplace,
+        fast.address
+      );
 
       // Add, then remove Alice.
       await marketplaceAsFast.memberAddedToFast(alice.address);
       await marketplaceAsFast.memberRemovedFromFast(alice.address);
 
       // Expecting the FAST address to no longer be included in FASTs Alice belongs to.
-      const [fastMemberships /* nextCursor */] = await marketplace.fastMemberships(alice.address, 0, 10);
+      const [fastMemberships /* nextCursor */] =
+        await marketplace.fastMemberships(alice.address, 0, 10);
       expect(fastMemberships).to.be.empty;
     });
   });
@@ -320,7 +372,9 @@ describe("MarketplaceAccessFacet", () => {
 
     it("emits a MemberDeactivated event", async () => {
       const subject = issuerMemberAccess.deactivateMember(alice.address);
-      expect(subject).to.emit(access, "MemberDeactivated").withArgs(alice.address);
+      expect(subject)
+        .to.emit(access, "MemberDeactivated")
+        .withArgs(alice.address);
     });
 
     it("requires that a given member is not already deactivated", async () => {
@@ -329,7 +383,9 @@ describe("MarketplaceAccessFacet", () => {
 
       // Attempt to re-deactivate Alice.
       const subject = issuerMemberAccess.deactivateMember(alice.address);
-      await expect(subject).to.be.revertedWith(`RequiresMarketplaceActiveMembership`);
+      await expect(subject).to.be.revertedWith(
+        `RequiresMarketplaceActiveMembership`
+      );
     });
   });
 
@@ -359,7 +415,9 @@ describe("MarketplaceAccessFacet", () => {
 
     it("emits a MemberActivated event", async () => {
       const subject = issuerMemberAccess.activateMember(alice.address);
-      expect(subject).to.emit(access, "MemberActivated").withArgs(alice.address);
+      expect(subject)
+        .to.emit(access, "MemberActivated")
+        .withArgs(alice.address);
     });
 
     it("requires that a given member is currently deactivated", async () => {
@@ -367,7 +425,9 @@ describe("MarketplaceAccessFacet", () => {
       await issuerMemberAccess.addMember(bob.address);
       // Attempt to activate an already active member.
       const subject = issuerMemberAccess.activateMember(bob.address);
-      await expect(subject).to.be.revertedWith(`RequiresMarketplaceDeactivatedMember`);
+      await expect(subject).to.be.revertedWith(
+        `RequiresMarketplaceDeactivatedMember`
+      );
     });
   });
 });

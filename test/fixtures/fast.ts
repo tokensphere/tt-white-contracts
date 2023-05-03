@@ -59,7 +59,10 @@ interface FastFixtureFuncArgs {
   readonly opts: FastFixtureOpts;
 }
 
-export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs> = async (hre, opts) => {
+export const fastFixtureFunc: FixtureFunc<
+  FastFixtureResult,
+  FastFixtureFuncArgs
+> = async (hre, opts) => {
   // opts could be `undefined`.
   if (!opts) throw Error("You must provide FAST fixture options.");
   const {
@@ -85,13 +88,31 @@ export const fastFixtureFunc: FixtureFunc<FastFixtureResult, FastFixtureFuncArgs
   const result: FastFixtureResult = {
     fast,
     topMock: await facetMock<FastTopFacet__factory>(fast, "FastTopFacet"),
-    accessMock: await facetMock<FastAccessFacet__factory>(fast, "FastAccessFacet"),
+    accessMock: await facetMock<FastAccessFacet__factory>(
+      fast,
+      "FastAccessFacet"
+    ),
     tokenMock: await facetMock<FastTokenFacet__factory>(fast, "FastTokenFacet"),
-    historyMock: await facetMock<FastHistoryFacet__factory>(fast, "FastHistoryFacet"),
-    frontendMock: await facetMock<FastFrontendFacet__factory>(fast, "FastFrontendFacet"),
-    automatonsMock: await facetMock<FastAutomatonsFacet__factory>(fast, "FastAutomatonsFacet"),
-    distributionsMock: await facetMock<FastDistributionsFacet__factory>(fast, "FastDistributionsFacet"),
-    crowdfundsMock: await facetMock<FastCrowdfundsFacet__factory>(fast, "FastCrowdfundsFacet"),
+    historyMock: await facetMock<FastHistoryFacet__factory>(
+      fast,
+      "FastHistoryFacet"
+    ),
+    frontendMock: await facetMock<FastFrontendFacet__factory>(
+      fast,
+      "FastFrontendFacet"
+    ),
+    automatonsMock: await facetMock<FastAutomatonsFacet__factory>(
+      fast,
+      "FastAutomatonsFacet"
+    ),
+    distributionsMock: await facetMock<FastDistributionsFacet__factory>(
+      fast,
+      "FastDistributionsFacet"
+    ),
+    crowdfundsMock: await facetMock<FastCrowdfundsFacet__factory>(
+      fast,
+      "FastCrowdfundsFacet"
+    ),
   };
   // Callback!
   await afterDeploy.apply(this, [result]);

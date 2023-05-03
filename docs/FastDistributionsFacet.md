@@ -23,7 +23,7 @@ Happens when there are insufficient funds somewhere.
 ### createDistribution
 
 ```solidity
-function createDistribution(contract IERC20 token, uint256 total, uint256 blockLatch) external
+function createDistribution(contract IERC20 token, uint256 total, uint256 blockLatch, string ref) external
 ```
 
 Creates a distribution contract.
@@ -35,6 +35,13 @@ Creates a distribution contract.
 | token | contract IERC20 | is the address of the ERC20 token that should be distributed. |
 | total | uint256 | is the amount of ERC20 tokens to distribute. |
 | blockLatch | uint256 | is the block to consider the historical point of truth to calculate the proceeds. |
+| ref | string |  |
+
+### removeDistribution
+
+```solidity
+function removeDistribution(contract Distribution distribution) public
+```
 
 ### distributionCount
 
