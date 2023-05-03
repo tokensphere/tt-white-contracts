@@ -18,6 +18,7 @@ export const ten = ethers.utils.parseEther("10.0");
 export const nine = ethers.utils.parseEther("9.0");
 export const ninety = ethers.utils.parseEther("90.0");
 export const oneHundred = ethers.utils.parseEther("100.0");
+export const oneMillion = ethers.utils.parseEther("1000000.0");
 
 export const DEFAULT_TRANSFER_REFERENCE = "Unspecified - via ERC20";
 export const UNDERFLOWED_OR_OVERFLOWED = "panic code 0x11";

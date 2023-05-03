@@ -3,7 +3,6 @@ import { ContractTransaction } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
 import {
-  deploymentSalt,
   toUnpaddedHexString,
   ZERO_ADDRESS,
 } from "../../src/utils";
