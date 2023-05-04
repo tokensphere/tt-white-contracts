@@ -4,11 +4,11 @@ import fs from "fs";
 // Tasks.
 
 task("update-facets", "Updates facets of all deployed contracts").setAction(
-  async (params: {}, hre) => {
+  async (_, hre) => {
     const { run } = hre;
     // Update issuer and marketplace facets.
-    await run("issuer-update-facets");
-    await run("marketplace-update-facets");
+    // await run("issuer-update-facets");
+    // await run("marketplace-update-facets");
 
     // Iterate over all deployment artifacts for the current network.
     const fastFilenames = fs
