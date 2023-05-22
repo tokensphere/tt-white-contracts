@@ -83,4 +83,8 @@ describe("IssuerFrontendFacet", () => {
       expect(nextCursor).to.eq(3);
     });
   });
+
+  describe("paginateDetailedFastsInGroup", async () => {
+    it("MUST BE TESTED");
+  });
 });
