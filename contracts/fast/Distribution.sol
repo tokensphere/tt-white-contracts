@@ -226,7 +226,7 @@ contract Distribution {
    * call this method.
    * @param _beneficiaries is the list of addresses to remove.
    */
-  function removeBeneficiaries(address[] memory _beneficiaries)
+  function removeBeneficiaries(address[] calldata _beneficiaries)
       external onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Remove all specified beneficiaries.
     for (uint256 i = 0; i < _beneficiaries.length;) {
