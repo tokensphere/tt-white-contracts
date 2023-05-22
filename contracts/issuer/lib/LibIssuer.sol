@@ -17,8 +17,10 @@ library LibIssuer {
     uint16 version;
     // This is where we keep our list of deployed fast FASTs.
     LibAddressSet.Data fastSet;
-    // We keep track of the FAST symbols that were already used.
+    // We keep track of the FAST symbols that were already used - string to FAST address.
     mapping(string => address) fastSymbols;
+    // We also keep track of the FAST groups here - slug to FAST address set.
+    mapping(string => LibAddressSet.Data) fastGroups;
   }
 
   function data()

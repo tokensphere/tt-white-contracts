@@ -118,4 +118,33 @@ contract IssuerTopFacet is AIssuerFacet {
       onlyMember(msg.sender) {
     require(token.transfer(to, amount));
   }
+
+  function setFastGroup(address fast, string calldata newGroup)
+      external onlyMember(msg.sender) {
+    string memory oldGroup = FastTopFacet(fast).group();
+    // Remove FAST from old group.
+    if (bytes(oldGroup).length > 0)
+      LibIssuer.data().fastGroups[oldGroup].remove(fast, false);
+    // Add FAST to new group.
+    if (bytes(newGroup).length > 0)
+      LibIssuer.data().fastGroups[newGroup].add(fast, false);
+    // Set group name at FAST level.
+    FastTopFacet(fast).setGroup(newGroup);
+    // Emit!
+    emit FastGroupChanged(fast, oldGroup, newGroup);
+  }
+
+  /**
+   * @notice Paginates the FAST diamonds registered with this Issuer based on a group, starting cursor and a number of records per page.
+   * @param group The group to paginate.
+   * @param cursor The index at which to start.
+   * @param perPage How many records should be returned at most.
+   * @return A `address[]` list of values at most `perPage` big.
+   * @return A `uint256` index to the next page.
+   */
+  function paginateFastsInGroup(string calldata group, uint256 cursor, uint256 perPage)
+      external view
+      returns(address[] memory, uint256) {
+    return LibPaginate.addresses(LibIssuer.data().fastGroups[group].values, cursor, perPage);
+  }
 }

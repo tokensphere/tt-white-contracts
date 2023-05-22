@@ -59,6 +59,13 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
+  /// @notice Ensures that a method can only be called by the issuer contract.
+  modifier onlyIssuerContract() {
+    if (msg.sender != LibFast.data().issuer)
+      revert ICustomErrors.InternalMethod();
+    _;
+  }
+
   /**
    * @notice Ensures that the given address is a member of the Marketplace.
    * @param who The address to check.

@@ -6,7 +6,7 @@ pragma solidity 0.8.10;
 // They also should never be emitted directly, they only help us defining
 // typescript types!
 interface IIssuerEvents {
-  // Fast registration events.
+  /// FAST registration events.
 
   /**
    * @notice Emited when a new FAST is registered.
@@ -19,7 +19,11 @@ interface IIssuerEvents {
    */
   event FastUnregistered(address indexed fast);
 
-  // Governors.
+  /// FAST groupping events.
+
+  event FastGroupChanged(address indexed fast, string indexed oldGroup, string indexed newGroup);
+
+  /// Governors.
 
   event GovernorshipRemoved(address indexed fast, address indexed governor);
   event GovernorshipAdded(address indexed fast, address indexed governor);
