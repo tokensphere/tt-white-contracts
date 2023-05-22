@@ -155,10 +155,6 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("transferERC20Tokens", async () => {
-      it("MUST BE TESTED");
-    });
-
     describe("paginateFasts", async () => {
       it("returns pages of FASTs", async () => {
         // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
@@ -166,6 +162,17 @@ describe("IssuerTopFacet", () => {
         expect(a1).to.eq(f01.address);
         expect(a2).to.eq(f02.address);
       });
+    });
+
+    describe("transferERC20Tokens", async () => {
+      it("MUST BE TESTED");
+    });
+
+    describe("setFastGroup", async () => {
+      it("removes the FAST from the old group");
+      it("adds the FAST to the new group");
+      it("delegates to the FAST setGroup method");
+      it("emits a FastGroupChanged event with the correct parameters");
     });
   });
 });

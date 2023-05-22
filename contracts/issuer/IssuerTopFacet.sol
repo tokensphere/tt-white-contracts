@@ -119,6 +119,11 @@ contract IssuerTopFacet is AIssuerFacet {
     require(token.transfer(to, amount));
   }
 
+  /**
+   * @notice Allows to assign FASTs to groups.
+   * @param fast The FAST address to assign.
+   * @param newGroup The name of the group in which the FAST should be placed.
+   */
   function setFastGroup(address fast, string calldata newGroup)
       external onlyMember(msg.sender) {
     string memory oldGroup = FastTopFacet(fast).group();
