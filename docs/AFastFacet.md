@@ -49,6 +49,14 @@ modifier onlyDeployer()
 
 Ensures that a method can only be called by the singleton deployer contract factory.
 
+### onlyIssuerContract
+
+```solidity
+modifier onlyIssuerContract()
+```
+
+Ensures that a method can only be called by the issuer contract.
+
 ### onlyMarketplaceMember
 
 ```solidity

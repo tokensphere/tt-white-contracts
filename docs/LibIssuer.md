@@ -21,6 +21,7 @@ struct Data {
   uint16 version;
   struct LibAddressSet.Data fastSet;
   mapping(string => address) fastSymbols;
+  mapping(string => struct LibAddressSet.Data) fastGroups;
 }
 ```
 

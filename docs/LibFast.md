@@ -34,6 +34,7 @@ struct Data {
   bool hasFixedSupply;
   bool isSemiPublic;
   bool transfersDisabled;
+  string group;
 }
 ```
 

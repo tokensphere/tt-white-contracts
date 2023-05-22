@@ -30,11 +30,21 @@ Emited when a FAST is removed from the Issuer contract.
 | ---- | ---- | ----------- |
 | fast | address | The address of the unregistered FAST. |
 
+### FastGroupChanged
+
+```solidity
+event FastGroupChanged(address fast, string oldGroup, string newGroup)
+```
+
+FAST groupping events.
+
 ### GovernorshipRemoved
 
 ```solidity
 event GovernorshipRemoved(address fast, address governor)
 ```
+
+Governors.
 
 ### GovernorshipAdded
 

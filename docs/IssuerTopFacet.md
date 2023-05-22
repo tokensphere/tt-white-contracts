@@ -127,3 +127,41 @@ to an arbitrary address.
 | amount | uint256 | is how much should be moved from the ERC20 to the collection address. |
 | to | address | is the collection address - eg the address that will receive the ERC20 tokens. |
 
+### setFastGroup
+
+```solidity
+function setFastGroup(address fast, string newGroup) external
+```
+
+Allows to assign FASTs to groups.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| fast | address | The FAST address to assign. |
+| newGroup | string | The name of the group in which the FAST should be placed. |
+
+### paginateFastsInGroup
+
+```solidity
+function paginateFastsInGroup(string group, uint256 cursor, uint256 perPage) external view returns (address[], uint256)
+```
+
+Paginates the FAST diamonds registered with this Issuer based on a group, starting cursor and a number of records per page.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| group | string | The group to paginate. |
+| cursor | uint256 | The index at which to start. |
+| perPage | uint256 | How many records should be returned at most. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | address[] | A `address[]` list of values at most `perPage` big. |
+| [1] | uint256 | A `uint256` index to the next page. |
+

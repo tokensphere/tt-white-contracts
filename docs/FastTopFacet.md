@@ -14,7 +14,7 @@ Get the Issuer address.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | address | Address of Issuer. |
+| [0] | address | address Address of Issuer. |
 
 ### marketplaceAddress
 
@@ -70,7 +70,7 @@ Are transfers enabled across this FAST?
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | bool | `true` if transfers are disabled, `false` if transfers are enabled. |
+| [0] | bool | boolean `true` if transfers are disabled, `false` if transfers are enabled. |
 
 ### setIsSemiPublic
 
@@ -100,4 +100,33 @@ Allows an issuer member to enable or disable all transfers within this FAST.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | flag | bool | Set the transfer capability to active or not. |
+
+### group
+
+```solidity
+function group() external view returns (string)
+```
+
+Retrieves the group slug to which this FAST belongs.
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | string | string The group slug string. |
+
+### setGroup
+
+```solidity
+function setGroup(string newGroup) external
+```
+
+Assigns the FAST into a group given its slug.
+It should only be callable by the Issuer contract.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| newGroup | string | is the slug for the new group for this FAST. |
 
