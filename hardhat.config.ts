@@ -42,6 +42,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "EthReceived(address,uint256)"],
         ["Facet$", "FastRegistered(address)"],
         ["Facet$", "FastUnregistered(address)"],
+        ["Facet$", "FastGroupChanged(address,string,string)"],
         ["Facet$", "GovernorshipAdded(address,address)"],
         ["Facet$", "GovernorshipRemoved(address,address)"],
         // Error types.

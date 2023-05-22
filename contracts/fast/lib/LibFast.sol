@@ -33,6 +33,8 @@ library LibFast {
     bool isSemiPublic;
     /// @notice A flag which when toggled to `true` disables all transfers across this FAST.
     bool transfersDisabled;
+    /// @notice To which FAST group this FAST belongs to, if any.
+    string group;
   }
 
   /**

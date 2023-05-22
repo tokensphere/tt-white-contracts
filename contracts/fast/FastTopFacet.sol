@@ -92,4 +92,15 @@ contract FastTopFacet is AFastFacet {
       FastFrontendFacet(address(this)).emitDetailsChanged();
     }
   }
+
+  function group()
+      external view returns(string memory) {
+    return LibFast.data().group;
+  }
+
+  function setGroup(string calldata newGroup)
+      external onlyIssuerContract {
+    // Set group slug.
+    LibFast.data().group = newGroup;
+  }
 }
