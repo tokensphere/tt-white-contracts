@@ -14,7 +14,7 @@ contract FastTopFacet is AFastFacet {
 
   /**
    * @notice Get the Issuer address.
-   * @return Address of Issuer.
+   * @return address Address of Issuer.
    */
   function issuerAddress()
       external view returns(address) {
@@ -50,7 +50,7 @@ contract FastTopFacet is AFastFacet {
 
   /**
    * @notice Are transfers enabled across this FAST?
-   * @return `true` if transfers are disabled, `false` if transfers are enabled.
+   * @return boolean `true` if transfers are disabled, `false` if transfers are enabled.
    */
   function transfersDisabled()
       external view returns(bool) {
@@ -93,11 +93,20 @@ contract FastTopFacet is AFastFacet {
     }
   }
 
+  /**
+   * @notice Retrieves the group slug to which this FAST belongs.
+   * @return string The group slug string.
+   */
   function group()
       external view returns(string memory) {
     return LibFast.data().group;
   }
 
+  /**
+   * @notice Assigns the FAST into a group given its slug.
+   * It should only be callable by the Issuer contract.
+   * @param newGroup is the slug for the new group for this FAST.
+   */
   function setGroup(string calldata newGroup)
       external onlyIssuerContract {
     // Set group slug.

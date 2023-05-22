@@ -177,4 +177,13 @@ describe("FastTopFacet", () => {
       expect(subject).to.be.true;
     });
   });
+
+  describe("group", async () => {
+    it("returns the group slug to which this FAST belongs");
+  });
+
+  describe("setGroup", async () => {
+    it("requires the caller to be the Issuer contract");
+    it("sets the group slug to which this FAST belongs");
+  });
 });
