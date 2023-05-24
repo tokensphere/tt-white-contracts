@@ -86,7 +86,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    * @notice Given a member returns it's activation status.
    * @param candidate The address to check activation status on.
    */
-  function isActiveMember(address candidate) external override(IHasActiveMembers) view returns(bool) {
+  function isActiveMember(address candidate)
+      external override(IHasActiveMembers) view returns(bool) {
     return AHasMembers(address(this)).isMember(candidate) &&
            !LibMarketplaceAccess.data().deactivatedMemberSet.contains(candidate);
   }
@@ -111,7 +112,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    * @notice Deactivates a member at the Marketplace level.
    * @param member The member to add to the deactivation member set.
    */
-  function deactivateMember(address payable member)
+  function deactivateMember(address member)
     external override(IHasActiveMembers)
     onlyIssuerMember onlyMember(member) {
     // Guard against attempting to deactivate an already deactivated member.
