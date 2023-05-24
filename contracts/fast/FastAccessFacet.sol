@@ -45,11 +45,14 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
 
   function isValidGovernor(address who)
       internal view override(AHasGovernors) returns(bool) {
-    return _isMarketplaceMember(who) && AHasMembers(address(this)).isMember(who);
+    return _isMarketplaceMember(who);
   }
 
   function onGovernorAdded(address governor)
       internal override(AHasGovernors) {
+    // If the governor isn't a FAST member yet, add them.
+    if (!AHasMembers(this).isMember(governor))
+      AHasMembers(this).addMember(governor);
     // Notify issuer that this governor was added to this FAST.
     IssuerAccessFacet(LibFast.data().issuer).governorAddedToFast(governor);
     // Emit!
@@ -69,7 +72,11 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
   function isMembersManager(address who)
       internal view override(AHasMembers) returns(bool) {
     return
+      // The current contract should be able to manage its own members.
+      address(this) == who ||
+      // Governors can manage members.
       AHasGovernors(this).isGovernor(who) ||
+      // Automatons with the correct privilege can manage members.
       AHasAutomatons(address(this)).automatonCan(who, FAST_PRIVILEGE_MANAGE_MEMBERS);
   }
 
