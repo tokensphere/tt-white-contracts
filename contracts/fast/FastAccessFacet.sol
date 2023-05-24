@@ -107,7 +107,7 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
       external view returns(Flags memory) {
     return Flags({
         isGovernor: AHasGovernors(address(this)).isGovernor(a),
-        isMember: AHasMembers(address(this)).isMember(a)
+        isMember: AHasMembers(this).isMember(a)
       });
   }
 }

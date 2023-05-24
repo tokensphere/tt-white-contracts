@@ -105,7 +105,7 @@ abstract contract AHasMembers {
    * @param who is the address to be added.
    */
   function addMember(address who)
-      external 
+      external
       onlyMemberManager(msg.sender) onlyValidMember(who) {
     // Add the member.
     LibHasMembers.data().memberSet.add(who, false);

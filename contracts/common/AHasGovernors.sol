@@ -105,7 +105,7 @@ abstract contract AHasGovernors {
    * @param who is the address to be added.
    */
   function addGovernor(address who)
-      external 
+      external
       onlyGovernorManager(msg.sender) onlyValidGovernor(who) {
     // Add the governor.
     LibHasGovernors.data().governorSet.add(who, false);

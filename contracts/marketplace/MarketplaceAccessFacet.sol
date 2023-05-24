@@ -88,7 +88,7 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    */
   function isActiveMember(address candidate)
       external override(IHasActiveMembers) view returns(bool) {
-    return AHasMembers(address(this)).isMember(candidate) &&
+    return AHasMembers(this).isMember(candidate) &&
            !LibMarketplaceAccess.data().deactivatedMemberSet.contains(candidate);
   }
 
