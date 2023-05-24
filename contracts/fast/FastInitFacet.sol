@@ -42,7 +42,7 @@ contract FastInitFacet is AFastFacet {
     address issuer;
     address marketplace;
     // Access stuff.
-    address payable governor;
+    address governor;
     // Token stuff.
     string name;
     string symbol;
