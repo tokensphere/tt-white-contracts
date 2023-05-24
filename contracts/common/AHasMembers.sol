@@ -104,7 +104,7 @@ abstract contract AHasMembers {
    * @notice Adds a member to the list of known members.
    * @param who is the address to be added.
    */
-  function addMember(address payable who)
+  function addMember(address who)
       external 
       onlyMemberManager(msg.sender) onlyValidMember(who) {
     // Add the member.

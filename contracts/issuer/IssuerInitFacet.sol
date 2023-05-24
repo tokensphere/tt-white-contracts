@@ -32,7 +32,7 @@ contract IssuerInitFacet is AIssuerFacet {
   /// Initializers.
 
   struct InitializerParams {
-    address payable member;
+    address member;
   }
 
   function initialize(InitializerParams calldata params)

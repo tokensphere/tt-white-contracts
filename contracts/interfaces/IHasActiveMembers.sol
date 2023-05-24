@@ -15,7 +15,7 @@ interface IHasActiveMembers {
    * @notice Deactivates a given member address.
    * @param member is the address to deactivate.
    */
-  function deactivateMember(address payable member) external;
+  function deactivateMember(address member) external;
 
   /**
    * @notice Activates a given member address.

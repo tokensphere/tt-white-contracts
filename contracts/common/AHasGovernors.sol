@@ -104,7 +104,7 @@ abstract contract AHasGovernors {
    * @notice Adds a governor to the list of known governors.
    * @param who is the address to be added.
    */
-  function addGovernor(address payable who)
+  function addGovernor(address who)
       external 
       onlyGovernorManager(msg.sender) onlyValidGovernor(who) {
     // Add the governor.
