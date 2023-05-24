@@ -176,15 +176,17 @@ describe("FastAccessFacet", () => {
         await expect(subject).to.be.revertedWith(`RequiresValidGovernor`);
       });
 
-      it("requires that the address is a member of this FAST", async () => {
-        const subject = issuerMemberAccess.addGovernor(bob.address);
-        await expect(subject).to.be.revertedWith(`RequiresValidGovernor`);
-      });
-
       it("requires that the address is not a governor yet", async () => {
         await issuerMemberAccess.addGovernor(alice.address);
         const subject = issuerMemberAccess.addGovernor(alice.address);
         await expect(subject).to.be.revertedWith("Address already in set");
+      });
+
+      it("adds the given address as a member if needed", async () => {
+        await governedAccess.removeMember(alice.address);
+        await issuerMemberAccess.addGovernor(alice.address);
+        const subject = await access.isGovernor(alice.address);
+        expect(subject).to.eq(true);
       });
 
       it("adds the given address as a governor", async () => {
