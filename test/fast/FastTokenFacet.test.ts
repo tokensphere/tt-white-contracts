@@ -52,18 +52,21 @@ describe("FastTokenFacet", () => {
     // Keep track of a few signers.
     [deployer, issuerMember, governor, mpMember, alice, bob, john, anonymous] =
       await ethers.getSigners();
-    // Mock an ISSUER and an Marketplace contract.
+    // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
-  });
 
-  beforeEach(async () => {
     // Set up issuer members.
     issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
+
     // Set up marketplace members.
     marketplace.issuerAddress.returns(issuer.address);
+  });
+
+  beforeEach(async () => {
+    // Set up marketplace members.
     marketplace.isMember.reset();
     for (const { address } of [governor, mpMember, alice, bob, john]) {
       marketplace.isMember.whenCalledWith(address).returns(true);
