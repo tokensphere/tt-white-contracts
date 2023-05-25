@@ -41,8 +41,6 @@ contract FastInitFacet is AFastFacet {
     // Top-level stuff.
     address issuer;
     address marketplace;
-    // Access stuff.
-    address governor;
     // Token stuff.
     string name;
     string symbol;
@@ -56,9 +54,6 @@ contract FastInitFacet is AFastFacet {
     // Make sure we haven't initialized yet.
     if (LibFast.data().version >= LibFast.STORAGE_VERSION)
       revert ICustomErrors.AlreadyInitialized();
-    // Make sure that the passed governor is an active member of the marketplace.
-    else if (!IHasActiveMembers(params.marketplace).isActiveMember(params.governor))
-      revert ICustomErrors.RequiresMarketplaceActiveMembership(params.governor);
  
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -100,16 +95,12 @@ contract FastInitFacet is AFastFacet {
 
     // ------------------------------------- //
 
-    // Initialize governors storage.
+    // Initialize members and governors storage.
     LibHasGovernors.Data storage governorsData = LibHasGovernors.data();
-    LibHasMembers.Data storage membersData = LibHasMembers.data();
     governorsData.version = LibHasGovernors.STORAGE_VERSION;
-    // Add the governor address as a member and governor.
-    governorsData.governorSet.add(params.governor, true);
-    membersData.memberSet.add(params.governor, true);
-    // Emit governor addition event.
-    emit MemberAdded(params.governor);
-    emit GovernorAdded(params.governor);
+
+    LibHasMembers.Data storage membersData = LibHasMembers.data();
+    membersData.version = LibHasMembers.STORAGE_VERSION;
 
     // Initialize members storage.
     LibHasMembers.data().version = LibHasMembers.STORAGE_VERSION;
