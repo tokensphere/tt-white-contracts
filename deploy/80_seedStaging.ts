@@ -16,7 +16,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   ) {
     return;
   }
-  console.log("------------------------------------------------ 10_seedStaging");
+  console.log(
+    "------------------------------------------------ 10_seedStaging"
+  );
 
   const { fastGovernor, issuerMember } = await getNamedAccounts();
 

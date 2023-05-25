@@ -1,7 +1,13 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { BigNumber } from "ethers";
-import { COMMON_DIAMOND_FACETS, deploymentSalt, fromBaseUnit, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
+import {
+  COMMON_DIAMOND_FACETS,
+  deploymentSalt,
+  fromBaseUnit,
+  toBaseUnit,
+  ZERO_ADDRESS,
+} from "../src/utils";
 import { Issuer, Fast, Marketplace } from "../typechain";
 import { id } from "ethers/lib/utils";
 
@@ -18,52 +24,90 @@ interface FastDeployTaskParams {
 }
 
 task("fast-deploy", "Deploys a FAST")
-  .addParam("governor", "The address of the FAST governor", undefined, types.string)
+  .addParam(
+    "governor",
+    "The address of the FAST governor",
+    undefined,
+    types.string
+  )
   .addParam("name", "The name for the new FAST", undefined, types.string)
   .addParam("symbol", "The symbol for the new FAST", undefined, types.string)
   .addOptionalParam("decimals", "The decimals for the new FAST", 18, types.int)
-  .addParam("hasFixedSupply", "The minting scheme for the new FAST", undefined, types.boolean)
-  .addParam("isSemiPublic", "Whether or not this FAST should be semi-public", undefined, types.boolean)
-  .addOptionalParam("mint", "How many tokens to initially mint and transfer to the governor", undefined, types.int)
-  .setAction(async (params: FastDeployTaskParams, hre: HardhatRuntimeEnvironment) => {
-    const { ethers, getNamedAccounts } = hre;
-    const { issuerMember } = await getNamedAccounts();
-    const issuerMemberSigner = await ethers.getSigner(issuerMember);
+  .addParam(
+    "hasFixedSupply",
+    "The minting scheme for the new FAST",
+    undefined,
+    types.boolean
+  )
+  .addParam(
+    "isSemiPublic",
+    "Whether or not this FAST should be semi-public",
+    undefined,
+    types.boolean
+  )
+  .addOptionalParam(
+    "mint",
+    "How many tokens to initially mint and transfer to the governor",
+    undefined,
+    types.int
+  )
+  .setAction(
+    async (params: FastDeployTaskParams, hre: HardhatRuntimeEnvironment) => {
+      const { ethers, getNamedAccounts } = hre;
+      const { issuerMember } = await getNamedAccounts();
+      const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
-    const { fast, diamondName } = await deployFast(hre, params);
-    console.log(`Fast diamond ${diamondName} deployed`, fast.address);
-    const issuerMemberFast = fast.connect(issuerMemberSigner);
-    console.log(`Registered ${diamondName} with Issuer`);
+      const { fast, diamondName } = await deployFast(hre, params);
+      console.log(`Fast diamond ${diamondName} deployed`, fast.address);
+      const issuerMemberFast = fast.connect(issuerMemberSigner);
+      console.log(`Registered ${diamondName} with Issuer`);
 
-    // At this point, we can start minting a few tokens if requested.
-    if (params.mint) {
-      const { symbol, decimals, baseAmount } = await fastMint(issuerMemberFast, params.mint, "Initial Mint");
-      console.log(`Minted ${symbol}: `);
-      console.log(`  In base unit: =${baseAmount}`);
-      console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)}(${decimals} decimals truncated)`);
+      // At this point, we can start minting a few tokens if requested.
+      if (params.mint) {
+        const { symbol, decimals, baseAmount } = await fastMint(
+          issuerMemberFast,
+          params.mint,
+          "Initial Mint"
+        );
+        console.log(`Minted ${symbol}: `);
+        console.log(`  In base unit: =${baseAmount}`);
+        console.log(
+          `    Human unit: ~${fromBaseUnit(
+            baseAmount,
+            decimals
+          )}(${decimals} decimals truncated)`
+        );
+      }
     }
-  });
+  );
 
 interface FastUpdateFacetsParams {
   readonly symbol: string;
 }
 
 task("fast-update-facets", "Updates facets for a given FAST")
-  .addPositionalParam("symbol", "The FAST Token symbol to operate on", undefined, types.string)
-  .setAction(async (params: FastUpdateFacetsParams, hre: HardhatRuntimeEnvironment) => {
-    const { deployments, getNamedAccounts } = hre;
-    const { deployer } = await getNamedAccounts();
-    const diamondName = `Fast${params.symbol}`;
-    // Make sure that the fast is known from our tooling.
-    const { address } = await deployments.get(diamondName);
-    console.log(`Updating ${diamondName} diamond facets at ${address}...`);
-    await deployments.diamond.deploy(diamondName, {
-      from: deployer,
-      facets: FAST_FACETS,
-      deterministicSalt: deploymentSalt(hre),
-      log: true,
-    });
-  });
+  .addPositionalParam(
+    "symbol",
+    "The FAST Token symbol to operate on",
+    undefined,
+    types.string
+  )
+  .setAction(
+    async (params: FastUpdateFacetsParams, hre: HardhatRuntimeEnvironment) => {
+      const { deployments, getNamedAccounts } = hre;
+      const { deployer } = await getNamedAccounts();
+      const diamondName = `Fast${params.symbol}`;
+      // Make sure that the fast is known from our tooling.
+      const { address } = await deployments.get(diamondName);
+      console.log(`Updating ${diamondName} diamond facets at ${address}...`);
+      await deployments.diamond.deploy(diamondName, {
+        from: deployer,
+        facets: FAST_FACETS,
+        deterministicSalt: deploymentSalt(hre),
+        log: true,
+      });
+    }
+  );
 
 interface FastMintParams {
   readonly symbol: string;
@@ -73,9 +117,19 @@ interface FastMintParams {
 }
 
 task("fast-mint", "Mints FASTs to a specified recipient")
-  .addPositionalParam("symbol", "The FAST Token symbol to operate on", undefined, types.string)
+  .addPositionalParam(
+    "symbol",
+    "The FAST Token symbol to operate on",
+    undefined,
+    types.string
+  )
   .addParam("amount", "The amount of tokens to mint", undefined, types.int)
-  .addParam("ref", "The reference to use for the minting operation", undefined, types.string)
+  .addParam(
+    "ref",
+    "The reference to use for the minting operation",
+    undefined,
+    types.string
+  )
   .setAction(async (params: FastMintParams, hre: HardhatRuntimeEnvironment) => {
     const { ethers, getNamedAccounts } = hre;
     const { issuerMember } = await getNamedAccounts();
@@ -89,10 +143,19 @@ task("fast-mint", "Mints FASTs to a specified recipient")
     const issuerMemberFast = fast.connect(issuerMemberSigner);
 
     console.log(`Minting ${params.amount} for FAST ${params.symbol}...`);
-    const { decimals, baseAmount } = await fastMint(issuerMemberFast, params.amount, params.ref);
+    const { decimals, baseAmount } = await fastMint(
+      issuerMemberFast,
+      params.amount,
+      params.ref
+    );
     console.log(`Minted ${params.symbol}: `);
     console.log(`  In base unit: = ${baseAmount} `);
-    console.log(`    Human unit: ~${fromBaseUnit(baseAmount, decimals)} (${decimals} decimals truncated)`);
+    console.log(
+      `    Human unit: ~${fromBaseUnit(
+        baseAmount,
+        decimals
+      )} (${decimals} decimals truncated)`
+    );
   });
 
 interface FastBalanceParams {
@@ -101,24 +164,43 @@ interface FastBalanceParams {
 }
 
 task("fast-balance", "Retrieves the balance of a given account")
-  .addPositionalParam("symbol", "The FAST symbol to operate on", undefined, types.string)
-  .addParam("account", "The account to retrieve the balance of", undefined, types.string)
-  .setAction(async (params: FastBalanceParams, hre: HardhatRuntimeEnvironment) => {
-    // Grab a handle to the deployed fast.
-    const fast = await fastBySymbol(hre, params.symbol);
-    if (!fast) {
-      throw Error(`No FAST registry can be found for symbol ${params.symbol}!`);
-    }
+  .addPositionalParam(
+    "symbol",
+    "The FAST symbol to operate on",
+    undefined,
+    types.string
+  )
+  .addParam(
+    "account",
+    "The account to retrieve the balance of",
+    undefined,
+    types.string
+  )
+  .setAction(
+    async (params: FastBalanceParams, hre: HardhatRuntimeEnvironment) => {
+      // Grab a handle to the deployed fast.
+      const fast = await fastBySymbol(hre, params.symbol);
+      if (!fast) {
+        throw Error(
+          `No FAST registry can be found for symbol ${params.symbol}!`
+        );
+      }
 
-    const [decimals, symbol, baseBalance] = await Promise.all([
-      fast.decimals(),
-      fast.symbol(),
-      fast.balanceOf(params.account),
-    ]);
-    console.log(`${symbol} balance of ${params.account}: `);
-    console.log(`  In base unit: = ${baseBalance} `);
-    console.log(`    Human unit: ~${fromBaseUnit(baseBalance, decimals)} (${decimals} decimals truncated)`);
-  });
+      const [decimals, symbol, baseBalance] = await Promise.all([
+        fast.decimals(),
+        fast.symbol(),
+        fast.balanceOf(params.account),
+      ]);
+      console.log(`${symbol} balance of ${params.account}: `);
+      console.log(`  In base unit: = ${baseBalance} `);
+      console.log(
+        `    Human unit: ~${fromBaseUnit(
+          baseBalance,
+          decimals
+        )} (${decimals} decimals truncated)`
+      );
+    }
+  );
 
 // Reusable functions.
 
@@ -145,7 +227,7 @@ interface FastDeployParams {
 
 const deployFast = async (
   hre: HardhatRuntimeEnvironment,
-  params: FastDeployParams,
+  params: FastDeployParams
 ): Promise<{ fast: Fast; diamondName: string }> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
@@ -153,6 +235,7 @@ const deployFast = async (
   // Grab a handle on the deployed Issuer and Marketplace contract.
   const issuer = await ethers.getContract<Issuer>("Issuer");
   const marketplace = await ethers.getContract<Marketplace>("Marketplace");
+  const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
   // Make a unique diamond name for that FAST.
   const diamondName = `Fast${params.symbol}`;
@@ -175,7 +258,6 @@ const deployFast = async (
           {
             issuer: issuer.address,
             marketplace: marketplace.address,
-            governor: params.governor,
             name: params.name,
             symbol: params.symbol,
             decimals: params.decimals,
@@ -191,20 +273,35 @@ const deployFast = async (
 
   // Register the new FAST with the Issuer.
   if ((await issuer.fastBySymbol(params.symbol)) !== ZERO_ADDRESS) {
-    console.log(`${diamondName} already registered with the Issuer, skipping registration.`);
+    console.log(
+      `${diamondName} already registered with the Issuer, skipping registration.`
+    );
   } else {
-    console.log(`Registering ${diamondName} at ${deploy.address} with the Issuer...`);
-    const issuerMemberSigner = await ethers.getSigner(issuerMember);
-    await (await issuer.connect(issuerMemberSigner).registerFast(deploy.address)).wait();
+    console.log(
+      `Registering ${diamondName} at ${deploy.address} with the Issuer...`
+    );
+    await (
+      await issuer.connect(issuerMemberSigner).registerFast(deploy.address)
+    ).wait();
   }
 
   // Return a handle to the diamond.
   const fast = await ethers.getContract<Fast>(diamondName);
+
+  // Add governor to the FAST.
+  console.log(`Adding governor ${params.governor} to ${diamondName}...`);
+  await fast.connect(issuerMemberSigner).addGovernor(params.governor);
+
   return { fast, diamondName };
 };
 
-const fastBySymbol = async ({ ethers }: HardhatRuntimeEnvironment, symbol: string, fromArtifacts: boolean = true) => {
-  if (fromArtifacts) return (await ethers.getContractOrNull<Fast>(`Fast${symbol}`)) || undefined;
+const fastBySymbol = async (
+  { ethers }: HardhatRuntimeEnvironment,
+  symbol: string,
+  fromArtifacts: boolean = true
+) => {
+  if (fromArtifacts)
+    return (await ethers.getContractOrNull<Fast>(`Fast${symbol}`)) || undefined;
   else {
     // Grab a handle on the deployed Issuer contract.
     const issuer = await ethers.getContract<Issuer>("Issuer");
@@ -218,8 +315,15 @@ const fastBySymbol = async ({ ethers }: HardhatRuntimeEnvironment, symbol: strin
   }
 };
 
-const fastMint = async (fast: Fast, amount: number | BigNumber, ref: string) => {
-  const [decimals, symbol] = await Promise.all([fast.decimals(), fast.symbol()]);
+const fastMint = async (
+  fast: Fast,
+  amount: number | BigNumber,
+  ref: string
+) => {
+  const [decimals, symbol] = await Promise.all([
+    fast.decimals(),
+    fast.symbol(),
+  ]);
   const baseAmount = toBaseUnit(BigNumber.from(amount), decimals);
   await (await fast.mint(baseAmount, ref)).wait();
   return { symbol, decimals, baseAmount };
