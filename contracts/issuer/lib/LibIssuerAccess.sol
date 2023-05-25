@@ -13,8 +13,9 @@ library LibIssuerAccess {
   struct Data {
     /// @notice The latest intializer version that was called.
     uint16 version;
-    // For a given address we store list of FASTs where that address is a governor.
-    mapping(address => LibAddressSet.Data) fastGovernorships;
+    /// @notice This is where we **kept** track of our member FAST memberships.
+    /// @dev DO NOT USE NOR REMOVE.
+    mapping(address => LibAddressSet.Data) LEGACY_fastGovernorships;
   }
 
   function data()

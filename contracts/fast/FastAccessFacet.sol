@@ -53,16 +53,12 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
     // If the governor isn't a FAST member yet, add them.
     if (!AHasMembers(this).isMember(governor))
       AHasMembers(this).addMember(governor);
-    // Notify issuer that this governor was added to this FAST.
-    IssuerAccessFacet(LibFast.data().issuer).governorAddedToFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
-  function onGovernorRemoved(address governor)
+  function onGovernorRemoved(address /* governor */)
       internal override(AHasGovernors) {
-    // Notify issuer that this governor was removed from this FAST.
-    IssuerAccessFacet(LibFast.data().issuer).governorRemovedFromFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
