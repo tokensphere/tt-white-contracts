@@ -40,7 +40,8 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Keep track of the governorship.
-    LibIssuerAccess.data().fastGovernorships[governor].add(msg.sender, false);
+    // TODO: We don't throw until we've fixed the `issuer.fastGovernorships`.
+    LibIssuerAccess.data().fastGovernorships[governor].add(msg.sender, true);
 
     emit GovernorshipAdded(msg.sender, governor);
   }
@@ -55,7 +56,8 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Remove the tracked governorship.
-    LibIssuerAccess.data().fastGovernorships[governor].remove(msg.sender, false);
+    // TODO: We don't throw until we've fixed the `issuer.fastGovernorships`.
+    LibIssuerAccess.data().fastGovernorships[governor].remove(msg.sender, true);
 
     emit GovernorshipRemoved(msg.sender, governor);
   }

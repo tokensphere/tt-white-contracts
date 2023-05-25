@@ -64,7 +64,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Keep track of the member's FAST membership.
-    LibMarketplaceAccess.data().fastMemberships[member].add(msg.sender, false);
+    // TODO: We don't throw until we've fixed the `marketplace.fastMemberships`.
+    LibMarketplaceAccess.data().fastMemberships[member].add(msg.sender, true);
   }
 
   /**
@@ -77,7 +78,8 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Remove the tracked membership.
-    LibMarketplaceAccess.data().fastMemberships[member].remove(msg.sender, false);
+    // TODO: We don't throw until we've fixed the `marketplace.fastMemberships`.
+    LibMarketplaceAccess.data().fastMemberships[member].remove(msg.sender, true);
   }
 
   /// IHasActiveMembers implementation.
