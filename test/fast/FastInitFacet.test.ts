@@ -23,8 +23,7 @@ const numberToBytes32 = (bn: BigNumber) =>
 describe("FastInitFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
-    governor: SignerWithAddress,
-    bob: SignerWithAddress;
+    governor: SignerWithAddress;
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     fast: Fast,
@@ -35,7 +34,7 @@ describe("FastInitFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer, issuerMember, governor, bob] = await ethers.getSigners();
+    [deployer, issuerMember, governor] = await ethers.getSigners();
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
@@ -76,7 +75,6 @@ describe("FastInitFacet", () => {
       initWith: {
         issuer: issuer.address,
         marketplace: marketplace.address,
-        governor: governor.address,
       },
     });
   });
@@ -107,7 +105,6 @@ describe("FastInitFacet", () => {
         ...FAST_INIT_DEFAULTS,
         issuer: ZERO_ADDRESS,
         marketplace: ZERO_ADDRESS,
-        governor: ZERO_ADDRESS,
       });
       await expect(subject).to.be.revertedWith("AlreadyInitialized");
     });
@@ -199,9 +196,6 @@ describe("FastInitFacet", () => {
       });
     });
 
-    it("adds the given governor address to the members list");
-    it("adds the given governor address to the governors list");
-
     describe("when running...", async () => {
       beforeEach(async () => {
         // We reset the version to zero before each run, so that the facet thinks it's not initialized yet.
@@ -214,59 +208,6 @@ describe("FastInitFacet", () => {
           slot,
           numberToBytes32(BigNumber.from(0)),
         ]);
-      });
-
-      it("reverts when the passed governor address is not a marketplace member", async () => {
-        // Pretend that our governor isn't part of the marketplace.
-        marketplace.isMember.whenCalledWith(governor.address).returns(false);
-        marketplace.isActiveMember
-          .whenCalledWith(governor.address)
-          .returns(false);
-        // Try and initialize.
-        const subject = initFacetAsDeployer.initialize({
-          ...FAST_INIT_DEFAULTS,
-          issuer: issuer.address,
-          marketplace: marketplace.address,
-          governor: governor.address,
-        });
-        // Should have failed.
-        await expect(subject).to.be.revertedWith(
-          `RequiresMarketplaceActiveMembership`
-        );
-      });
-
-      it("reverts when the passed governor address is deactivated in the marketplace", async () => {
-        // Pretend that our governor is a marketplace member, but deactivated.
-        marketplace.isMember.whenCalledWith(governor.address).returns(true);
-        marketplace.isActiveMember
-          .whenCalledWith(governor.address)
-          .returns(false);
-        // Try and initialize.
-        const subject = initFacetAsDeployer.initialize({
-          ...FAST_INIT_DEFAULTS,
-          issuer: issuer.address,
-          marketplace: marketplace.address,
-          governor: governor.address,
-        });
-        // Should have failed.
-        await expect(subject).to.be.revertedWith(
-          `RequiresMarketplaceActiveMembership`
-        );
-      });
-
-      it("emits a MemberAdded event");
-
-      it("emits a GovernorAdded event", async () => {
-        // Try and initialize.
-        const subject = initFacetAsDeployer.initialize({
-          ...FAST_INIT_DEFAULTS,
-          issuer: issuer.address,
-          marketplace: marketplace.address,
-          governor: governor.address,
-        });
-        await expect(subject)
-          .to.emit(initFacet, "GovernorAdded")
-          .withArgs(governor.address);
       });
     });
   });

@@ -79,6 +79,7 @@ describe("FastCrowdfundsFacet", () => {
             "FastCrowdfundsFacet",
             fast.address
           );
+          await fast.connect(issuerMember).addGovernor(governor.address);
           crowdfundsAsMember = crowdfunds.connect(alice);
           crowdfundsAsGovernor = crowdfunds.connect(governor);
           const access = await ethers.getContractAt<FastAccessFacet>(
@@ -91,7 +92,6 @@ describe("FastCrowdfundsFacet", () => {
       initWith: {
         issuer: issuer.address,
         marketplace: marketplace.address,
-        governor: governor.address,
       },
     });
   });

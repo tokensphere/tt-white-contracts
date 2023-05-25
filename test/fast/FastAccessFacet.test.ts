@@ -46,12 +46,11 @@ describe("FastAccessFacet", () => {
   });
 
   beforeEach(async () => {
-    // Issuer is a member of the issuer contract.
+    // Set up issuer members.
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
-
+    // Set up marketplace members.
     marketplace.isMember.reset();
-
     [governor, alice, bob, rob, john].forEach(({ address }) => {
       marketplace.isMember.whenCalledWith(address).returns(true);
       marketplace.isActiveMember.whenCalledWith(address).returns(true);
@@ -69,14 +68,15 @@ describe("FastAccessFacet", () => {
             "FastAccessFacet",
             fast.address
           );
-          governedAccess = access.connect(governor);
           issuerMemberAccess = access.connect(issuerMember);
+          // Add a governor.
+          await issuerMemberAccess.addGovernor(governor.address);
+          governedAccess = access.connect(governor);
         },
       },
       initWith: {
         issuer: issuer.address,
         marketplace: marketplace.address,
-        governor: governor.address,
       },
     });
   });
