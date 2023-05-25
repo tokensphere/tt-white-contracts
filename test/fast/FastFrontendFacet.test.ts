@@ -55,6 +55,7 @@ describe("FastFrontendFacet", () => {
         name: "FastFrontendFixture",
         deployer: deployer.address,
         afterDeploy: async ({ fast }) => {
+          await fast.connect(issuerMember).addGovernor(governor.address);
           frontend = await ethers.getContractAt<FastFrontendFacet>(
             "FastFrontendFacet",
             fast.address
@@ -68,7 +69,6 @@ describe("FastFrontendFacet", () => {
       initWith: {
         issuer: issuer.address,
         marketplace: marketplace.address,
-        governor: governor.address,
       },
     });
   });

@@ -72,6 +72,23 @@ describe("FastTokenFacet", () => {
   });
 
   beforeEach(async () => {
+    // Reset expected returns.
+    issuer.isMember.reset();
+    marketplace.isMember.reset();
+
+    // Set up issuer members.
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    issuer.isMember.returns(false);
+    // Set up marketplace members.
+    marketplace.isMember
+      .whenCalledWith(marketplaceMember.address)
+      .returns(true);
+    // Add a few Marketplace members.
+    for (const { address } of [governor, alice, bob, john])
+      marketplace.isMember.whenCalledWith(address).returns(true);
+    marketplace.isMember.returns(false);
+    marketplace.isActiveMember.returns(true);
+
     await fastDeployFixture({
       opts: {
         name: "FastTokenFixture",
@@ -79,6 +96,7 @@ describe("FastTokenFacet", () => {
         afterDeploy: async (args) => {
           ({ fast, accessMock, topMock, tokenMock, historyMock, frontendMock } =
             args);
+          await fast.connect(issuerMember).addGovernor(governor.address);
           token = await ethers.getContractAt<FastTokenFacet>(
             "FastTokenFacet",
             fast.address
@@ -90,30 +108,12 @@ describe("FastTokenFacet", () => {
       initWith: {
         issuer: issuer.address,
         marketplace: marketplace.address,
-        governor: governor.address,
       },
     });
 
-    // Reset expected returns.
-    issuer.isMember.reset();
-    marketplace.isMember.reset();
-    accessMock.isMember.reset();
-
-    // Add an extra member to the marketplace.
-    marketplace.isMember
-      .whenCalledWith(marketplaceMember.address)
-      .returns(true);
-    // Add a few Marketplace and FAST members.
-    for (const { address } of [alice, bob, john]) {
-      marketplace.isMember.whenCalledWith(address).returns(true);
+    // Add a few FAST members.
+    for (const { address } of [alice, bob, john])
       accessMock.isMember.whenCalledWith(address).returns(true);
-    }
-    // Set the Issuer member.
-    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
-    // Set the defaults when querying the Issuer or Marketplace fakes.
-    issuer.isMember.returns(false);
-    marketplace.isMember.returns(false);
-    marketplace.isActiveMember.returns(true);
 
     topMock.hasFixedSupply.reset();
     topMock.hasFixedSupply.returns(true);
