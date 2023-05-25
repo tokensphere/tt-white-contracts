@@ -29,7 +29,7 @@ describe("FastTokenFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
-    marketplaceMember: SignerWithAddress,
+    mpMember: SignerWithAddress,
     alice: SignerWithAddress,
     bob: SignerWithAddress,
     john: SignerWithAddress,
@@ -50,42 +50,25 @@ describe("FastTokenFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [
-      deployer,
-      issuerMember,
-      governor,
-      marketplaceMember,
-      alice,
-      bob,
-      john,
-      anonymous,
-    ] = await ethers.getSigners();
+    [deployer, issuerMember, governor, mpMember, alice, bob, john, anonymous] =
+      await ethers.getSigners();
     // Mock an ISSUER and an Marketplace contract.
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
-    marketplace.issuerAddress.returns(issuer.address);
-
-    marketplace.isMember.whenCalledWith(governor.address).returns(true);
-    marketplace.isMember.returns(false);
-    marketplace.isActiveMember.whenCalledWith(governor.address).returns(true);
-    marketplace.isActiveMember.returns(false);
   });
 
   beforeEach(async () => {
-    // Reset expected returns.
-    issuer.isMember.reset();
-    marketplace.isMember.reset();
-
     // Set up issuer members.
+    issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
     // Set up marketplace members.
-    marketplace.isMember
-      .whenCalledWith(marketplaceMember.address)
-      .returns(true);
-    // Add a few Marketplace members.
-    for (const { address } of [governor, alice, bob, john])
+    marketplace.issuerAddress.returns(issuer.address);
+    marketplace.isMember.reset();
+    for (const { address } of [governor, mpMember, alice, bob, john]) {
       marketplace.isMember.whenCalledWith(address).returns(true);
+      marketplace.isActiveMember.whenCalledWith(address).returns(true);
+    }
     marketplace.isMember.returns(false);
     marketplace.isActiveMember.returns(true);
 
