@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import './lib/AFastFacet.sol';
 import './FastTopFacet.sol';
 import '../lib/LibPaginate.sol';
+import '../issuer/IssuerAutomatonsFacet.sol';
 import './lib/LibFastCrowdfunds.sol';
 import './Crowdfund.sol';
 
@@ -15,19 +16,24 @@ import './Crowdfund.sol';
 contract FastCrowdfundsFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
 
+  /// @notice Happens when there are insufficient funds somewhere.
+  error RequiresPrivilege(address who, uint32 privilege);
+
   /**
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
-   * TODO: Should only be done by automatons with the "ISSUER_PRIVILEGE_CROWDFUND_CREATOR" trait.
    */
   function createCrowdfund(IERC20 token, address beneficiary, uint32 basisPointsFee, string memory ref)
       external {
+    address issuer = FastTopFacet(address(this)).issuerAddress();
+    // Make sure that the sender has the ISSUER_PRIVILEGE_CROWDFUND_CREATOR trait.
+    if (!IssuerAutomatonsFacet(issuer).automatonCan(msg.sender, ISSUER_PRIVILEGE_CROWDFUND_CREATOR))
+      revert RequiresPrivilege(msg.sender, ISSUER_PRIVILEGE_CROWDFUND_CREATOR);
     // Deploy a new Crowdfund contract.
-    // TODO: The fee should be defined upfront.
     Crowdfund crowdfund = new Crowdfund(
       Crowdfund.Params({
         owner: msg.sender,
-        issuer: FastTopFacet(address(this)).issuerAddress(),
+        issuer: issuer,
         fast: address(this),
         beneficiary: beneficiary,
         basisPointsFee: basisPointsFee,
@@ -41,6 +47,10 @@ contract FastCrowdfundsFacet is AFastFacet {
     emit CrowdfundDeployed(crowdfund);
   }
 
+  /**
+   * @notice Removes a CrowdFund contract from this FAST.
+   * @param crowdfund the address of the CrowdFund contract to remove.
+   */
   function removeCrowdfund(Crowdfund crowdfund)
       public onlyIssuerMember {
     LibFastCrowdfunds.data().crowdfundSet.remove(address(crowdfund), false);

@@ -126,7 +126,6 @@ contract Crowdfund {
   /**
    * @notice Advances the campaign to the funding phase.
    * Note that this method is only available during the setup phase.
-   * TODO: An issuer still has to accept the deployment, but they won't decide on the fee.
    */
   function advanceToFunding()
       external onlyDuring(Phase.Setup) onlyIssuerMember {
