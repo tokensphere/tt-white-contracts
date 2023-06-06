@@ -18,16 +18,19 @@ contract FastCrowdfundsFacet is AFastFacet {
   /**
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
+   * TODO: Should only be done by automatons with the "ISSUER_PRIVILEGE_CROWDFUND_CREATOR" trait.
    */
-  function createCrowdfund(IERC20 token, address beneficiary, string memory ref)
+  function createCrowdfund(IERC20 token, address beneficiary, uint32 basisPointsFee, string memory ref)
       external {
     // Deploy a new Crowdfund contract.
+    // TODO: The fee should be defined upfront.
     Crowdfund crowdfund = new Crowdfund(
       Crowdfund.Params({
         owner: msg.sender,
         issuer: FastTopFacet(address(this)).issuerAddress(),
         fast: address(this),
         beneficiary: beneficiary,
+        basisPointsFee: basisPointsFee,
         token: token,
         ref: ref
       })

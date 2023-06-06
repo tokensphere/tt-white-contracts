@@ -69,6 +69,8 @@ contract Crowdfund {
     address fast;
     /// @notice The beneficiary of the crowdfund.
     address beneficiary;
+    /// @notice The fee expressed in basis points - eg ten thousandths.
+    uint32 basisPointsFee;
     /// @notice The token contract address.
     IERC20 token;
     /// @notice An arbitrary reference string to keep track of.
@@ -84,8 +86,6 @@ contract Crowdfund {
   Phase public phase;
   /// @notice When was the distribution created.
   uint256 public creationBlock;
-  /// @notice The fee expressed in basis points - eg ten thousandths.
-  uint256 public basisPointsFee;
   /// @notice How much was collected so far.
   uint256 public collected;
 
@@ -110,6 +110,9 @@ contract Crowdfund {
     // Check that the beneficiary is a member of the FAST contract.
     else if (!isFastMember(p.beneficiary))
       revert RequiresFastMembership(p.beneficiary);
+    // Invalid fee - superior than 100%.
+    else if (params.basisPointsFee > 10_000)
+      revert InconsistentParameter("basisPointsFee");
     // Keep creation block handy.
     creationBlock = block.number;
   }
@@ -117,20 +120,17 @@ contract Crowdfund {
   /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
   function feeAmount()
       public view returns(uint256) {
-    return Math.mulDiv(collected, basisPointsFee, 10_000, Math.Rounding.Up);
+    return Math.mulDiv(collected, params.basisPointsFee, 10_000, Math.Rounding.Up);
   }
 
   /**
    * @notice Advances the campaign to the funding phase.
    * Note that this method is only available during the setup phase.
-   * @param _basisPointsFee The fee expressed in basis points - eg ten thousandths.
+   * TODO: An issuer still has to accept the deployment, but they won't decide on the fee.
    */
-  function advanceToFunding(uint256 _basisPointsFee)
+  function advanceToFunding()
       external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
-    if (_basisPointsFee > 10_000)
-      revert InconsistentParameter("basisPointsFee");
-    basisPointsFee = _basisPointsFee;
     emit Advance(phase = Phase.Funding);
   }
 
