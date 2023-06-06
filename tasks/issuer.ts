@@ -39,6 +39,7 @@ const ISSUER_FACETS = [
   ...COMMON_DIAMOND_FACETS,
   "IssuerTopFacet",
   "IssuerAccessFacet",
+  "IssuerAutomatonsFacet",
   "IssuerFrontendFacet",
 ];
 

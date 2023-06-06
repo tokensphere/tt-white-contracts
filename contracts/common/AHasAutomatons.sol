@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 import '../lib/LibAddressSet.sol';
 import '../lib/LibPaginate.sol';
 import '../common/lib/LibHasAutomatons.sol';
+import 'hardhat/console.sol';
 
 
 /**
@@ -69,6 +70,7 @@ abstract contract AHasAutomatons {
 
   function automatonCan(address automaton, uint32 privilege)
     external view returns(bool) {
+      console.log("PRIVS", LibHasAutomatons.data().automatonPrivileges[automaton]);
       return (LibHasAutomatons.data().automatonPrivileges[automaton] & privilege) != 0;
     }
 

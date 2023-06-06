@@ -27,8 +27,8 @@ contract FastCrowdfundsFacet is AFastFacet {
       external {
     address issuer = FastTopFacet(address(this)).issuerAddress();
     // Make sure that the sender has the ISSUER_PRIVILEGE_CROWDFUND_CREATOR trait.
-    if (!IssuerAutomatonsFacet(issuer).automatonCan(msg.sender, ISSUER_PRIVILEGE_CROWDFUND_CREATOR))
-      revert RequiresPrivilege(msg.sender, ISSUER_PRIVILEGE_CROWDFUND_CREATOR);
+    if (!IssuerAutomatonsFacet(issuer).automatonCan(msg.sender, ISSUER_PRIVILEGE_CREATE_CROWDFUNDS))
+      revert RequiresPrivilege(msg.sender, ISSUER_PRIVILEGE_CREATE_CROWDFUNDS);
     // Deploy a new Crowdfund contract.
     Crowdfund crowdfund = new Crowdfund(
       Crowdfund.Params({
