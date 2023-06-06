@@ -53,6 +53,8 @@ contract FastFrontendFacet is AFastFacet {
   struct GovernorDetails {
     /// @notice The Governor's address.
     address addr;
+    /// @notice The Governor's ETH balance.
+    uint256 ethBalance;
     /// @notice Whether the Governor is also a Member.
     bool isMember;
   }
@@ -66,6 +68,8 @@ contract FastFrontendFacet is AFastFacet {
     address addr;
     /// @notice The Member's balance.
     uint256 balance;
+    /// @notice The Member's ETH balance.
+    uint256 ethBalance;
     /// @notice Whether the Member is also a Governor.
     bool isGovernor;
   }
@@ -125,6 +129,7 @@ contract FastFrontendFacet is AFastFacet {
       public view returns(GovernorDetails memory) {
     return GovernorDetails({
       addr: governor,
+      ethBalance: (payable(governor).balance),
       isMember: AHasMembers(address(this)).isMember(governor)
     });
   }
@@ -151,6 +156,7 @@ contract FastFrontendFacet is AFastFacet {
     return MemberDetails({
       addr: member,
       balance: LibFastToken.data().balances[member],
+      ethBalance: (payable(member).balance),
       isGovernor: LibHasGovernors.data().governorSet.contains(member)
     });
   }

@@ -133,6 +133,7 @@ describe("FastFrontendFacet", () => {
       expect(memberObj).to.eql({
         addr: issuerMember.address,
         balance: zero,
+        ethBalance: await ethers.provider.getBalance(issuerMember.address),
         isGovernor: false,
       });
     });
@@ -147,6 +148,7 @@ describe("FastFrontendFacet", () => {
       const subject = await frontend.detailedGovernor(member.address);
       expect(abiStructToObj(subject)).to.eql({
         addr: member.address,
+        ethBalance: await ethers.provider.getBalance(member.address),
         isMember: true,
       });
     });
@@ -165,6 +167,7 @@ describe("FastFrontendFacet", () => {
       expect(memberAObj).to.eql({
         addr: governor.address,
         balance: zero,
+        ethBalance: await ethers.provider.getBalance(governor.address),
         isGovernor: true,
       });
 
@@ -172,6 +175,7 @@ describe("FastFrontendFacet", () => {
       expect(memberBObj).to.eql({
         addr: member.address,
         balance: zero,
+        ethBalance: await ethers.provider.getBalance(member.address),
         isGovernor: false,
       });
 
@@ -189,6 +193,7 @@ describe("FastFrontendFacet", () => {
       expect(memberAObj).to.eql({
         addr: member.address,
         balance: zero,
+        ethBalance: await ethers.provider.getBalance(member.address),
         isGovernor: false,
       });
     });
@@ -205,6 +210,7 @@ describe("FastFrontendFacet", () => {
 
       expect(abiStructToObj(subject)).to.eql({
         addr: member.address,
+        ethBalance: await ethers.provider.getBalance(member.address),
         isMember: true,
       });
 
