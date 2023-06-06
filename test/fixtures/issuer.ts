@@ -2,10 +2,7 @@ import { ethers } from "hardhat";
 import { ContractTransaction } from "ethers";
 import { MockContract } from "@defi-wonderland/smock";
 import { FixtureFunc } from "hardhat-deploy/dist/types";
-import {
-  toUnpaddedHexString,
-  ZERO_ADDRESS,
-} from "../../src/utils";
+import { toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock, oneMillion } from "../utils";
 import {
   Issuer,
@@ -15,7 +12,9 @@ import {
   IssuerFrontendFacet,
   IssuerTopFacet__factory,
   IssuerAccessFacet__factory,
+  IssuerAutomatonsFacet__factory,
   IssuerFrontendFacet__factory,
+  IssuerAutomatonsFacet,
 } from "../../typechain";
 import { ISSUER_FACETS } from "../../tasks/issuer";
 
@@ -37,6 +36,7 @@ interface IssuerFixtureResult {
   initTx: ContractTransaction;
   topMock: MockContract<IssuerTopFacet>;
   accessMock: MockContract<IssuerAccessFacet>;
+  automatonsMock: MockContract<IssuerAutomatonsFacet>;
   frontendMock: MockContract<IssuerFrontendFacet>;
 }
 
@@ -80,6 +80,10 @@ export const issuerFixtureFunc: FixtureFunc<
     accessMock: await facetMock<IssuerAccessFacet__factory>(
       issuer,
       "IssuerAccessFacet"
+    ),
+    automatonsMock: await facetMock<IssuerAutomatonsFacet__factory>(
+      issuer,
+      "IssuerAutomatonsFacet"
     ),
     frontendMock: await facetMock<IssuerFrontendFacet__factory>(
       issuer,

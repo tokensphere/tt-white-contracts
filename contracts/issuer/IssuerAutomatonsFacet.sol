@@ -5,7 +5,7 @@ import './lib/AIssuerFacet.sol';
 import '../common/AHasAutomatons.sol';
 
 // Privileges bits.
-uint32 constant ISSUER_PRIVILEGE_CROWDFUND_CREATOR = 1;
+uint32 constant ISSUER_PRIVILEGE_CREATE_CROWDFUNDS = 1;
 
 /**
  * @title The Issuer Smart Contract.

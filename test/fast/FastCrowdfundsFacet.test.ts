@@ -49,6 +49,9 @@ describe("FastCrowdfundsFacet", () => {
     issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
     issuer.isMember.returns(false);
+    // Issuer member is an almighty automaton.
+    issuer.automatonCan.reset();
+    issuer.automatonCan.returns(true);
 
     marketplace.isMember.reset();
     [governor, alice, bob, rob, john].forEach(({ address }) => {
@@ -99,19 +102,23 @@ describe("FastCrowdfundsFacet", () => {
   /// Governorship related stuff.
 
   describe("createCrowdfund", async () => {
-    it("requires the caller to be a FAST governor", async () => {
+    it("requires the caller to have the ISSUER_PRIVILEGE_CROWDFUND_CREATOR privileges", async () => {
+      issuer.automatonCan.reset();
+      issuer.automatonCan.returns(false);
       const subject = crowdfunds.createCrowdfund(
         erc20.address,
         alice.address,
+        2_000,
         "Blah"
       );
-      await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
+      await expect(subject).to.have.revertedWith("RequiresPrivilege");
     });
 
     it("deploys a new crowdfund with the given parameters", async () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
+        2_000,
         "Blah"
       );
       const [page] = await crowdfundsAsGovernor.paginateCrowdfunds(0, 1);
@@ -125,6 +132,7 @@ describe("FastCrowdfundsFacet", () => {
         await (tx = crowdfundsAsGovernor.createCrowdfund(
           erc20.address,
           alice.address,
+          2_000,
           "Blah"
         ));
         const [crowdfundings] = await crowdfunds.paginateCrowdfunds(0, 1);
@@ -141,6 +149,7 @@ describe("FastCrowdfundsFacet", () => {
             crowdfundsAsGovernor.createCrowdfund(
               erc20.address,
               alice.address,
+              2_000,
               "Blah"
             )
           )
@@ -169,6 +178,7 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
+        2_000,
         "Blah"
       );
     });
@@ -184,6 +194,7 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
+        2_000,
         "Blah"
       );
     });
