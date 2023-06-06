@@ -5,9 +5,7 @@ import './lib/AIssuerFacet.sol';
 import '../common/AHasAutomatons.sol';
 
 // Privileges bits.
-// TODO: Propagate trait to various methods.
-uint32 constant ISSUER_PRIVILEGE_GOVERNANCE = 1;
-uint32 constant ISSUER_PRIVILEGE_CROWDFUND_CREATOR = 2;
+uint32 constant ISSUER_PRIVILEGE_CROWDFUND_CREATOR = 1;
 
 /**
  * @title The Issuer Smart Contract.
