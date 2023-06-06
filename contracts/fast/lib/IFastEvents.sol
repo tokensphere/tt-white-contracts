@@ -20,14 +20,14 @@ interface IFastEvents {
    * @param ref is the reference associated with the minting operation.
    * @param who is the account from which the minting operation originated.
    */
-  event Minted(uint256 indexed amount, string indexed ref, address indexed who);
+  event Minted(uint256 indexed amount, string ref, address indexed who);
   /**
    * @notice Emited whenever an burning happens in a FAST.
    * @param amount is the amount of tokens that have been burnt.
    * @param ref is the reference associated with the burning operation.
    * @param who is the account from which the burning operation originated.
    */
-  event Burnt(uint256 indexed amount, string indexed ref, address indexed who);
+  event Burnt(uint256 indexed amount, string ref, address indexed who);
 
   /// Transfer and ERC20 stuff.
 
