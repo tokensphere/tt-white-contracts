@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../common/AHasMembers.sol';
-import '../common/AHasGovernors.sol';
-import '../marketplace/MarketplaceAccessFacet.sol';
-import '../issuer/IssuerAccessFacet.sol';
-import './FastTokenFacet.sol';
-import './lib/AFastFacet.sol';
-import './lib/LibFast.sol';
-import './FastTopFacet.sol';
-import './FastFrontendFacet.sol';
-import './FastAutomatonsFacet.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../common/AHasMembers.sol";
+import "../common/AHasGovernors.sol";
+import "../marketplace/MarketplaceAccessFacet.sol";
+import "../issuer/IssuerAccessFacet.sol";
+import "./FastTokenFacet.sol";
+import "./lib/AFastFacet.sol";
+import "./lib/LibFast.sol";
+import "./FastTopFacet.sol";
+import "./FastFrontendFacet.sol";
+import "./FastAutomatonsFacet.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -38,29 +37,24 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
 
   /// AHasGovernors implementation.
 
-  function isGovernorsManager(address who)
-      internal view override(AHasGovernors) returns(bool) {
+  function isGovernorsManager(address who) internal view override(AHasGovernors) returns (bool) {
     return _isIssuerMember(who);
   }
 
-  function isValidGovernor(address who)
-      internal view override(AHasGovernors) returns(bool) {
+  function isValidGovernor(address who) internal view override(AHasGovernors) returns (bool) {
     return _isMarketplaceMember(who);
   }
 
-  function onGovernorAdded(address governor)
-      internal override(AHasGovernors) {
+  function onGovernorAdded(address governor) internal override(AHasGovernors) {
     // If the governor isn't a FAST member yet, add them.
-    if (!AHasMembers(this).isMember(governor))
-      AHasMembers(this).addMember(governor);
+    if (!AHasMembers(this).isMember(governor)) AHasMembers(this).addMember(governor);
     // Notify issuer that this governor was added to this FAST.
     IssuerAccessFacet(LibFast.data().issuer).governorAddedToFast(governor);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
-  function onGovernorRemoved(address governor)
-      internal override(AHasGovernors) {
+  function onGovernorRemoved(address governor) internal override(AHasGovernors) {
     // Notify issuer that this governor was removed from this FAST.
     IssuerAccessFacet(LibFast.data().issuer).governorRemovedFromFast(governor);
     // Emit!
@@ -69,8 +63,7 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
 
   /// AHasMembers implementation.
 
-  function isMembersManager(address who)
-      internal view override(AHasMembers) returns(bool) {
+  function isMembersManager(address who) internal view override(AHasMembers) returns (bool) {
     return
       // The current contract should be able to manage its own members.
       address(this) == who ||
@@ -80,21 +73,18 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
       AHasAutomatons(address(this)).automatonCan(who, FAST_PRIVILEGE_MANAGE_MEMBERS);
   }
 
-  function isValidMember(address who)
-      internal view override(AHasMembers) returns(bool) {
+  function isValidMember(address who) internal view override(AHasMembers) returns (bool) {
     return _isMarketplaceMember(who);
   }
 
-  function onMemberAdded(address member)
-      internal override(AHasMembers) {
+  function onMemberAdded(address member) internal override(AHasMembers) {
     // Notify marketplace that this member was added to this FAST.
     MarketplaceAccessFacet(LibFast.data().marketplace).memberAddedToFast(member);
     // Emit!
     FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
-  function onMemberRemoved(address member)
-      internal override(AHasMembers) {
+  function onMemberRemoved(address member) internal override(AHasMembers) {
     // Notify token facet that this member was removed.
     FastTokenFacet(address(this)).beforeRemovingMember(member);
     // Notify marketplace that this member was removed from this FAST.
@@ -110,11 +100,7 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
    * @param a is the address to retrieve flags for.
    * @return A `Flags` struct.
    */
-  function flags(address a)
-      external view returns(Flags memory) {
-    return Flags({
-        isGovernor: AHasGovernors(address(this)).isGovernor(a),
-        isMember: AHasMembers(this).isMember(a)
-      });
+  function flags(address a) external view returns (Flags memory) {
+    return Flags({isGovernor: AHasGovernors(address(this)).isGovernor(a), isMember: AHasMembers(this).isMember(a)});
   }
 }

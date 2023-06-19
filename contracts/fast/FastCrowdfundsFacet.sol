@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import './lib/AFastFacet.sol';
-import './FastTopFacet.sol';
-import '../lib/LibPaginate.sol';
-import '../issuer/IssuerAutomatonsFacet.sol';
-import './lib/LibFastCrowdfunds.sol';
-import './Crowdfund.sol';
-
+import "./lib/AFastFacet.sol";
+import "./FastTopFacet.sol";
+import "../lib/LibPaginate.sol";
+import "../issuer/IssuerAutomatonsFacet.sol";
+import "./lib/LibFastCrowdfunds.sol";
+import "./Crowdfund.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -23,8 +22,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
    */
-  function createCrowdfund(IERC20 token, address beneficiary, uint32 basisPointsFee, string memory ref)
-      external {
+  function createCrowdfund(IERC20 token, address beneficiary, uint32 basisPointsFee, string memory ref) external {
     address issuer = FastTopFacet(address(this)).issuerAddress();
     // Make sure that the sender has the ISSUER_PRIVILEGE_CROWDFUND_CREATOR trait.
     if (!IssuerAutomatonsFacet(issuer).automatonCan(msg.sender, ISSUER_PRIVILEGE_CREATE_CROWDFUNDS))
@@ -51,8 +49,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @notice Removes a CrowdFund contract from this FAST.
    * @param crowdfund the address of the CrowdFund contract to remove.
    */
-  function removeCrowdfund(Crowdfund crowdfund)
-      public onlyIssuerMember {
+  function removeCrowdfund(Crowdfund crowdfund) public onlyIssuerMember {
     LibFastCrowdfunds.data().crowdfundSet.remove(address(crowdfund), false);
     emit CrowdfundRemoved(crowdfund);
   }
@@ -61,8 +58,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @notice Retrieves the number of crowdfunds ever deployed for this FAST.
    * @return An `uint256` for the count.
    */
-  function crowdfundCount()
-      external view returns(uint256) {
+  function crowdfundCount() external view returns (uint256) {
     return LibFastCrowdfunds.data().crowdfundSet.values.length;
   }
 
@@ -72,12 +68,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @param perPage is how many items should be returned.
    * @return An `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
    */
-  function paginateCrowdfunds(uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      LibFastCrowdfunds.data().crowdfundSet.values,
-      index,
-      perPage
-    );
+  function paginateCrowdfunds(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {
+    return LibPaginate.addresses(LibFastCrowdfunds.data().crowdfundSet.values, index, perPage);
   }
 }

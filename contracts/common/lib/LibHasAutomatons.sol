@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibAddressSet.sol';
-
+import "../../lib/LibAddressSet.sol";
 
 library LibHasAutomatons {
   // The current version of the storage.
@@ -19,8 +18,9 @@ library LibHasAutomatons {
     mapping(address => uint32) automatonPrivileges;
   }
 
-  function data() internal pure
-      returns(Data storage s) {
-    assembly {s.slot := STORAGE_SLOT}
+  function data() internal pure returns (Data storage s) {
+    assembly {
+      s.slot := STORAGE_SLOT
+    }
   }
 }

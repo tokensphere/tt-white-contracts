@@ -1,27 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../interfaces/IERC20.sol';
-import '../interfaces/ICustomErrors.sol';
-import '../common/AHasMembers.sol';
-import '../lib/LibDiamond.sol';
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import './lib/AFastFacet.sol';
-import './lib/LibFastToken.sol';
-import '../marketplace/MarketplaceTokenHoldersFacet.sol';
-import './FastTopFacet.sol';
-import './FastAccessFacet.sol';
-import './FastHistoryFacet.sol';
-import './FastFrontendFacet.sol';
-
+import "../interfaces/IERC20.sol";
+import "../interfaces/ICustomErrors.sol";
+import "../common/AHasMembers.sol";
+import "../lib/LibDiamond.sol";
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "./lib/AFastFacet.sol";
+import "./lib/LibFastToken.sol";
+import "../marketplace/MarketplaceTokenHoldersFacet.sol";
+import "./FastTopFacet.sol";
+import "./FastAccessFacet.sol";
+import "./FastHistoryFacet.sol";
+import "./FastFrontendFacet.sol";
 
 contract FastTokenFacet is AFastFacet, IERC20 {
   using LibAddressSet for LibAddressSet.Data;
 
   /// Constants.
 
-  string internal constant DEAD_TOKENS_RETRIEVAL = 'Dead tokens retrieval';
+  string internal constant DEAD_TOKENS_RETRIEVAL = "Dead tokens retrieval";
 
   /// Minting methods.
 
@@ -40,9 +39,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param amount The number of FAST tokens to mint.
    * @param ref A reference for this minting operation.
    */
-  function mint(uint256 amount, string calldata ref)
-      external
-      onlyIssuerMember {
+  function mint(uint256 amount, string calldata ref) external onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
     // We want to make sure that either of these two is true:
     // - The token doesn't have fixed supply.
@@ -77,13 +74,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param amount The number of FAST tokens to mint.
    * @param ref A reference for this minting operation.
    */
-  function burn(uint256 amount, string calldata ref)
-      external
-      onlyIssuerMember {
+  function burn(uint256 amount, string calldata ref) external onlyIssuerMember {
     LibFastToken.Data storage s = LibFastToken.data();
 
-    if (FastTopFacet(address(this)).hasFixedSupply())
-      revert ICustomErrors.RequiresContinuousSupply();
+    if (FastTopFacet(address(this)).hasFixedSupply()) revert ICustomErrors.RequiresContinuousSupply();
 
     // Remove the minted amount from the zero address.
     s.balances[address(0)] -= amount;
@@ -114,9 +108,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    *   - Since the reserve balance and total supply have changed, the `FastFrontendFacet.emitDetailsChanged()` function should be called.
    * @param holder is the address for which to move the tokens from.
    */
-  function retrieveDeadTokens(address holder)
-      external
-      onlyIssuerMember {
+  function retrieveDeadTokens(address holder) external onlyIssuerMember {
     // Cache how many tokens the holder has.
     uint256 amount = balanceOf(holder);
     // Note: The amount **can** be zero in this function.
@@ -147,8 +139,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     emit Transfer(holder, address(0), amount);
 
     // If amount wasn't zero, total supply and reserve balance have changed - emit.
-    if (amount > 0)
-      FastFrontendFacet(address(this)).emitDetailsChanged();
+    if (amount > 0) FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   // ERC20 implementation and transfer related methods.
@@ -157,8 +148,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice The name of this FAST (ERC20 standard).
    * @return string Name of the FAST.
    */
-  function name()
-      external view returns(string memory) {
+  function name() external view returns (string memory) {
     return LibFastToken.data().name;
   }
 
@@ -166,8 +156,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice The symbol of this FAST (ERC20 standard).
    * @return string Symbol of the FAST.
    */
-  function symbol()
-      external view returns(string memory) {
+  function symbol() external view returns (string memory) {
     return LibFastToken.data().symbol;
   }
 
@@ -175,8 +164,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice The `decimals` of this FAST (ERC20 standard).
    * @return uint256 Number of decimals the FAST has.
    */
-  function decimals()
-      external view returns(uint256) {
+  function decimals() external view returns (uint256) {
     return LibFastToken.data().decimals;
   }
 
@@ -184,8 +172,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @notice The total supply of the FAST (ERC20 standard).
    * @return uint256 Total supply of the FAST.
    */
-  function totalSupply()
-      external override(IERC20) view returns(uint256) {
+  function totalSupply() external view override(IERC20) returns (uint256) {
     return LibFastToken.data().totalSupply;
   }
 
@@ -194,15 +181,13 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param owner The owners address to get the balance of.
    * @return uint256 The current balance of this owner's account.
    */
-  function balanceOf(address owner)
-      public view override(IERC20) returns(uint256) {
+  function balanceOf(address owner) public view override(IERC20) returns (uint256) {
     return LibFastToken.data().balances[owner];
   }
 
   /**
    * @notice See `performTransfer`, the spender will be equal to the `owner`, and the `ref` will be defauted. */
-  function transfer(address to, uint256 amount)
-      external override(IERC20) returns(bool) {
+  function transfer(address to, uint256 amount) external override(IERC20) returns (bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performTransfer(
       TransferArgs({
@@ -218,34 +203,20 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
   /**
    * @notice See `performTransfer`, the spender will be equal to the `owner`. */
-  function transferWithRef(address to, uint256 amount, string calldata ref)
-      external returns(bool) {
+  function transferWithRef(address to, uint256 amount, string calldata ref) external returns (bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performTransfer(
-      TransferArgs({
-        spender: msg.sender,
-        from: msg.sender,
-        to: to,
-        amount: amount,
-        ref: ref
-      })
-    );
+    this.performTransfer(TransferArgs({spender: msg.sender, from: msg.sender, to: to, amount: amount, ref: ref}));
     return true;
   }
 
-  function allowance(address owner, address spender)
-      public view override(IERC20) returns(uint256) {
+  function allowance(address owner, address spender) public view override(IERC20) returns (uint256) {
     LibFastToken.Data storage s = LibFastToken.data();
     // If the allowance being queried is owned by the reserve, and `spender` is
     // an Issuer member, `spender` owns the full balance of `owner`. If they are
     // not an Issuer member then their allowance is zero. Otherwise, the regular given
     // allowance for `spender` over `owner` applies.
-    if (owner == address(0))
-      return AHasMembers(LibFast.data().issuer).isMember(spender)
-        ? s.balances[owner]
-        : 0;
-    else
-      return s.allowances[owner][spender];
+    if (owner == address(0)) return AHasMembers(LibFast.data().issuer).isMember(spender) ? s.balances[owner] : 0;
+    else return s.allowances[owner][spender];
   }
 
   /**
@@ -254,8 +225,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param spender is the address to allow spending from the caller's wallet.
    * @param amount is how much to **increase** the allowance.
    */
-  function approve(address spender, uint256 amount)
-      external override(IERC20) returns(bool) {
+  function approve(address spender, uint256 amount) external override(IERC20) returns (bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performApproval(msg.sender, spender, amount);
     return true;
@@ -267,66 +237,49 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param spender is the address to disallow spending from the caller's wallet.
    * @param amount is how much to **decrease** the allowance.
    */
-  function disapprove(address spender, uint256 amount)
-      external
-      onlyMember(msg.sender)
-      returns(bool) {
+  function disapprove(address spender, uint256 amount) external onlyMember(msg.sender) returns (bool) {
     // Make sure the call is performed externally so that we can mock.
     this.performDisapproval(msg.sender, spender, amount);
     return true;
   }
 
   /// @notice See `performTransfer`, the `ref` will be defaulted.
-  function transferFrom(address from, address to, uint256 amount)
-      external override(IERC20) returns(bool) {
+  function transferFrom(address from, address to, uint256 amount) external override(IERC20) returns (bool) {
     transferFromWithRef(from, to, amount, LibFastToken.DEFAULT_TRANSFER_REFERENCE);
     return true;
   }
 
   /// @notice See `performTransfer`.
-  function transferFromWithRef(address from, address to, uint256 amount, string memory ref)
-      public returns(bool) {
+  function transferFromWithRef(address from, address to, uint256 amount, string memory ref) public returns (bool) {
     // Make sure the call is performed externally so that we can mock.
-    this.performTransfer(
-      TransferArgs({
-        spender: msg.sender,
-        from: from,
-        to: to,
-        amount: amount,
-        ref: ref
-      })
-    );
+    this.performTransfer(TransferArgs({spender: msg.sender, from: from, to: to, amount: amount, ref: ref}));
     return true;
   }
 
   // Allowances query operations.
 
-  function givenAllowanceCount(address owner)
-      external view returns(uint256) {
+  function givenAllowanceCount(address owner) external view returns (uint256) {
     return LibFastToken.data().allowancesByOwner[owner].values.length;
   }
 
-  function paginateAllowancesByOwner(address owner, uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      LibFastToken.data().allowancesByOwner[owner].values,
-      index,
-      perPage
-    );
+  function paginateAllowancesByOwner(
+    address owner,
+    uint256 index,
+    uint256 perPage
+  ) external view returns (address[] memory, uint256) {
+    return LibPaginate.addresses(LibFastToken.data().allowancesByOwner[owner].values, index, perPage);
   }
 
-  function receivedAllowanceCount(address spender)
-      external view returns(uint256) {
+  function receivedAllowanceCount(address spender) external view returns (uint256) {
     return LibFastToken.data().allowancesBySpender[spender].values.length;
   }
 
-  function paginateAllowancesBySpender(address spender, uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      LibFastToken.data().allowancesBySpender[spender].values,
-      index,
-      perPage
-    );
+  function paginateAllowancesBySpender(
+    address spender,
+    uint256 index,
+    uint256 perPage
+  ) external view returns (address[] memory, uint256) {
+    return LibPaginate.addresses(LibFastToken.data().allowancesBySpender[spender].values, index, perPage);
   }
 
   // These functions would be internal / private if we weren't using the diamond pattern.
@@ -375,33 +328,26 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * - Calls `FastHistoryFacet.transfered`.
    * - Emits a `Transfer(from, to, amount)` event.
    */
-  function performTransfer(TransferArgs calldata p)
-      external onlyDiamondFacet {
+  function performTransfer(TransferArgs calldata p) external onlyDiamondFacet {
     // TODO: Make this function return instead of raising errors.
 
     // Grab a pointer to our top-level storage.
     LibFast.Data storage topData = LibFast.data();
 
     // Requires that transfers are enabled for this FAST.
-    if (FastTopFacet(address(this)).transfersDisabled())
-      revert ICustomErrors.RequiresTransfersEnabled();
+    if (FastTopFacet(address(this)).transfersDisabled()) revert ICustomErrors.RequiresTransfersEnabled();
     // Requires that `from` and `to` are different addresses.
-    else if (p.from == p.to)
-      revert ICustomErrors.RequiresDifferentSenderAndRecipient(p.from);
+    else if (p.from == p.to) revert ICustomErrors.RequiresDifferentSenderAndRecipient(p.from);
     // Requires that allowance transfers from the reserve are performed by issuer members only.
     else if (p.from == address(0) && !AHasMembers(topData.issuer).isMember(p.spender))
       revert ICustomErrors.RequiresIssuerMembership(p.spender);
-
     // Requires that the `from` address can hold tokens.
-    else if (!canHoldTokens(p.from))
-      revert ICustomErrors.RequiresValidTokenHolder(p.from);
+    else if (!canHoldTokens(p.from)) revert ICustomErrors.RequiresValidTokenHolder(p.from);
     // Requires that the `from` address marketplace membership is active if not the reserve.
     else if (p.from != address(0) && !IHasActiveMembers(LibFast.data().marketplace).isActiveMember(p.from))
       revert ICustomErrors.RequiresMarketplaceActiveMembership(p.from);
-
     // Requires that the `to` address can hold tokens.
-    else if (!canHoldTokens(p.to))
-      revert ICustomErrors.RequiresValidTokenHolder(p.to);
+    else if (!canHoldTokens(p.to)) revert ICustomErrors.RequiresValidTokenHolder(p.to);
 
     // For any non-zero amount, update balances and allowances, notify other contracts, etc.
     if (p.amount != 0) {
@@ -470,26 +416,22 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param from is the wallet from which to give the allowance.
    * @param spender is the receiver of the allowance.
    * @param amount is how much to **increase** the current allowance by.
-   * 
+   *
    * Note: This function runs when amount is zero, and will emit.
    */
-  function performApproval(address from, address spender, uint256 amount)
-      external
-      onlyDiamondFacet {
+  function performApproval(address from, address spender, uint256 amount) external onlyDiamondFacet {
     // Allowance cannot be given over the reserve.
-    if (from == address(0))
-      revert ICustomErrors.UnsupportedOperation();
+    if (from == address(0)) revert ICustomErrors.UnsupportedOperation();
     // Require that the `from` address can hold tokens.
-    else if (!canHoldTokens(from))
-      revert ICustomErrors.RequiresValidTokenHolder(from);
-    
+    else if (!canHoldTokens(from)) revert ICustomErrors.RequiresValidTokenHolder(from);
+
     if (amount > 0) {
       LibFastToken.Data storage s = LibFastToken.data();
       // Note that we are not exactly following ERC20 here - we don't want to **set** the allowance to `amount`
       // to mitigate a possible attack.
       // See https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#heading=h.gmr6zdg47087.
       s.allowances[from][spender] += amount;
-    // Keep track of given and received allowances.
+      // Keep track of given and received allowances.
       s.allowancesByOwner[from].add(spender, true);
       s.allowancesBySpender[spender].add(from, true);
     }
@@ -507,12 +449,10 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * - The allowance given by `from` to `spender` is decreased by `amount`.
    * - Whether the allowance reached zero, stop tracking it by owner and by spender.
    * - Emit a `Disapproval(from, spender, amount)` event.
-   * 
+   *
    * Note: This function runs when amount is zero, and will emit.
    */
-  function performDisapproval(address from, address spender, uint256 amount)
-      external
-      onlyDiamondFacet {
+  function performDisapproval(address from, address spender, uint256 amount) external onlyDiamondFacet {
     if (amount != 0) {
       LibFastToken.Data storage s = LibFastToken.data();
 
@@ -534,10 +474,8 @@ contract FastTokenFacet is AFastFacet, IERC20 {
   // happen in solidity. However:
   // - In the context of our private chain, gas is cheap.
   // - It can only be called by a governor.
-  function beforeRemovingMember(address member)
-      external onlyDiamondFacet() {
-    if (balanceOf(member) != 0)
-      revert ICustomErrors.RequiresPositiveBalance(member);
+  function beforeRemovingMember(address member) external onlyDiamondFacet {
+    if (balanceOf(member) != 0) revert ICustomErrors.RequiresPositiveBalance(member);
 
     LibFastToken.Data storage s = LibFastToken.data();
 
@@ -562,27 +500,22 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     }
   }
 
-  function holders()
-      external view
-      returns(address[] memory) {
+  function holders() external view returns (address[] memory) {
     LibFastToken.Data storage s = LibFastToken.data();
     return s.tokenHolders.values;
   }
 
-  function balanceChanged(address holder, uint256 balance)
-      private {
+  function balanceChanged(address holder, uint256 balance) private {
     // Return early if this is the zero address.
-    if (holder == address(0))
-      return;
+    if (holder == address(0)) return;
 
     LibFastToken.Data storage s = LibFastToken.data();
 
     // If this is a positive balance and it doesn't already exist in the set, add address.
     if (balance > 0 && !s.tokenHolders.contains(holder))
       s.tokenHolders.add(holder, false);
-    // If the balance is 0 and it exists in the set, remove it.
-    else if (balance == 0 && s.tokenHolders.contains(holder))
-      s.tokenHolders.remove(holder, false);
+      // If the balance is 0 and it exists in the set, remove it.
+    else if (balance == 0 && s.tokenHolders.contains(holder)) s.tokenHolders.remove(holder, false);
   }
 
   // Private and helper methods.
@@ -599,11 +532,9 @@ contract FastTokenFacet is AFastFacet, IERC20 {
    * @param candidate The address to check.
    * @return A boolean set to `true` if `candidate` can hold tokens, `false` otherwise.
    */
-  function canHoldTokens(address candidate)
-      private view returns(bool) {
+  function canHoldTokens(address candidate) private view returns (bool) {
     // Zero address can hold tokens, in any cases.
-    if (candidate == address(0))
-      return true;
+    if (candidate == address(0)) return true;
     // If the FAST is semi public, any member of the marketplace can hold tokens.
     else if (FastTopFacet(address(this)).isSemiPublic()) {
       return AHasMembers(LibFast.data().marketplace).isMember(candidate);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-
 // WARNING: These events must be maintained 1:1 with LibIssuerEvents!
 // They also should never be emitted directly, they only help us defining
 // typescript types!

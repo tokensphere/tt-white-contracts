@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../interfaces/IERC20.sol';
-import '../common/AHasMembers.sol';
-import '../common/AHasAutomatons.sol';
-import './FastAutomatonsFacet.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../interfaces/IERC20.sol";
+import "../common/AHasMembers.sol";
+import "../common/AHasAutomatons.sol";
+import "./FastAutomatonsFacet.sol";
 
 /**
  * @title The `Distribution` FAST contract.
@@ -46,7 +45,13 @@ contract Distribution {
   error RequiresFastMembership(address who);
 
   /// @notice The possible phases in which the contract is in.
-  enum Phase { Funding, FeeSetup, BeneficiariesSetup, Withdrawal, Terminated }
+  enum Phase {
+    Funding,
+    FeeSetup,
+    BeneficiariesSetup,
+    Withdrawal,
+    Terminated
+  }
 
   /**
    * @notice Emited whenever the internal phase of this distribution changes.
@@ -56,7 +61,7 @@ contract Distribution {
   /**
    * @notice Emited whenever a beneficiary is added to the distribution list.
    * @param beneficiary is the address of the beneficiary who was added.
-   * @param amount is the amount in native target token that is owed to the beneficiary. 
+   * @param amount is the amount in native target token that is owed to the beneficiary.
    */
   event BeneficiaryAdded(address indexed beneficiary, uint256 indexed amount);
   /**
@@ -117,20 +122,17 @@ contract Distribution {
    */
   constructor(Params memory p) {
     // If the distribution is latched in the future, throw.
-    if (p.blockLatch >= block.number)
-      revert InconsistentParameter("blockLatch");
+    if (p.blockLatch >= block.number) revert InconsistentParameter("blockLatch");
     // Store all parameters.
     params = p;
     available = p.total;
     creationBlock = block.number;
   }
 
-  function advanceToFeeSetup()
-      public onlyDuring(Phase.Funding) onlyFastCaller {
+  function advanceToFeeSetup() public onlyDuring(Phase.Funding) onlyFastCaller {
     // Make sure that the current distribution has exactly the required amount locked.
     uint256 balance = params.token.balanceOf(address(this));
-    if (balance != params.total)
-      revert InconsistentParameter("balance");
+    if (balance != params.total) revert InconsistentParameter("balance");
     // Move to next phase.
     emit Advance(phase = Phase.FeeSetup);
   }
@@ -143,8 +145,7 @@ contract Distribution {
    * call this method.
    * @param _fee is the amount that the `issuer` will receive.
    */
-  function advanceToBeneficiariesSetup(uint256 _fee)
-      external onlyDuring(Phase.FeeSetup) onlyManager {
+  function advanceToBeneficiariesSetup(uint256 _fee) external onlyDuring(Phase.FeeSetup) onlyManager {
     fee = _fee;
     available -= fee;
     // Move to next phase.
@@ -155,15 +156,12 @@ contract Distribution {
    * @notice Advances the distribution to the `Phase.Withdrawal` phase.
    * The distribution must be in the `Phase.BeneficiariesSetup` phase.
    */
-  function advanceToWithdrawal()
-      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
+  function advanceToWithdrawal() public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // If the distribution covers more than the sum of all proceeds, we want
     // to prevent the distribution from advancing to the withdrawal phase.
-    if (available > 0)
-      revert Overfunded(available);
+    if (available > 0) revert Overfunded(available);
     // Transfer the fee to the issuer contract.
-    if (!params.token.transfer(params.issuer, fee))
-      revert TokenContractError();
+    if (!params.token.transfer(params.issuer, fee)) revert TokenContractError();
     // Move to next phase.
     emit Advance(phase = Phase.Withdrawal);
   }
@@ -181,22 +179,22 @@ contract Distribution {
    * @param _beneficiaries is the list of beneficiaries to add.
    * @param _amounts is the list of amounts respective to each beneficiary.
    */
-  function addBeneficiaries(address[] calldata _beneficiaries, uint256[] calldata _amounts)
-      public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
+  function addBeneficiaries(
+    address[] calldata _beneficiaries,
+    uint256[] calldata _amounts
+  ) public onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Beneficiaries and amount sizes must match.
-    if (_beneficiaries.length != _amounts.length)
-      revert InconsistentParameter("lengths");
+    if (_beneficiaries.length != _amounts.length) revert InconsistentParameter("lengths");
 
     // We will count how much is needed for all these beneficiaries.
     uint256 needed = 0;
     // For each of the passed beneficiaries...
-    for (uint256 i = 0; i < _beneficiaries.length;) {
+    for (uint256 i = 0; i < _beneficiaries.length; ) {
       // Memoize a few variables...
       address beneficiary = _beneficiaries[i];
       uint256 amount = _amounts[i];
       // Make sure the beneficiary is a member of the FAST.
-      if (!AHasMembers(params.fast).isMember(beneficiary))
-        revert RequiresFastMembership(beneficiary);
+      if (!AHasMembers(params.fast).isMember(beneficiary)) revert RequiresFastMembership(beneficiary);
 
       // Add the beneficiary to our set.
       beneficiaries.add(beneficiary, false);
@@ -207,14 +205,17 @@ contract Distribution {
       // Emit!
       emit BeneficiaryAdded(beneficiary, amount);
       // Next iteration.
-      unchecked { ++i; }
+      unchecked {
+        ++i;
+      }
     }
 
     // Make sure that there's enough to pay everyone.
-    if (available < needed)
-      revert InsufficientFunds(needed - available);
+    if (available < needed) revert InsufficientFunds(needed - available);
     // Decrease the amount of available funds.
-    unchecked { available -= needed; }
+    unchecked {
+      available -= needed;
+    }
   }
 
   /**
@@ -226,10 +227,9 @@ contract Distribution {
    * call this method.
    * @param _beneficiaries is the list of addresses to remove.
    */
-  function removeBeneficiaries(address[] calldata _beneficiaries)
-      external onlyDuring(Phase.BeneficiariesSetup) onlyManager {
+  function removeBeneficiaries(address[] calldata _beneficiaries) external onlyDuring(Phase.BeneficiariesSetup) onlyManager {
     // Remove all specified beneficiaries.
-    for (uint256 i = 0; i < _beneficiaries.length;) {
+    for (uint256 i = 0; i < _beneficiaries.length; ) {
       address beneficiary = _beneficiaries[i];
       // Remove the beneficiary from our list.
       beneficiaries.remove(beneficiary, false);
@@ -240,17 +240,18 @@ contract Distribution {
       // Emit!
       emit BeneficiaryRemoved(beneficiary);
       // Next iteration.
-      unchecked { ++i; }
+      unchecked {
+        ++i;
+      }
     }
   }
 
   /**
-   * 
+   *
    * @notice Returns the number of beneficiaries added so far.
    * @return The count.
    */
-  function beneficiaryCount()
-      external view returns(uint256) {
+  function beneficiaryCount() external view returns (uint256) {
     return beneficiaries.values.length;
   }
 
@@ -262,13 +263,8 @@ contract Distribution {
    * @param perPage is how many items should be returned.
    * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
    */
-  function paginateBeneficiaries(uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      beneficiaries.values,
-      index,
-      perPage
-    );
+  function paginateBeneficiaries(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {
+    return LibPaginate.addresses(beneficiaries.values, index, perPage);
   }
 
   /**
@@ -277,20 +273,16 @@ contract Distribution {
    * Note that this function is protected from reentrancy as it operates on the `token`
    * methods.
    */
-  function withdraw(address beneficiary)
-      public onlyDuring(Phase.Withdrawal) {
-    if (!beneficiaries.contains(beneficiary))
-      revert UnknownBeneficiary(beneficiary);
-    else if (withdrawn[beneficiary])
-      revert DuplicateEntry();
+  function withdraw(address beneficiary) public onlyDuring(Phase.Withdrawal) {
+    if (!beneficiaries.contains(beneficiary)) revert UnknownBeneficiary(beneficiary);
+    else if (withdrawn[beneficiary]) revert DuplicateEntry();
     // Memoize a few variables.
     uint256 amount = owings[beneficiary];
     // Make sure they can't do it again later... It is important
     // to do this before any call to `token` to prevent reentrancy.
     withdrawn[beneficiary] = true;
     // Transfer to the beneficiary all of their ownings.
-    if (!params.token.transfer(beneficiary, amount))
-      revert TokenContractError();
+    if (!params.token.transfer(beneficiary, amount)) revert TokenContractError();
     // Emit!
     emit Withdrawal(msg.sender, beneficiary, amount);
   }
@@ -303,8 +295,7 @@ contract Distribution {
    * Note that since this method calls the `token` contract, it **must be
    * protected against reentrancy**.
    */
-  function terminate()
-      public onlyManager exceptDuring(Phase.Terminated) {
+  function terminate() public onlyManager exceptDuring(Phase.Terminated) {
     // Reset internal variables so that it's clear that the contract is terminated.
     // It is important to do this prior to any call to `token` methods to prevent
     // re-entrancy attacks.
@@ -317,27 +308,25 @@ contract Distribution {
   /// Modifiers.
 
   modifier onlyDuring(Phase _phase) {
-    if (_phase != phase)
-      revert InvalidPhase();
+    if (_phase != phase) revert InvalidPhase();
     _;
   }
 
   modifier exceptDuring(Phase _phase) {
-    if (_phase == phase)
-      revert InvalidPhase();
+    if (_phase == phase) revert InvalidPhase();
     _;
   }
 
   modifier onlyFastCaller() {
-    if (msg.sender != params.fast)
-      revert RequiresFastCaller();
+    if (msg.sender != params.fast) revert RequiresFastCaller();
     _;
   }
 
   modifier onlyManager() {
-    if (!AHasMembers(params.issuer).isMember(msg.sender) &&
-        !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS))
-      revert RequiresManagerCaller();
+    if (
+      !AHasMembers(params.issuer).isMember(msg.sender) &&
+      !AHasAutomatons(params.fast).automatonCan(msg.sender, FAST_PRIVILEGE_MANAGE_DISTRIBUTIONS)
+    ) revert RequiresManagerCaller();
     _;
   }
 }

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibHelpers.sol';
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import './lib/AFastFacet.sol';
-import './lib/LibFastToken.sol';
-
+import "../lib/LibHelpers.sol";
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "./lib/AFastFacet.sol";
+import "./lib/LibFastToken.sol";
 
 /**
  * @notice A facet dedicated to view / UI only methods. This facet should never hold any method that
@@ -78,14 +77,13 @@ contract FastFrontendFacet is AFastFacet {
 
   /**
    * @notice Called by diamond facets, signals that FAST details may have changed.
-   * 
+   *
    * Business logic:
    * - Modifiers:
    *   - Requires the caller to be another facet of the diamond.
    * Emits `DetailsChanged`, see `IFastEvents.DetailsChanged`
    */
-  function emitDetailsChanged()
-      external onlyDiamondFacet {
+  function emitDetailsChanged() external onlyDiamondFacet {
     LibFastToken.Data storage tokenData = LibFastToken.data();
     emit DetailsChanged({
       transfersDisabled: LibFast.data().transfersDisabled,
@@ -102,47 +100,54 @@ contract FastFrontendFacet is AFastFacet {
    * @notice Gets the details of a FAST.
    * @return The details for the current FAST, see `Details`.
    */
-  function details()
-      public view returns(Details memory) {
+  function details() public view returns (Details memory) {
     LibFast.Data storage topStorage = LibFast.data();
     LibFastToken.Data storage tokenStorage = LibFastToken.data();
-    return Details({
-      addr: address(this),
-      name: tokenStorage.name,
-      symbol: tokenStorage.symbol,
-      decimals: tokenStorage.decimals,
-      totalSupply: tokenStorage.totalSupply,
-      isSemiPublic: topStorage.isSemiPublic,
-      hasFixedSupply: topStorage.hasFixedSupply,
-      transfersDisabled: topStorage.transfersDisabled,
-      reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],
-      memberCount: AHasMembers(address(this)).memberCount(),
-      governorCount: LibHasGovernors.data().governorSet.values.length
-    });
+    return
+      Details({
+        addr: address(this),
+        name: tokenStorage.name,
+        symbol: tokenStorage.symbol,
+        decimals: tokenStorage.decimals,
+        totalSupply: tokenStorage.totalSupply,
+        isSemiPublic: topStorage.isSemiPublic,
+        hasFixedSupply: topStorage.hasFixedSupply,
+        transfersDisabled: topStorage.transfersDisabled,
+        reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],
+        memberCount: AHasMembers(address(this)).memberCount(),
+        governorCount: LibHasGovernors.data().governorSet.values.length
+      });
   }
 
   /**
    * @notice Gets detailed governor details.
    * @return GovernorDetails See: `GovernorDetails`.
    */
-  function detailedGovernor(address governor)
-      public view returns(GovernorDetails memory) {
-    return GovernorDetails({
-      addr: governor,
-      ethBalance: (payable(governor).balance),
-      isMember: AHasMembers(address(this)).isMember(governor)
-    });
+  function detailedGovernor(address governor) public view returns (GovernorDetails memory) {
+    return
+      GovernorDetails({
+        addr: governor,
+        ethBalance: (payable(governor).balance),
+        isMember: AHasMembers(address(this)).isMember(governor)
+      });
   }
 
-  function paginateDetailedGovernors(uint256 index, uint256 perPage)
-      external view returns(GovernorDetails[] memory, uint256) {
-    (address[] memory governors, uint256 nextCursor) =
-      LibPaginate.addresses(LibHasGovernors.data().governorSet.values, index, perPage);
+  function paginateDetailedGovernors(
+    uint256 index,
+    uint256 perPage
+  ) external view returns (GovernorDetails[] memory, uint256) {
+    (address[] memory governors, uint256 nextCursor) = LibPaginate.addresses(
+      LibHasGovernors.data().governorSet.values,
+      index,
+      perPage
+    );
     GovernorDetails[] memory values = new GovernorDetails[](governors.length);
-    uint256 length =  governors.length;
-    for (uint256 i = 0; i < length;) {
+    uint256 length = governors.length;
+    for (uint256 i = 0; i < length; ) {
       values[i] = detailedGovernor(governors[i]);
-      unchecked { ++i; }
+      unchecked {
+        ++i;
+      }
     }
     return (values, nextCursor);
   }
@@ -151,26 +156,26 @@ contract FastFrontendFacet is AFastFacet {
    * @notice Gets detailed member details.
    * @return A FAST member's details, see `MemberDetails`.
    */
-  function detailedMember(address member)
-      public view returns(MemberDetails memory) {
-    return MemberDetails({
-      addr: member,
-      balance: LibFastToken.data().balances[member],
-      ethBalance: (payable(member).balance),
-      isGovernor: LibHasGovernors.data().governorSet.contains(member)
-    });
+  function detailedMember(address member) public view returns (MemberDetails memory) {
+    return
+      MemberDetails({
+        addr: member,
+        balance: LibFastToken.data().balances[member],
+        ethBalance: (payable(member).balance),
+        isGovernor: LibHasGovernors.data().governorSet.contains(member)
+      });
   }
 
-  function paginateDetailedMembers(uint256 index, uint256 perPage)
-      external view returns(MemberDetails[] memory, uint256) {
+  function paginateDetailedMembers(uint256 index, uint256 perPage) external view returns (MemberDetails[] memory, uint256) {
     LibHasMembers.Data storage membersData = LibHasMembers.data();
-    (address[] memory members, uint256 nextCursor) =
-      LibPaginate.addresses(membersData.memberSet.values, index, perPage);
+    (address[] memory members, uint256 nextCursor) = LibPaginate.addresses(membersData.memberSet.values, index, perPage);
     MemberDetails[] memory values = new MemberDetails[](members.length);
     uint256 length = members.length;
-    for (uint256 i = 0; i < length;) {
+    for (uint256 i = 0; i < length; ) {
       values[i] = detailedMember(members[i]);
-      unchecked { ++i; }
+      unchecked {
+        ++i;
+      }
     }
     return (values, nextCursor);
   }

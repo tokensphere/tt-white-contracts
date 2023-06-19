@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibAddressSet.sol';
-
+import "../../lib/LibAddressSet.sol";
 
 /**
  * @notice This library centralises shared functionality between FAST diamonds facets that have to do with token related logic.
  * @dev Note that if you feel like a method should be created inside this library, you might want to really consider
  * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode
- * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. 
+ * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable.
  */
 library LibFastToken {
   /// @notice The current version of the storage.
@@ -18,7 +17,7 @@ library LibFastToken {
 
   // Constants.
 
-  string internal constant DEFAULT_TRANSFER_REFERENCE = 'Unspecified - via ERC20';
+  string internal constant DEFAULT_TRANSFER_REFERENCE = "Unspecified - via ERC20";
 
   // Data structures.
 
@@ -57,8 +56,9 @@ library LibFastToken {
    * @notice Returns the token storage for the calling FAST.
    * @return s a struct pointer for token FAST data storage.
    */
-  function data()
-      internal pure returns(Data storage s) {
-    assembly {s.slot := STORAGE_SLOT}
+  function data() internal pure returns (Data storage s) {
+    assembly {
+      s.slot := STORAGE_SLOT
+    }
   }
 }

@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../interfaces/ICustomErrors.sol';
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../lib/LibHelpers.sol';
-import '../fast/FastTopFacet.sol';
-import '../fast/FastTokenFacet.sol';
-import './lib/AIssuerFacet.sol';
-import './lib/LibIssuer.sol';
+import "../interfaces/ICustomErrors.sol";
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../lib/LibHelpers.sol";
+import "../fast/FastTopFacet.sol";
+import "../fast/FastTokenFacet.sol";
+import "./lib/AIssuerFacet.sol";
+import "./lib/LibIssuer.sol";
 
-import '@openzeppelin/contracts/utils/math/Math.sol';
-
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract IssuerTopFacet is AIssuerFacet {
   using LibAddressSet for LibAddressSet.Data;
+
   // FAST management related methods.
 
   /**
@@ -22,8 +22,7 @@ contract IssuerTopFacet is AIssuerFacet {
    * @param fast The address of the contract to check.
    * @return A boolean.
    */
-  function isFastRegistered(address fast)
-      external view returns(bool) {
+  function isFastRegistered(address fast) external view returns (bool) {
     return LibIssuer.data().fastSet.contains(fast);
   }
 
@@ -32,8 +31,7 @@ contract IssuerTopFacet is AIssuerFacet {
    * @param symbol The symbol of the FAST diamond to get the address of.
    * @return The address of the corresponding FAST diamond, or the Zero Address if not found.
    */
-  function fastBySymbol(string calldata symbol)
-      external view returns(address) {
+  function fastBySymbol(string calldata symbol) external view returns (address) {
     return LibIssuer.data().fastSymbols[symbol];
   }
 
@@ -43,9 +41,7 @@ contract IssuerTopFacet is AIssuerFacet {
    * @notice Requires that the caller is a member of this Issuer.
    * @notice Emits a `FastRegistered` event.
    */
-  function registerFast(address fast)
-      external
-      onlyMember(msg.sender) {
+  function registerFast(address fast) external onlyMember(msg.sender) {
     LibIssuer.Data storage s = LibIssuer.data();
     string memory symbol = FastTokenFacet(fast).symbol();
     if (s.fastSymbols[symbol] != address(0)) {
@@ -67,29 +63,26 @@ contract IssuerTopFacet is AIssuerFacet {
    * @notice Requires that the caller is a member of this Issuer.
    * @notice Emits a `FastUnregistered` event.
    */
-  function unregisterFast(address fast)
-    external
-    onlyMember(msg.sender) {
-      LibIssuer.Data storage s = LibIssuer.data();
-      string memory symbol = FastTokenFacet(fast).symbol();
+  function unregisterFast(address fast) external onlyMember(msg.sender) {
+    LibIssuer.Data storage s = LibIssuer.data();
+    string memory symbol = FastTokenFacet(fast).symbol();
 
-      // Disable transfers in the FAST.
-      FastTopFacet(fast).setTransfersDisabled(true);
+    // Disable transfers in the FAST.
+    FastTopFacet(fast).setTransfersDisabled(true);
 
-      // Remove the FAST from our lists.
-      s.fastSet.remove(fast, false);
-      delete s.fastSymbols[symbol];
+    // Remove the FAST from our lists.
+    s.fastSet.remove(fast, false);
+    delete s.fastSymbols[symbol];
 
-      // Emit!
-      emit FastUnregistered(fast);
-    }
+    // Emit!
+    emit FastUnregistered(fast);
+  }
 
   /**
    * @notice Counts the number of FAST diamonds registered with this Issuer.
    * @return The number of FAST diamonds registered with this Issuer.
    */
-  function fastCount()
-      external view returns(uint256) {
+  function fastCount() external view returns (uint256) {
     return LibIssuer.data().fastSet.values.length;
   }
 
@@ -100,9 +93,7 @@ contract IssuerTopFacet is AIssuerFacet {
    * @return A `address[]` list of values at most `perPage` big.
    * @return A `uint256` index to the next page.
    */
-  function paginateFasts(uint256 cursor, uint256 perPage)
-      external view
-      returns(address[] memory, uint256) {
+  function paginateFasts(uint256 cursor, uint256 perPage) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(LibIssuer.data().fastSet.values, cursor, perPage);
   }
 
@@ -113,9 +104,7 @@ contract IssuerTopFacet is AIssuerFacet {
    * @param amount is how much should be moved from the ERC20 to the collection address.
    * @param to is the collection address - eg the address that will receive the ERC20 tokens.
    */
-  function transferERC20Tokens (IERC20 token, uint256 amount, address to)
-      public
-      onlyMember(msg.sender) {
+  function transferERC20Tokens(IERC20 token, uint256 amount, address to) public onlyMember(msg.sender) {
     require(token.transfer(to, amount));
   }
 
@@ -124,15 +113,12 @@ contract IssuerTopFacet is AIssuerFacet {
    * @param fast The FAST address to assign.
    * @param newGroup The name of the group in which the FAST should be placed.
    */
-  function setFastGroup(address fast, string calldata newGroup)
-      external onlyMember(msg.sender) {
+  function setFastGroup(address fast, string calldata newGroup) external onlyMember(msg.sender) {
     string memory oldGroup = FastTopFacet(fast).group();
     // Remove FAST from old group.
-    if (bytes(oldGroup).length > 0)
-      LibIssuer.data().fastGroups[oldGroup].remove(fast, false);
+    if (bytes(oldGroup).length > 0) LibIssuer.data().fastGroups[oldGroup].remove(fast, false);
     // Add FAST to new group.
-    if (bytes(newGroup).length > 0)
-      LibIssuer.data().fastGroups[newGroup].add(fast, false);
+    if (bytes(newGroup).length > 0) LibIssuer.data().fastGroups[newGroup].add(fast, false);
     // Set group name at FAST level.
     FastTopFacet(fast).setGroup(newGroup);
     // Emit!
@@ -147,9 +133,11 @@ contract IssuerTopFacet is AIssuerFacet {
    * @return A `address[]` list of values at most `perPage` big.
    * @return A `uint256` index to the next page.
    */
-  function paginateFastsInGroup(string calldata group, uint256 cursor, uint256 perPage)
-      external view
-      returns(address[] memory, uint256) {
+  function paginateFastsInGroup(
+    string calldata group,
+    uint256 cursor,
+    uint256 perPage
+  ) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(LibIssuer.data().fastGroups[group].values, cursor, perPage);
   }
 }

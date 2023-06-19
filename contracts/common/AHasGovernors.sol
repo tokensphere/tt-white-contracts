@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../common/lib/LibHasGovernors.sol';
-import '../interfaces/ICustomErrors.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../common/lib/LibHasGovernors.sol";
+import "../interfaces/ICustomErrors.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -39,35 +38,29 @@ abstract contract AHasGovernors {
    * @dev Must be implemented by the inheriting contract.
    * @param who is the address to test.
    */
-  function isGovernorsManager(address who)
-      virtual internal view
-      returns(bool);
+  function isGovernorsManager(address who) internal view virtual returns (bool);
 
   /**
    * @notice Checks whether the given address can be added as a governor or not.
    * @dev Must be implemented by the inheriting contract.
    * @param who is the address to test.
    */
-  function isValidGovernor(address who)
-      virtual internal view
-      returns(bool);
+  function isValidGovernor(address who) internal view virtual returns (bool);
 
   /**
    * @notice This callback is called when a governor is added to the contract.
    * @dev May be overriden by the inheriting contract.
    * @param governor is the address which was added.
    */
-  function onGovernorAdded(address governor)
-      virtual internal {}
-  
+  function onGovernorAdded(address governor) internal virtual {}
+
   /**
    * @notice This callback is called when a governor is removed to the contract.
    * @dev May be overriden by the inheriting contract.
    * @param governor is the address which was removed.
    */
-  function onGovernorRemoved(address governor)
-      virtual internal {}
-  
+  function onGovernorRemoved(address governor) internal virtual {}
+
   // Governors management.
 
   /**
@@ -75,8 +68,7 @@ abstract contract AHasGovernors {
    * @param who is the address to test.
    * @return A `bool` equal to `true` when `candidate` is a governor.
    */
-  function isGovernor(address who)
-      external view returns(bool) {
+  function isGovernor(address who) external view returns (bool) {
     return LibHasGovernors.data().governorSet.contains(who);
   }
 
@@ -84,8 +76,7 @@ abstract contract AHasGovernors {
    * @notice Queries the number of governors.
    * @return An `uint256`.
    */
-  function governorCount()
-      external view returns(uint256) {
+  function governorCount() external view returns (uint256) {
     return LibHasGovernors.data().governorSet.values.length;
   }
 
@@ -95,8 +86,7 @@ abstract contract AHasGovernors {
    * @param perPage is how many items should be returned.
    * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
    */
-  function paginateGovernors(uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
+  function paginateGovernors(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(LibHasGovernors.data().governorSet.values, index, perPage);
   }
 
@@ -104,9 +94,7 @@ abstract contract AHasGovernors {
    * @notice Adds a governor to the list of known governors.
    * @param who is the address to be added.
    */
-  function addGovernor(address who)
-      external
-      onlyGovernorManager(msg.sender) onlyValidGovernor(who) {
+  function addGovernor(address who) external onlyGovernorManager(msg.sender) onlyValidGovernor(who) {
     // Add the governor.
     LibHasGovernors.data().governorSet.add(who, false);
     // Notify via callback.
@@ -121,9 +109,7 @@ abstract contract AHasGovernors {
    * @notice Requires that the caller is a governor of this Issuer.
    * @notice Emits a `AHasGovernors.GovernorRemoved` event.
    */
-  function removeGovernor(address governor)
-      external 
-      onlyGovernorManager(msg.sender) {
+  function removeGovernor(address governor) external onlyGovernorManager(msg.sender) {
     // Notify via callback.
     onGovernorRemoved(governor);
     // Remove governor.
@@ -135,14 +121,12 @@ abstract contract AHasGovernors {
   /// Modifiers.
 
   modifier onlyGovernorManager(address who) {
-    if (!isGovernorsManager(who))
-      revert RequiresGovernorsManager(who);
+    if (!isGovernorsManager(who)) revert RequiresGovernorsManager(who);
     _;
   }
 
   modifier onlyValidGovernor(address who) {
-    if (!isValidGovernor(who))
-      revert RequiresValidGovernor(who);
+    if (!isValidGovernor(who)) revert RequiresValidGovernor(who);
     _;
   }
 }

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-
 /**
  * @notice Top-level shared functionality for FAST diamonds.
  * @dev Note that if you feel like a method should be created inside this library, you might want to really consider
  * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode
- * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable. 
+ * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable.
  */
 library LibFast {
   /// @notice The current version of the storage.
@@ -41,8 +40,9 @@ library LibFast {
    * @notice Returns the top-level storage for the calling FAST.
    * @return s a struct pointer for top-level FAST data storage.
    */
-  function data()
-      internal pure returns(Data storage s) {
-    assembly {s.slot := STORAGE_SLOT}
+  function data() internal pure returns (Data storage s) {
+    assembly {
+      s.slot := STORAGE_SLOT
+    }
   }
 }

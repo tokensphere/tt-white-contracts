@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibAddressSet.sol';
-
+import "../../lib/LibAddressSet.sol";
 
 library LibFastDistributions {
   /// @notice The current version of the storage.
@@ -25,8 +24,9 @@ library LibFastDistributions {
    * @notice Returns the access storage for the calling FAST.
    * @return s a struct pointer for access FAST data storage.
    */
-  function data()
-      internal pure returns(Data storage s) {
-    assembly {s.slot := STORAGE_SLOT}
+  function data() internal pure returns (Data storage s) {
+    assembly {
+      s.slot := STORAGE_SLOT
+    }
   }
 }

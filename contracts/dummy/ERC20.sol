@@ -4,16 +4,15 @@ pragma solidity ^0.8.10;
 
 import "../interfaces/IERC20.sol";
 
-
 contract ERC20 is IERC20 {
-  mapping (address => uint256) private _balances;
-  mapping (address => mapping (address => uint256)) private _allowances;
+  mapping(address => uint256) private _balances;
+  mapping(address => mapping(address => uint256)) private _allowances;
 
   uint256 public totalSupply;
   string public name;
   string public symbol;
 
-  constructor (string memory _name, string memory _symbol) {
+  constructor(string memory _name, string memory _symbol) {
     name = _name;
     symbol = _symbol;
   }
@@ -35,7 +34,6 @@ contract ERC20 is IERC20 {
     _balances[account] = accountBalance - amount;
     totalSupply -= amount;
   }
-
 
   function balanceOf(address account) public view override(IERC20) returns (uint256) {
     return _balances[account];
