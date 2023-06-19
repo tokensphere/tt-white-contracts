@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../common/AHasMembers.sol';
-import '../common/AHasAutomatons.sol';
-import '../interfaces/IERC165.sol';       // Interface Support.
-import '../interfaces/IERC173.sol';       // Ownership.
-import '../interfaces/IDiamondCut.sol';   // Facet management.
-import '../interfaces/IDiamondLoupe.sol'; // Facet introspection.
-import '../interfaces/ICustomErrors.sol';
-import '../lib/LibDiamond.sol';
-import '../lib/LibAddressSet.sol';
-import './lib/AIssuerFacet.sol';
-import './lib/LibIssuer.sol';
-import './lib/LibIssuerAccess.sol';
-
+import "../common/AHasMembers.sol";
+import "../common/AHasAutomatons.sol";
+import "../interfaces/IERC165.sol"; // Interface Support.
+import "../interfaces/IERC173.sol"; // Ownership.
+import "../interfaces/IDiamondCut.sol"; // Facet management.
+import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
+import "../interfaces/ICustomErrors.sol";
+import "../lib/LibDiamond.sol";
+import "../lib/LibAddressSet.sol";
+import "./lib/AIssuerFacet.sol";
+import "./lib/LibIssuer.sol";
+import "./lib/LibIssuerAccess.sol";
 
 /**
  * @title The Issuer Smart Contract.
@@ -35,11 +34,9 @@ contract IssuerInitFacet is AIssuerFacet {
     address member;
   }
 
-  function initialize(InitializerParams calldata params)
-      external onlyDiamondOwner() {
+  function initialize(InitializerParams calldata params) external onlyDiamondOwner {
     // Make sure we haven't initialized yet.
-    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION)
-      revert ICustomErrors.AlreadyInitialized();
+    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION) revert ICustomErrors.AlreadyInitialized();
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();

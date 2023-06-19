@@ -1,32 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../common/lib/LibHasGovernors.sol';
-import '../common/lib/LibHasMembers.sol';
-import '../common/lib/LibHasAutomatons.sol';
-import '../common/AHasGovernors.sol';
-import '../common/AHasMembers.sol';
-import '../common/AHasAutomatons.sol';
-import '../interfaces/IERC165.sol';         // Interface Support.
-import '../interfaces/IERC173.sol';         // Ownership.
-import '../interfaces/IDiamondCut.sol';     // Facet management.
-import '../interfaces/IDiamondLoupe.sol';   // Facet introspection.
-import '../interfaces/IERC20.sol';          // Token.
-import '../interfaces/ICustomErrors.sol';
-import '../lib/LibDiamond.sol';
-import '../lib/LibAddressSet.sol';
-import './lib/AFastFacet.sol';
-import './lib/LibFast.sol';
-import './lib/LibFastToken.sol';
-import './lib/LibFastHistory.sol';
-import './lib/LibFastDistributions.sol';
-
+import "../common/lib/LibHasGovernors.sol";
+import "../common/lib/LibHasMembers.sol";
+import "../common/lib/LibHasAutomatons.sol";
+import "../common/AHasGovernors.sol";
+import "../common/AHasMembers.sol";
+import "../common/AHasAutomatons.sol";
+import "../interfaces/IERC165.sol"; // Interface Support.
+import "../interfaces/IERC173.sol"; // Ownership.
+import "../interfaces/IDiamondCut.sol"; // Facet management.
+import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
+import "../interfaces/IERC20.sol"; // Token.
+import "../interfaces/ICustomErrors.sol";
+import "../lib/LibDiamond.sol";
+import "../lib/LibAddressSet.sol";
+import "./lib/AFastFacet.sol";
+import "./lib/LibFast.sol";
+import "./lib/LibFastToken.sol";
+import "./lib/LibFastHistory.sol";
+import "./lib/LibFastDistributions.sol";
 
 /**
  * @notice NotAlthough this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all
  * methods are in fact implemented by the underlaying Diamond proxy. It is therefore safe to
  * perform casts directly on the current contract address into these interfaces.
- */ 
+ */
 contract FastInitFacet is AFastFacet {
   using LibAddressSet for LibAddressSet.Data;
   /// Events.
@@ -49,12 +48,10 @@ contract FastInitFacet is AFastFacet {
     bool isSemiPublic;
   }
 
-  function initialize(InitializerParams calldata params)
-      external onlyDeployer {
+  function initialize(InitializerParams calldata params) external onlyDeployer {
     // Make sure we haven't initialized yet.
-    if (LibFast.data().version >= LibFast.STORAGE_VERSION)
-      revert ICustomErrors.AlreadyInitialized();
- 
+    if (LibFast.data().version >= LibFast.STORAGE_VERSION) revert ICustomErrors.AlreadyInitialized();
+
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     ds.supportedInterfaces[type(IERC20).interfaceId] = true;

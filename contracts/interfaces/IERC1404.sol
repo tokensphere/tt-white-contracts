@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-
 /// @title ERC1404 standard as defined in the EIP.
 interface IERC1404 {
   /**
@@ -12,10 +11,7 @@ interface IERC1404 {
    * @param amount is the amount to be transfered.
    * @return a `uint8` error code if a problem was detected, otherwise zero.
    */
-  function detectTransferRestriction(address owner, address recipient, uint256 amount)
-    external
-    view
-    returns (uint8);
+  function detectTransferRestriction(address owner, address recipient, uint256 amount) external view returns (uint8);
 
   /**
    * @notice Maps a transfer restriction error code into a human-readable string.

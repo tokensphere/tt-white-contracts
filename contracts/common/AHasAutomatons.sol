@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../common/lib/LibHasAutomatons.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../common/lib/LibHasAutomatons.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -33,17 +32,13 @@ abstract contract AHasAutomatons {
   event AutomatonRemoved(address indexed automaton);
 
   // Must be overriden.
-  function isAutomatonsManager(address who)
-      virtual internal view
-      returns(bool);
+  function isAutomatonsManager(address who) internal view virtual returns (bool);
 
   // May be overriden.
-  function onAutomatonAdded(address member)
-      virtual internal {}
-  
+  function onAutomatonAdded(address member) internal virtual {}
+
   // May be overriden.
-  function onAutomatonRemoved(address member)
-      virtual internal {}
+  function onAutomatonRemoved(address member) internal virtual {}
 
   /// Automatons management.
 
@@ -52,8 +47,7 @@ abstract contract AHasAutomatons {
    * @param candidate is the address to test.
    * @return A `boolean` flag.
    */
-  function isAutomaton(address candidate)
-      external view returns(bool) {
+  function isAutomaton(address candidate) external view returns (bool) {
     return LibHasAutomatons.data().automatonSet.contains(candidate);
   }
 
@@ -62,22 +56,19 @@ abstract contract AHasAutomatons {
    * @param automaton is the address to test.
    * @return An `uint256` bitfield.
    */
-  function automatonPrivileges(address automaton)
-      external view returns(uint32) {
+  function automatonPrivileges(address automaton) external view returns (uint32) {
     return LibHasAutomatons.data().automatonPrivileges[automaton];
   }
 
-  function automatonCan(address automaton, uint32 privilege)
-    external view returns(bool) {
-      return (LibHasAutomatons.data().automatonPrivileges[automaton] & privilege) != 0;
-    }
+  function automatonCan(address automaton, uint32 privilege) external view returns (bool) {
+    return (LibHasAutomatons.data().automatonPrivileges[automaton] & privilege) != 0;
+  }
 
   /**
    * @notice Counts the numbers of automatons present in this Fast.
    * @return The number of automatons in this marketplace.
    */
-  function automatonCount()
-      external view returns(uint256) {
+  function automatonCount() external view returns (uint256) {
     return LibHasAutomatons.data().automatonSet.values.length;
   }
 
@@ -88,13 +79,8 @@ abstract contract AHasAutomatons {
    * @return A `address[]` list of values at most `perPage` big.
    * @return A `uint256` index to the next page.
    */
-  function paginateAutomatons(uint256 cursor, uint256 perPage)
-    external view returns(address[] memory, uint256) {
-    return LibPaginate.addresses(
-      LibHasAutomatons.data().automatonSet.values,
-      cursor,
-      perPage
-    );
+  function paginateAutomatons(uint256 cursor, uint256 perPage) external view returns (address[] memory, uint256) {
+    return LibPaginate.addresses(LibHasAutomatons.data().automatonSet.values, cursor, perPage);
   }
 
   /**
@@ -102,8 +88,7 @@ abstract contract AHasAutomatons {
    * @param candidate is the automaton address to which the privileges should be assigned.
    * @param privileges is a bitfield of privileges to apply.
    */
-  function setAutomatonPrivileges(address candidate, uint32 privileges)
-      external onlyAutomatonManager(msg.sender) {
+  function setAutomatonPrivileges(address candidate, uint32 privileges) external onlyAutomatonManager(msg.sender) {
     LibHasAutomatons.Data storage ds = LibHasAutomatons.data();
     ds.automatonSet.add(candidate, true);
     ds.automatonPrivileges[candidate] = privileges;
@@ -114,8 +99,7 @@ abstract contract AHasAutomatons {
    * @notice Removes an automaton completely.
    * @param candidate is the automaton to remove.
    */
-  function removeAutomaton(address candidate)
-      external onlyAutomatonManager(msg.sender) {
+  function removeAutomaton(address candidate) external onlyAutomatonManager(msg.sender) {
     LibHasAutomatons.Data storage ds = LibHasAutomatons.data();
     ds.automatonSet.remove(candidate, false);
     delete ds.automatonPrivileges[candidate];
@@ -125,8 +109,7 @@ abstract contract AHasAutomatons {
   /// Modifiers.
 
   modifier onlyAutomatonManager(address who) {
-    if (!isAutomatonsManager(who))
-      revert RequiresAutomatonsManager(who);
+    if (!isAutomatonsManager(who)) revert RequiresAutomatonsManager(who);
     _;
   }
 }

@@ -1,30 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../lib/LibHelpers.sol';
-import '../common/AHasMembers.sol';
-import '../interfaces/ICustomErrors.sol';
-import '../fast/FastTopFacet.sol';
-import '../fast/FastTokenFacet.sol';
-import './lib/AIssuerFacet.sol';
-import './lib/LibIssuerAccess.sol';
-import './lib/IIssuerEvents.sol';
-import '../issuer/IssuerTopFacet.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../lib/LibHelpers.sol";
+import "../common/AHasMembers.sol";
+import "../interfaces/ICustomErrors.sol";
+import "../fast/FastTopFacet.sol";
+import "../fast/FastTokenFacet.sol";
+import "./lib/AIssuerFacet.sol";
+import "./lib/LibIssuerAccess.sol";
+import "./lib/IIssuerEvents.sol";
+import "../issuer/IssuerTopFacet.sol";
 
 contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
   using LibAddressSet for LibAddressSet.Data;
+
   /// AHasMembers implementation.
 
-  function isMembersManager(address who)
-      internal view override(AHasMembers) returns(bool) {
+  function isMembersManager(address who) internal view override(AHasMembers) returns (bool) {
     return AHasMembers(this).isMember(who);
   }
 
-  function isValidMember(address who)
-      internal pure override(AHasMembers) returns(bool) {
+  function isValidMember(address who) internal pure override(AHasMembers) returns (bool) {
     return who != LibHelpers.ZERO_ADDRESS;
   }
 
@@ -33,8 +31,7 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
   /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
    * @param governor The governor added to a FAST.
    */
-  function governorAddedToFast(address governor)
-      external {
+  function governorAddedToFast(address governor) external {
     // Verify that the given address is in fact a registered FAST contract.
     if (!IssuerTopFacet(address(this)).isFastRegistered(msg.sender)) {
       revert ICustomErrors.RequiresFastContractCaller();
@@ -49,8 +46,7 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
   /** @notice Callback from FAST contracts allowing the Issuer contract to keep track of governorships.
    * @param governor The governor removed from a FAST.
    */
-  function governorRemovedFromFast(address governor)
-      external {
+  function governorRemovedFromFast(address governor) external {
     // Verify that the given address is in fact a registered FAST contract.
     if (!IssuerTopFacet(address(this)).isFastRegistered(msg.sender)) {
       revert ICustomErrors.RequiresFastContractCaller();
@@ -69,9 +65,11 @@ contract IssuerAccessFacet is AIssuerFacet, AHasMembers {
    * @return A `address[]` list of values at most `perPage` big.
    * @return A `uint256` index to the next page.
    */
-  function paginateGovernorships(address governor, uint256 cursor, uint256 perPage)
-      external view
-      returns(address[] memory, uint256) {
+  function paginateGovernorships(
+    address governor,
+    uint256 cursor,
+    uint256 perPage
+  ) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(LibIssuerAccess.data().fastGovernorships[governor].values, cursor, perPage);
   }
 }

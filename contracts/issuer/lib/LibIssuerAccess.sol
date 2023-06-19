@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../lib/LibAddressSet.sol';
-
+import "../../lib/LibAddressSet.sol";
 
 library LibIssuerAccess {
   // The current version of the storage.
@@ -17,8 +16,9 @@ library LibIssuerAccess {
     mapping(address => LibAddressSet.Data) fastGovernorships;
   }
 
-  function data()
-      internal pure returns(Data storage s) {
-    assembly {s.slot := STORAGE_SLOT}
+  function data() internal pure returns (Data storage s) {
+    assembly {
+      s.slot := STORAGE_SLOT
+    }
   }
 }

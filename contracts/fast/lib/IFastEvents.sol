@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../../fast/Distribution.sol';
-import '../../fast/Crowdfund.sol';
-
+import "../../fast/Distribution.sol";
+import "../../fast/Crowdfund.sol";
 
 /**
  * @title FAST events inventory.
@@ -13,7 +12,7 @@ import '../../fast/Crowdfund.sol';
  */
 interface IFastEvents {
   /// Issuance related events.
-  
+
   /**
    * @notice Emited whenever an issuance happens in a FAST.
    * @param amount is the amount of tokens that have been minted.

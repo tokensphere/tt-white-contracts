@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../lib/LibPaginate.sol';
-import '../common/lib/LibHasMembers.sol';
-import '../interfaces/ICustomErrors.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../lib/LibPaginate.sol";
+import "../common/lib/LibHasMembers.sol";
+import "../interfaces/ICustomErrors.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -39,35 +38,29 @@ abstract contract AHasMembers {
    * @dev Must be implemented by the inheriting contract.
    * @param who is the address to test.
    */
-  function isMembersManager(address who)
-      virtual internal view
-      returns(bool);
+  function isMembersManager(address who) internal view virtual returns (bool);
 
   /**
    * @notice Checks whether the given address can be added as a member or not.
    * @dev Must be implemented by the inheriting contract.
    * @param who is the address to test.
    */
-  function isValidMember(address who)
-      virtual internal view
-      returns(bool);
+  function isValidMember(address who) internal view virtual returns (bool);
 
   /**
    * @notice This callback is called when a member is added to the contract.
    * @dev May be overriden by the inheriting contract.
    * @param member is the address which was added.
    */
-  function onMemberAdded(address member)
-      virtual internal {}
-  
+  function onMemberAdded(address member) internal virtual {}
+
   /**
    * @notice This callback is called when a member is removed to the contract.
    * @dev May be overriden by the inheriting contract.
    * @param member is the address which was removed.
    */
-  function onMemberRemoved(address member)
-      virtual internal {}
-  
+  function onMemberRemoved(address member) internal virtual {}
+
   // Members management.
 
   /**
@@ -75,8 +68,7 @@ abstract contract AHasMembers {
    * @param who is the address to test.
    * @return A `bool` equal to `true` when `candidate` is a member.
    */
-  function isMember(address who)
-      external view returns(bool) {
+  function isMember(address who) external view returns (bool) {
     return LibHasMembers.data().memberSet.contains(who);
   }
 
@@ -84,8 +76,7 @@ abstract contract AHasMembers {
    * @notice Queries the number of members.
    * @return An `uint256`.
    */
-  function memberCount()
-      external view returns(uint256) {
+  function memberCount() external view returns (uint256) {
     return LibHasMembers.data().memberSet.values.length;
   }
 
@@ -95,8 +86,7 @@ abstract contract AHasMembers {
    * @param perPage is how many items should be returned.
    * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
    */
-  function paginateMembers(uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
+  function paginateMembers(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(LibHasMembers.data().memberSet.values, index, perPage);
   }
 
@@ -104,9 +94,7 @@ abstract contract AHasMembers {
    * @notice Adds a member to the list of known members.
    * @param who is the address to be added.
    */
-  function addMember(address who)
-      external
-      onlyMemberManager(msg.sender) onlyValidMember(who) {
+  function addMember(address who) external onlyMemberManager(msg.sender) onlyValidMember(who) {
     // Add the member.
     LibHasMembers.data().memberSet.add(who, false);
     // Notify via callback.
@@ -121,9 +109,7 @@ abstract contract AHasMembers {
    * @notice Requires that the caller is a member of this Issuer.
    * @notice Emits a `AHasMembers.MemberRemoved` event.
    */
-  function removeMember(address member)
-      external 
-      onlyMemberManager(msg.sender) {
+  function removeMember(address member) external onlyMemberManager(msg.sender) {
     // Notify via callback.
     onMemberRemoved(member);
     // Remove member.
@@ -135,14 +121,12 @@ abstract contract AHasMembers {
   /// Modifiers.
 
   modifier onlyMemberManager(address who) {
-    if (!isMembersManager(who))
-      revert RequiresMembersManager(who);
+    if (!isMembersManager(who)) revert RequiresMembersManager(who);
     _;
   }
 
   modifier onlyValidMember(address who) {
-    if (!isValidMember(who))
-      revert RequiresValidMember(who);
+    if (!isValidMember(who)) revert RequiresValidMember(who);
     _;
   }
 }

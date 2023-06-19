@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import '../lib/LibAddressSet.sol';
-import '../interfaces/IERC20.sol';
-import '../common/AHasMembers.sol';
-import '../common/AHasGovernors.sol';
-import '@openzeppelin/contracts/utils/math/Math.sol';
-
+import "../lib/LibAddressSet.sol";
+import "../interfaces/IERC20.sol";
+import "../common/AHasMembers.sol";
+import "../common/AHasGovernors.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
  * @title The `Crowdfund` FAST contract.
@@ -57,7 +56,12 @@ contract Crowdfund {
   event Terminated(bool indexed success);
 
   /// @notice The different phases of the crowdfund.
-  enum Phase { Setup, Funding, Success, Failure }
+  enum Phase {
+    Setup,
+    Funding,
+    Success,
+    Failure
+  }
 
   /// @notice Parameters to be passed to this contract's constructor.
   struct Params {
@@ -105,21 +109,17 @@ contract Crowdfund {
     // Store parameters.
     params = p;
     // Check that the owner is a member of the FAST contract.
-    if (!isFastGovernor(p.owner))
-      revert RequiresFastGovernorship(p.owner);
+    if (!isFastGovernor(p.owner)) revert RequiresFastGovernorship(p.owner);
     // Check that the beneficiary is a member of the FAST contract.
-    else if (!isFastMember(p.beneficiary))
-      revert RequiresFastMembership(p.beneficiary);
+    else if (!isFastMember(p.beneficiary)) revert RequiresFastMembership(p.beneficiary);
     // Invalid fee - superior than 100%.
-    else if (params.basisPointsFee > 10_000)
-      revert InconsistentParameter("basisPointsFee");
+    else if (params.basisPointsFee > 10_000) revert InconsistentParameter("basisPointsFee");
     // Keep creation block handy.
     creationBlock = block.number;
   }
 
   /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
-  function feeAmount()
-      public view returns(uint256) {
+  function feeAmount() public view returns (uint256) {
     return Math.mulDiv(collected, params.basisPointsFee, 10_000, Math.Rounding.Up);
   }
 
@@ -127,8 +127,7 @@ contract Crowdfund {
    * @notice Advances the campaign to the funding phase.
    * Note that this method is only available during the setup phase.
    */
-  function advanceToFunding()
-      external onlyDuring(Phase.Setup) onlyIssuerMember {
+  function advanceToFunding() external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
     emit Advance(phase = Phase.Funding);
   }
@@ -138,15 +137,12 @@ contract Crowdfund {
    * Note that this method is only available during the funding phase.
    * @param amount The amount of tokens to pledge.
    */
-  function pledge(uint256 amount)
-      public onlyDuring(Phase.Funding) onlyFastMember {
+  function pledge(uint256 amount) public onlyDuring(Phase.Funding) onlyFastMember {
     // Make sure the amount is non-zero.
-    if (amount == 0)
-      revert InconsistentParameter("amount");
+    if (amount == 0) revert InconsistentParameter("amount");
     // Make sure that the message sender gave us allowance for at least this amount.
     uint256 allowance = params.token.allowance(msg.sender, address(this));
-    if (allowance < amount)
-      revert InsufficientFunds(amount - allowance);
+    if (allowance < amount) revert InsufficientFunds(amount - allowance);
     // Keep track of the pledger - don't throw if already present.
     pledgerSet.add(msg.sender, true);
     // Add the pledged amount to the existing pledge.
@@ -154,8 +150,7 @@ contract Crowdfund {
     // Update the collected amount.
     collected += amount;
     // Transfer the tokens to this contract.
-    if (!params.token.transferFrom(msg.sender, address(this), amount))
-      revert TokenContractError();
+    if (!params.token.transferFrom(msg.sender, address(this), amount)) revert TokenContractError();
     // Emit!
     emit Pledge(msg.sender, amount);
   }
@@ -164,8 +159,7 @@ contract Crowdfund {
    * @notice Queries the number of members.
    * @return An `uint256`.
    */
-  function pledgerCount()
-      external view returns(uint256) {
+  function pledgerCount() external view returns (uint256) {
     return pledgerSet.values.length;
   }
 
@@ -175,8 +169,7 @@ contract Crowdfund {
    * @param perPage is how many items should be returned.
    * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.
    */
-  function paginatePledgers(uint256 index, uint256 perPage)
-      external view returns(address[] memory, uint256) {
+  function paginatePledgers(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {
     return LibPaginate.addresses(pledgerSet.values, index, perPage);
   }
 
@@ -186,25 +179,22 @@ contract Crowdfund {
    * button to terminate the crowdfunding prematurely.
    * @param success Whether the crowdfunding was successful or not.
    */
-  function terminate(bool success)
-      public onlyIssuerMember {
+  function terminate(bool success) public onlyIssuerMember {
     // If the crowdfunding was successful...
     if (success) {
       // Transfer the fee to the issuer contract if there is one.
       uint256 finalFee = feeAmount();
       if (finalFee > 0)
-        if (!params.token.transfer(params.issuer, finalFee))
-          revert TokenContractError();
+        if (!params.token.transfer(params.issuer, finalFee)) revert TokenContractError();
       // Transfer the payout to the beneficiary.
       uint256 payout = collected - finalFee;
       // If there's a payout for the beneficiary, transfer it.
       if (payout > 0)
-        // Make sure that the beneficiary is **still** a member of the FAST contract.
         if (!isFastMember(params.beneficiary))
+          // Make sure that the beneficiary is **still** a member of the FAST contract.
           revert RequiresFastMembership(params.beneficiary);
         // Attempt to transfer to the beneficiary.
-        else if (!params.token.transfer(params.beneficiary, payout))
-          revert TokenContractError();
+        else if (!params.token.transfer(params.beneficiary, payout)) revert TokenContractError();
     }
     // Advance to next phase.
     emit Advance(phase = success ? Phase.Success : Phase.Failure);
@@ -215,19 +205,15 @@ contract Crowdfund {
    * Note that this method is only available during the failure phase.
    * @param pledger The address of the pledger to refund.
    */
-  function refund(address pledger)
-      public onlyDuring(Phase.Failure) {
+  function refund(address pledger) public onlyDuring(Phase.Failure) {
     // Make sure the pledger is in the set.
-    if (!pledgerSet.contains(pledger))
-      revert UnknownPledger(pledger);
+    if (!pledgerSet.contains(pledger)) revert UnknownPledger(pledger);
     // Pledger has already been refunded...
-    else if (refunded[pledger])
-      revert DuplicateEntry();
+    else if (refunded[pledger]) revert DuplicateEntry();
     // Track that the pledger has been refunded.
     refunded[pledger] = true;
     // Transfer the tokens to the pledger.
-    if (!params.token.transfer(pledger, pledges[pledger]))
-      revert TokenContractError();
+    if (!params.token.transfer(pledger, pledges[pledger])) revert TokenContractError();
   }
 
   /// Modifiers and ACL functions.
@@ -237,8 +223,7 @@ contract Crowdfund {
    * @param who The address to check.
    * @return A `bool` indicating whether the address is a governor of the FAST contract.
    */
-  function isFastGovernor(address who)
-      internal view returns(bool) {
+  function isFastGovernor(address who) internal view returns (bool) {
     return AHasGovernors(params.fast).isGovernor(who);
   }
 
@@ -247,26 +232,22 @@ contract Crowdfund {
    * @param who The address to check.
    * @return A `bool` indicating whether the address is a member of the FAST contract.
    */
-  function isFastMember(address who)
-      internal view returns(bool) {
+  function isFastMember(address who) internal view returns (bool) {
     return AHasMembers(params.fast).isMember(who);
   }
 
   modifier onlyDuring(Phase _phase) {
-    if (_phase != phase)
-      revert InvalidPhase();
+    if (_phase != phase) revert InvalidPhase();
     _;
   }
 
   modifier onlyIssuerMember() {
-    if (!AHasMembers(params.issuer).isMember(msg.sender))
-      revert RequiresIssuerMemberCaller();
+    if (!AHasMembers(params.issuer).isMember(msg.sender)) revert RequiresIssuerMemberCaller();
     _;
   }
 
   modifier onlyFastMember() {
-    if (!isFastMember(msg.sender))
-      revert RequiresFastMemberCaller();
+    if (!isFastMember(msg.sender)) revert RequiresFastMemberCaller();
     _;
   }
 }
