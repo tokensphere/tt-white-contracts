@@ -125,7 +125,7 @@ describe("Crowdfunds", () => {
     });
 
     it("expose initial params", async () => {
-      const originalParams = await crowdfund.params();
+      const originalParams = await crowdfund.paramsStruct();
       const params = abiStructToObj(originalParams);
 
       expect(params).to.eql({
@@ -164,7 +164,7 @@ describe("Crowdfunds", () => {
       });
 
       it("stores its initial parameters", async () => {
-        const originalParams = await crowdfund.params();
+        const originalParams = await crowdfund.paramsStruct();
         const params = abiStructToObj(originalParams);
 
         expect(params).to.eql({
@@ -200,6 +200,10 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have.revertedWith("RequiresFastMembership");
       });
     });
+  });
+
+  describe("paramsStruct", async () => {
+    it("is already tested in the constructor tests", async () => {});
   });
 
   // TODO: This needs a rewrite so that the fee scenarios are tested - but
