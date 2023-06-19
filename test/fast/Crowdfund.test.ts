@@ -202,10 +202,6 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("paramsStruct", async () => {
-    it("is already tested in the constructor tests", async () => {});
-  });
-
   // TODO: This needs a rewrite so that the fee scenarios are tested - but
   // the fee is defined at deployment-time.
   // describe("feeAmount", async () => {
@@ -603,5 +599,13 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have.revertedWith("TokenContractError");
       });
     });
+  });
+
+  describe("paramsStruct", async () => {
+    it("is already tested in the constructor tests", async () => {});
+  });
+
+  describe("details", async () => {
+    it("MUST BE TESTED");
   });
 });

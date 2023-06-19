@@ -129,14 +129,6 @@ contract Distribution {
     creationBlock = block.number;
   }
 
-  /**
-   * @dev Returns the parameter struct used to construct this contract.
-   * @return The parameter struct.
-   */
-  function paramsStruct() external view returns (Params memory) {
-    return params;
-  }
-
   function advanceToFeeSetup() public onlyDuring(Phase.Funding) onlyFastCaller {
     // Make sure that the current distribution has exactly the required amount locked.
     uint256 balance = params.token.balanceOf(address(this));
@@ -311,6 +303,45 @@ contract Distribution {
     available = 0;
     // Move all funds to the distributor account.
     params.token.transfer(params.distributor, params.token.balanceOf(address(this)));
+  }
+
+  /// Frontend helpers.
+
+  /**
+   * @dev Returns the parameter struct used to construct this contract.
+   * @return The parameter struct.
+   */
+  function paramsStruct() external view returns (Params memory) {
+    return params;
+  }
+
+  /**
+   * @notice Distribution details.
+   * @dev This struct shouldn't be used in internal storage.
+   */
+  struct Details {
+    uint16 VERSION;
+    Distribution.Params params;
+    Distribution.Phase phase;
+    uint256 creationBlock;
+    uint256 fee;
+    uint256 available;
+  }
+
+  /**
+   * @notice Gets detailed distribution information.
+   * @return See: `Details`.
+   */
+  function details() public view returns (Details memory) {
+    return
+      Details({
+        VERSION: VERSION,
+        params: params,
+        phase: phase,
+        creationBlock: creationBlock,
+        fee: fee,
+        available: available
+      });
   }
 
   /// Modifiers.
