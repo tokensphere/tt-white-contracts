@@ -218,4 +218,20 @@ describe("FastFrontendFacet", () => {
       expect(nextCursor).to.eq(2);
     });
   });
+
+  describe("detailedDistribution", async () => {
+    it("MUST BE TESTED");
+  });
+
+  describe("paginateDetailedDistributions", async () => {
+    it("MUST BE TESTED");
+  });
+
+  describe("detailedCrowdfund", async () => {
+    it("MUST BE TESTED");
+  });
+
+  describe("paginateDetailedCrowdfund", async () => {
+    it("MUST BE TESTED");
+  });
 });
