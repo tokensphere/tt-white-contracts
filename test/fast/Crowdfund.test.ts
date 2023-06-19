@@ -187,9 +187,9 @@ describe("Crowdfunds", () => {
     });
 
     describe("with invalid parameters", async () => {
-      it("requires the owner to be a governor of the FAST contract", async () => {
+      it("requires the owner to be a member of the FAST contract", async () => {
         const subject = deployCrowdfund({ ...validParams, owner: ben.address });
-        await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
+        await expect(subject).to.have.revertedWith("RequiresFastMembership");
       });
 
       it("requires the beneficiary to be a member of the FAST contract", async () => {

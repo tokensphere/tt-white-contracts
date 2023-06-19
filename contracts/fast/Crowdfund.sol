@@ -31,8 +31,6 @@ contract Crowdfund {
   error RequiresIssuerMemberCaller();
   /// @notice Happens when an address is not a FAST member.
   error RequiresFastMemberCaller();
-  /// @notice Happens when a parameter has to be a FAST governor.
-  error RequiresFastGovernorship(address who);
   /// @notice Happens when a parameter has to be a FAST member.
   error RequiresFastMembership(address who);
 
@@ -109,7 +107,7 @@ contract Crowdfund {
     // Store parameters.
     params = p;
     // Check that the owner is a member of the FAST contract.
-    if (!isFastGovernor(p.owner)) revert RequiresFastGovernorship(p.owner);
+    if (!isFastMember(p.owner)) revert RequiresFastMembership(p.owner);
     // Check that the beneficiary is a member of the FAST contract.
     else if (!isFastMember(p.beneficiary)) revert RequiresFastMembership(p.beneficiary);
     // Invalid fee - superior than 100%.
@@ -217,15 +215,6 @@ contract Crowdfund {
   }
 
   /// Modifiers and ACL functions.
-
-  /**
-   * @notice Checks whether the given address is a governor of the FAST contract.
-   * @param who The address to check.
-   * @return A `bool` indicating whether the address is a governor of the FAST contract.
-   */
-  function isFastGovernor(address who) internal view returns (bool) {
-    return AHasGovernors(params.fast).isGovernor(who);
-  }
 
   /**
    * @dev Checks whether the given address is a member of the FAST contract.
