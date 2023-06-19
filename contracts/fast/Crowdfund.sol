@@ -229,6 +229,7 @@ contract Crowdfund {
    * @dev This struct shouldn't be used in internal storage.
    */
   struct Details {
+    address addr;
     uint16 VERSION;
     Crowdfund.Params params;
     Crowdfund.Phase phase;
@@ -244,6 +245,7 @@ contract Crowdfund {
   function details() public view returns (Details memory) {
     return
       Details({
+        addr: address(this),
         VERSION: VERSION,
         params: params,
         phase: phase,
