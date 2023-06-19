@@ -80,7 +80,7 @@ contract Crowdfund {
   }
 
   /// @notice A version identifier for us to track what's deployed.
-  uint16 public constant VERSION = 1;
+  uint16 public constant VERSION = 2;
 
   /// @notice The initial params, as passed to the contract's constructor.
   Params private params;

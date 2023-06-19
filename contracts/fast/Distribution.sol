@@ -96,7 +96,7 @@ contract Distribution {
   }
 
   /// @notice A version identifier for us to track what's deployed.
-  uint16 public constant VERSION = 3;
+  uint16 public constant VERSION = 4;
 
   /// @notice The initial params, as passed to the contract's constructor.
   Params private params;
