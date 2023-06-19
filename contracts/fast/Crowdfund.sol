@@ -157,7 +157,7 @@ contract Crowdfund {
    * @notice Queries the number of members.
    * @return An `uint256`.
    */
-  function pledgerCount() external view returns (uint256) {
+  function pledgerCount() public view returns (uint256) {
     return pledgerSet.values.length;
   }
 
@@ -236,6 +236,7 @@ contract Crowdfund {
     uint256 creationBlock;
     uint256 collected;
     uint256 feeAmount;
+    uint256 pledgerCount;
   }
 
   /**
@@ -251,7 +252,8 @@ contract Crowdfund {
         phase: phase,
         creationBlock: creationBlock,
         collected: collected,
-        feeAmount: feeAmount()
+        feeAmount: feeAmount(),
+        pledgerCount: pledgerCount()
       });
   }
 
