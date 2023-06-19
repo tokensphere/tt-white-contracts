@@ -251,7 +251,7 @@ contract Distribution {
    * @notice Returns the number of beneficiaries added so far.
    * @return The count.
    */
-  function beneficiaryCount() external view returns (uint256) {
+  function beneficiaryCount() public view returns (uint256) {
     return beneficiaries.values.length;
   }
 
@@ -327,6 +327,7 @@ contract Distribution {
     uint256 creationBlock;
     uint256 fee;
     uint256 available;
+    uint256 beneficiaryCount;
   }
 
   /**
@@ -342,7 +343,8 @@ contract Distribution {
         phase: phase,
         creationBlock: creationBlock,
         fee: fee,
-        available: available
+        available: available,
+        beneficiaryCount: beneficiaryCount()
       });
   }
 
