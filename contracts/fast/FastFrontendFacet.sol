@@ -6,6 +6,8 @@ import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
 import "./lib/AFastFacet.sol";
 import "./lib/LibFastToken.sol";
+import "./lib/LibFastDistributions.sol";
+import "./lib/LibFastCrowdfunds.sol";
 
 /**
  * @notice A facet dedicated to view / UI only methods. This facet should never hold any method that
@@ -71,6 +73,32 @@ contract FastFrontendFacet is AFastFacet {
     uint256 ethBalance;
     /// @notice Whether the Member is also a Governor.
     bool isGovernor;
+  }
+
+  /**
+   * @notice Crowdfund details.
+   * @dev This struct shouldn't be used in internal storage.
+   */
+  struct CrowdfundDetails {
+    uint16 VERSION;
+    Crowdfund.Params params;
+    Crowdfund.Phase phase;
+    uint256 creationBlock;
+    uint256 collected;
+    uint256 feeAmount;
+  }
+
+  /**
+   * @notice Distribution details.
+   * @dev This struct shouldn't be used in internal storage.
+   */
+  struct DistributionDetails {
+    uint16 VERSION;
+    Distribution.Params params;
+    Distribution.Phase phase;
+    uint256 creationBlock;
+    uint256 fee;
+    uint256 available;
   }
 
   /// Emitters.
@@ -173,6 +201,88 @@ contract FastFrontendFacet is AFastFacet {
     uint256 length = members.length;
     for (uint256 i = 0; i < length; ) {
       values[i] = detailedMember(members[i]);
+      unchecked {
+        ++i;
+      }
+    }
+    return (values, nextCursor);
+  }
+
+  /**
+   * @notice Gets detailed distribution information.
+   * @param addr The address of the distribution.
+   * @return See: `DistributionDetails`.
+   */
+  function detailedDistribution(address addr) public view returns (DistributionDetails memory) {
+    Distribution distribution = Distribution(addr);
+    return
+      DistributionDetails({
+        VERSION: distribution.VERSION(),
+        params: distribution.paramsStruct(),
+        phase: distribution.phase(),
+        creationBlock: distribution.creationBlock(),
+        fee: distribution.fee(),
+        available: distribution.available()
+      });
+  }
+
+  function paginateDetailedDistributions(
+    uint256 index,
+    uint256 perPage
+  ) external view returns (DistributionDetails[] memory, uint256) {
+    (address[] memory distributions, uint256 nextCursor) = LibPaginate.addresses(
+      LibFastDistributions.data().distributionSet.values,
+      index,
+      perPage
+    );
+    DistributionDetails[] memory values = new DistributionDetails[](distributions.length);
+    uint256 length = distributions.length;
+    for (uint256 i = 0; i < length; ) {
+      values[i] = detailedDistribution(distributions[i]);
+      unchecked {
+        ++i;
+      }
+    }
+    return (values, nextCursor);
+  }
+
+  /**
+   * @notice Gets detailed crowdfund information.
+   * @param addr The address of the crowdfund.
+   * @return See: `CrowdfundDetails`.
+   */
+  function detailedCrowdfund(address addr) public view returns (CrowdfundDetails memory) {
+    Crowdfund crowdfund = Crowdfund(addr);
+    return
+      CrowdfundDetails({
+        VERSION: crowdfund.VERSION(),
+        params: crowdfund.paramsStruct(),
+        phase: crowdfund.phase(),
+        creationBlock: crowdfund.creationBlock(),
+        collected: crowdfund.collected(),
+        feeAmount: crowdfund.feeAmount()
+      });
+  }
+
+  /**
+   * @dev Paginates detailed crowdfunds.
+   * @param index The index of the first crowdfund to return.
+   * @param perPage The number of crowdfunds to return.
+   * @return An array of crowdfund details, see `CrowdfundDetails`.
+   */
+  function paginateDetailedCrowdfunds(
+    uint256 index,
+    uint256 perPage
+  ) external view returns (CrowdfundDetails[] memory, uint256) {
+    (address[] memory crowdfunds, uint256 nextCursor) = LibPaginate.addresses(
+      LibFastCrowdfunds.data().crowdfundSet.values,
+      index,
+      perPage
+    );
+    CrowdfundDetails[] memory values = new CrowdfundDetails[](crowdfunds.length);
+    uint256 length = crowdfunds.length;
+    for (uint256 i = 0; i < length; ) {
+      values[i] = detailedCrowdfund(crowdfunds[i]);
       unchecked {
         ++i;
       }

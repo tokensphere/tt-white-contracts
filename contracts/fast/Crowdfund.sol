@@ -83,7 +83,7 @@ contract Crowdfund {
   uint16 public constant VERSION = 1;
 
   /// @notice The initial params, as passed to the contract's constructor.
-  Params public params;
+  Params private params;
   /// @notice The phase at which the crowdfunding is at.
   Phase public phase;
   /// @notice When was the distribution created.
@@ -114,6 +114,14 @@ contract Crowdfund {
     else if (params.basisPointsFee > 10_000) revert InconsistentParameter("basisPointsFee");
     // Keep creation block handy.
     creationBlock = block.number;
+  }
+
+  /**
+   * @dev Returns the parameter struct used to construct this contract.
+   * @return The parameter struct.
+   */
+  function paramsStruct() external view returns (Params memory) {
+    return params;
   }
 
   /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.

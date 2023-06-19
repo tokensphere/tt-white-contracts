@@ -99,7 +99,7 @@ contract Distribution {
   uint16 public constant VERSION = 3;
 
   /// @notice The initial params, as passed to the contract's constructor.
-  Params public params;
+  Params private params;
   /// @notice The phase at which the distribution is at.
   Phase public phase = Phase.Funding;
   /// @notice When was the distribution created.
@@ -127,6 +127,14 @@ contract Distribution {
     params = p;
     available = p.total;
     creationBlock = block.number;
+  }
+
+  /**
+   * @dev Returns the parameter struct used to construct this contract.
+   * @return The parameter struct.
+   */
+  function paramsStruct() external view returns (Params memory) {
+    return params;
   }
 
   function advanceToFeeSetup() public onlyDuring(Phase.Funding) onlyFastCaller {

@@ -121,7 +121,7 @@ describe("Distribution", () => {
     });
 
     it("expose initial params", async () => {
-      const originalParams = await distribution.params();
+      const originalParams = await distribution.paramsStruct();
       const params = abiStructToObj(originalParams);
 
       expect(params).to.eql({
@@ -165,7 +165,7 @@ describe("Distribution", () => {
       });
 
       it("stores its initial parameters", async () => {
-        const subject = abiStructToObj(await distribution.params());
+        const subject = abiStructToObj(await distribution.paramsStruct());
 
         expect(subject).to.eql({
           distributor: governor.address,
@@ -209,6 +209,10 @@ describe("Distribution", () => {
         );
       });
     });
+  });
+
+  describe("paramsStruct", async () => {
+    it("is already tested in the constructor tests", async () => {});
   });
 
   describe("advanceToFeeSetup", async () => {
