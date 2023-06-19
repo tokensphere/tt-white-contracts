@@ -117,7 +117,7 @@ describe("Distribution", () => {
     });
 
     it("expose VERSION", async () => {
-      expect(await distribution.VERSION()).to.be.eq(3);
+      expect(await distribution.VERSION()).to.be.eq(4);
     });
 
     it("expose initial params", async () => {

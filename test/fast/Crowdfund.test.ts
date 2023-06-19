@@ -121,7 +121,7 @@ describe("Crowdfunds", () => {
     });
 
     it("expose VERSION", async () => {
-      expect(await crowdfund.VERSION()).to.be.eq(1);
+      expect(await crowdfund.VERSION()).to.be.eq(2);
     });
 
     it("expose initial params", async () => {
