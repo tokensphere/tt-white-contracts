@@ -211,10 +211,6 @@ describe("Distribution", () => {
     });
   });
 
-  describe("paramsStruct", async () => {
-    it("is already tested in the constructor tests", async () => {});
-  });
-
   describe("advanceToFeeSetup", async () => {
     beforeEach(async () => {
       await deployDistribution(validParams);
@@ -851,5 +847,13 @@ describe("Distribution", () => {
         .to.emit(distribution, "Advance")
         .withArgs(DistributionPhase.Terminated);
     });
+  });
+
+  describe("paramsStruct", async () => {
+    it("is already tested in the constructor tests", async () => {});
+  });
+
+  describe("details", async () => {
+    it("MUST BE TESTED");
   });
 });

@@ -87,4 +87,12 @@ describe("IssuerFrontendFacet", () => {
   describe("paginateDetailedFastsInGroup", async () => {
     it("MUST BE TESTED");
   });
+
+  describe("paginateDetailedDistributions", async () => {
+    it("MUST BE TESTED");
+  });
+
+  describe("paginateDetailedCrowdfunds", async () => {
+    it("MUST BE TESTED");
+  });
 });

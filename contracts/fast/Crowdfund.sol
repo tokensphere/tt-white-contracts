@@ -116,14 +116,6 @@ contract Crowdfund {
     creationBlock = block.number;
   }
 
-  /**
-   * @dev Returns the parameter struct used to construct this contract.
-   * @return The parameter struct.
-   */
-  function paramsStruct() external view returns (Params memory) {
-    return params;
-  }
-
   /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
   function feeAmount() public view returns (uint256) {
     return Math.mulDiv(collected, params.basisPointsFee, 10_000, Math.Rounding.Up);
@@ -220,6 +212,45 @@ contract Crowdfund {
     refunded[pledger] = true;
     // Transfer the tokens to the pledger.
     if (!params.token.transfer(pledger, pledges[pledger])) revert TokenContractError();
+  }
+
+  /// Frontend helper functions.
+
+  /**
+   * @dev Returns the parameter struct used to construct this contract.
+   * @return The parameter struct.
+   */
+  function paramsStruct() external view returns (Params memory) {
+    return params;
+  }
+
+  /**
+   * @notice Crowdfund details.
+   * @dev This struct shouldn't be used in internal storage.
+   */
+  struct Details {
+    uint16 VERSION;
+    Crowdfund.Params params;
+    Crowdfund.Phase phase;
+    uint256 creationBlock;
+    uint256 collected;
+    uint256 feeAmount;
+  }
+
+  /**
+   * @notice Gets detailed crowdfund information.
+   * @return See: `Details`.
+   */
+  function details() public view returns (Details memory) {
+    return
+      Details({
+        VERSION: VERSION,
+        params: params,
+        phase: phase,
+        creationBlock: creationBlock,
+        collected: collected,
+        feeAmount: feeAmount()
+      });
   }
 
   /// Modifiers and ACL functions.
