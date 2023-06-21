@@ -4,7 +4,6 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Fast,
   FastInitFacet,
   FastTopFacet,
   FastAccessFacet,
@@ -24,11 +23,11 @@ import {
   FastCrowdfundsFacet__factory,
 } from "../../typechain";
 import { FAST_FACETS } from "../../tasks/fast";
+import { Fast } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
   marketplace: ZERO_ADDRESS,
   issuer: ZERO_ADDRESS,
-  governor: ZERO_ADDRESS,
   name: "Random FAST Token",
   symbol: "RFT",
   decimals: 18,

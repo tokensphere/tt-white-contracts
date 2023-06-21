@@ -3,12 +3,17 @@ import { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
-import { Issuer, Marketplace, Fast, FastFrontendFacet } from "../../typechain";
+import { FastFrontendFacet } from "../../typechain";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import { BigNumber } from "ethers";
 import { FAST_INIT_DEFAULTS } from "../fixtures/fast";
 import { issuerFixtureFunc } from "../fixtures/issuer";
 import { ZERO_ADDRESS } from "../../src/utils";
+import {
+  Fast,
+  Issuer,
+  Marketplace,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

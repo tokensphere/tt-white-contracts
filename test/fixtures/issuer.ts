@@ -5,7 +5,6 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { toUnpaddedHexString, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock, oneMillion } from "../utils";
 import {
-  Issuer,
   IssuerInitFacet,
   IssuerTopFacet,
   IssuerAccessFacet,
@@ -17,6 +16,7 @@ import {
   IssuerAutomatonsFacet,
 } from "../../typechain";
 import { ISSUER_FACETS } from "../../tasks/issuer";
+import { Issuer } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 export const ISSUER_INIT_DEFAULTS: IssuerInitFacet.InitializerParamsStruct = {
   member: ZERO_ADDRESS,
@@ -55,7 +55,8 @@ export const issuerFixtureFunc: FixtureFunc<
     from: deployer,
     owner: deployer,
     facets: [...ISSUER_FACETS, "IssuerInitFacet"],
-    // deterministicSalt: deploymentSalt(hre)
+    // TODO: Why is this crashing?.......
+    // deterministicSalt: deploymentSalt(hre),
   });
 
   // Provision the Issuer with a load of eth.

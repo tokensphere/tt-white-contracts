@@ -5,9 +5,13 @@ import { BigNumber } from "ethers";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Issuer, Marketplace, FastHistoryFacet } from "../../typechain";
+import { FastHistoryFacet } from "../../typechain";
 import { impersonateContract, abiStructToObj } from "../utils";
 import { fastFixtureFunc } from "../fixtures/fast";
+import {
+  Issuer,
+  Marketplace,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

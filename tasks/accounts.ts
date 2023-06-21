@@ -12,13 +12,21 @@ task("make-us-rich", "Adds ether to all signers", async (params, hre) => {
   const signers = await hre.ethers.getSigners();
   return await Promise.all(
     signers.map(async ({ address }) =>
-      hre.network.provider.send("hardhat_setBalance", [address, "0xC9F2C9CD04674EDEA40000000"]),
-    ),
+      hre.network.provider.send("hardhat_setBalance", [
+        address,
+        "0xC9F2C9CD04674EDEA40000000",
+      ])
+    )
   );
 });
 
 task("faucet", "Sends ETH towards a given account")
-  .addPositionalParam("account", "The address that will receive them", undefined, types.string)
+  .addPositionalParam(
+    "account",
+    "The address that will receive them",
+    undefined,
+    types.string
+  )
   .setAction(async ({ account }, hre) => {
     const receipt = await provisionEth(hre, account);
     console.log(`Transferred 1 ETH to ${account}: ${receipt.transactionHash}`);
@@ -26,8 +34,14 @@ task("faucet", "Sends ETH towards a given account")
 
 // Reusable functions.
 
-const provisionEth = async ({ ethers }: HardhatRuntimeEnvironment, account: string) => {
+const provisionEth = async (
+  { ethers }: HardhatRuntimeEnvironment,
+  account: string
+) => {
   const [sender] = await ethers.getSigners();
-  const ethTx = await sender.sendTransaction({ to: account, value: ethers.constants.WeiPerEther });
+  const ethTx = await sender.sendTransaction({
+    to: account,
+    value: ethers.constants.WeiPerEther,
+  });
   return ethTx.wait();
 };

@@ -4,13 +4,12 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
+import { FastAutomatonsFacet } from "../../typechain";
+import { fastFixtureFunc } from "../fixtures/fast";
 import {
   Issuer,
-  FastAutomatonsFacet,
-  Fast,
   Marketplace,
-} from "../../typechain";
-import { fastFixtureFunc } from "../fixtures/fast";
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

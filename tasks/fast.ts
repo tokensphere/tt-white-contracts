@@ -8,8 +8,12 @@ import {
   toBaseUnit,
   ZERO_ADDRESS,
 } from "../src/utils";
-import { Issuer, Fast, Marketplace } from "../typechain";
 import { id } from "ethers/lib/utils";
+import {
+  Fast,
+  Issuer,
+  Marketplace,
+} from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
 

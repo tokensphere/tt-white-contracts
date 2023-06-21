@@ -4,7 +4,6 @@ import { FixtureFunc } from "hardhat-deploy/dist/types";
 import { deploymentSalt, ZERO_ADDRESS } from "../../src/utils";
 import { facetMock } from "../utils";
 import {
-  Marketplace,
   MarketplaceTopFacet,
   MarketplaceAccessFacet,
   MarketplaceInitFacet,
@@ -16,6 +15,7 @@ import {
   MarketplaceAutomatonsFacet__factory,
 } from "../../typechain";
 import { MARKETPLACE_FACETS } from "../../tasks/marketplace";
+import { Marketplace } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 export const MARKETPLACE_INIT_DEFAULTS: MarketplaceInitFacet.InitializerParamsStruct =
   {

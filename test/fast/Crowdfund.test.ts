@@ -6,15 +6,13 @@ import { BigNumber } from "ethers";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
+import { Crowdfund, Crowdfund__factory, IERC20 } from "../../typechain";
+import { abiStructToObj, CrowdFundPhase } from "../utils";
 import {
+  Fast,
   Issuer,
   Marketplace,
-  Crowdfund,
-  Crowdfund__factory,
-  IERC20,
-  Fast,
-} from "../../typechain";
-import { abiStructToObj, CrowdFundPhase } from "../utils";
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

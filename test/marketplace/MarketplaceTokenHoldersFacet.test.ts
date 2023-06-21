@@ -4,15 +4,15 @@ import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import {
-  Issuer,
-  Fast,
-  MarketplaceTokenHoldersFacet,
-  Marketplace,
-} from "../../typechain";
+import { MarketplaceTokenHoldersFacet } from "../../typechain";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 import { ten, zero, impersonateContract } from "../utils";
 import { ZERO_ADDRESS } from "../../src/utils";
+import {
+  Fast,
+  Issuer,
+  Marketplace,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

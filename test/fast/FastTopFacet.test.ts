@@ -5,14 +5,16 @@ import { deployments, ethers } from "hardhat";
 import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import {
-  Issuer,
-  Marketplace,
   FastTopFacet,
-  Fast,
   FastFrontendFacet,
   FastTokenFacet,
 } from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
+import {
+  Fast,
+  Issuer,
+  Marketplace,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

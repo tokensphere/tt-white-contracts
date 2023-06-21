@@ -5,18 +5,23 @@ import { deployments, ethers } from "hardhat";
 import { FakeContract, MockContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import {
-  Issuer,
-  Marketplace,
   FastAccessFacet,
   FastTokenFacet,
   FastFrontendFacet,
-  Fast,
 } from "../../typechain";
+import {
+  Issuer,
+  Marketplace,
+  Fast,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 import { fastFixtureFunc } from "../fixtures/fast";
 chai.use(solidity);
 chai.use(smock.matchers);
 
-describe("FastAccessFacet", () => {
+// TODO: For some reason, this whole test suite fixture is failing if it runs after another test file.
+// This is flaky, and I have no idea why. I tried everything I could but didn't find a solution.
+
+describe("FastAccessFacet", async () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,

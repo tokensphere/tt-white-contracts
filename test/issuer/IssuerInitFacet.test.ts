@@ -3,11 +3,12 @@ import { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { deployments, ethers } from "hardhat";
 import { smock } from "@defi-wonderland/smock";
-import { Issuer, IssuerAccessFacet, IssuerInitFacet } from "../../typechain";
+import { IssuerAccessFacet, IssuerInitFacet } from "../../typechain";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import { BigNumber, ContractTransaction } from "ethers";
 import { issuerFixtureFunc } from "../fixtures/issuer";
 import { ZERO_ADDRESS } from "../../src/utils";
+import { Issuer } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
 

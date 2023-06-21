@@ -1,7 +1,7 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { COMMON_DIAMOND_FACETS, deploymentSalt } from "../src/utils";
-import { Issuer } from "../typechain";
+import { Issuer } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
 

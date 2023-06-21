@@ -11,9 +11,14 @@ import {
   oneHundred,
   impersonateContract,
 } from "../utils";
-import { Issuer, Marketplace, Fast, FastFrontendFacet } from "../../typechain";
+import { FastFrontendFacet } from "../../typechain";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 import { toUnpaddedHexString } from "../../src/utils";
+import {
+  Fast,
+  Issuer,
+  Marketplace,
+} from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -125,31 +130,18 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("detailedMember", async () => {
-    it("returns a MemberDetails struct with the correct information", async () => {
-      const subject = await frontend.detailedMember(issuerMember.address);
+  describe("detailedPrivileges", async () => {
+    it("returns a PrivilegesDetails struct with the correct information", async () => {
+      const subject = await frontend.detailedPrivileges(issuerMember.address);
       const memberObj = abiStructToObj(subject);
 
       expect(memberObj).to.eql({
         addr: issuerMember.address,
         balance: zero,
         ethBalance: await ethers.provider.getBalance(issuerMember.address),
+        isMember: false,
         isGovernor: false,
-      });
-    });
-  });
-
-  describe("detailedGovernor", async () => {
-    beforeEach(async () => {
-      await issuerMemberFast.addGovernor(member.address);
-    });
-
-    it("returns a GovernorDetails struct with the correct information", async () => {
-      const subject = await frontend.detailedGovernor(member.address);
-      expect(abiStructToObj(subject)).to.eql({
-        addr: member.address,
-        ethBalance: await ethers.provider.getBalance(member.address),
-        isMember: true,
+        automatonPrivileges: 0,
       });
     });
   });
@@ -168,7 +160,9 @@ describe("FastFrontendFacet", () => {
         addr: governor.address,
         balance: zero,
         ethBalance: await ethers.provider.getBalance(governor.address),
+        isMember: true,
         isGovernor: true,
+        automatonPrivileges: 0,
       });
 
       // Member B details.
@@ -176,7 +170,9 @@ describe("FastFrontendFacet", () => {
         addr: member.address,
         balance: zero,
         ethBalance: await ethers.provider.getBalance(member.address),
+        isMember: true,
         isGovernor: false,
+        automatonPrivileges: 0,
       });
 
       // Next cursor.
@@ -194,7 +190,9 @@ describe("FastFrontendFacet", () => {
         addr: member.address,
         balance: zero,
         ethBalance: await ethers.provider.getBalance(member.address),
+        isMember: true,
         isGovernor: false,
+        automatonPrivileges: 0,
       });
     });
   });
@@ -210,8 +208,11 @@ describe("FastFrontendFacet", () => {
 
       expect(abiStructToObj(subject)).to.eql({
         addr: member.address,
+        balance: zero,
         ethBalance: await ethers.provider.getBalance(member.address),
         isMember: true,
+        isGovernor: true,
+        automatonPrivileges: 0,
       });
 
       // Next cursor.

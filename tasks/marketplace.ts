@@ -2,43 +2,49 @@ import { ContractTransaction } from "ethers";
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { COMMON_DIAMOND_FACETS, deploymentSalt } from "../src/utils";
-import { Marketplace } from "../typechain";
+import { Marketplace } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
 
-interface MarketplaceDeployParams { }
+interface MarketplaceDeployParams {}
 
 task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
   async (_params: MarketplaceDeployParams, hre) => {
     const { address: issuerAddr } = await hre.deployments.get("Issuer");
     await deployMarketplace(hre, issuerAddr);
-  },
+  }
 );
 
-interface MarketplaceUpdateFacetsParams { }
+interface MarketplaceUpdateFacetsParams {}
 
-task("marketplace-update-facets", "Updates facets of our Marketplace").setAction(
-  async (_params: MarketplaceUpdateFacetsParams, hre) => {
-    const { deployments, getNamedAccounts } = hre;
-    const { deployer } = await getNamedAccounts();
-    // Make sure that the fast is known from our tooling.
-    const { address } = await deployments.get("Marketplace");
-    console.log(`Updating Marketplace diamond facets at ${address}...`);
-    await deployments.diamond.deploy("Marketplace", {
-      from: deployer,
-      facets: MARKETPLACE_FACETS,
-      deterministicSalt: deploymentSalt(hre),
-      log: true,
-    });
-  },
-);
+task(
+  "marketplace-update-facets",
+  "Updates facets of our Marketplace"
+).setAction(async (_params: MarketplaceUpdateFacetsParams, hre) => {
+  const { deployments, getNamedAccounts } = hre;
+  const { deployer } = await getNamedAccounts();
+  // Make sure that the fast is known from our tooling.
+  const { address } = await deployments.get("Marketplace");
+  console.log(`Updating Marketplace diamond facets at ${address}...`);
+  await deployments.diamond.deploy("Marketplace", {
+    from: deployer,
+    facets: MARKETPLACE_FACETS,
+    deterministicSalt: deploymentSalt(hre),
+    log: true,
+  });
+});
 
 interface MarketplaceAddMemberTaskParams {
   readonly address: string;
 }
 
 task("marketplace-add-member", "Adds an address as a Marketplace member")
-  .addParam("address", "The address of the member to be added.", undefined, types.string)
+  .addParam(
+    "address",
+    "The address of the member to be added.",
+    undefined,
+    types.string
+  )
   .setAction(async ({ address }: MarketplaceAddMemberTaskParams, hre) => {
     console.log(`Adding ${address} as a Marketplace member...`);
     await addMarketplaceMember(hre, address);
@@ -54,7 +60,10 @@ const MARKETPLACE_FACETS = [
   "MarketplaceAutomatonsFacet",
 ];
 
-const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: string): Promise<Marketplace> => {
+const deployMarketplace = async (
+  hre: HardhatRuntimeEnvironment,
+  issuerAddr: string
+): Promise<Marketplace> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
   const { deployer } = await getNamedAccounts();
@@ -81,13 +90,18 @@ const deployMarketplace = async (hre: HardhatRuntimeEnvironment, issuerAddr: str
   return await ethers.getContract<Marketplace>("Marketplace");
 };
 
-const addMarketplaceMember = async (hre: HardhatRuntimeEnvironment, address: string): Promise<ContractTransaction> => {
+const addMarketplaceMember = async (
+  hre: HardhatRuntimeEnvironment,
+  address: string
+): Promise<ContractTransaction> => {
   const { ethers, getNamedAccounts } = hre;
   const { issuerMember } = await getNamedAccounts();
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
-  const marketplace = (await ethers.getContract<Marketplace>("Marketplace")).connect(issuerMemberSigner);
+  const marketplace = (
+    await ethers.getContract<Marketplace>("Marketplace")
+  ).connect(issuerMemberSigner);
   return marketplace.addMember(address);
-}
+};
 
 export { MARKETPLACE_FACETS, deployMarketplace };
