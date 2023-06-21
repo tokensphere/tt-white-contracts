@@ -48,31 +48,22 @@ contract FastFrontendFacet is AFastFacet {
   }
 
   /**
-   * @notice Governor level details.
-   * @dev Note that **this struct shouldn't be used in internal storage**.
-   */
-  struct GovernorDetails {
-    /// @notice The Governor's address.
-    address addr;
-    /// @notice The Governor's ETH balance.
-    uint256 ethBalance;
-    /// @notice Whether the Governor is also a Member.
-    bool isMember;
-  }
-
-  /**
    * @notice Member level details.
    * @dev This struct shouldn't be used in internal storage.
    */
-  struct MemberDetails {
+  struct PrivilegesDetails {
     /// @notice The Member's address.
     address addr;
     /// @notice The Member's balance.
     uint256 balance;
     /// @notice The Member's ETH balance.
     uint256 ethBalance;
-    /// @notice Whether the Member is also a Governor.
+    /// @notice Whether or not the address is a Member.
+    bool isMember;
+    /// @notice Whether or not the address is a Governor.
     bool isGovernor;
+    /// @notice Automaton flags assigned to this address.
+    uint32 automatonPrivileges;
   }
 
   /// Emitters.
@@ -122,31 +113,32 @@ contract FastFrontendFacet is AFastFacet {
   }
 
   /**
-   * @notice Gets detailed governor details.
-   * @return GovernorDetails See: `GovernorDetails`.
+   * @notice Gets detailed address privileges details.
+   * @param addr The address to get the privileges for.
+   * @return A FAST member's details, see `MemberDetails`.
    */
-  function detailedGovernor(address governor) public view returns (GovernorDetails memory) {
+  function detailedPrivileges(address addr) public view returns (PrivilegesDetails memory) {
     return
-      GovernorDetails({
-        addr: governor,
-        ethBalance: (payable(governor).balance),
-        isMember: AHasMembers(address(this)).isMember(governor)
+      PrivilegesDetails({
+        addr: addr,
+        balance: LibFastToken.data().balances[addr],
+        ethBalance: (payable(addr).balance),
+        isMember: AHasMembers(address(this)).isMember(addr),
+        isGovernor: AHasGovernors(address(this)).isGovernor(addr),
+        automatonPrivileges: AHasAutomatons(address(this)).automatonPrivileges(addr)
       });
   }
 
-  function paginateDetailedGovernors(
+  function paginateDetailedMembers(
     uint256 index,
     uint256 perPage
-  ) external view returns (GovernorDetails[] memory, uint256) {
-    (address[] memory governors, uint256 nextCursor) = LibPaginate.addresses(
-      LibHasGovernors.data().governorSet.values,
-      index,
-      perPage
-    );
-    GovernorDetails[] memory values = new GovernorDetails[](governors.length);
-    uint256 length = governors.length;
+  ) external view returns (PrivilegesDetails[] memory, uint256) {
+    LibHasMembers.Data storage membersData = LibHasMembers.data();
+    (address[] memory members, uint256 nextCursor) = LibPaginate.addresses(membersData.memberSet.values, index, perPage);
+    PrivilegesDetails[] memory values = new PrivilegesDetails[](members.length);
+    uint256 length = members.length;
     for (uint256 i = 0; i < length; ) {
-      values[i] = detailedGovernor(governors[i]);
+      values[i] = detailedPrivileges(members[i]);
       unchecked {
         ++i;
       }
@@ -154,27 +146,19 @@ contract FastFrontendFacet is AFastFacet {
     return (values, nextCursor);
   }
 
-  /**
-   * @notice Gets detailed member details.
-   * @return A FAST member's details, see `MemberDetails`.
-   */
-  function detailedMember(address member) public view returns (MemberDetails memory) {
-    return
-      MemberDetails({
-        addr: member,
-        balance: LibFastToken.data().balances[member],
-        ethBalance: (payable(member).balance),
-        isGovernor: LibHasGovernors.data().governorSet.contains(member)
-      });
-  }
-
-  function paginateDetailedMembers(uint256 index, uint256 perPage) external view returns (MemberDetails[] memory, uint256) {
-    LibHasMembers.Data storage membersData = LibHasMembers.data();
-    (address[] memory members, uint256 nextCursor) = LibPaginate.addresses(membersData.memberSet.values, index, perPage);
-    MemberDetails[] memory values = new MemberDetails[](members.length);
-    uint256 length = members.length;
+  function paginateDetailedGovernors(
+    uint256 index,
+    uint256 perPage
+  ) external view returns (PrivilegesDetails[] memory, uint256) {
+    (address[] memory governors, uint256 nextCursor) = LibPaginate.addresses(
+      LibHasGovernors.data().governorSet.values,
+      index,
+      perPage
+    );
+    PrivilegesDetails[] memory values = new PrivilegesDetails[](governors.length);
+    uint256 length = governors.length;
     for (uint256 i = 0; i < length; ) {
-      values[i] = detailedMember(members[i]);
+      values[i] = detailedPrivileges(governors[i]);
       unchecked {
         ++i;
       }
