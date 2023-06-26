@@ -56,6 +56,7 @@ interface IFastEvents {
 
   event CrowdfundDeployed(Crowdfund indexed crowdfund);
   event CrowdfundRemoved(Crowdfund indexed crowdfund);
+  event CrowdfundDefaultBasisPointFeeSet(uint32 indexed basisPointFee);
 
   /// General events.
 

@@ -7,6 +7,7 @@ import "../lib/LibPaginate.sol";
 import "../issuer/IssuerAutomatonsFacet.sol";
 import "./lib/LibFastCrowdfunds.sol";
 import "./Crowdfund.sol";
+import "../interfaces/ICustomErrors.sol";
 
 /**
  * @title The Fast Smart Contract.
@@ -22,7 +23,7 @@ contract FastCrowdfundsFacet is AFastFacet {
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
    */
-  function createCrowdfund(IERC20 token, address beneficiary, uint32 basisPointsFee, string memory ref) external {
+  function createCrowdfund(IERC20 token, address beneficiary, string memory ref) external {
     address issuer = FastTopFacet(address(this)).issuerAddress();
     // Make sure that the sender has the ISSUER_PRIVILEGE_CROWDFUND_CREATOR trait.
     if (!IssuerAutomatonsFacet(issuer).automatonCan(msg.sender, ISSUER_PRIVILEGE_CREATE_CROWDFUNDS))
@@ -34,7 +35,7 @@ contract FastCrowdfundsFacet is AFastFacet {
         issuer: issuer,
         fast: address(this),
         beneficiary: beneficiary,
-        basisPointsFee: basisPointsFee,
+        basisPointsFee: LibFastCrowdfunds.data().defaultCrowdfundsFeeBasisPoints,
         token: token,
         ref: ref
       })
@@ -43,6 +44,16 @@ contract FastCrowdfundsFacet is AFastFacet {
     LibFastCrowdfunds.data().crowdfundSet.add(address(crowdfund), false);
     // Emit!
     emit CrowdfundDeployed(crowdfund);
+  }
+
+  function crowdfundsDefaultBasisPointFee() external view returns (uint32) {
+    return LibFastCrowdfunds.data().defaultCrowdfundsFeeBasisPoints;
+  }
+
+  function setCrowdfundsDefaultBasisPointFee(uint32 newBasisPointFee) external onlyIssuerMember {
+    if (newBasisPointFee > 100_00) revert ICustomErrors.InvalidCrowdfundBasisPointsFee(newBasisPointFee);
+    LibFastCrowdfunds.data().defaultCrowdfundsFeeBasisPoints = newBasisPointFee;
+    emit CrowdfundDefaultBasisPointFeeSet(newBasisPointFee);
   }
 
   /**

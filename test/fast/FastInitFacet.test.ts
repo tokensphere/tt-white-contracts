@@ -111,6 +111,7 @@ describe("FastInitFacet", () => {
       await expect(subject).to.be.revertedWith("AlreadyInitialized");
     });
 
+    // TODO: Re-enable.
     // it("sets LibFast storage version", async () => {
     //   const slot = ethers.utils.solidityKeccak256(["string"], ["Fast.storage"]);
     //   const data = await ethers.provider.send("eth_getStorageAt", [

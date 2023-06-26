@@ -39,6 +39,8 @@ contract FastFrontendFacet is AFastFacet {
     bool hasFixedSupply;
     /// @notice Whether the transfers are enabled or not for this FAST.
     bool transfersDisabled;
+    /// @notice The default crowdfunds basis point fee.
+    uint32 defaultCrowdfundsFeeBasisPoints;
     /// @notice The reserve balance.
     uint256 reserveBalance;
     /// @notice The number of members the FAST has.
@@ -106,6 +108,7 @@ contract FastFrontendFacet is AFastFacet {
         isSemiPublic: topStorage.isSemiPublic,
         hasFixedSupply: topStorage.hasFixedSupply,
         transfersDisabled: topStorage.transfersDisabled,
+        defaultCrowdfundsFeeBasisPoints: LibFastCrowdfunds.data().defaultCrowdfundsFeeBasisPoints,
         reserveBalance: tokenStorage.balances[LibHelpers.ZERO_ADDRESS],
         memberCount: AHasMembers(address(this)).memberCount(),
         governorCount: LibHasGovernors.data().governorSet.values.length
