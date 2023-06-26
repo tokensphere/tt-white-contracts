@@ -134,7 +134,7 @@ describe("FastCrowdfundsFacet", () => {
   });
 
   describe("createCrowdfund", async () => {
-    it("requires the caller to have the ISSUER_PRIVILEGE_CROWDFUND_CREATOR privileges", async () => {
+    it("requires the caller to be a FAST governor", async () => {
       issuer.automatonCan.reset();
       issuer.automatonCan.returns(false);
       const subject = crowdfunds.createCrowdfund(
@@ -142,7 +142,7 @@ describe("FastCrowdfundsFacet", () => {
         alice.address,
         "Blah"
       );
-      await expect(subject).to.have.revertedWith("RequiresPrivilege");
+      await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
     });
 
     it("deploys a new crowdfund with the given parameters", async () => {
