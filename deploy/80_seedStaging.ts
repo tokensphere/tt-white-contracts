@@ -3,6 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { deployments, ethers, getNamedAccounts } from "hardhat";
 import { deployFast, fastMint } from "../tasks/fast";
 import { Marketplace } from "../typechain";
+import { BigNumber } from "ethers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   // We only want to do this in local development nodes.
@@ -13,12 +14,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     netName !== "dev" &&
     netName !== "staging" &&
     netName !== "mumbai"
-  ) {
+  )
     return;
-  }
-  console.log(
-    "------------------------------------------------ 10_seedStaging"
-  );
+  console.log("----------------------------------- 80_seedStaging");
 
   const { fastGovernor, issuerMember } = await getNamedAccounts();
 
@@ -43,6 +41,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         decimals: 18,
         hasFixedSupply: true,
         isSemiPublic: true,
+        crowdfundsDefaultBasisPointsFee: 20_00,
       });
       console.log("Minting 500_000 F01...");
       await fastMint(f01.connect(issuerMemberSigner), 500_000, "Whatever");
@@ -62,6 +61,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         decimals: 5,
         hasFixedSupply: true,
         isSemiPublic: false,
+        crowdfundsDefaultBasisPointsFee: 10_00,
       });
       console.log("Minting 5_000_000 F02...");
       await fastMint(f02.connect(issuerMemberSigner), 5_000_000, "Whatever");
@@ -81,6 +81,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         decimals: 10,
         hasFixedSupply: false,
         isSemiPublic: true,
+        crowdfundsDefaultBasisPointsFee: 5_00,
       });
       console.log("Minting 5_000_000 F03...");
       await fastMint(f03.connect(issuerMemberSigner), 5_000_000, "Whatever");
@@ -100,6 +101,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         decimals: 0,
         hasFixedSupply: false,
         isSemiPublic: true,
+        crowdfundsDefaultBasisPointsFee: 30_00,
       });
       console.log("Minting 5_000_000 F04...");
       await fastMint(f04.connect(issuerMemberSigner), 5_000_000, "Whatever");

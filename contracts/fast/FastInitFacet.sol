@@ -47,7 +47,7 @@ contract FastInitFacet is AFastFacet {
     uint8 decimals;
     bool hasFixedSupply;
     bool isSemiPublic;
-    uint32 crowdfundsDetaultBasisPointsFee;
+    uint32 crowdfundsDefaultBasisPointsFee;
   }
 
   function initialize(InitializerParams calldata params) external onlyDeployer {
@@ -95,9 +95,9 @@ contract FastInitFacet is AFastFacet {
     // Initialize crowfunds facet storage.
     LibFastCrowdfunds.Data storage cfData = LibFastCrowdfunds.data();
     cfData.version = LibFastCrowdfunds.STORAGE_VERSION;
-    if (params.crowdfundsDetaultBasisPointsFee > 100_00)
-      revert ICustomErrors.InvalidCrowdfundBasisPointsFee(params.crowdfundsDetaultBasisPointsFee);
-    cfData.crowdfundsDetaultBasisPointsFee = params.crowdfundsDetaultBasisPointsFee;
+    if (params.crowdfundsDefaultBasisPointsFee > 100_00)
+      revert ICustomErrors.InvalidCrowdfundBasisPointsFee(params.crowdfundsDefaultBasisPointsFee);
+    cfData.crowdfundsDefaultBasisPointsFee = params.crowdfundsDefaultBasisPointsFee;
 
     // ------------------------------------- //
 
