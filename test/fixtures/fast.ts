@@ -33,6 +33,7 @@ export const FAST_INIT_DEFAULTS: FastInitFacet.InitializerParamsStruct = {
   decimals: 18,
   hasFixedSupply: true,
   isSemiPublic: false,
+  crowdfundsDetaultBasisPointsFee: 15_00,
 };
 
 interface FastFixtureResult {
