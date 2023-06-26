@@ -94,7 +94,7 @@ describe("Crowdfunds", () => {
     validParams = {
       owner: alice.address,
       beneficiary: bob.address,
-      basisPointsFee: 2_000,
+      basisPointsFee: 20_00,
       issuer: issuer.address,
       fast: fast.address,
       token: erc20.address,
@@ -185,9 +185,9 @@ describe("Crowdfunds", () => {
     });
 
     describe("with invalid parameters", async () => {
-      it("requires the owner to be a member of the FAST contract", async () => {
+      it("requires the owner to be a governor of the FAST contract", async () => {
         const subject = deployCrowdfund({ ...validParams, owner: ben.address });
-        await expect(subject).to.have.revertedWith("RequiresFastMembership");
+        await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
       });
 
       it("requires the beneficiary to be a member of the FAST contract", async () => {
@@ -200,61 +200,59 @@ describe("Crowdfunds", () => {
     });
   });
 
-  // TODO: This needs a rewrite so that the fee scenarios are tested - but
-  // the fee is defined at deployment-time.
-  // describe("feeAmount", async () => {
-  //   beforeEach(async () => {
-  //     await deployCrowdfund(validParams);
-  //     // Provision ERC20 token for bob and alice.
-  //     for (const user of [alice, bob]) {
-  //       erc20.allowance.returns(1_000_000_000);
-  //       erc20.transferFrom.returns(true);
-  //     }
-  //   });
+  describe("feeAmount", async () => {
+    beforeEach(async () => {
+      await deployCrowdfund(validParams);
+      // Provision ERC20 token for bob and alice.
+      for (const user of [alice, bob]) {
+        erc20.allowance.returns(1_000_000_000);
+        erc20.transferFrom.returns(true);
+      }
+    });
 
-  //   it("covers 100%", async () => {
-  //     // Set the fee to 100%.
-  //     await crowdfundAsIssuer.advanceToFunding();
-  //     // Pledge 1000 tokens from bob and alice.
-  //     await Promise.all(
-  //       [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
-  //     );
-  //     const subject = await crowdfund.feeAmount();
-  //     // The result should be 100% of 1000: 1000.
-  //     expect(subject).to.eq(1_000);
-  //   });
+    it("covers 100%", async () => {
+      // Set the fee to 100%.
+      await crowdfundAsIssuer.advanceToFunding(100_00);
+      // Pledge 1000 tokens from bob and alice.
+      await Promise.all(
+        [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
+      );
+      const subject = await crowdfund.feeAmount();
+      // The result should be 100% of 1000: 1000.
+      expect(subject).to.eq(1_000);
+    });
 
-  //   it("covers 33%", async () => {
-  //     // Set the fee to 33%.
-  //     await crowdfundAsIssuer.advanceToFunding(3_333);
-  //     // Pledge 1000 tokens from bob and alice.
-  //     await Promise.all(
-  //       [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
-  //     );
-  //     const subject = await crowdfund.feeAmount();
-  //     // The result should be 33% of 1000 rounded up: 334.
-  //     expect(subject).to.eq(334);
-  //   });
+    it("covers 33%", async () => {
+      // Set the fee to 33%.
+      await crowdfundAsIssuer.advanceToFunding(3_333);
+      // Pledge 1000 tokens from bob and alice.
+      await Promise.all(
+        [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
+      );
+      const subject = await crowdfund.feeAmount();
+      // The result should be 33% of 1000 rounded up: 334.
+      expect(subject).to.eq(334);
+    });
 
-  //   it("covers 0.01%", async () => {
-  //     // Set the fee to 0.01%.
-  //     await crowdfundAsIssuer.advanceToFunding(1);
-  //     // Pledge 1000 tokens from bob and alice.
-  //     await Promise.all(
-  //       [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
-  //     );
-  //     const subject = await crowdfund.feeAmount();
-  //     // The result should be 0.01% of 1000 rounded up: 1.
-  //     expect(subject).to.eq(1);
-  //   });
-  // });
+    it("covers 0.01%", async () => {
+      // Set the fee to 0.01%.
+      await crowdfundAsIssuer.advanceToFunding(1);
+      // Pledge 1000 tokens from bob and alice.
+      await Promise.all(
+        [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
+      );
+      const subject = await crowdfund.feeAmount();
+      // The result should be 0.01% of 1000 rounded up: 1.
+      expect(subject).to.eq(1);
+    });
+  });
 
   describe("advanceToFunding", async () => {
     describe("from an invalid phase", async () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.terminate(false);
-        const subject = crowdfundAsIssuer.advanceToFunding();
+        const subject = crowdfundAsIssuer.advanceToFunding(20_00);
         await expect(subject).to.have.revertedWith("InvalidPhase");
       });
     });
@@ -265,34 +263,38 @@ describe("Crowdfunds", () => {
       });
 
       it("requires the caller to be an issuer member", async () => {
-        const subject = crowdfund.connect(alice).advanceToFunding();
+        const subject = crowdfund.connect(alice).advanceToFunding(20_00);
         await expect(subject).to.have.revertedWith(
           "RequiresIssuerMemberCaller"
         );
       });
 
-      // TODO: Move to deployment.
-      // it("requires that the fee basis points is set bellow 100%", async () => {
-      //   const subject = crowdfundAsIssuer.advanceToFunding(10_001);
-      //   await expect(subject).to.have.revertedWith("InconsistentParameter");
-      // });
-      // it("stores basisPointsFee", async () => {
-      //   await crowdfundAsIssuer.advanceToFunding(1_234);
-      //   const subject = await crowdfund.basisPointsFee();
-      //   expect(subject).to.eq(1_234);
-      // });
+      it("requires that the fee basis points is set bellow 100%", async () => {
+        const subject = crowdfundAsIssuer.advanceToFunding(10_001);
+        await expect(subject).to.have.revertedWith("InconsistentParameter");
+      });
 
       it("moves to the Funding phase", async () => {
-        await crowdfundAsIssuer.advanceToFunding();
+        await crowdfundAsIssuer.advanceToFunding(20_00);
         const subject = await crowdfund.phase();
         expect(subject).to.eq(CrowdFundPhase.Funding);
       });
 
       it("emits an Advance event", async () => {
-        const subject = crowdfundAsIssuer.advanceToFunding();
+        const subject = crowdfundAsIssuer.advanceToFunding(20_00);
         await expect(subject)
           .to.emit(crowdfund, "Advance")
           .withArgs(CrowdFundPhase.Funding);
+      });
+
+      describe("with an overridden fee", async () => {
+        it("sets the fee", async () => {
+          await crowdfundAsIssuer.advanceToFunding(1_00);
+          const subject = await crowdfund.paramsStruct();
+          expect(subject.basisPointsFee).to.eq(1_00);
+        });
+
+        it("reverts if the override is invalid");
       });
     });
   });
@@ -312,7 +314,7 @@ describe("Crowdfunds", () => {
     describe("from the Funding phase", async () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
-        await crowdfundAsIssuer.advanceToFunding();
+        await crowdfundAsIssuer.advanceToFunding(20_00);
       });
 
       it("requires the caller to be a member of the FAST contract", async () => {
@@ -411,7 +413,7 @@ describe("Crowdfunds", () => {
   describe("terminate", async () => {
     beforeEach(async () => {
       await deployCrowdfund(validParams);
-      await crowdfundAsIssuer.advanceToFunding();
+      await crowdfundAsIssuer.advanceToFunding(20_00);
       // Have a few pledges made
       erc20.allowance.returns(100_000);
       erc20.transferFrom.returns(true);
@@ -429,9 +431,10 @@ describe("Crowdfunds", () => {
       });
 
       it("calculates and transfers the fee to the issuer contract", async () => {
+        erc20.transfer.reset();
         erc20.transfer.returns(true);
         await crowdfundAsIssuer.terminate(true);
-        // The fee should be 20% of 150, which is 30.
+        // The fee should be 25% of 150, which is 30.
         expect(erc20.transfer).to.have.been.calledWith(
           issuer.address,
           BigNumber.from(30)
@@ -439,12 +442,11 @@ describe("Crowdfunds", () => {
       });
 
       it("does not transfer ERC20 if the final fee is 0", async () => {
+        erc20.transfer.reset();
+        erc20.transfer.returns(true);
         await deployCrowdfund({ ...validParams, basisPointsFee: 0 });
         await crowdfundAsIssuer.terminate(true);
-        expect(erc20.transfer).to.not.have.been.calledWith(
-          validParams.issuer,
-          0
-        );
+        expect(erc20.transfer).to.not.have.been.called;
       });
 
       it("reverts if the ERC20 fee transfer fails", async () => {
@@ -455,9 +457,10 @@ describe("Crowdfunds", () => {
 
       it("does not transfer ERC20 if the payout is 0", async () => {
         erc20.allowance.returns(10_000);
+        erc20.transfer.reset();
         erc20.transfer.whenCalledWith(issuer.address, 50).returns(true);
         await deployCrowdfund(validParams);
-        await crowdfundAsIssuer.advanceToFunding();
+        await crowdfundAsIssuer.advanceToFunding(20_00);
         await crowdfundAsIssuer.terminate(true);
         expect(erc20.transfer).to.not.have.been.calledWith(
           validParams.beneficiary,
@@ -477,6 +480,7 @@ describe("Crowdfunds", () => {
       });
 
       it("transfers the rest of the funds to the beneficiary", async () => {
+        erc20.transfer.reset();
         erc20.transfer.returns(true);
         await crowdfundAsIssuer.terminate(true);
         // The rest of the funds should be 120.
@@ -533,7 +537,7 @@ describe("Crowdfunds", () => {
     describe("from the Funding phase", async () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
-        await crowdfundAsIssuer.advanceToFunding();
+        await crowdfundAsIssuer.advanceToFunding(20_00);
 
         const subject = crowdfund.refund(bob.address);
         await expect(subject).to.have.revertedWith("InvalidPhase");
@@ -557,7 +561,7 @@ describe("Crowdfunds", () => {
     describe("from the Failure phase", async () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
-        await crowdfundAsIssuer.advanceToFunding();
+        await crowdfundAsIssuer.advanceToFunding(20_00);
         // Have a few pledges made
         erc20.allowance.returns(100_000);
         erc20.transfer.returns(true);
@@ -586,6 +590,7 @@ describe("Crowdfunds", () => {
       });
 
       it("uses the ERC20 token to transfer the funds back to the pledger", async () => {
+        erc20.transfer.reset();
         erc20.transfer.returns(true);
         await crowdfund.refund(bob.address);
         expect(erc20.transfer).to.have.been.calledWith(bob.address, 50);
