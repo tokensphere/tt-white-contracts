@@ -31,7 +31,8 @@ describe("FastCrowdfundsFacet", () => {
     erc20: FakeContract<IERC20>,
     crowdfunds: FastCrowdfundsFacet,
     crowdfundsAsMember: FastCrowdfundsFacet,
-    crowdfundsAsGovernor: FastCrowdfundsFacet;
+    crowdfundsAsGovernor: FastCrowdfundsFacet,
+    crowdfundsAsIssuer: FastCrowdfundsFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
 
@@ -87,6 +88,7 @@ describe("FastCrowdfundsFacet", () => {
           await fast.connect(issuerMember).addGovernor(governor.address);
           crowdfundsAsMember = crowdfunds.connect(alice);
           crowdfundsAsGovernor = crowdfunds.connect(governor);
+          crowdfundsAsIssuer = crowdfunds.connect(issuerMember);
           const access = await ethers.getContractAt<FastAccessFacet>(
             "FastAccessFacet",
             fast.address
@@ -101,7 +103,35 @@ describe("FastCrowdfundsFacet", () => {
     });
   });
 
-  /// Governorship related stuff.
+  describe("crowdfundsDefaultBasisPointFee", async () => {
+    it("returns the default basis point fee", async () => {
+      const subject = await crowdfunds.crowdfundsDefaultBasisPointFee();
+      expect(subject).to.eq(15_00);
+    });
+  });
+
+  describe("setCrowdfundsDefaultBasisPointFee", async () => {
+    it("requires the caller to be an Issuer Member", async () => {
+      issuer.isMember.reset();
+      issuer.isMember.returns(false);
+      const subject = crowdfunds.setCrowdfundsDefaultBasisPointFee(1_00);
+      await expect(subject).to.have.revertedWith("RequiresIssuerMembership");
+    });
+
+    it("reverts if the fee is greater than 100%", async () => {
+      const subject =
+        crowdfundsAsIssuer.setCrowdfundsDefaultBasisPointFee(10_001);
+      await expect(subject).to.have.revertedWith(
+        "InvalidCrowdfundBasisPointsFee"
+      );
+    });
+
+    it("sets the new crowdfunds default basis points fee", async () => {
+      await crowdfundsAsIssuer.setCrowdfundsDefaultBasisPointFee(1_00);
+      const subject = await crowdfunds.crowdfundsDefaultBasisPointFee();
+      expect(subject).to.eq(1_00);
+    });
+  });
 
   describe("createCrowdfund", async () => {
     it("requires the caller to have the ISSUER_PRIVILEGE_CROWDFUND_CREATOR privileges", async () => {
@@ -110,7 +140,6 @@ describe("FastCrowdfundsFacet", () => {
       const subject = crowdfunds.createCrowdfund(
         erc20.address,
         alice.address,
-        2_000,
         "Blah"
       );
       await expect(subject).to.have.revertedWith("RequiresPrivilege");
@@ -120,7 +149,6 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
-        2_000,
         "Blah"
       );
       const [page] = await crowdfundsAsGovernor.paginateCrowdfunds(0, 1);
@@ -134,7 +162,6 @@ describe("FastCrowdfundsFacet", () => {
         await (tx = crowdfundsAsGovernor.createCrowdfund(
           erc20.address,
           alice.address,
-          2_000,
           "Blah"
         ));
         const [crowdfundings] = await crowdfunds.paginateCrowdfunds(0, 1);
@@ -151,7 +178,6 @@ describe("FastCrowdfundsFacet", () => {
             crowdfundsAsGovernor.createCrowdfund(
               erc20.address,
               alice.address,
-              2_000,
               "Blah"
             )
           )
@@ -159,6 +185,8 @@ describe("FastCrowdfundsFacet", () => {
         const [page] = await crowdfunds.paginateCrowdfunds(0, 10);
         expect(page.length).to.eq(3);
       });
+
+      it("sets the fee to the FAST-level default one");
 
       it("emits a CrowdfundDeployed event", async () => {
         await expect(tx)
@@ -180,7 +208,6 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
-        2_000,
         "Blah"
       );
     });
@@ -196,7 +223,6 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
         alice.address,
-        2_000,
         "Blah"
       );
     });

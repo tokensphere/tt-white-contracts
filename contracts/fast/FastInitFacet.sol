@@ -97,7 +97,7 @@ contract FastInitFacet is AFastFacet {
     cfData.version = LibFastCrowdfunds.STORAGE_VERSION;
     if (params.crowdfundsDetaultBasisPointsFee > 100_00)
       revert ICustomErrors.InvalidCrowdfundBasisPointsFee(params.crowdfundsDetaultBasisPointsFee);
-    cfData.defaultCrowdfundsFeeBasisPoints = params.crowdfundsDetaultBasisPointsFee;
+    cfData.crowdfundsDetaultBasisPointsFee = params.crowdfundsDetaultBasisPointsFee;
 
     // ------------------------------------- //
 

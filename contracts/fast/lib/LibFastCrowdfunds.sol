@@ -19,7 +19,7 @@ library LibFastCrowdfunds {
     /// @notice Every deployed crowdfund contract is held here.
     LibAddressSet.Data crowdfundSet;
     /// @notice The default crowdfund fee for this FAST.
-    uint32 defaultCrowdfundsFeeBasisPoints;
+    uint32 crowdfundsDetaultBasisPointsFee;
   }
 
   /**

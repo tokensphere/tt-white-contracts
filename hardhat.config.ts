@@ -94,7 +94,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "DistributionRemoved(address)"],
         ["Facet$", "CrowdfundDeployed(address)"],
         ["Facet$", "CrowdfundRemoved(address)"],
-        ["Facet$", "CrowdfundDefaultBasisPointsFeeSet(uint32)"],
+        ["Facet$", "CrowdfundDefaultBasisPointFeeSet(uint32)"],
         // Error types.
         ["Facet$", "InternalMethod()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
@@ -102,6 +102,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresFastMembership(address)"],
         ["Facet$", "RequiresFastGovernorship(address)"],
         ["Facet$", "UnsupportedOperation()"],
+        ["Facet$", "InvalidCrowdfundBasisPointFee(uint32)"],
       ]),
       include: [
         "IERC165",
