@@ -33,6 +33,8 @@ contract Crowdfund {
   error RequiresFastMemberCaller();
   /// @notice Happens when a parameter has to be a FAST member.
   error RequiresFastMembership(address who);
+  /// @notice Happens when a parameter has to be a FAST governor.
+  error RequiresFastGovernorship(address who);
 
   /**
    * @notice Emited whenever the internal phase of this crowdfund changes.
@@ -106,10 +108,10 @@ contract Crowdfund {
   constructor(Params memory p) {
     // Store parameters.
     params = p;
-    // Check that the owner is a member of the FAST contract.
-    if (!isFastMember(p.owner)) revert RequiresFastMembership(p.owner);
+    // Check that the owner is a FAST governor.
+    if (!isFastGovernor(params.owner)) revert RequiresFastGovernorship(params.owner);
     // Check that the beneficiary is a member of the FAST contract.
-    else if (!isFastMember(p.beneficiary)) revert RequiresFastMembership(p.beneficiary);
+    else if (!isFastMember(params.beneficiary)) revert RequiresFastMembership(params.beneficiary);
     // Invalid fee - superior than 100%.
     else if (params.basisPointsFee > 10_000) revert InconsistentParameter("basisPointsFee");
     // Keep creation block handy.
@@ -125,8 +127,14 @@ contract Crowdfund {
    * @notice Advances the campaign to the funding phase.
    * Note that this method is only available during the setup phase.
    */
-  function advanceToFunding() external onlyDuring(Phase.Setup) onlyIssuerMember {
+  function advanceToFunding(uint32 basisPointsFee) external onlyDuring(Phase.Setup) onlyIssuerMember {
     // Make sure the fee doesn't exceed a hundred percent.
+    if (params.basisPointsFee != basisPointsFee) {
+      // Invalid fee.
+      if (basisPointsFee > 10_000) revert InconsistentParameter("basisPointsFee");
+      // Set new overriden fee.
+      params.basisPointsFee = basisPointsFee;
+    }
     emit Advance(phase = Phase.Funding);
   }
 
@@ -266,6 +274,10 @@ contract Crowdfund {
    */
   function isFastMember(address who) internal view returns (bool) {
     return AHasMembers(params.fast).isMember(who);
+  }
+
+  function isFastGovernor(address who) internal view returns (bool) {
+    return AHasGovernors(params.fast).isGovernor(who);
   }
 
   modifier onlyDuring(Phase _phase) {
