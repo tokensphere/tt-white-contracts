@@ -23,8 +23,8 @@ const FAST_DETAILS_DEFAULTS: FastFrontendFacet.DetailsStruct = {
   decimals: FAST_INIT_DEFAULTS.decimals,
   hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
   isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
-  crowdfundsDetaultBasisPointsFee:
-    FAST_INIT_DEFAULTS.crowdfundsDetaultBasisPointsFee,
+  crowdfundsDefaultBasisPointsFee:
+    FAST_INIT_DEFAULTS.crowdfundsDefaultBasisPointsFee,
   addr: ZERO_ADDRESS,
   totalSupply: BigNumber.from(20),
   reserveBalance: BigNumber.from(40),

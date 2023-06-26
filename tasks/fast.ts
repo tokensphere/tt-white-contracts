@@ -18,13 +18,6 @@ import {
 // Tasks.
 
 interface FastDeployTaskParams extends FastDeployParams {
-  readonly governor: string;
-  readonly name: string;
-  readonly symbol: string;
-  readonly decimals: number;
-  readonly hasFixedSupply: boolean;
-  readonly isSemiPublic: boolean;
-  readonly defaultCrowdfundsBasisPointsFee: number;
   readonly mint?: number;
 }
 task("fast-deploy", "Deploys a FAST")
@@ -50,7 +43,7 @@ task("fast-deploy", "Deploys a FAST")
     types.boolean
   )
   .addParam(
-    "defaultCrowdfundsBasisPointsFee",
+    "crowdfundsDefaultBasisPointsFee",
     "The default fee for crowdfunds **expressed in basis points**",
     undefined,
     types.int
@@ -229,7 +222,7 @@ interface FastDeployParams {
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
-  readonly defaultCrowdfundsBasisPointsFee: number;
+  readonly crowdfundsDefaultBasisPointsFee: number;
 }
 const deployFast = async (
   hre: HardhatRuntimeEnvironment,
@@ -269,8 +262,8 @@ const deployFast = async (
             decimals: params.decimals,
             hasFixedSupply: params.hasFixedSupply,
             isSemiPublic: params.isSemiPublic,
-            defaultCrowdfundsBasisPointsFee:
-              params.defaultCrowdfundsBasisPointsFee,
+            crowdfundsDefaultBasisPointsFee:
+              params.crowdfundsDefaultBasisPointsFee,
           },
         ],
       },

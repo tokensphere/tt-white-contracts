@@ -32,7 +32,7 @@ contract FastCrowdfundsFacet is AFastFacet {
         issuer: issuer,
         fast: address(this),
         beneficiary: beneficiary,
-        basisPointsFee: LibFastCrowdfunds.data().crowdfundsDetaultBasisPointsFee,
+        basisPointsFee: LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee,
         token: token,
         ref: ref
       })
@@ -44,12 +44,12 @@ contract FastCrowdfundsFacet is AFastFacet {
   }
 
   function crowdfundsDefaultBasisPointFee() external view returns (uint32) {
-    return LibFastCrowdfunds.data().crowdfundsDetaultBasisPointsFee;
+    return LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee;
   }
 
   function setCrowdfundsDefaultBasisPointFee(uint32 newBasisPointFee) external onlyIssuerMember {
     if (newBasisPointFee > 100_00) revert ICustomErrors.InvalidCrowdfundBasisPointsFee(newBasisPointFee);
-    LibFastCrowdfunds.data().crowdfundsDetaultBasisPointsFee = newBasisPointFee;
+    LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee = newBasisPointFee;
     emit CrowdfundDefaultBasisPointFeeSet(newBasisPointFee);
   }
 

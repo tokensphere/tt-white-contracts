@@ -123,8 +123,8 @@ describe("FastFrontendFacet", () => {
         isSemiPublic: FAST_INIT_DEFAULTS.isSemiPublic,
         hasFixedSupply: FAST_INIT_DEFAULTS.hasFixedSupply,
         transfersDisabled: false,
-        crowdfundsDetaultBasisPointsFee:
-          FAST_INIT_DEFAULTS.crowdfundsDetaultBasisPointsFee,
+        crowdfundsDefaultBasisPointsFee:
+          FAST_INIT_DEFAULTS.crowdfundsDefaultBasisPointsFee,
         reserveBalance: zero,
         memberCount: BigNumber.from(2),
         governorCount: BigNumber.from(1),
