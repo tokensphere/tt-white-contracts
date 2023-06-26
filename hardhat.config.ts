@@ -94,6 +94,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "DistributionRemoved(address)"],
         ["Facet$", "CrowdfundDeployed(address)"],
         ["Facet$", "CrowdfundRemoved(address)"],
+        ["Facet$", "CrowdfundDefaultBasisPointsFeeSet(uint32)"],
         // Error types.
         ["Facet$", "InternalMethod()"],
         ["Facet$", "RequiresIssuerMembership(address)"],

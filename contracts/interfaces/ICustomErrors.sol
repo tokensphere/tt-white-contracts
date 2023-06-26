@@ -11,6 +11,7 @@ interface ICustomErrors {
   error InvalidPhase();
   error NonExistentEntry();
   error Overfunded(uint256 amount);
+  error InvalidCrowdfundBasisPointsFee(uint32 fee);
   error ReentrancyError();
   error RequiresAutomatonsManager(address who);
   error RequiresContinuousSupply();

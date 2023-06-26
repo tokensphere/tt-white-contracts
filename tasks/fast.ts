@@ -17,16 +17,16 @@ import {
 
 // Tasks.
 
-interface FastDeployTaskParams {
+interface FastDeployTaskParams extends FastDeployParams {
   readonly governor: string;
   readonly name: string;
   readonly symbol: string;
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
+  readonly defaultCrowdfundsBasisPointsFee: number;
   readonly mint?: number;
 }
-
 task("fast-deploy", "Deploys a FAST")
   .addParam(
     "governor",
@@ -48,6 +48,12 @@ task("fast-deploy", "Deploys a FAST")
     "Whether or not this FAST should be semi-public",
     undefined,
     types.boolean
+  )
+  .addParam(
+    "defaultCrowdfundsBasisPointsFee",
+    "The default fee for crowdfunds **expressed in basis points**",
+    undefined,
+    types.int
   )
   .addOptionalParam(
     "mint",
@@ -88,7 +94,6 @@ task("fast-deploy", "Deploys a FAST")
 interface FastUpdateFacetsParams {
   readonly symbol: string;
 }
-
 task("fast-update-facets", "Updates facets for a given FAST")
   .addPositionalParam(
     "symbol",
@@ -119,7 +124,6 @@ interface FastMintParams {
   readonly amount: number;
   readonly ref: string;
 }
-
 task("fast-mint", "Mints FASTs to a specified recipient")
   .addPositionalParam(
     "symbol",
@@ -166,7 +170,6 @@ interface FastBalanceParams {
   readonly symbol: string;
   readonly account: string;
 }
-
 task("fast-balance", "Retrieves the balance of a given account")
   .addPositionalParam(
     "symbol",
@@ -219,7 +222,6 @@ const FAST_FACETS = [
   "FastDistributionsFacet",
   "FastCrowdfundsFacet",
 ];
-
 interface FastDeployParams {
   readonly governor: string;
   readonly name: string;
@@ -227,8 +229,8 @@ interface FastDeployParams {
   readonly decimals: number;
   readonly hasFixedSupply: boolean;
   readonly isSemiPublic: boolean;
+  readonly defaultCrowdfundsBasisPointsFee: number;
 }
-
 const deployFast = async (
   hre: HardhatRuntimeEnvironment,
   params: FastDeployParams
@@ -267,6 +269,8 @@ const deployFast = async (
             decimals: params.decimals,
             hasFixedSupply: params.hasFixedSupply,
             isSemiPublic: params.isSemiPublic,
+            defaultCrowdfundsBasisPointsFee:
+              params.defaultCrowdfundsBasisPointsFee,
           },
         ],
       },

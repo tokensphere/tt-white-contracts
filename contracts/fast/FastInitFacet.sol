@@ -20,6 +20,7 @@ import "./lib/LibFast.sol";
 import "./lib/LibFastToken.sol";
 import "./lib/LibFastHistory.sol";
 import "./lib/LibFastDistributions.sol";
+import "./lib/LibFastCrowdfunds.sol";
 
 /**
  * @notice NotAlthough this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all
@@ -46,6 +47,7 @@ contract FastInitFacet is AFastFacet {
     uint8 decimals;
     bool hasFixedSupply;
     bool isSemiPublic;
+    uint32 crowdfundsDetaultBasisPointsFee;
   }
 
   function initialize(InitializerParams calldata params) external onlyDeployer {
@@ -89,6 +91,13 @@ contract FastInitFacet is AFastFacet {
 
     // Initialize distributions facet storage.
     LibFastDistributions.data().version = LibFastDistributions.STORAGE_VERSION;
+
+    // Initialize crowfunds facet storage.
+    LibFastCrowdfunds.Data storage cfData = LibFastCrowdfunds.data();
+    cfData.version = LibFastCrowdfunds.STORAGE_VERSION;
+    if (params.crowdfundsDetaultBasisPointsFee > 100_00)
+      revert ICustomErrors.InvalidCrowdfundBasisPointsFee(params.crowdfundsDetaultBasisPointsFee);
+    cfData.defaultCrowdfundsFeeBasisPoints = params.crowdfundsDetaultBasisPointsFee;
 
     // ------------------------------------- //
 
