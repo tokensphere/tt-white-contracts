@@ -267,25 +267,25 @@ describe("Distribution", () => {
     });
   });
 
-  describe("advanceToBeneficiariesSetup", async () => {
+  describe("advanceToBeneficiariesSetup", () => {
     beforeEach(async () => {
+      // Deploy.
+      await deployDistribution(validParams);
+      // Mock balance.
+      erc20.balanceOf.returns(validParams.total);
+    });
+
+    describe("from an invalid phase", () => {
+      it("reverts", async () => {
+        const subject = distribution.advanceToBeneficiariesSetup(
+          validParams.total
+        );
+        await expect(subject).to.have.revertedWith("InvalidPhase");
+      });
+    });
+
+    describe("from the FeeSetup phase", () => {
       beforeEach(async () => {
-        // Deploy.
-        await deployDistribution(validParams);
-        // Mock balance.
-        erc20.balanceOf.returns(validParams.total);
-      });
-
-      describe("from an invalid phase", async () => {
-        it("reverts", async () => {
-          const subject = distribution.advanceToBeneficiariesSetup(
-            validParams.total
-          );
-          await expect(subject).to.have.revertedWith("InvalidPhase");
-        });
-      });
-
-      describe("from the FeeSetup phase", async () => {
         // Advance to correct phase.
         await distribution.advanceToFeeSetup();
       });
@@ -420,7 +420,7 @@ describe("Distribution", () => {
         it("reverts if the fee cannot be moved", async () => {
           erc20.transfer.returns(false);
           const subject = distributionAsIssuer.advanceToWithdrawal();
-          expect(subject).to.have.revertedWith("TokenContractError");
+          await expect(subject).to.have.revertedWith("TokenContractError");
         });
 
         it("emits advancing to the Withdrawal phase", async () => {
