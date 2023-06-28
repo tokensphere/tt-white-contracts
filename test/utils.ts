@@ -61,6 +61,8 @@ export const impersonateContract = async <T extends BaseContract>(
   await ethers.provider.send("hardhat_impersonateAccount", [callerAddress]);
   return contract.connect(await ethers.getSigner(callerAddress)) as T;
 };
+export const stopImpersonating = async (caller: string) =>
+  await ethers.provider.send("hardhat_stopImpersonatingAccount", [caller]);
 
 const setupDiamondFacet = async <T extends BaseContract>(
   diamond: IDiamondCut,
