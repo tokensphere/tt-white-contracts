@@ -21,7 +21,7 @@ chai.use(smock.matchers);
 // TODO: For some reason, this whole test suite fixture is failing if it runs after another test file.
 // This is flaky, and I have no idea why. I tried everything I could but didn't find a solution.
 
-describe("FastAccessFacet", async () => {
+describe("FastAccessFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     governor: SignerWithAddress,
@@ -88,8 +88,8 @@ describe("FastAccessFacet", async () => {
 
   /// Governorship related stuff.
 
-  describe("AHasGovernors implementation", async () => {
-    describe("isGovernor", async () => {
+  describe("AHasGovernors implementation", () => {
+    describe("isGovernor", () => {
       it("returns true when the address is a governor", async () => {
         const subject = await access.isGovernor(governor.address);
         expect(subject).to.eq(true);
@@ -101,7 +101,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("governorCount", async () => {
+    describe("governorCount", () => {
       beforeEach(async () => {
         await governedAccess.addMember(alice.address);
         await issuerMemberAccess.addGovernor(alice.address);
@@ -113,7 +113,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("paginateGovernors", async () => {
+    describe("paginateGovernors", () => {
       beforeEach(async () => {
         // Add 4 governors - so there is a total of 5.
         await Promise.all(
@@ -153,7 +153,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("addGovernor", async () => {
+    describe("addGovernor", () => {
       beforeEach(async () => {
         await governedAccess.addMember(alice.address);
       });
@@ -216,7 +216,7 @@ describe("FastAccessFacet", async () => {
       it("calls back onGovernorAdded");
     });
 
-    describe("removeGovernor", async () => {
+    describe("removeGovernor", () => {
       beforeEach(async () => {
         // We want alice to be a governor for these tests.
         await governedAccess.addMember(alice.address);
@@ -269,19 +269,19 @@ describe("FastAccessFacet", async () => {
       it("calls back onGovernorRemoved");
     });
 
-    describe("onGovernorAdded", async () => {
+    describe("onGovernorAdded", () => {
       it("MUST BE TESTED");
     });
 
-    describe("onGovernorRemoved", async () => {
+    describe("onGovernorRemoved", () => {
       it("MUST BE TESTED");
     });
   });
 
   /// Membership related stuff.
 
-  describe("AHasMembers", async () => {
-    describe("isMember", async () => {
+  describe("AHasMembers", () => {
+    describe("isMember", () => {
       beforeEach(async () => {
         await governedAccess.addMember(alice.address);
       });
@@ -297,7 +297,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("memberCount", async () => {
+    describe("memberCount", () => {
       beforeEach(async () => {
         await governedAccess.addMember(alice.address);
       });
@@ -308,7 +308,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("paginateMembers", async () => {
+    describe("paginateMembers", () => {
       beforeEach(async () => {
         await Promise.all(
           // Remember - `governor` is already a member.
@@ -343,7 +343,7 @@ describe("FastAccessFacet", async () => {
       });
     });
 
-    describe("addMember", async () => {
+    describe("addMember", () => {
       it("requires governance (anonymous)", async () => {
         const subject = access.addMember(alice.address);
         await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
@@ -396,7 +396,7 @@ describe("FastAccessFacet", async () => {
       it("calls back onMemberAdded");
     });
 
-    describe("removeMember", async () => {
+    describe("removeMember", () => {
       beforeEach(async () => {
         // We want alice to be a member for these tests.
         await governedAccess.addMember(alice.address);
@@ -457,18 +457,18 @@ describe("FastAccessFacet", async () => {
       it("calls back onMemberRemoved");
     });
 
-    describe("onMemberAdded", async () => {
+    describe("onMemberAdded", () => {
       it("MUST BE TESTED");
     });
 
-    describe("onMemberRemoved", async () => {
+    describe("onMemberRemoved", () => {
       it("MUST BE TESTED");
     });
   });
 
   /// Flags.
 
-  describe("flags", async () => {
+  describe("flags", () => {
     it("is accurate when all flags set", async () => {
       await governedAccess.addMember(alice.address);
       await issuerMemberAccess.addGovernor(alice.address);

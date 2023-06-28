@@ -99,7 +99,7 @@ describe("FastDistributionsFacet", () => {
 
   /// Governorship related stuff.
 
-  describe("createDistribution", async () => {
+  describe("createDistribution", () => {
     it("requires the caller to be a FAST member", async () => {
       const subject = distributions.createDistribution(
         erc20.address,
@@ -131,7 +131,7 @@ describe("FastDistributionsFacet", () => {
       expect(page.length).to.eq(1);
     });
 
-    describe("deploys a distribution and", async () => {
+    describe("deploys a distribution and", () => {
       let tx: any, distAddr: string, dist: Distribution;
 
       beforeEach(async () => {
@@ -182,14 +182,14 @@ describe("FastDistributionsFacet", () => {
     });
   });
 
-  describe("removeDistribution", async () => {
+  describe("removeDistribution", () => {
     it("requires the caller to be an issuer member");
     it("removes the distribution from the list of deployed distributions");
     it("emits a DistributionRemoved event");
     it("reverts when the distribution does not exist");
   });
 
-  describe("distributionCount", async () => {
+  describe("distributionCount", () => {
     beforeEach(async () => {
       await Promise.all(
         [1, 2, 3, 4, 5].map(() =>
@@ -209,7 +209,7 @@ describe("FastDistributionsFacet", () => {
     });
   });
 
-  describe("paginateDistributions", async () => {
+  describe("paginateDistributions", () => {
     it("returns pages of deployed distributions");
   });
 });

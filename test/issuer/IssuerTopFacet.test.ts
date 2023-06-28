@@ -47,7 +47,7 @@ describe("IssuerTopFacet", () => {
 
   /// FAST management stuff.
 
-  describe("FAST management", async () => {
+  describe("FAST management", () => {
     let f01: FakeContract<Fast>,
       f02: FakeContract<Fast>,
       f03: FakeContract<Fast>;
@@ -65,7 +65,7 @@ describe("IssuerTopFacet", () => {
       f03.symbol.returns("F03");
     });
 
-    describe("isFastRegistered", async () => {
+    describe("isFastRegistered", () => {
       it("returns false when the FAST symbol is unknown", async () => {
         const [notAContract] = await ethers.getSigners();
         const subject = await top.isFastRegistered(notAContract.address);
@@ -78,7 +78,7 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("fastBySymbol", async () => {
+    describe("fastBySymbol", () => {
       it("returns the zero address when the FAST symbol is unknown", async () => {
         const subject = await top.fastBySymbol("UKN");
         expect(subject).to.eq(ZERO_ADDRESS);
@@ -90,7 +90,7 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("registerFast", async () => {
+    describe("registerFast", () => {
       it("requires Issuer membership", async () => {
         const subject = top.registerFast(f01.address);
         await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
@@ -100,7 +100,7 @@ describe("IssuerTopFacet", () => {
         const duplFast = await smock.fake("Fast");
         duplFast.symbol.returns("F01");
         const subject = issuerMemberIssuer.registerFast(duplFast.address);
-        await expect(subject).to.be.revertedWith("DuplicateEntry");
+        await expect(subject).to.have.revertedWith("DuplicateEntry");
       });
 
       it("adds the registry address to the list of registries", async () => {
@@ -121,10 +121,10 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("unregisterFast", async () => {
+    describe("unregisterFast", () => {
       it("requires Issuer membership", async () => {
         const subject = top.unregisterFast(f01.address);
-        await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+        await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
       });
 
       it("disables transfers for the FAST being unregistered", async () => {
@@ -152,14 +152,14 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("fastCount", async () => {
+    describe("fastCount", () => {
       it("returns the FAST count", async () => {
         const subject = await issuer.fastCount();
         expect(subject).to.eq(2);
       });
     });
 
-    describe("paginateFasts", async () => {
+    describe("paginateFasts", () => {
       it("returns pages of FASTs", async () => {
         // We"re testing the pagination library here... Not too good. But hey, we"re in a rush.
         const [[a1, a2]] = await issuer.paginateFasts(0, 10);
@@ -168,11 +168,11 @@ describe("IssuerTopFacet", () => {
       });
     });
 
-    describe("transferERC20Tokens", async () => {
+    describe("transferERC20Tokens", () => {
       it("MUST BE TESTED");
     });
 
-    describe("setFastGroup", async () => {
+    describe("setFastGroup", () => {
       it("removes the FAST from the old group");
       it("adds the FAST to the new group");
       it("delegates to the FAST setGroup method");

@@ -107,7 +107,7 @@ describe("Crowdfunds", () => {
     };
   });
 
-  describe("various synthesized getters", async () => {
+  describe("various synthesized getters", () => {
     beforeEach(async () => {
       await deployCrowdfund(validParams);
     });
@@ -149,8 +149,8 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("constructor", async () => {
-    describe("with the correct params passed", async () => {
+  describe("constructor", () => {
+    describe("with the correct params passed", () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
       });
@@ -178,7 +178,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("with invalid parameters", async () => {
+    describe("with invalid parameters", () => {
       it("requires the owner to be a governor of the FAST contract", async () => {
         const subject = deployCrowdfund({ ...validParams, owner: ben.address });
         await expect(subject).to.have.revertedWith("RequiresFastGovernorship");
@@ -194,7 +194,7 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("feeAmount", async () => {
+  describe("feeAmount", () => {
     beforeEach(async () => {
       await deployCrowdfund(validParams);
       // Provision ERC20 token for bob and alice.
@@ -241,8 +241,8 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("advanceToFunding", async () => {
-    describe("from an invalid phase", async () => {
+  describe("advanceToFunding", () => {
+    describe("from an invalid phase", () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.terminate(false);
@@ -251,7 +251,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("from the Setup phase", async () => {
+    describe("from the Setup phase", () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
       });
@@ -281,7 +281,7 @@ describe("Crowdfunds", () => {
           .withArgs(CrowdFundPhase.Funding);
       });
 
-      describe("with an overridden fee", async () => {
+      describe("with an overridden fee", () => {
         it("sets the fee", async () => {
           await crowdfundAsIssuer.advanceToFunding(1_00);
           const subject = await crowdfund.paramsStruct();
@@ -293,8 +293,8 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("pledge", async () => {
-    describe("from an invalid phase", async () => {
+  describe("pledge", () => {
+    describe("from an invalid phase", () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
       });
@@ -305,7 +305,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("from the Funding phase", async () => {
+    describe("from the Funding phase", () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.advanceToFunding(20_00);
@@ -357,7 +357,7 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have.revertedWith("InsufficientFunds");
       });
 
-      describe("with pledgers", async () => {
+      describe("with pledgers", () => {
         beforeEach(async () => {
           erc20.allowance.returns(100_000);
           erc20.transferFrom.returns(true);
@@ -404,7 +404,7 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("terminate", async () => {
+  describe("terminate", () => {
     beforeEach(async () => {
       await deployCrowdfund(validParams);
       await crowdfundAsIssuer.advanceToFunding(20_00);
@@ -416,7 +416,7 @@ describe("Crowdfunds", () => {
       );
     });
 
-    describe("upon success", async () => {
+    describe("upon success", () => {
       it("requires the caller to be an issuer member", async () => {
         const subject = crowdfund.terminate(true);
         await expect(subject).to.have.revertedWith(
@@ -500,7 +500,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("upon failure", async () => {
+    describe("upon failure", () => {
       it("requires the caller to be a issuer member", async () => {
         const subject = crowdfund.terminate(false);
         await expect(subject).to.have.revertedWith(
@@ -516,8 +516,8 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("refund", async () => {
-    describe("from the Setup phase", async () => {
+  describe("refund", () => {
+    describe("from the Setup phase", () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
 
@@ -528,7 +528,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("from the Funding phase", async () => {
+    describe("from the Funding phase", () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.advanceToFunding(20_00);
@@ -540,7 +540,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("from the Success phase", async () => {
+    describe("from the Success phase", () => {
       it("reverts", async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.terminate(true);
@@ -552,7 +552,7 @@ describe("Crowdfunds", () => {
       });
     });
 
-    describe("from the Failure phase", async () => {
+    describe("from the Failure phase", () => {
       beforeEach(async () => {
         await deployCrowdfund(validParams);
         await crowdfundAsIssuer.advanceToFunding(20_00);
@@ -598,11 +598,11 @@ describe("Crowdfunds", () => {
     });
   });
 
-  describe("paramsStruct", async () => {
-    it("is already tested in the constructor tests", async () => {});
+  describe("paramsStruct", () => {
+    it("is already tested in the constructor tests");
   });
 
-  describe("details", async () => {
+  describe("details", () => {
     it("MUST BE TESTED");
   });
 });

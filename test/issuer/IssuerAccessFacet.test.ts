@@ -57,8 +57,8 @@ describe("IssuerAccessFacet", () => {
 
   /// Membership management.
 
-  describe("IHasMembers", async () => {
-    describe("isMember", async () => {
+  describe("IHasMembers", () => {
+    describe("isMember", () => {
       it("returns true when the candidate is a member", async () => {
         const subject = await access.isMember(issuerMember.address);
         expect(subject).to.eq(true);
@@ -70,7 +70,7 @@ describe("IssuerAccessFacet", () => {
       });
     });
 
-    describe("memberCount", async () => {
+    describe("memberCount", () => {
       beforeEach(async () => {
         await issuerMemberAccess.addMember(bob.address);
       });
@@ -81,7 +81,7 @@ describe("IssuerAccessFacet", () => {
       });
     });
 
-    describe("paginateMembers", async () => {
+    describe("paginateMembers", () => {
       it("returns pages of members", async () => {
         await issuerMemberAccess.addMember(bob.address);
         await issuerMemberAccess.addMember(alice.address);
@@ -95,10 +95,10 @@ describe("IssuerAccessFacet", () => {
       });
     });
 
-    describe("addMember", async () => {
+    describe("addMember", () => {
       it("requires that the sender is a member", async () => {
         const subject = access.addMember(alice.address);
-        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
+        await expect(subject).to.have.revertedWith(`RequiresMembersManager`);
       });
 
       it("adds the member to the list", async () => {
@@ -109,7 +109,7 @@ describe("IssuerAccessFacet", () => {
 
       it("does not add the same member twice", async () => {
         const subject = issuerMemberAccess.addMember(issuerMember.address);
-        await expect(subject).to.be.revertedWith("Address already in set");
+        await expect(subject).to.have.revertedWith("Address already in set");
       });
 
       it("emits a MemberAdded event", async () => {
@@ -122,14 +122,14 @@ describe("IssuerAccessFacet", () => {
       it("calls back onMemberAdded");
     });
 
-    describe("removeMember", async () => {
+    describe("removeMember", () => {
       beforeEach(async () => {
         await issuerMemberIssuer.addMember(bob.address);
       });
 
       it("requires that the sender is an issuer member", async () => {
         const subject = access.removeMember(bob.address);
-        await expect(subject).to.be.revertedWith(`RequiresMembersManager`);
+        await expect(subject).to.have.revertedWith(`RequiresMembersManager`);
       });
 
       it("removes the member from the list", async () => {
@@ -140,7 +140,7 @@ describe("IssuerAccessFacet", () => {
 
       it("reverts if the member is not in the list", async () => {
         const subject = issuerMemberAccess.removeMember(alice.address);
-        await expect(subject).to.be.revertedWith(
+        await expect(subject).to.have.revertedWith(
           "Address does not exist in set"
         );
       });
@@ -155,18 +155,18 @@ describe("IssuerAccessFacet", () => {
       it("calls back onMemberRemoved");
     });
 
-    describe("onMemberAdded", async () => {
+    describe("onMemberAdded", () => {
       it("MUST BE TESTED");
     });
 
-    describe("onMemberRemoved", async () => {
+    describe("onMemberRemoved", () => {
       it("MUST BE TESTED");
     });
   });
 
   /// Governorship tracking.
 
-  describe("governorAddedToFast", async () => {
+  describe("governorAddedToFast", () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been.revertedWith(
@@ -205,7 +205,7 @@ describe("IssuerAccessFacet", () => {
     });
   });
 
-  describe("governorRemovedFromFast", async () => {
+  describe("governorRemovedFromFast", () => {
     it("requires the caller to be a registered FAST", async () => {
       const subject = issuer.governorAddedToFast(alice.address);
       await expect(subject).to.have.been.revertedWith(
@@ -250,7 +250,7 @@ describe("IssuerAccessFacet", () => {
     });
   });
 
-  describe("paginateGovernorships", async () => {
+  describe("paginateGovernorships", () => {
     beforeEach(async () => {
       // This FAST is registered.
       await issuerMemberIssuer.registerFast(fast.address);

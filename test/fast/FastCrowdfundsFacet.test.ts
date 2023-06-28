@@ -103,14 +103,14 @@ describe("FastCrowdfundsFacet", () => {
     });
   });
 
-  describe("crowdfundsDefaultBasisPointFee", async () => {
+  describe("crowdfundsDefaultBasisPointFee", () => {
     it("returns the default basis point fee", async () => {
       const subject = await crowdfunds.crowdfundsDefaultBasisPointFee();
       expect(subject).to.eq(15_00);
     });
   });
 
-  describe("setCrowdfundsDefaultBasisPointFee", async () => {
+  describe("setCrowdfundsDefaultBasisPointFee", () => {
     it("requires the caller to be an Issuer Member", async () => {
       issuer.isMember.reset();
       issuer.isMember.returns(false);
@@ -133,7 +133,7 @@ describe("FastCrowdfundsFacet", () => {
     });
   });
 
-  describe("createCrowdfund", async () => {
+  describe("createCrowdfund", () => {
     it("requires the caller to be a FAST governor", async () => {
       issuer.automatonCan.reset();
       issuer.automatonCan.returns(false);
@@ -155,7 +155,7 @@ describe("FastCrowdfundsFacet", () => {
       expect(page.length).to.eq(1);
     });
 
-    describe("deploys a crowdfund and", async () => {
+    describe("deploys a crowdfund and", () => {
       let tx: any, crowdfundAddr: string, crowdfund: Crowdfund;
 
       beforeEach(async () => {
@@ -196,14 +196,14 @@ describe("FastCrowdfundsFacet", () => {
     });
   });
 
-  describe("removeCrowdfund", async () => {
+  describe("removeCrowdfund", () => {
     it("requires the caller to be an issuer member");
     it("removes the crowdfund from the list of deployed crowdfunds");
     it("emits a CrowdfundRemoved event");
     it("reverts when the crowdfund does not exist");
   });
 
-  describe("crowdfundCount", async () => {
+  describe("crowdfundCount", () => {
     beforeEach(async () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,
@@ -218,7 +218,7 @@ describe("FastCrowdfundsFacet", () => {
     });
   });
 
-  describe("paginateCrowdfunds", async () => {
+  describe("paginateCrowdfunds", () => {
     beforeEach(async () => {
       await crowdfundsAsGovernor.createCrowdfund(
         erc20.address,

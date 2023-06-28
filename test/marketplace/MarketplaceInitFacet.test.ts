@@ -52,7 +52,7 @@ describe("MarketplaceInitFacet", () => {
     });
   });
 
-  describe("initialize", async () => {
+  describe("initialize", () => {
     it("requires that it is not initialized", async () => {
       // Attempt to re-initialize.
       const marketplaceInit = await ethers.getContractAt<MarketplaceInitFacet>(
@@ -67,7 +67,7 @@ describe("MarketplaceInitFacet", () => {
         issuer: issuer.address,
       });
 
-      await expect(subject).to.be.revertedWith("AlreadyInitialized");
+      await expect(subject).to.have.revertedWith("AlreadyInitialized");
     });
 
     it("set various storage versions", async () => {

@@ -42,7 +42,7 @@ describe("MarketplaceTopFacet", () => {
     });
   });
 
-  describe("issuerAddress", async () => {
+  describe("issuerAddress", () => {
     it("returns the Issuer address", async () => {
       const subject = await marketplace.issuerAddress();
       expect(subject).to.eq(issuer.address);

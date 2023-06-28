@@ -81,28 +81,28 @@ describe("FastTopFacet", () => {
 
   // Getters.
 
-  describe("issuerAddress", async () => {
+  describe("issuerAddress", () => {
     it("returns the Issuer address", async () => {
       const subject = await issuerMemberTop.issuerAddress();
       expect(subject).to.eq(issuer.address);
     });
   });
 
-  describe("marketplaceAddress", async () => {
+  describe("marketplaceAddress", () => {
     it("returns the marketplace address", async () => {
       const subject = await issuerMemberTop.marketplaceAddress();
       expect(subject).to.eq(marketplace.address);
     });
   });
 
-  describe("isSemiPublic", async () => {
+  describe("isSemiPublic", () => {
     it("returns the FAST semi-public parameter", async () => {
       const subject = await top.isSemiPublic();
       expect(subject).to.eq(FAST_INIT_DEFAULTS.isSemiPublic);
     });
   });
 
-  describe("hasFixedSupply", async () => {
+  describe("hasFixedSupply", () => {
     it("returns the FAST fixed supply parameter", async () => {
       const subject = await top.hasFixedSupply();
       expect(subject).to.eq(FAST_INIT_DEFAULTS.hasFixedSupply);
@@ -111,10 +111,10 @@ describe("FastTopFacet", () => {
 
   // Setters.
 
-  describe("setIsSemiPublic", async () => {
+  describe("setIsSemiPublic", () => {
     it("requires Issuer membership for the sender", async () => {
       const subject = top.setIsSemiPublic(true);
-      await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+      await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
     });
 
     it("delegates to the Issuer for permission check", async () => {
@@ -141,7 +141,7 @@ describe("FastTopFacet", () => {
       await issuerMemberTop.setIsSemiPublic(true);
       // Attempt to revert to non-semi public.
       const subject = issuerMemberTop.setIsSemiPublic(false);
-      await expect(subject).to.be.revertedWith("UnsupportedOperation");
+      await expect(subject).to.have.revertedWith("UnsupportedOperation");
     });
 
     it("sets the required flag on the FAST", async () => {
@@ -156,10 +156,10 @@ describe("FastTopFacet", () => {
     });
   });
 
-  describe("setTransfersDisabled", async () => {
+  describe("setTransfersDisabled", () => {
     it("requires Issuer membership from the sender", async () => {
       const subject = top.setTransfersDisabled(true);
-      await expect(subject).to.be.revertedWith(`RequiresIssuerMembership`);
+      await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
     });
 
     it("delegates to FastFrontendFacet.emitDetailsChanged", async () => {
@@ -180,11 +180,11 @@ describe("FastTopFacet", () => {
     });
   });
 
-  describe("group", async () => {
+  describe("group", () => {
     it("returns the group slug to which this FAST belongs");
   });
 
-  describe("setGroup", async () => {
+  describe("setGroup", () => {
     it("requires the caller to be the Issuer contract");
     it("sets the group slug to which this FAST belongs");
   });

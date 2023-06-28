@@ -99,7 +99,7 @@ describe("FastHistoryFacet", () => {
 
   /// Supply proofs.
 
-  describe("minted", async () => {
+  describe("minted", () => {
     it("requires that the caller is the token (anonymous)", async () => {
       const subject = history.minted(1, "One");
       await expect(subject).to.have.revertedWith("InternalMethod");
@@ -110,7 +110,7 @@ describe("FastHistoryFacet", () => {
       await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
-    describe("as the diamond", async () => {
+    describe("as the diamond", () => {
       it("adds an entry to the supply proof list", async () => {
         await historyAsItself.minted(3, "Three");
         const [[{ amount, ref, blockNumber }]] =
@@ -122,7 +122,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("burnt", async () => {
+  describe("burnt", () => {
     it("requires that the caller is the diamond (anonymous)", async () => {
       const subject = history.burnt(1, "One");
       await expect(subject).to.have.revertedWith("InternalMethod");
@@ -133,7 +133,7 @@ describe("FastHistoryFacet", () => {
       await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
-    describe("as the diamond", async () => {
+    describe("as the diamond", () => {
       it("adds an entry to the supply proof list", async () => {
         await historyAsItself.burnt(3, "Three");
         const [[{ amount, ref, blockNumber }]] =
@@ -145,7 +145,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("supplyProofCount", async () => {
+  describe("supplyProofCount", () => {
     beforeEach(createSupplyProofs);
 
     it("counts how many supply proofs have been stored", async () => {
@@ -154,7 +154,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("paginateSupplyProofs", async () => {
+  describe("paginateSupplyProofs", () => {
     beforeEach(createSupplyProofs);
 
     it("returns the cursor to the next page", async () => {
@@ -197,7 +197,7 @@ describe("FastHistoryFacet", () => {
 
   /// Transfer proofs.
 
-  describe("transfered", async () => {
+  describe("transfered", () => {
     it("requires that the caller is the token (anonymous)", async () => {
       const subject = history.transfered(
         alice.address,
@@ -236,7 +236,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("transferProofCount", async () => {
+  describe("transferProofCount", () => {
     it("counts how many transfer proofs have been stored", async () => {
       await createTransferProofs();
       const subject = await history.transferProofCount();
@@ -244,7 +244,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("paginateTransferProofs", async () => {
+  describe("paginateTransferProofs", () => {
     beforeEach(createTransferProofs);
 
     it("returns the cursor to the next page", async () => {
@@ -292,7 +292,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("paginateTransferProofsByInvolvee", async () => {
+  describe("paginateTransferProofsByInvolvee", () => {
     let blockNumber = 0;
 
     beforeEach(async () => {
@@ -364,7 +364,7 @@ describe("FastHistoryFacet", () => {
     // });
   });
 
-  describe("paginateTransferProofIndicesByInvolvee", async () => {
+  describe("paginateTransferProofIndicesByInvolvee", () => {
     beforeEach(createTransferProofs);
 
     it("returns a paginated list of addresses and cursor", async () => {
@@ -379,7 +379,7 @@ describe("FastHistoryFacet", () => {
     });
   });
 
-  describe("transferProofByInvolveeCount", async () => {
+  describe("transferProofByInvolveeCount", () => {
     beforeEach(createTransferProofs);
 
     it("returns the count of the transfer proofs for a given address", async () => {
