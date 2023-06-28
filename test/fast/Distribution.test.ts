@@ -105,7 +105,7 @@ describe("Distribution", () => {
     };
   });
 
-  describe("various synthesized getters", async () => {
+  describe("various synthesized getters", () => {
     beforeEach(async () => {
       await deployDistribution(validParams);
     });
@@ -152,8 +152,8 @@ describe("Distribution", () => {
     });
   });
 
-  describe("constructor", async () => {
-    describe("with the correct params passed", async () => {
+  describe("constructor", () => {
+    describe("with the correct params passed", () => {
       beforeEach(async () => {
         await deployDistribution(validParams);
       });
@@ -190,7 +190,7 @@ describe("Distribution", () => {
       });
     });
 
-    describe("with invalid parameters", async () => {
+    describe("with invalid parameters", () => {
       it("reverts if the latched block is in the future", async () => {
         const latestBlockNumber = (await ethers.provider.getBlock("latest"))
           .number;
@@ -205,7 +205,7 @@ describe("Distribution", () => {
     });
   });
 
-  describe("advanceToFeeSetup", async () => {
+  describe("advanceToFeeSetup", () => {
     beforeEach(async () => {
       await deployDistribution(validParams);
       erc20.balanceOf
@@ -213,7 +213,7 @@ describe("Distribution", () => {
         .returns(validParams.total);
     });
 
-    describe("from an invalid phase", async () => {
+    describe("from an invalid phase", () => {
       beforeEach(async () => {
         // Mock balance.
         erc20.balanceOf.returns(validParams.total);
@@ -227,7 +227,7 @@ describe("Distribution", () => {
       });
     });
 
-    describe("from the Funding phase", async () => {
+    describe("from the Funding phase", () => {
       it("requires the caller to be the FAST contract", async () => {
         const subject = distribution.connect(bob).advanceToFeeSetup();
         await expect(subject).to.have.revertedWith("RequiresFastCaller");
@@ -348,7 +348,7 @@ describe("Distribution", () => {
     });
   });
 
-  describe("in the BeneficiariesSetup phase", async () => {
+  describe("in the BeneficiariesSetup phase", () => {
     const fee = BigNumber.from(10);
 
     beforeEach(async () => {
@@ -361,8 +361,8 @@ describe("Distribution", () => {
       await distributionAsIssuer.advanceToBeneficiariesSetup(fee);
     });
 
-    describe("with beneficiaries properly added", async () => {
-      describe("advanceToWithdrawal", async () => {
+    describe("with beneficiaries properly added", () => {
+      describe("advanceToWithdrawal", () => {
         beforeEach(async () => {
           // Allocate exactly the right funds.
           await distributionAsIssuer.addBeneficiaries(
@@ -432,7 +432,7 @@ describe("Distribution", () => {
         });
       });
 
-      describe("addBeneficiaries", async () => {
+      describe("addBeneficiaries", () => {
         it("requires the distribution to be in the BeneficiariesSetup phase");
 
         it("requires the caller to be a manger", async () => {
@@ -522,7 +522,7 @@ describe("Distribution", () => {
         });
       });
 
-      describe("removeBeneficiaries", async () => {
+      describe("removeBeneficiaries", () => {
         beforeEach(async () => {
           // Allocate exactly the right funds.
           await distributionAsIssuer.addBeneficiaries(
@@ -615,11 +615,11 @@ describe("Distribution", () => {
         });
       });
 
-      describe("beneficiaryCount", async () => {
+      describe("beneficiaryCount", () => {
         it("returns the correct count");
       });
 
-      describe("paginateBeneficiaries", async () => {
+      describe("paginateBeneficiaries", () => {
         beforeEach(async () => {
           // Allocate exactly the right funds.
           await distributionAsIssuer.addBeneficiaries(
@@ -643,7 +643,7 @@ describe("Distribution", () => {
     });
   });
 
-  describe("in the Withdrawal phase", async () => {
+  describe("in the Withdrawal phase", () => {
     const fee = BigNumber.from(10);
 
     beforeEach(async () => {
@@ -661,10 +661,10 @@ describe("Distribution", () => {
       erc20.transfer.reset();
     });
 
-    describe("withdraw", async () => {
+    describe("withdraw", () => {
       it("requires the distribution to be in the Withdrawal phase");
 
-      describe("with unsuccessful ERC20 transfer", async () => {
+      describe("with unsuccessful ERC20 transfer", () => {
         beforeEach(async () => {
           erc20.transfer.reset();
           erc20.transfer.returns(false);
@@ -676,7 +676,7 @@ describe("Distribution", () => {
         });
       });
 
-      describe("with successful ERC20 transfer", async () => {
+      describe("with successful ERC20 transfer", () => {
         beforeEach(async () => {
           erc20.transfer.reset();
           erc20.transfer.returns(true);
@@ -722,7 +722,7 @@ describe("Distribution", () => {
     });
   });
 
-  describe("terminate", async () => {
+  describe("terminate", () => {
     beforeEach(async () => {
       await deployDistribution(validParams);
 
@@ -843,11 +843,11 @@ describe("Distribution", () => {
     });
   });
 
-  describe("paramsStruct", async () => {
-    it("is already tested in the constructor tests", async () => {});
+  describe("paramsStruct", () => {
+    it("is already tested in the constructor tests");
   });
 
-  describe("details", async () => {
+  describe("details", () => {
     it("MUST BE TESTED");
   });
 });

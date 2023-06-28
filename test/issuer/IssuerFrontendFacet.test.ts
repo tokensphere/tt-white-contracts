@@ -79,7 +79,7 @@ describe("IssuerFrontendFacet", () => {
     });
   });
 
-  describe("paginateDetailedFasts", async () => {
+  describe("paginateDetailedFasts", () => {
     it("returns a paginated list of detailed FAST details", async () => {
       const [, nextCursor] = await issuerMemberIssuer.paginateDetailedFasts(
         0,
@@ -91,15 +91,15 @@ describe("IssuerFrontendFacet", () => {
     });
   });
 
-  describe("paginateDetailedFastsInGroup", async () => {
+  describe("paginateDetailedFastsInGroup", () => {
     it("MUST BE TESTED");
   });
 
-  describe("paginateDetailedDistributions", async () => {
+  describe("paginateDetailedDistributions", () => {
     it("MUST BE TESTED");
   });
 
-  describe("paginateDetailedCrowdfunds", async () => {
+  describe("paginateDetailedCrowdfunds", () => {
     it("MUST BE TESTED");
   });
 });

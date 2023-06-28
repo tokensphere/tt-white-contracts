@@ -83,7 +83,7 @@ describe("FastInitFacet", () => {
 
   // Getters.
 
-  describe("initialize", async () => {
+  describe("initialize", () => {
     beforeEach(async () => {
       // We need to impersonate our deployer factory contract.
       await hre.network.provider.request({
@@ -108,7 +108,7 @@ describe("FastInitFacet", () => {
         issuer: ZERO_ADDRESS,
         marketplace: ZERO_ADDRESS,
       });
-      await expect(subject).to.be.revertedWith("AlreadyInitialized");
+      await expect(subject).to.have.revertedWith("AlreadyInitialized");
     });
 
     it("reverts if the default crowdfunds basis points fee is invalid");

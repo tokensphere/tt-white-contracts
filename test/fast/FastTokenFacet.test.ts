@@ -112,7 +112,7 @@ describe("FastTokenFacet", () => {
 
   /// Public stuff.
 
-  describe("initialize", async () => {
+  describe("initialize", () => {
     it("keeps track of the ERC20 parameters and extra ones", async () => {
       const name = await token.name();
       expect(name).to.eq(FAST_INIT_DEFAULTS.name);
@@ -127,35 +127,35 @@ describe("FastTokenFacet", () => {
 
   /// Public member getters.
 
-  describe("name", async () => {
+  describe("name", () => {
     it("returns the name", async () => {
       const subject = await token.name();
       expect(subject).to.eq(FAST_INIT_DEFAULTS.name);
     });
   });
 
-  describe("symbol", async () => {
+  describe("symbol", () => {
     it("returns the symbol", async () => {
       const subject = await token.symbol();
       expect(subject).to.eq(FAST_INIT_DEFAULTS.symbol);
     });
   });
 
-  describe("decimals", async () => {
+  describe("decimals", () => {
     it("returns the decimals", async () => {
       const subject = await token.decimals();
       expect(subject).to.eq(FAST_INIT_DEFAULTS.decimals);
     });
   });
 
-  describe("totalSupply", async () => {
+  describe("totalSupply", () => {
     it("returns the total supply", async () => {
       const subject = await token.totalSupply();
       expect(subject).to.eq(0);
     });
   });
 
-  describe("mint", async () => {
+  describe("mint", () => {
     it("requires Issuer membership (anonymous)", async () => {
       const subject = token.mint(5_000, "Attempt 1");
       await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
@@ -171,7 +171,7 @@ describe("FastTokenFacet", () => {
       await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
     });
 
-    describe("with fixed supply", async () => {
+    describe("with fixed supply", () => {
       it("is allowed only once", async () => {
         await issuerMemberToken.mint(1_000_000, "Attempt 1");
         const subject = issuerMemberToken.mint(1_000_000, "Attempt 2");
@@ -179,7 +179,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("with continuous supply", async () => {
+    describe("with continuous supply", () => {
       beforeEach(async () => {
         topMock.hasFixedSupply.returns(false);
       });
@@ -225,7 +225,7 @@ describe("FastTokenFacet", () => {
     it("delegates to the frontend facet");
   });
 
-  describe("burn", async () => {
+  describe("burn", () => {
     beforeEach(async () => {
       topMock.hasFixedSupply.returns(false);
       await issuerMemberToken.mint(100, "A hundred mints");
@@ -291,7 +291,7 @@ describe("FastTokenFacet", () => {
     it("delegates to the frontend facet");
   });
 
-  describe("retrieveDeadTokens", async () => {
+  describe("retrieveDeadTokens", () => {
     beforeEach(async () => {
       // Mint a few tokens and raise the transfer credits.
       await issuerMemberToken.mint(1_000_000, "ERC20 Tests");
@@ -405,7 +405,7 @@ describe("FastTokenFacet", () => {
 
   /// ERC20 implementation.
 
-  describe("ERC20", async () => {
+  describe("ERC20", () => {
     beforeEach(async () => {
       // Mint a few tokens and raise the transfer credits.
       await issuerMemberToken.mint(1_000_000, "ERC20 Tests");
@@ -417,14 +417,14 @@ describe("FastTokenFacet", () => {
       );
     });
 
-    describe("balanceOf", async () => {
+    describe("balanceOf", () => {
       it("returns the amount of tokens at a given address", async () => {
         const subject = await token.balanceOf(alice.address);
         expect(subject).to.eq(100);
       });
     });
 
-    describe("transfer", async () => {
+    describe("transfer", () => {
       it("delegates to the internal performTransfer method", async () => {
         tokenMock.performTransfer.reset();
 
@@ -444,7 +444,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("transferWithRef", async () => {
+    describe("transferWithRef", () => {
       it("delegates to the internal performTransfer method", async () => {
         tokenMock.performTransfer.reset();
 
@@ -465,7 +465,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("allowance", async () => {
+    describe("allowance", () => {
       it("returns the allowance for a given member", async () => {
         // Let bob give allowance to alice.
         await token.connect(bob).approve(alice.address, 50);
@@ -490,7 +490,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("approve", async () => {
+    describe("approve", () => {
       it("delegates to the internal performApproval method", async () => {
         tokenMock.performApproval.reset();
 
@@ -517,9 +517,7 @@ describe("FastTokenFacet", () => {
         // Let alice give allowance to john.
         const subject = token.connect(alice).approve(john.address, 1);
 
-        await expect(subject).to.have.been.revertedWith(
-          `RequiresValidTokenHolder`
-        );
+        await expect(subject).to.have.revertedWith(`RequiresValidTokenHolder`);
       });
 
       it("adds an allowance with the correct parameters", async () => {
@@ -577,7 +575,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("disapprove", async () => {
+    describe("disapprove", () => {
       beforeEach(async () => {
         // Let bob give john an allowance.
         await token.connect(bob).approve(john.address, 15);
@@ -606,7 +604,7 @@ describe("FastTokenFacet", () => {
         expect(subject).to.eq(5);
       });
 
-      describe("when the allowance remains positive after the operation", async () => {
+      describe("when the allowance remains positive after the operation", () => {
         beforeEach(async () => {
           // Remove full allowance.
           await token.connect(bob).disapprove(john.address, 10);
@@ -631,7 +629,7 @@ describe("FastTokenFacet", () => {
         });
       });
 
-      describe("when the allowance reaches zero", async () => {
+      describe("when the allowance reaches zero", () => {
         beforeEach(async () => {
           // Remove full allowance.
           await token.connect(bob).disapprove(john.address, 15);
@@ -664,7 +662,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("transferFrom", async () => {
+    describe("transferFrom", () => {
       it("delegates to the internal performTransfer method", async () => {
         tokenMock.performTransfer.reset();
 
@@ -685,7 +683,7 @@ describe("FastTokenFacet", () => {
       });
     });
 
-    describe("transferFromWithRef", async () => {
+    describe("transferFromWithRef", () => {
       beforeEach(async () => {
         // Let bob give allowance to john.
         await token.connect(bob).approve(john.address, 100);
@@ -710,7 +708,7 @@ describe("FastTokenFacet", () => {
           .delegatedFrom(token.address);
       });
 
-      describe("for a zero amount", async () => {
+      describe("for a zero amount", () => {
         let tx: any;
         let allowance: BigNumber;
         let args: {
@@ -771,7 +769,7 @@ describe("FastTokenFacet", () => {
         });
       });
 
-      describe("when member deactivated", async () => {
+      describe("when member deactivated", () => {
         beforeEach(async () => {
           marketplace.isMember.reset();
           marketplace.isActiveMember.reset();
@@ -809,7 +807,7 @@ describe("FastTokenFacet", () => {
         });
       });
 
-      describe("when semi-public", async () => {
+      describe("when semi-public", () => {
         beforeEach(async () => {
           topMock.isSemiPublic.returns(true);
         });
@@ -864,7 +862,7 @@ describe("FastTokenFacet", () => {
         });
       });
 
-      describe("when private", async () => {
+      describe("when private", () => {
         beforeEach(async () => {
           // Explicitly set the token as private.
           topMock.isSemiPublic.reset();
@@ -1068,7 +1066,7 @@ describe("FastTokenFacet", () => {
 
   /// Allowance querying.
 
-  describe("givenAllowanceCount", async () => {
+  describe("givenAllowanceCount", () => {
     beforeEach(async () => {
       // Let alice give allowance to bob and john.
       await token.connect(alice).approve(bob.address, 5);
@@ -1081,7 +1079,7 @@ describe("FastTokenFacet", () => {
     });
   });
 
-  describe("paginateAllowancesByOwner", async () => {
+  describe("paginateAllowancesByOwner", () => {
     beforeEach(async () => {
       // Let alice give allowance to bob and john, let bob give allowance to john.
       await token.connect(alice).approve(bob.address, 5);
@@ -1109,7 +1107,7 @@ describe("FastTokenFacet", () => {
     });
   });
 
-  describe("receivedAllowanceCount", async () => {
+  describe("receivedAllowanceCount", () => {
     beforeEach(async () => {
       // Approve a transaction for Bob.
       await token.connect(alice).approve(bob.address, 5);
@@ -1121,7 +1119,7 @@ describe("FastTokenFacet", () => {
     });
   });
 
-  describe("paginateAllowancesBySpender", async () => {
+  describe("paginateAllowancesBySpender", () => {
     beforeEach(async () => {
       // Let alice give allowance to bob and john, let bob give allowance to john.
       await token.connect(alice).approve(bob.address, 5);
@@ -1149,7 +1147,7 @@ describe("FastTokenFacet", () => {
     });
   });
 
-  describe("beforeRemovingMember", async () => {
+  describe("beforeRemovingMember", () => {
     beforeEach(async () => {
       await issuerMemberToken.mint(1_000, "Give me the money");
     });
@@ -1159,9 +1157,8 @@ describe("FastTokenFacet", () => {
       await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
-    describe("when successful", async () => {
+    describe("when successful", () => {
       let tokenAsItself: FastTokenFacet;
-
       beforeEach(async () => {
         // Let alice give allowance to bob, and john give allowance to alice.
         await Promise.all([
@@ -1184,7 +1181,7 @@ describe("FastTokenFacet", () => {
         await issuerMemberToken.transferFrom(ZERO_ADDRESS, alice.address, 100);
         // Attempt to run the callback, removing alice.
         const subject = tokenAsItself.beforeRemovingMember(alice.address);
-        await expect(subject).to.be.revertedWith(`RequiresPositiveBalance`);
+        await expect(subject).to.have.revertedWith(`RequiresPositiveBalance`);
       });
 
       it("sets allowances to / from the removed members to zero", async () => {

@@ -42,7 +42,7 @@ describe("IssuerInitFacet", () => {
     });
   });
 
-  describe("initialize", async () => {
+  describe("initialize", () => {
     it("requires that it is not initialized", async () => {
       // Attempt to re-initialize.
       const initIssuer = await ethers.getContractAt<IssuerInitFacet>(

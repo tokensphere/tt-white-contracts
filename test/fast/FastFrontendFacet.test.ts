@@ -78,10 +78,10 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("emitDetailsChanged", async () => {
+  describe("emitDetailsChanged", () => {
     it("requires that the caller is the diamond", async () => {
       const subject = frontend.emitDetailsChanged();
-      await expect(subject).to.have.been.revertedWith("InternalMethod");
+      await expect(subject).to.have.revertedWith("InternalMethod");
     });
 
     it("emits a DetailsChanged event with all the correct information", async () => {
@@ -105,7 +105,7 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("details", async () => {
+  describe("details", () => {
     it("returns a populated details struct", async () => {
       await ethers.provider.send("hardhat_setBalance", [
         frontend.address,
@@ -132,7 +132,7 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("detailedPrivileges", async () => {
+  describe("detailedPrivileges", () => {
     it("returns a PrivilegesDetails struct with the correct information", async () => {
       const subject = await frontend.detailedPrivileges(issuerMember.address);
       const memberObj = abiStructToObj(subject);
@@ -148,7 +148,7 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("paginateDetailedMembers", async () => {
+  describe("paginateDetailedMembers", () => {
     it("returns member details with next cursor", async () => {
       const [members, nextCursor] = await frontend.paginateDetailedMembers(
         0,
@@ -199,7 +199,7 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("paginateDetailedGovernors", async () => {
+  describe("paginateDetailedGovernors", () => {
     beforeEach(async () => {
       await issuerMemberFast.addGovernor(member.address);
     });
@@ -222,19 +222,19 @@ describe("FastFrontendFacet", () => {
     });
   });
 
-  describe("detailedDistribution", async () => {
+  describe("detailedDistribution", () => {
     it("MUST BE TESTED");
   });
 
-  describe("paginateDetailedDistributions", async () => {
+  describe("paginateDetailedDistributions", () => {
     it("MUST BE TESTED");
   });
 
-  describe("detailedCrowdfund", async () => {
+  describe("detailedCrowdfund", () => {
     it("MUST BE TESTED");
   });
 
-  describe("paginateDetailedCrowdfund", async () => {
+  describe("paginateDetailedCrowdfund", () => {
     it("MUST BE TESTED");
   });
 });

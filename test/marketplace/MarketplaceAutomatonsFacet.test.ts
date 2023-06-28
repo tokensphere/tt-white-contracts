@@ -84,8 +84,8 @@ describe("MarketplaceAutomatonsFacet", () => {
     });
   });
 
-  describe("IHasAutomatons", async () => {
-    describe("isAutomaton", async () => {
+  describe("IHasAutomatons", () => {
+    describe("isAutomaton", () => {
       it("returns true when a privilege exists for the given candidate", async () => {
         for (const {
           who: { address },
@@ -99,7 +99,7 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
     });
 
-    describe("automatonPrivileges", async () => {
+    describe("automatonPrivileges", () => {
       it("returns a bitfield of the candidate privileges", async () => {
         for (const {
           who: { address },
@@ -115,14 +115,14 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
     });
 
-    describe("automatonCount", async () => {
+    describe("automatonCount", () => {
       it("returns the number of registered automatons", async () => {
         const subject = await automatons.automatonCount();
         expect(subject).to.eq(privilegesFixture.length);
       });
     });
 
-    describe("paginateAutomatons", async () => {
+    describe("paginateAutomatons", () => {
       it("paginates registered automatons", async () => {
         const [page, nextCursor] = await automatons.paginateAutomatons(1, 2);
         expect(page).to.eql([alice.address, rob.address]);
@@ -130,10 +130,10 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
     });
 
-    describe("setAutomatonPrivileges", async () => {
+    describe("setAutomatonPrivileges", () => {
       it("requires issuer membership", async () => {
         const subject = automatons.setAutomatonPrivileges(john.address, 0b111);
-        await expect(subject).to.be.revertedWith("RequiresAutomatonsManager");
+        await expect(subject).to.have.revertedWith("RequiresAutomatonsManager");
       });
 
       it("assigns the given privileges to the candidate", async () => {
@@ -159,10 +159,10 @@ describe("MarketplaceAutomatonsFacet", () => {
       });
     });
 
-    describe("removeAutomaton", async () => {
+    describe("removeAutomaton", () => {
       it("requires issuer privileges", async () => {
         const subject = automatons.removeAutomaton(john.address);
-        await expect(subject).to.be.revertedWith("RequiresAutomatonsManager");
+        await expect(subject).to.have.revertedWith("RequiresAutomatonsManager");
       });
 
       it("removes the automaton from the list", async () => {
