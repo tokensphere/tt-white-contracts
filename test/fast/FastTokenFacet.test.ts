@@ -17,6 +17,7 @@ import {
   UNDERFLOWED_OR_OVERFLOWED,
   DEFAULT_TRANSFER_REFERENCE,
   impersonateContract,
+  stopImpersonating,
 } from "../utils";
 import { fastFixtureFunc, FAST_INIT_DEFAULTS } from "../fixtures/fast";
 import {
@@ -1169,12 +1170,7 @@ describe("FastTokenFacet", () => {
         // Impersonate the diamond.
         tokenAsItself = await impersonateContract(token);
       });
-
-      afterEach(async () => {
-        await ethers.provider.send("hardhat_stopImpersonatingAccount", [
-          token.address,
-        ]);
-      });
+      afterEach(async () => stopImpersonating(tokenAsItself.address));
 
       it("reverts if the member to remove still has a positive balance", async () => {
         // Give alice some tokens.
