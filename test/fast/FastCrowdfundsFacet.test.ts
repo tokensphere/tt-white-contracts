@@ -9,6 +9,7 @@ import {
   FastCrowdfundsFacet,
   IERC20,
   Crowdfund,
+  FastFrontendFacet,
 } from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 import {
@@ -29,6 +30,7 @@ describe("FastCrowdfundsFacet", () => {
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     erc20: FakeContract<IERC20>,
+    frontendMock: FakeContract<FastFrontendFacet>,
     crowdfunds: FastCrowdfundsFacet,
     crowdfundsAsMember: FastCrowdfundsFacet,
     crowdfundsAsGovernor: FastCrowdfundsFacet,
@@ -80,7 +82,9 @@ describe("FastCrowdfundsFacet", () => {
       opts: {
         name: "FastCrowdfundsFixture",
         deployer: deployer.address,
-        afterDeploy: async ({ fast }) => {
+        afterDeploy: async (args) => {
+          const { fast } = args;
+          ({ frontendMock } = args);
           crowdfunds = await ethers.getContractAt<FastCrowdfundsFacet>(
             "FastCrowdfundsFacet",
             fast.address
@@ -130,6 +134,14 @@ describe("FastCrowdfundsFacet", () => {
       await crowdfundsAsIssuer.setCrowdfundsDefaultBasisPointFee(1_00);
       const subject = await crowdfunds.crowdfundsDefaultBasisPointFee();
       expect(subject).to.eq(1_00);
+    });
+
+    it("delegates to the Frontend facet for event emission", async () => {
+      frontendMock.emitDetailsChanged.reset();
+      await crowdfundsAsIssuer.setCrowdfundsDefaultBasisPointFee(1_00);
+      expect(frontendMock.emitDetailsChanged)
+        .to.have.been.calledOnceWith()
+        .delegatedFrom(crowdfunds.address);
     });
   });
 

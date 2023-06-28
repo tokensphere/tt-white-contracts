@@ -381,7 +381,7 @@ describe("FastTokenFacet", () => {
         .withArgs(alice.address, ZERO_ADDRESS, 100);
     });
 
-    it("delegates to the Frontend facet for a global event emission", async () => {
+    it("delegates to the Frontend facet for event emission", async () => {
       frontendMock.emitDetailsChanged.reset();
       await issuerMemberToken.retrieveDeadTokens(alice.address);
       expect(frontendMock.emitDetailsChanged)

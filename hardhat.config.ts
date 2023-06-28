@@ -89,7 +89,10 @@ const config: HardhatUserConfig = {
         ["Facet$", "Transfer(address,address,uint256)"],
         ["Facet$", "Approval(address,address,uint256)"],
         ["Facet$", "Disapproval(address,address,uint256)"],
-        ["Facet$", "DetailsChanged(bool,uint256,uint256,uint256,uint256)"],
+        [
+          "Facet$",
+          "DetailsChanged(bool,uint32,uint256,uint256,uint256,uint256)",
+        ],
         ["Facet$", "DistributionDeployed(address)"],
         ["Facet$", "DistributionRemoved(address)"],
         ["Facet$", "CrowdfundDeployed(address)"],

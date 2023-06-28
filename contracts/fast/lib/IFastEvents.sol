@@ -72,6 +72,7 @@ interface IFastEvents {
    */
   event DetailsChanged(
     bool transfersDisabled,
+    uint32 crowdfundsDefaultBasisPointsFee,
     uint256 memberCount,
     uint256 governorCount,
     uint256 totalSupply,

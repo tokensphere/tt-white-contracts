@@ -82,6 +82,7 @@ contract FastFrontendFacet is AFastFacet {
     LibFastToken.Data storage tokenData = LibFastToken.data();
     emit DetailsChanged({
       transfersDisabled: LibFast.data().transfersDisabled,
+      crowdfundsDefaultBasisPointsFee: LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee,
       memberCount: LibHasMembers.data().memberSet.values.length,
       governorCount: LibHasGovernors.data().governorSet.values.length,
       totalSupply: tokenData.totalSupply,

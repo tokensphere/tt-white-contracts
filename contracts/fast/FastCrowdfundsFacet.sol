@@ -48,9 +48,11 @@ contract FastCrowdfundsFacet is AFastFacet {
   }
 
   function setCrowdfundsDefaultBasisPointFee(uint32 newBasisPointFee) external onlyIssuerMember {
-    if (newBasisPointFee > 100_00) revert ICustomErrors.InvalidCrowdfundBasisPointsFee(newBasisPointFee);
+    uint32 currentFee = LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee;
+    if (currentFee == newBasisPointFee || newBasisPointFee > 100_00)
+      revert ICustomErrors.InvalidCrowdfundBasisPointsFee(newBasisPointFee);
     LibFastCrowdfunds.data().crowdfundsDefaultBasisPointsFee = newBasisPointFee;
-    emit CrowdfundDefaultBasisPointFeeSet(newBasisPointFee);
+    FastFrontendFacet(address(this)).emitDetailsChanged();
   }
 
   /**
