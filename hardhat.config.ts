@@ -200,6 +200,9 @@ const config: HardhatUserConfig = {
     },
   },
   typechain: {
+    externalArtifacts: [
+      "artifacts/hardhat-diamond-abi/HardhatDiamondABI.sol/*.json",
+    ],
     outDir: "typechain",
     target: "ethers-v5",
   },
