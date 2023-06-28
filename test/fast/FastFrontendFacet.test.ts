@@ -97,6 +97,7 @@ describe("FastFrontendFacet", () => {
         .to.emit(frontend, "DetailsChanged")
         .withArgs(
           detailsObj.transfersDisabled,
+          detailsObj.crowdfundsDefaultBasisPointsFee,
           detailsObj.memberCount,
           detailsObj.governorCount,
           detailsObj.totalSupply,
