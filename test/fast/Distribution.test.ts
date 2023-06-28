@@ -1,7 +1,6 @@
 import * as chai from "chai";
 import { expect } from "chai";
 import { solidity } from "ethereum-waffle";
-import hre from "hardhat";
 import { BigNumber } from "ethers";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { ethers } from "hardhat";
@@ -45,7 +44,6 @@ describe("Distribution", () => {
       await ethers.getSigners();
   });
 
-  // Before each test, we want to allow impersonating the FAST contract address and fund it.
   beforeEach(async () => {
     // Mock an Issuer and an Marketplace contract.
     issuer = await smock.fake("Issuer");
@@ -79,10 +77,6 @@ describe("Distribution", () => {
     erc20.balanceOf.reset();
     erc20.transfer.reset();
 
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [fast.address],
-    });
     await ethers.provider.send("hardhat_setBalance", [
       fast.address,
       "0xfffffffffffffffffff",
