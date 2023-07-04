@@ -50,10 +50,7 @@ contract FastInitFacet is AFastFacet {
     uint32 crowdfundsDefaultBasisPointsFee;
   }
 
-  function initialize(InitializerParams calldata params) external onlyDeployer {
-    // Make sure we haven't initialized yet.
-    if (LibFast.data().version >= LibFast.STORAGE_VERSION) revert ICustomErrors.AlreadyInitialized();
-
+  function initialize(InitializerParams calldata params) external onlyDiamondOwner {
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     ds.supportedInterfaces[type(IERC20).interfaceId] = true;
@@ -66,7 +63,6 @@ contract FastInitFacet is AFastFacet {
 
     // Initialize top-level facet storage.
     LibFast.Data storage topData = LibFast.data();
-    topData.version = LibFast.STORAGE_VERSION;
     topData.issuer = params.issuer;
     topData.marketplace = params.marketplace;
     topData.hasFixedSupply = params.hasFixedSupply;
@@ -78,7 +74,6 @@ contract FastInitFacet is AFastFacet {
 
     // Initialize token facet storage.
     LibFastToken.Data storage tokenData = LibFastToken.data();
-    tokenData.version = LibFastToken.STORAGE_VERSION;
     // Set up ERC20 related stuff.
     tokenData.name = params.name;
     tokenData.symbol = params.symbol;
@@ -86,32 +81,10 @@ contract FastInitFacet is AFastFacet {
     // For expliciteness / data slot cleanup.
     tokenData.totalSupply = 0;
 
-    // Initialize history facet storage.
-    LibFastHistory.data().version = LibFastHistory.STORAGE_VERSION;
-
-    // Initialize distributions facet storage.
-    LibFastDistributions.data().version = LibFastDistributions.STORAGE_VERSION;
-
     // Initialize crowfunds facet storage.
     LibFastCrowdfunds.Data storage cfData = LibFastCrowdfunds.data();
-    cfData.version = LibFastCrowdfunds.STORAGE_VERSION;
     if (params.crowdfundsDefaultBasisPointsFee > 100_00)
       revert ICustomErrors.InvalidCrowdfundBasisPointsFee(params.crowdfundsDefaultBasisPointsFee);
     cfData.crowdfundsDefaultBasisPointsFee = params.crowdfundsDefaultBasisPointsFee;
-
-    // ------------------------------------- //
-
-    // Initialize members and governors storage.
-    LibHasGovernors.Data storage governorsData = LibHasGovernors.data();
-    governorsData.version = LibHasGovernors.STORAGE_VERSION;
-
-    LibHasMembers.Data storage membersData = LibHasMembers.data();
-    membersData.version = LibHasMembers.STORAGE_VERSION;
-
-    // Initialize members storage.
-    LibHasMembers.data().version = LibHasMembers.STORAGE_VERSION;
-
-    // Initialize automatons storage.
-    LibHasAutomatons.data().version = LibHasAutomatons.STORAGE_VERSION;
   }
 }

@@ -20,6 +20,12 @@ abstract contract AMarketplaceFacet is IMarketplaceEvents {
 
   // Modifiers.
 
+  /// @notice Ensures that a method can only be called by the owner of this diamond.
+  modifier onlyDiamondOwner() {
+    if (!LibHelpers._isDiamondOwner(msg.sender)) revert ICustomErrors.RequiresDiamondOwnership(msg.sender);
+    _;
+  }
+
   /// @notice Ensures that a method can only be called by the singleton deployer contract factory.
   modifier onlyDeployer() virtual {
     if (!LibHelpers._isDeployer(msg.sender)) revert ICustomErrors.InternalMethod();

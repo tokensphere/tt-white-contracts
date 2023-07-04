@@ -29,7 +29,6 @@ task(
   await deployments.diamond.deploy("Marketplace", {
     from: deployer,
     facets: MARKETPLACE_FACETS,
-    deterministicSalt: deploymentSalt(hre),
     log: true,
   });
 });
@@ -54,6 +53,7 @@ task("marketplace-add-member", "Adds an address as a Marketplace member")
 
 const MARKETPLACE_FACETS = [
   ...COMMON_DIAMOND_FACETS,
+  "MarketplaceInitFacet",
   "MarketplaceTopFacet",
   "MarketplaceAccessFacet",
   "MarketplaceTokenHoldersFacet",
@@ -74,20 +74,24 @@ const deployMarketplace = async (
   } else {
     // Deploy the diamond with an additional initialization facet.
     deploy = await diamond.deploy("Marketplace", {
+      log: true,
       from: deployer,
       owner: deployer,
       facets: MARKETPLACE_FACETS,
-      execute: {
-        contract: "MarketplaceInitFacet",
-        methodName: "initialize",
-        args: [{ issuer: issuerAddr }],
-      },
-      deterministicSalt: deploymentSalt(hre),
-      log: true,
     });
   }
+
+  // Grab a handle to the deployed diamond.
+  const mp = await ethers.getContractAt<Marketplace>(
+    "Marketplace",
+    deploy.address
+  );
+
+  console.log("Initializing Marketplace...");
+  await (await mp.initialize({ issuer: issuerAddr })).wait();
+
   // Return a handle to the diamond.
-  return await ethers.getContract<Marketplace>("Marketplace");
+  return mp;
 };
 
 const addMarketplaceMember = async (

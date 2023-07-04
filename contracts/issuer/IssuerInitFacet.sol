@@ -35,9 +35,6 @@ contract IssuerInitFacet is AIssuerFacet {
   }
 
   function initialize(InitializerParams calldata params) external onlyDiamondOwner {
-    // Make sure we haven't initialized yet.
-    if (LibIssuer.data().version >= LibIssuer.STORAGE_VERSION) revert ICustomErrors.AlreadyInitialized();
-
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -47,23 +44,11 @@ contract IssuerInitFacet is AIssuerFacet {
 
     // ------------------------------------- //
 
-    // Initialize top-level facet storage.
-    LibIssuer.data().version = LibIssuer.STORAGE_VERSION;
-
-    // Initialize access facet storage.
-    LibIssuerAccess.data().version = LibIssuerAccess.STORAGE_VERSION;
-
-    // ------------------------------------- //
-
     // Initialize members storage.
     LibHasMembers.Data storage membersData = LibHasMembers.data();
-    membersData.version = LibHasMembers.STORAGE_VERSION;
     // Add the member and emit.
     membersData.memberSet.add(params.member, false);
     // Emit!
     emit MemberAdded(params.member);
-
-    // Initialize automatons storage.
-    LibHasAutomatons.data().version = LibHasAutomatons.STORAGE_VERSION;
   }
 }

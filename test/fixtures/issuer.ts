@@ -54,9 +54,7 @@ export const issuerFixtureFunc: FixtureFunc<
   const { address: issuerAddr } = await hre.deployments.diamond.deploy(name, {
     from: deployer,
     owner: deployer,
-    facets: [...ISSUER_FACETS, "IssuerInitFacet"],
-    // TODO: Why is this crashing?.......
-    // deterministicSalt: deploymentSalt(hre),
+    facets: ISSUER_FACETS,
   });
 
   // Provision the Issuer with a load of eth.

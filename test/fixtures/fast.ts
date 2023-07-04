@@ -75,11 +75,9 @@ export const fastFixtureFunc: FixtureFunc<
     owner: deployer,
     facets: FAST_FACETS,
     execute: {
-      contract: "FastInitFacet",
       methodName: "initialize",
       args: [{ ...FAST_INIT_DEFAULTS, ...initWith }],
     },
-    deterministicSalt: deploymentSalt(hre),
   });
 
   // Get a FAST typed pointer.

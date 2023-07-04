@@ -12,8 +12,21 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
   console.log("------------------------------------------------ 90_seedDevEnv");
 
-  const { deployer, fastGovernor, issuerMember, automaton, user1, user2, user3, user4, user5, user6, user7, user8, user9 } =
-    await getNamedAccounts();
+  const {
+    deployer,
+    fastGovernor,
+    issuerMember,
+    automaton,
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+  } = await getNamedAccounts();
   // Grab various accounts.
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
   const fastGovernorSigner = await ethers.getSigner(fastGovernor);
@@ -26,23 +39,40 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const ddd = await deployments.deploy("ERC20", {
       from: deployer,
       args: ["Dummy Dumb Dividends", "DDD"],
-      deterministicDeployment: true,
+      deterministicDeployment: false,
     });
     console.log(`DDD deployed at ${ddd.address}.`);
   }
 
   console.log("Adding user[1-10] to the Marketplace as members...");
-  for (const addr of [user1, user2, user3, user4, user5, user6, user7, user8, user9]) {
+  for (const addr of [
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+  ]) {
     if (!(await marketplace.isMember(addr))) {
       console.log(`  ${addr}...`);
       await (await issuerMemberMarketplace.addMember(addr)).wait();
     }
   }
 
-  const governedF01 = (await ethers.getContract("FastF01")).connect(fastGovernorSigner);
-  const issuerMemberF01 = (await ethers.getContract("FastF01")).connect(issuerMemberSigner);
+  const governedF01 = (await ethers.getContract("FastF01")).connect(
+    fastGovernorSigner
+  );
+  const issuerMemberF01 = (await ethers.getContract("FastF01")).connect(
+    issuerMemberSigner
+  );
   console.log("Adding automaton to F01 FAST...");
-  await issuerMemberF01.setAutomatonPrivileges(automaton, FastAutomatonPrivilege.ManageDistributions);
+  await issuerMemberF01.setAutomatonPrivileges(
+    automaton,
+    FastAutomatonPrivilege.ManageDistributions
+  );
   console.log("Adding user[1-5] as members of the F01 FAST...");
   for (const addr of [user1, user2, user3, user4, user5]) {
     console.log(`  ${addr}...`);
@@ -56,12 +86,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         ZERO_ADDRESS,
         addr,
         toBaseUnit(1_000 * (index + 1), 18),
-        `Transfer ${index + 1}`,
+        `Transfer ${index + 1}`
       )
     ).wait();
   }
 
-  const governedF02 = (await ethers.getContract("FastF02")).connect(fastGovernorSigner);
+  const governedF02 = (await ethers.getContract("FastF02")).connect(
+    fastGovernorSigner
+  );
   console.log("Adding user[3-7] as members of the F02 FAST...");
   for (const addr of [user3, user4, user5, user6, user7]) {
     console.log(`  ${addr}...`);

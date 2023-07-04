@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { deployments, ethers, getNamedAccounts } from "hardhat";
-import { deployFast, fastMint } from "../tasks/fast";
+import { deployFast, deployFastLightInstance, fastMint } from "../tasks/fast";
 import { Marketplace } from "../typechain";
 import { BigNumber } from "ethers";
 
@@ -34,7 +34,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       console.log("F01 already deployed, skipping deployment and minting.");
     } else {
       console.log("Deploying F01 FAST...");
-      const { fast: f01 } = await deployFast(hre, {
+      const { fast: f01 } = await deployFastLightInstance(hre, {
         governor: fastGovernor,
         name: "Fixed-supply Semi-public 18",
         symbol: "F01",
@@ -43,6 +43,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         isSemiPublic: true,
         crowdfundsDefaultBasisPointsFee: 20_00,
       });
+      // const { fast: f01 } = await deployFast(hre, {
+      //   governor: fastGovernor,
+      //   name: "Fixed-supply Semi-public 18",
+      //   symbol: "F01",
+      //   decimals: 18,
+      //   hasFixedSupply: true,
+      //   isSemiPublic: true,
+      //   crowdfundsDefaultBasisPointsFee: 20_00,
+      // });
       console.log("Minting 500_000 F01...");
       await fastMint(f01.connect(issuerMemberSigner), 500_000, "Whatever");
     }

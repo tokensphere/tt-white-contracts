@@ -24,10 +24,7 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     address issuer;
   }
 
-  function initialize(InitializerParams calldata params) external onlyDeployer {
-    // Make sure we haven't initialized yet.
-    if (LibMarketplace.data().version >= LibMarketplace.STORAGE_VERSION) revert ICustomErrors.AlreadyInitialized();
-
+  function initialize(InitializerParams calldata params) external onlyDiamondOwner {
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -38,28 +35,6 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     // ------------------------------------- //
 
     // Initialize top-level storage.
-    LibMarketplace.Data storage topData = LibMarketplace.data();
-    topData.version = LibMarketplace.STORAGE_VERSION;
-    topData.issuer = params.issuer;
-
-    // ------------------------------------- //
-
-    // Initialize access storage.
-    LibMarketplaceAccess.data().version = LibMarketplaceAccess.STORAGE_VERSION;
-
-    // ------------------------------------- //
-
-    // Initialize token holders storage.
-    LibMarketplaceTokenHolders.data().version = LibMarketplaceTokenHolders.STORAGE_VERSION;
-
-    // ------------------------------------- //
-
-    // Initialize members storage.
-    LibHasMembers.data().version = LibHasMembers.STORAGE_VERSION;
-
-    // ------------------------------------- //
-
-    // Initialize automatons storage.
-    LibHasAutomatons.data().version = LibHasAutomatons.STORAGE_VERSION;
+    LibMarketplace.data().issuer = params.issuer;
   }
 }

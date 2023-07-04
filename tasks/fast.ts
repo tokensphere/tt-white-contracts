@@ -3,12 +3,10 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { BigNumber } from "ethers";
 import {
   COMMON_DIAMOND_FACETS,
-  deploymentSalt,
   fromBaseUnit,
   toBaseUnit,
   ZERO_ADDRESS,
 } from "../src/utils";
-import { id } from "ethers/lib/utils";
 import {
   Fast,
   Issuer,
@@ -17,10 +15,18 @@ import {
 
 // Tasks.
 
+task("fast-deploy", "Deploys the base FAST diamond").setAction(
+  async (params: any, hre: HardhatRuntimeEnvironment) => {
+    await deployFast(hre);
+  }
+);
+
 interface FastDeployTaskParams extends FastDeployParams {
+  readonly light: boolean;
   readonly mint?: number;
 }
-task("fast-deploy", "Deploys a FAST")
+task("fast-instance-deploy", "Deploys an instance of a FAST")
+  .addParam("light", "Light vs Full Diamond FAST deploy", true, types.boolean)
   .addParam(
     "governor",
     "The address of the FAST governor",
@@ -60,29 +66,38 @@ task("fast-deploy", "Deploys a FAST")
       const { issuerMember } = await getNamedAccounts();
       const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
-      const { fast, diamondName } = await deployFast(hre, params);
-      console.log(`Fast diamond ${diamondName} deployed`, fast.address);
-      const issuerMemberFast = fast.connect(issuerMemberSigner);
-      console.log(`Registered ${diamondName} with Issuer`);
-
-      // At this point, we can start minting a few tokens if requested.
-      if (params.mint) {
-        const { symbol, decimals, baseAmount } = await fastMint(
-          issuerMemberFast,
-          params.mint,
-          "Initial Mint"
-        );
-        console.log(`Minted ${symbol}: `);
-        console.log(`  In base unit: =${baseAmount}`);
-        console.log(
-          `    Human unit: ~${fromBaseUnit(
-            baseAmount,
-            decimals
-          )}(${decimals} decimals truncated)`
-        );
+      let fast: Fast;
+      if (params.light) {
+        const { fast } = await deployFastLightInstance(hre, params);
+      } else {
+        const { fast } = await deployFastFullInstance(hre, params);
       }
+
+      // const { fast, diamondName } = await deployFastFullInstance(hre, params);
+      // console.log(`Fast diamond ${diamondName} deployed`, fast.address);
+      // const issuerMemberFast = fast.connect(issuerMemberSigner);
+      // console.log(`Registered ${diamondName} with Issuer`);
+
+      // // At this point, we can start minting a few tokens if requested.
+      // if (params.mint) {
+      //   const { symbol, decimals, baseAmount } = await fastMint(
+      //     issuerMemberFast,
+      //     params.mint,
+      //     "Initial Mint"
+      //   );
+      //   console.log(`Minted ${symbol}: `);
+      //   console.log(`  In base unit: =${baseAmount}`);
+      //   console.log(
+      //     `    Human unit: ~${fromBaseUnit(
+      //       baseAmount,
+      //       decimals
+      //     )}(${decimals} decimals truncated)`
+      //   );
+      // }
     }
   );
+
+task("fast-init", "Initializes a FAST instance");
 
 interface FastUpdateFacetsParams {
   readonly symbol: string;
@@ -105,7 +120,6 @@ task("fast-update-facets", "Updates facets for a given FAST")
       await deployments.diamond.deploy(diamondName, {
         from: deployer,
         facets: FAST_FACETS,
-        deterministicSalt: deploymentSalt(hre),
         log: true,
       });
     }
@@ -206,6 +220,7 @@ task("fast-balance", "Retrieves the balance of a given account")
 
 const FAST_FACETS = [
   ...COMMON_DIAMOND_FACETS,
+  "FastInitFacet",
   "FastTopFacet",
   "FastAccessFacet",
   "FastAutomatonsFacet",
@@ -215,6 +230,28 @@ const FAST_FACETS = [
   "FastDistributionsFacet",
   "FastCrowdfundsFacet",
 ];
+
+const deployFast = async (hre: HardhatRuntimeEnvironment) => {
+  const { ethers, deployments, getNamedAccounts } = hre;
+  const { diamond } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+  const diamondName = "Fast";
+  let deploy = await deployments.getOrNull("Fast");
+  if (deploy) {
+    console.log(`${diamondName} deployment found at ${deploy.address}`);
+    return deploy.address;
+  }
+
+  console.log(`Deploying ${diamondName}...`);
+  deploy = await diamond.deploy(diamondName, {
+    log: true,
+    from: deployer,
+    owner: deployer,
+    facets: FAST_FACETS,
+  });
+};
+
 interface FastDeployParams {
   readonly governor: string;
   readonly name: string;
@@ -224,10 +261,67 @@ interface FastDeployParams {
   readonly isSemiPublic: boolean;
   readonly crowdfundsDefaultBasisPointsFee: number;
 }
-const deployFast = async (
+
+const deployFastLightInstance = async (
   hre: HardhatRuntimeEnvironment,
   params: FastDeployParams
-): Promise<{ fast: Fast; diamondName: string }> => {
+) => {
+  const { ethers, deployments, getNamedAccounts } = hre;
+  const { deployer, issuerMember } = await getNamedAccounts();
+  // Grab a handle on the deployed Issuer and Marketplace contract.
+  const issuer = await ethers.getContract<Issuer>("Issuer");
+  const marketplace = await ethers.getContract<Marketplace>("Marketplace");
+  // Make a unique diamond name for that FAST.
+  const name = `Fast${params.symbol}`;
+
+  const { address: implAddress } = await ethers.getContract("Fast");
+
+  // Maybe this FAST is already deployed...
+  let deploy = await deployments.getOrNull(name);
+  if (deploy) {
+    console.log(`${name} deployment found, skipping deployment.`);
+  } else {
+    deploy = await hre.deployments.deploy(name, {
+      log: true,
+      from: deployer,
+      contract: "SimpleProxy",
+      args: [implAddress],
+    });
+  }
+
+  const fast = await ethers.getContractAt<Fast>("Fast", deploy.address);
+
+  console.log(`Initializing FAST ${name}...`);
+  await hre.deployments.diamond.deploy(name, {
+    log: true,
+    from: deployer,
+    owner: deployer,
+    facets: FAST_FACETS,
+    execute: {
+      methodName: "initialize",
+      args: [
+        {
+          issuer: issuer.address,
+          marketplace: marketplace.address,
+          name: params.name,
+          symbol: params.symbol,
+          decimals: params.decimals,
+          hasFixedSupply: params.hasFixedSupply,
+          isSemiPublic: params.isSemiPublic,
+          crowdfundsDefaultBasisPointsFee:
+            params.crowdfundsDefaultBasisPointsFee,
+        },
+      ],
+    },
+  });
+
+  return { fast, name };
+};
+
+const deployFastFullInstance = async (
+  hre: HardhatRuntimeEnvironment,
+  params: FastDeployParams
+): Promise<{ fast: Fast; name: string }> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
   const { deployer, issuerMember } = await getNamedAccounts();
@@ -237,21 +331,21 @@ const deployFast = async (
   const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
   // Make a unique diamond name for that FAST.
-  const diamondName = `Fast${params.symbol}`;
-  const deterministicSalt = id(`${deploymentSalt(hre)}:${diamondName}`);
+  const name = `Fast${params.symbol}`;
 
-  let deploy = await deployments.getOrNull(diamondName);
+  // Maybe this FAST is already deployed...
+  let deploy = await deployments.getOrNull(name);
   if (deploy) {
-    console.log(`${diamondName} deployment found, skipping deployment.`);
+    console.log(`${name} deployment found, skipping deployment.`);
   } else {
-    console.log(`Deploying ${diamondName} with governor ${params.governor}...`);
+    console.log(`Deploying ${name} with governor ${params.governor}...`);
     // Deploy the diamond with an additional initialization facet.
-    deploy = await diamond.deploy(diamondName, {
+    deploy = await diamond.deploy(name, {
+      log: true,
       from: deployer,
       owner: deployer,
       facets: FAST_FACETS,
       execute: {
-        contract: "FastInitFacet",
         methodName: "initialize",
         args: [
           {
@@ -267,33 +361,29 @@ const deployFast = async (
           },
         ],
       },
-      deterministicSalt,
-      log: true,
     });
   }
 
   // Register the new FAST with the Issuer.
   if ((await issuer.fastBySymbol(params.symbol)) !== ZERO_ADDRESS) {
     console.log(
-      `${diamondName} already registered with the Issuer, skipping registration.`
+      `${name} already registered with the Issuer, skipping registration.`
     );
   } else {
-    console.log(
-      `Registering ${diamondName} at ${deploy.address} with the Issuer...`
-    );
+    console.log(`Registering ${name} at ${deploy.address} with the Issuer...`);
     await (
       await issuer.connect(issuerMemberSigner).registerFast(deploy.address)
     ).wait();
   }
 
   // Return a handle to the diamond.
-  const fast = await ethers.getContract<Fast>(diamondName);
+  const fast = await ethers.getContract<Fast>(name);
 
   // Add governor to the FAST.
-  console.log(`Adding governor ${params.governor} to ${diamondName}...`);
+  console.log(`Adding governor ${params.governor} to ${name}...`);
   await fast.connect(issuerMemberSigner).addGovernor(params.governor);
 
-  return { fast, diamondName };
+  return { fast, name };
 };
 
 const fastBySymbol = async (
@@ -330,4 +420,11 @@ const fastMint = async (
   return { symbol, decimals, baseAmount };
 };
 
-export { FAST_FACETS, deployFast, fastBySymbol, fastMint };
+export {
+  FAST_FACETS,
+  deployFast,
+  deployFastLightInstance,
+  deployFastFullInstance,
+  fastBySymbol,
+  fastMint,
+};

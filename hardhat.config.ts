@@ -45,6 +45,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "FastGroupChanged(address,string,string)"],
         ["Facet$", "GovernorshipAdded(address,address)"],
         ["Facet$", "GovernorshipRemoved(address,address)"],
+        ["Facet$", "MemberAdded(address)"],
         // Error types.
         ["Facet$", "RequiresIssuerMembership(address)"],
         ["Facet$", "RequiresFastContractCaller()"],
@@ -98,7 +99,10 @@ const config: HardhatUserConfig = {
         ["Facet$", "CrowdfundDeployed(address)"],
         ["Facet$", "CrowdfundRemoved(address)"],
         ["Facet$", "CrowdfundDefaultBasisPointFeeSet(uint32)"],
+        ["Facet$", "GovernorAdded(address)"],
+        ["Facet$", "MemberAdded(address)"],
         // Error types.
+        ["Facet$", "InvalidCrowdfundBasisPointsFee(uint32)"],
         ["Facet$", "InternalMethod()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
         ["Facet$", "RequiresMarketplaceMembership(address)"],

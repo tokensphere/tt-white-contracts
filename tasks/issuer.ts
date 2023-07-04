@@ -27,7 +27,6 @@ task("issuer-update-facets", "Updates facets of our Issuer").setAction(
     await deployments.diamond.deploy("Issuer", {
       from: deployer,
       facets: ISSUER_FACETS,
-      deterministicSalt: deploymentSalt(hre),
       log: true,
     });
   }
@@ -37,6 +36,7 @@ task("issuer-update-facets", "Updates facets of our Issuer").setAction(
 
 const ISSUER_FACETS = [
   ...COMMON_DIAMOND_FACETS,
+  "IssuerInitFacet",
   "IssuerTopFacet",
   "IssuerAccessFacet",
   "IssuerAutomatonsFacet",
@@ -64,27 +64,21 @@ const deployIssuer = async (
     console.log("Deploying Issuer...");
     // Deploy the diamond with an additional initialization facet.
     deploy = await diamond.deploy("Issuer", {
+      log: true,
       from: deployer,
       owner: deployer,
-      facets: [...ISSUER_FACETS, "IssuerInitFacet"],
-      deterministicSalt: deploymentSalt(hre),
-      log: true,
+      facets: ISSUER_FACETS,
     });
   }
-  const issuer = await ethers.getContract<Issuer>("Issuer");
 
-  if (!(await issuer.memberCount()).isZero()) {
+  // Grab a handle to the deployed diamond.
+  const issuer = await ethers.getContractAt<Issuer>("Issuer", deploy.address);
+
+  if (!(await issuer.memberCount()).isZero())
     console.log("Issuer already initialized, skipping initialization.");
-  } else {
+  else {
     console.log("Initializing Issuer...");
-    // Initialize the diamond. We are doing it in two steps, because the Issuer member is different
-    // in each environment, and this would make our deployment transaction different in each and
-    // therefore defeat the deterministic deployment strategy.
-    const issuerInitFacet = await ethers.getContractAt(
-      "IssuerInitFacet",
-      deploy.address
-    );
-    await (await issuerInitFacet.initialize({ member: issuerMember })).wait();
+    await (await issuer.initialize({ member: issuerMember })).wait();
   }
 
   // Return a handle to the diamond.

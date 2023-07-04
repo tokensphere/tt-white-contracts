@@ -55,13 +55,11 @@ export const marketplaceFixtureFunc: FixtureFunc<
     {
       from: deployer,
       owner: deployer,
-      facets: [...MARKETPLACE_FACETS, "MarketplaceInitFacet"],
+      facets: MARKETPLACE_FACETS,
       execute: {
-        contract: "MarketplaceInitFacet",
         methodName: "initialize",
         args: [{ ...MARKETPLACE_INIT_DEFAULTS, ...initWith }],
       },
-      deterministicSalt: deploymentSalt(hre),
     }
   );
 

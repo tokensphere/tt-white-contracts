@@ -69,8 +69,7 @@ describe("FastInitFacet", () => {
           // Add the init facet back to the diamond.
           await deployments.diamond.deploy("FastInitFixture", {
             from: deployer.address,
-            facets: [...FAST_FACETS, "FastInitFacet"],
-            deterministicSalt: deploymentSalt(hre),
+            facets: FAST_FACETS,
           });
           initFacet = await ethers.getContractAt<FastInitFacet>(
             "FastInitFacet",
