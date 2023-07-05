@@ -77,6 +77,7 @@ yarn hardhat fast-deploy \
               --decimals 18 \
               --has-fixed-supply false \
               --is-semi-public true \
+              --crowdfunds-default-basis-points-fee 250 \
               --mint 1000000
 ```
 
