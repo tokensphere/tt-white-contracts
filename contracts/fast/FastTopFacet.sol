@@ -72,7 +72,7 @@ contract FastTopFacet is AFastFacet {
    * @notice Allows an issuer member to enable or disable all transfers within this FAST.
    * @param flag Set the transfer capability to active or not.
    */
-  function setTransfersDisabled(bool flag) external onlyIssuerMember {
+  function setTransfersDisabled(bool flag) external onlyIssuerMemberOrIssuerContract {
     LibFast.Data storage d = LibFast.data();
     // Only make changes and emit if the new flag is different than the old one.
     if (d.transfersDisabled != flag) {

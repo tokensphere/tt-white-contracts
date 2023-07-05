@@ -127,6 +127,7 @@ describe("IssuerTopFacet", () => {
         await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
       });
 
+      it("delegates to the FAST contract to disable its transfers");
       it("disables transfers for the FAST being unregistered", async () => {
         await issuerMemberIssuer.unregisterFast(f01.address);
         expect(f01.setTransfersDisabled).to.be.calledOnceWith(true);

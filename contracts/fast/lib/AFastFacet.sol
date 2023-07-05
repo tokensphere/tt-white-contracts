@@ -84,6 +84,12 @@ abstract contract AFastFacet is IFastEvents {
     _;
   }
 
+  modifier onlyIssuerMemberOrIssuerContract() {
+    if (!_isIssuerMember(msg.sender) && msg.sender != LibFast.data().issuer)
+      revert ICustomErrors.RequiresIssuerMemberOrIssuerCaller();
+    _;
+  }
+
   /**
    * @notice Ensures that the given address is a governor of the FAST.
    * @param who The address to check.

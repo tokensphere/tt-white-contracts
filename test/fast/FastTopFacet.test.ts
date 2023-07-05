@@ -159,8 +159,12 @@ describe("FastTopFacet", () => {
   describe("setTransfersDisabled", () => {
     it("requires Issuer membership from the sender", async () => {
       const subject = top.setTransfersDisabled(true);
-      await expect(subject).to.have.revertedWith(`RequiresIssuerMembership`);
+      await expect(subject).to.have.revertedWith(
+        `RequiresIssuerMemberOrIssuerCaller`
+      );
     });
+
+    it("succeeds when called from the issuer contract");
 
     it("delegates to FastFrontendFacet.emitDetailsChanged", async () => {
       await issuerMemberTop.setTransfersDisabled(true);

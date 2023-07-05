@@ -25,6 +25,7 @@ interface ICustomErrors {
   error RequiresGovernorsManager(address who);
   error RequiresIssuerMemberCaller();
   error RequiresIssuerMembership(address who);
+  error RequiresIssuerMemberOrIssuerCaller();
   error RequiresManagerCaller();
   error RequiresMarketplaceActiveMembership(address who);
   error RequiresMarketplaceDeactivatedMember(address who);
