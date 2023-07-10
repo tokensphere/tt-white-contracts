@@ -6,4 +6,6 @@ interface IMarketplaceEvents {
   event MemberActivated(address indexed member);
   /// @dev See `IHasActiveMembers`.
   event MemberDeactivated(address indexed member);
+  /// @dev Emitted when a FAST deployment is requested.
+  event FastDeploymentRequested(uint256 index);
 }

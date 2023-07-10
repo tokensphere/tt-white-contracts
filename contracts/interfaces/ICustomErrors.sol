@@ -8,10 +8,11 @@ interface ICustomErrors {
   error InconsistentParameter(string param);
   error InsufficientFunds(uint256 amount);
   error InternalMethod();
+  error InvalidCrowdfundBasisPointsFee(uint32 fee);
   error InvalidPhase();
   error NonExistentEntry();
+  error OutOfBounds();
   error Overfunded(uint256 amount);
-  error InvalidCrowdfundBasisPointsFee(uint32 fee);
   error ReentrancyError();
   error RequiresAutomatonsManager(address who);
   error RequiresContinuousSupply();
@@ -24,8 +25,8 @@ interface ICustomErrors {
   error RequiresFastMembership(address who);
   error RequiresGovernorsManager(address who);
   error RequiresIssuerMemberCaller();
-  error RequiresIssuerMembership(address who);
   error RequiresIssuerMemberOrIssuerCaller();
+  error RequiresIssuerMembership(address who);
   error RequiresManagerCaller();
   error RequiresMarketplaceActiveMembership(address who);
   error RequiresMarketplaceDeactivatedMember(address who);
