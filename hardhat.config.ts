@@ -64,6 +64,7 @@ const config: HardhatUserConfig = {
         // Event types.
         ["Facet$", "MemberActivated(address)"],
         ["Facet$", "MemberDeactivated(address)"],
+        ["Facet$", "FastDeploymentRequested(uint256)"],
         // Error types.
         ["Facet$", "RequiresFastContractCaller()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
