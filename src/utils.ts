@@ -14,19 +14,19 @@ export const DEPLOYER_FACTORY_COMMON = {
 
 // Marketplace privilege bits.
 export const MarketplaceAutomatonPrivilege = {
-  ManageMembers: 1
+  ManageMembers: 1,
 };
 
 // FAST privilege bits.
 export const FastAutomatonPrivilege = {
   ManageMembers: 1,
   ManageDistributions: 2,
-  ManageCrowdfunds: 4
+  ManageCrowdfunds: 4,
 };
 
 export const deploymentSalt = ({
-
-export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
+  network: { name: netName },
+}: HardhatRuntimeEnvironment) => {
   // Staging or production environments.
   if (netName !== "hardhat" && netName !== "localhost" && netName !== "dev") {
     const salt = process.env.DEPLOYMENT_SALT;
@@ -45,15 +45,20 @@ export const abiElementToSignature = (abiElement: JsonFragment): string =>
 
 export type AbiIgnoreList = ReadonlyArray<[Readonly<string>, Readonly<string>]>;
 export const abiFilter =
-  (ignoreList: AbiIgnoreList) => (abiElement: any, index: number, abi: any, contractName: string) =>
+  (ignoreList: AbiIgnoreList) =>
+  (abiElement: any, index: number, abi: any, contractName: string) =>
     // Find the first filter that matches...
     !ignoreList.some(
       ([nameMatcher, sig]) =>
         // If the name matches the name matcher and the function signature, we can set it to "ignore".
-        contractName.match(nameMatcher) && abiElementToSignature(abiElement) === sig,
+        contractName.match(nameMatcher) &&
+        abiElementToSignature(abiElement) === sig
     );
 
-export const fromBaseUnit = (amount: BigNumber | string | number, decimals: BigNumber | string | number): BigNumber => {
+export const fromBaseUnit = (
+  amount: BigNumber | string | number,
+  decimals: BigNumber | string | number
+): BigNumber => {
   amount = BigNumber.from(amount);
   decimals = BigNumber.from(decimals);
   const ten = BigNumber.from(10);
@@ -61,7 +66,10 @@ export const fromBaseUnit = (amount: BigNumber | string | number, decimals: BigN
   return amount.div(exp);
 };
 
-export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: BigNumber | string | number) => {
+export const toBaseUnit = (
+  rawAmount: BigNumber | string | number,
+  decimals: BigNumber | string | number
+) => {
   rawAmount = BigNumber.from(rawAmount);
   decimals = BigNumber.from(decimals);
 
@@ -79,7 +87,9 @@ export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: Big
     amount = amount.substring(1);
   }
   if (amount === ".") {
-    throw new Error(`Invalid amount ${amount} cannot be converted to base unit with ${decimals} decimals.`);
+    throw new Error(
+      `Invalid amount ${amount} cannot be converted to base unit with ${decimals} decimals.`
+    );
   }
 
   // Split it into a whole and fractional part
@@ -107,13 +117,16 @@ export const toBaseUnit = (rawAmount: BigNumber | string | number, decimals: Big
   return BigNumber.from(wei.toString());
 };
 
-export const toUnpaddedHexString = (amount: BigNumber) => amount.toHexString().replace(/0x0+/, "0x");
+export const toUnpaddedHexString = (amount: BigNumber) =>
+  amount.toHexString().replace(/0x0+/, "0x");
 
 // =================================================== //
 
 export const accounts = (networkName: string): string[] => {
   try {
-    return JSON.parse(fs.readFileSync(`./conf/keys.${networkName}.json`, "utf8"));
+    return JSON.parse(
+      fs.readFileSync(`./conf/keys.${networkName}.json`, "utf8")
+    );
   } catch (_error) {
     console.warn(`Cannot read keys file at conf/keys.${networkName}.json .`);
     return [];
