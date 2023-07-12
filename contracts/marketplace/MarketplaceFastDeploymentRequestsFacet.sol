@@ -10,11 +10,18 @@ import "./lib/LibMarketplaceFastDeploymentRequests.sol";
  */
 contract MarketplaceFastDeploymentRequests is AMarketplaceFacet {
   /**
+   * @notice Allows querying the current price for a FAST deployment request.
+   * @return An uint256 representing the price for a FAST deployment request.
+   */
+  function fastDeploymentRequestPrice() external view returns (uint256) {
+    return LibRequestedFastDeployments.data().price;
+  }
+
+  /**
    * @notice This function allows an issuer member to change the price of a FAST deployment request.
    * @param newPrice The new price of a FAST deployment request.
    */
-  // TODO: ACLS!
-  function setFastDeploymentRequestPrice(uint256 newPrice) external {
+  function setFastDeploymentRequestPrice(uint256 newPrice) external onlyIssuerMember {
     // Grab a pointer to our storage slot.
     LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();
     // Set the new price.
@@ -46,8 +53,7 @@ contract MarketplaceFastDeploymentRequests is AMarketplaceFacet {
    * @notice This function allows users to request a FAST deployment.
    * @param params The parameters for the FAST deployment.
    */
-  // TODO: ACLS!
-  function requestDeployment(string memory params) external payable {
+  function requestDeployment(string memory params) external payable onlyMember(msg.sender) {
     // Grab a pointer to our storage slot.
     LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();
     // Not enough attached Eth.
