@@ -24,7 +24,7 @@ export const FastAutomatonPrivilege = {
   ManageCrowdfunds: 4
 };
 
-export const COMMON_DIAMOND_FACETS = [];
+export const deploymentSalt = ({
 
 export const deploymentSalt = ({ network: { name: netName } }: HardhatRuntimeEnvironment) => {
   // Staging or production environments.
