@@ -1,7 +1,7 @@
 import { ContractTransaction } from "ethers";
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { COMMON_DIAMOND_FACETS, deploymentSalt } from "../src/utils";
+import { deploymentSalt } from "../src/utils";
 import { Marketplace } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
@@ -53,7 +53,6 @@ task("marketplace-add-member", "Adds an address as a Marketplace member")
 // Reusable functions.
 
 const MARKETPLACE_FACETS = [
-  ...COMMON_DIAMOND_FACETS,
   "MarketplaceTopFacet",
   "MarketplaceAccessFacet",
   "MarketplaceTokenHoldersFacet",

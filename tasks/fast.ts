@@ -2,7 +2,6 @@ import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { BigNumber } from "ethers";
 import {
-  COMMON_DIAMOND_FACETS,
   deploymentSalt,
   fromBaseUnit,
   toBaseUnit,
@@ -205,7 +204,6 @@ task("fast-balance", "Retrieves the balance of a given account")
 // Reusable functions.
 
 const FAST_FACETS = [
-  ...COMMON_DIAMOND_FACETS,
   "FastTopFacet",
   "FastAccessFacet",
   "FastAutomatonsFacet",
