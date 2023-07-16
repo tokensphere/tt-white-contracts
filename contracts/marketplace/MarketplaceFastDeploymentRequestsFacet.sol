@@ -8,7 +8,7 @@ import "./lib/LibMarketplaceFastDeploymentRequests.sol";
  * @title The Marketplace Smart Contract.
  * @notice The Marketplace Fast Deployments facet is in charge of keeping track of requested Fast Deployments.
  */
-contract MarketplaceFastDeploymentRequests is AMarketplaceFacet {
+contract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet {
   /**
    * @notice Allows querying the current price for a FAST deployment request.
    * @return An uint256 representing the price for a FAST deployment request.
