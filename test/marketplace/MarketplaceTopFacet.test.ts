@@ -48,4 +48,9 @@ describe("MarketplaceTopFacet", () => {
       expect(subject).to.eq(issuer.address);
     });
   });
+
+  describe("withdrawEth", () => {
+    it("requires the caller to be an issuer member");
+    it("withdraws the specified amount of eth");
+  });
 });
