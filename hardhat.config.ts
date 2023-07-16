@@ -66,8 +66,12 @@ const config: HardhatUserConfig = {
         ["Facet$", "MemberDeactivated(address)"],
         ["Facet$", "FastDeploymentRequested(uint256)"],
         // Error types.
+        ["Facet$", "InsufficientFunds(uint256)"],
+        ["Facet$", "OutOfBounds()"],
+        ["Facet$", "Overfunded(uint256)"],
         ["Facet$", "RequiresFastContractCaller()"],
         ["Facet$", "RequiresIssuerMembership(address)"],
+        ["Facet$", "RequiresMarketplaceMembership(address)"],
       ]),
       include: [
         "IERC165",
