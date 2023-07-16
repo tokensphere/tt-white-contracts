@@ -1,5 +1,5 @@
 import { task } from "hardhat/config";
-import fs from "fs";
+import { Issuer } from "../typechain";
 
 // Tasks.
 
@@ -11,14 +11,9 @@ task("update-facets", "Updates facets of all deployed contracts").setAction(
     await run("marketplace-update-facets");
 
     // Iterate over all deployment artifacts for the current network.
-    const fastFilenames = fs
-      .readdirSync(`deployments/${hre.network.name}`)
-      .filter(
-        (fn) => fn.startsWith("Fast") && fn.endsWith("_DiamondProxy.json")
-      );
-    for (const fn of fastFilenames) {
-      const symbol = fn.slice(4, -18);
+    const issuer = await hre.ethers.getContract<Issuer>("Issuer");
+    const [allFastDetails] = await issuer.paginateDetailedFasts(0, 1000);
+    for (const { symbol } of allFastDetails)
       await run(`fast-update-facets`, { symbol });
-    }
   }
 );
