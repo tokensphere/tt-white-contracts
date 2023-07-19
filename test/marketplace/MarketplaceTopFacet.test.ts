@@ -53,7 +53,7 @@ describe("MarketplaceTopFacet", () => {
     });
   });
 
-  describe.only("withdrawEth", () => {
+  describe("withdrawEth", () => {
     beforeEach(async () => {
       await ethers.provider.send("hardhat_setBalance", [
         marketplace.address,
