@@ -5,7 +5,6 @@ import { deployments, ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
 import { MarketplaceAutomatonsFacet } from "../../typechain";
-import { abiStructToObj } from "../utils";
 import { marketplaceFixtureFunc } from "../fixtures/marketplace";
 import {
   Issuer,
