@@ -16,6 +16,7 @@ import {
   Issuer,
   Marketplace,
 } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
+import { ZERO_ADDRESS } from "../../src/utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -209,10 +210,42 @@ describe("FastCrowdfundsFacet", () => {
   });
 
   describe("removeCrowdfund", () => {
-    it("requires the caller to be an issuer member");
-    it("removes the crowdfund from the list of deployed crowdfunds");
-    it("emits a CrowdfundRemoved event");
-    it("reverts when the crowdfund does not exist");
+    it("requires the caller to be an issuer member", async () => {
+      const subject = crowdfunds.removeCrowdfund(ZERO_ADDRESS);
+      await expect(subject).to.have.revertedWith("RequiresIssuerMembership");
+    });
+
+    it("reverts when the crowdfund does not exist", async () => {
+      const subject = crowdfundsAsIssuer.removeCrowdfund(ZERO_ADDRESS);
+      await expect(subject).to.have.revertedWith(
+        "Address does not exist in set"
+      );
+    });
+
+    describe("when successful", async () => {
+      beforeEach(async () => {
+        await crowdfundsAsGovernor.createCrowdfund(
+          erc20.address,
+          alice.address,
+          "Blah"
+        );
+      });
+
+      it("removes the crowdfund from the list of deployed crowdfunds", async () => {
+        const [before] = await crowdfunds.paginateCrowdfunds(0, 100);
+        await crowdfundsAsIssuer.removeCrowdfund(before[0]);
+        const [after] = await crowdfunds.paginateCrowdfunds(0, 100);
+        expect(after.length).to.eq(0);
+      });
+
+      it("emits a CrowdfundRemoved event", async () => {
+        const [before] = await crowdfunds.paginateCrowdfunds(0, 100);
+        const subject = crowdfundsAsIssuer.removeCrowdfund(before[0]);
+        await expect(subject)
+          .to.emit(crowdfunds, "CrowdfundRemoved")
+          .withArgs(before[0]);
+      });
+    });
   });
 
   describe("crowdfundCount", () => {
