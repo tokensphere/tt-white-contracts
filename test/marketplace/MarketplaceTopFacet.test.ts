@@ -13,7 +13,7 @@ chai.use(solidity);
 chai.use(smock.matchers);
 
 describe("MarketplaceTopFacet", () => {
-  let deployer: SignerWithAddress;
+  let deployer: SignerWithAddress, issuerMember: SignerWithAddress;
   let issuer: FakeContract<Issuer>, marketplace: Marketplace;
 
   const marketplaceDeployFixture = deployments.createFixture(
@@ -22,7 +22,7 @@ describe("MarketplaceTopFacet", () => {
 
   before(async () => {
     // Keep track of a few signers.
-    [deployer] = await ethers.getSigners();
+    [deployer, issuerMember] = await ethers.getSigners();
     // Mock an Issuer contract.
     issuer = await smock.fake("Issuer");
   });
@@ -40,6 +40,10 @@ describe("MarketplaceTopFacet", () => {
         issuer: issuer.address,
       },
     });
+
+    issuer.isMember.reset();
+    issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
+    issuer.isMember.returns(false);
   });
 
   describe("issuerAddress", () => {
@@ -49,8 +53,25 @@ describe("MarketplaceTopFacet", () => {
     });
   });
 
-  describe("withdrawEth", () => {
-    it("requires the caller to be an issuer member");
-    it("withdraws the specified amount of eth");
+  describe.only("withdrawEth", () => {
+    beforeEach(async () => {
+      await ethers.provider.send("hardhat_setBalance", [
+        marketplace.address,
+        "0x11",
+      ]);
+    });
+
+    it("requires the caller to be an issuer member", async () => {
+      const subject = marketplace.withdrawEth(0x10);
+      await expect(subject).to.be.revertedWith("RequiresIssuerMembership");
+    });
+
+    it("withdraws the specified amount of eth", async () => {
+      const subject = await marketplace.connect(issuerMember).withdrawEth(0x10);
+      expect(subject).to.changeEtherBalances(
+        [marketplace, issuerMember],
+        [-0x10, 0x10]
+      );
+    });
   });
 });
