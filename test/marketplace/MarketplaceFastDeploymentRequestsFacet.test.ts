@@ -14,7 +14,7 @@ import { abiStructToObj } from "../utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
-describe.only("MarketplaceFastDeploymentRequestsFacet", () => {
+describe("MarketplaceFastDeploymentRequestsFacet", () => {
   let deployer: SignerWithAddress,
     issuerMember: SignerWithAddress,
     alice: SignerWithAddress,
