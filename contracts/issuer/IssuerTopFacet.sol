@@ -10,8 +10,6 @@ import "../fast/FastTokenFacet.sol";
 import "./lib/AIssuerFacet.sol";
 import "./lib/LibIssuer.sol";
 
-import "@openzeppelin/contracts/utils/math/Math.sol";
-
 contract IssuerTopFacet is AIssuerFacet {
   using LibAddressSet for LibAddressSet.Data;
 
