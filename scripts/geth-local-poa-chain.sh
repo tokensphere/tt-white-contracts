@@ -24,4 +24,5 @@ geth --dev \
   --http.addr "0.0.0.0" \
   --http.port 8546 \
   --http.api "eth,web3,net" \
-  --http.corsdomain "*"
+  --http.corsdomain "*" \
+  --ipcdisable

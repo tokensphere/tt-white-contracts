@@ -7,7 +7,6 @@ import "../common/lib/LibHasAutomatons.sol";
 import "../common/AHasGovernors.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasAutomatons.sol";
-import "../interfaces/IERC165.sol"; // Interface Support.
 import "../interfaces/IERC173.sol"; // Ownership.
 import "../interfaces/IDiamondCut.sol"; // Facet management.
 import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
@@ -21,6 +20,8 @@ import "./lib/LibFastToken.sol";
 import "./lib/LibFastHistory.sol";
 import "./lib/LibFastDistributions.sol";
 import "./lib/LibFastCrowdfunds.sol";
+
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /**
  * @notice NotAlthough this contract doesn't explicitelly inherit from IERC173, ERC165, IDiamondLoupe etc, all

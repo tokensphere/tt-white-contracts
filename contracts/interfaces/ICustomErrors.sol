@@ -8,7 +8,9 @@ interface ICustomErrors {
   error InconsistentParameter(string param);
   error InsufficientFunds(uint256 amount);
   error InternalMethod();
+  error InvalidApprovalDataLength();
   error InvalidCrowdfundBasisPointsFee(uint32 fee);
+  error InvalidPaymasterDataLength();
   error InvalidPhase();
   error NonExistentEntry();
   error OutOfBounds();
