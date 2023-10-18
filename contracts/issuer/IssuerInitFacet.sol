@@ -3,7 +3,6 @@ pragma solidity 0.8.10;
 
 import "../common/AHasMembers.sol";
 import "../common/AHasAutomatons.sol";
-import "../interfaces/IERC165.sol"; // Interface Support.
 import "../interfaces/IERC173.sol"; // Ownership.
 import "../interfaces/IDiamondCut.sol"; // Facet management.
 import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
@@ -13,6 +12,8 @@ import "../lib/LibAddressSet.sol";
 import "./lib/AIssuerFacet.sol";
 import "./lib/LibIssuer.sol";
 import "./lib/LibIssuerAccess.sol";
+
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /**
  * @title The Issuer Smart Contract.

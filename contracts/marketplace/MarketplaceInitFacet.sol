@@ -3,9 +3,10 @@ pragma solidity 0.8.10;
 
 import "../common/lib/LibHasMembers.sol";
 import "../common/lib/LibHasAutomatons.sol";
+import "../common/lib/LibHasForwarder.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasAutomatons.sol";
-import "../interfaces/IERC165.sol"; // Interface Support.
+import "../common/AHasForwarder.sol";
 import "../interfaces/IERC173.sol"; // Ownership.
 import "../interfaces/IDiamondCut.sol"; // Facet management.
 import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
@@ -16,12 +17,15 @@ import "./lib/LibMarketplace.sol";
 import "./lib/LibMarketplaceAccess.sol";
 import "./lib/LibMarketplaceTokenHolders.sol";
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 /// @notice The Marketplace initialization facet.
 contract MarketplaceInitFacet is AMarketplaceFacet {
   /// Initializers.
 
   struct InitializerParams {
     address issuer;
+    address trustedForwarder;
   }
 
   function initialize(InitializerParams calldata params) external onlyDeployer {
@@ -61,5 +65,10 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
 
     // Initialize automatons storage.
     LibHasAutomatons.data().version = LibHasAutomatons.STORAGE_VERSION;
+
+    // ------------------------------------- //
+
+    // Initialize forwarder storage.
+    LibHasForwarder.data().forwarderAddress = params.trustedForwarder;
   }
 }
