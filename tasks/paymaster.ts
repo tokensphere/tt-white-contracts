@@ -86,6 +86,9 @@ const deployPaymaster = async (
       },
       deterministicSalt: deploymentSalt(hre),
       log: true,
+      excludeSelectors: {
+        "PaymasterTopFacet": ["supportsInterface"]
+      }
     });
   }
   // Return a handle to the diamond.

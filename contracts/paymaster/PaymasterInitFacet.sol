@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import "../interfaces/IERC165.sol"; // Interface Support.
 import "../interfaces/IERC173.sol"; // Ownership.
 import "../interfaces/IDiamondCut.sol"; // Facet management.
 import "../interfaces/IDiamondLoupe.sol"; // Facet introspection.
@@ -8,8 +9,6 @@ import "../interfaces/ICustomErrors.sol";
 import "../lib/LibDiamond.sol";
 import "./lib/APaymasterFacet.sol";
 import "./lib/LibPaymaster.sol";
-
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /// @notice The Paymaster initialization facet.
 contract PaymasterInitFacet is APaymasterFacet {

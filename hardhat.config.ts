@@ -52,7 +52,6 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresFastContractCaller()"],
       ]),
       include: [
-        "IERC165",
         "IERC173",
         "IDiamondCut",
         "IDiamondLoupe",
@@ -76,7 +75,6 @@ const config: HardhatUserConfig = {
         ["Facet$", "RequiresMarketplaceMembership(address)"],
       ]),
       include: [
-        "IERC165",
         "IERC173",
         "IDiamondCut",
         "IDiamondLoupe",
@@ -115,7 +113,6 @@ const config: HardhatUserConfig = {
         ["Facet$", "InvalidCrowdfundBasisPointFee(uint32)"],
       ]),
       include: [
-        "IERC165",
         "IERC173",
         "IDiamondCut",
         "IDiamondLoupe",
@@ -133,8 +130,7 @@ const config: HardhatUserConfig = {
         ["Facet$", "InvalidPaymasterDataLength()"],
       ]),
       include: [
-        // "IERC165",
-        // "IERC173",
+        "IERC173",
         "IDiamondCut",
         "IDiamondLoupe",
         ...PAYMASTER_FACETS,
