@@ -20,6 +20,7 @@ interface IFastEvents {
    * @param who is the account from which the minting operation originated.
    */
   event Minted(uint256 indexed amount, string ref, address indexed who);
+
   /**
    * @notice Emited whenever an burning happens in a FAST.
    * @param amount is the amount of tokens that have been burnt.
@@ -30,12 +31,9 @@ interface IFastEvents {
 
   /// Transfer and ERC20 stuff.
 
-  /// @notice See `ERC20.Transfer`.
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  /// @notice See `ERC20.Approval`.
-  event Approval(address indexed owner, address indexed spender, uint256 value);
   /// @notice See `ERC20.Disapproval`.
   event Disapproval(address indexed owner, address indexed spender, uint256 value);
+
   /**
    * @notice As we augmented the ERC20 standard with a few concepts, we emit our custom events
    * in addition to the ERC20 ones.

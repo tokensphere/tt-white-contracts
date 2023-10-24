@@ -93,8 +93,6 @@ const config: HardhatUserConfig = {
         ["Facet$", "Minted(uint256,string,address)"],
         ["Facet$", "Burnt(uint256,string,address)"],
         ["Facet$", "FastTransfer(address,address,address,uint256,string)"],
-        ["Facet$", "Transfer(address,address,uint256)"],
-        ["Facet$", "Approval(address,address,uint256)"],
         ["Facet$", "Disapproval(address,address,uint256)"],
         [
           "Facet$",
