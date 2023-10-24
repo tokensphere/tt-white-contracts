@@ -136,7 +136,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
 
     // This operation can be seen as a regular transfer between holder and reserve. Emit.
     emit FastTransfer(msg.sender, holder, address(0), amount, DEAD_TOKENS_RETRIEVAL);
-    emit Transfer(holder, address(0), amount);
+    emit IERC20.Transfer(holder, address(0), amount);
 
     // If amount wasn't zero, total supply and reserve balance have changed - emit.
     if (amount > 0) FastFrontendFacet(address(this)).emitDetailsChanged();
@@ -437,7 +437,7 @@ contract FastTokenFacet is AFastFacet, IERC20 {
     }
 
     // Emit!
-    emit Approval(from, spender, amount);
+    emit IERC20.Approval(from, spender, amount);
   }
 
   /**
