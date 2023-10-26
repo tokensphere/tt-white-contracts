@@ -10,6 +10,8 @@ import "../lib/LibDiamond.sol";
 import "./lib/APaymasterFacet.sol";
 import "./lib/LibPaymaster.sol";
 
+import "@opengsn/contracts/src/interfaces/IPaymaster.sol";
+
 /// @notice The Paymaster initialization facet.
 contract PaymasterInitFacet is APaymasterFacet {
   /// Initializers.
@@ -24,6 +26,7 @@ contract PaymasterInitFacet is APaymasterFacet {
 
     // Register interfaces.
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+    ds.supportedInterfaces[type(IPaymaster).interfaceId] = true;
     ds.supportedInterfaces[type(IERC165).interfaceId] = true;
     ds.supportedInterfaces[type(IERC173).interfaceId] = true;
     ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
