@@ -9,7 +9,6 @@ pragma solidity 0.8.10;
 import "./lib/LibPaymaster.sol";
 import "./lib/APaymasterFacet.sol";
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 import "@opengsn/contracts/src/utils/GsnTypes.sol";
@@ -18,10 +17,20 @@ import "@opengsn/contracts/src/interfaces/IRelayHub.sol";
 import "@opengsn/contracts/src/utils/GsnEip712Library.sol";
 import "@opengsn/contracts/src/forwarder/IForwarder.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
-contract PaymasterTopFacet is IPaymaster, ERC165 {
+contract PaymasterTopFacet is IPaymaster {
   using ERC165Checker for address;
+
+  /// Errors.
+  // TODO: Move to ICustomErrors?
+
+  error ApprovalDataNotEmpty();
+  error ForwarderNotTrusted(address);
+  error InterfaceNotSupported(string);
+  error RelayHubAddressNotSet();
+  error RequiresRelayHubCaller();
+  error ValueTransferNotSupported();
 
   IRelayHub internal relayHub;
   address private _trustedForwarder;
@@ -40,8 +49,10 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
   uint256 public constant CALLDATA_SIZE_LIMIT = 10500;
 
   /// @inheritdoc IERC165
-  function supportsInterface(bytes4 interfaceId) public view override(IERC165, ERC165) returns (bool) {
-    return interfaceId == type(IPaymaster).interfaceId || super.supportsInterface(interfaceId);
+  // This is being pulled in to to satisfy the IPaymaster interface.
+  // I'd like to rip this out and depend on the Diamond's implementation.
+  function supportsInterface(bytes4 /*interfaceId*/) public pure override(IERC165) returns (bool) {
+    return false;
   }
 
   /// @inheritdoc IPaymaster
@@ -66,7 +77,7 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
    */
   // TODO: Add MODIFIER - ONLY OWNER
   function setRelayHub(IRelayHub hub) public {
-    require(address(hub).supportsInterface(type(IRelayHub).interfaceId), "target is not a valid IRelayHub");
+    if (!address(hub).supportsInterface(type(IRelayHub).interfaceId)) revert InterfaceNotSupported("IRelayHub");
     relayHub = hub;
   }
 
@@ -76,7 +87,7 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
    */
   // TODO: Add MODIFIER - ONLY OWNER
   function setTrustedForwarder(address forwarder) public {
-    require(forwarder.supportsInterface(type(IForwarder).interfaceId), "target is not a valid IForwarder");
+    if (!forwarder.supportsInterface(type(IForwarder).interfaceId)) revert InterfaceNotSupported("IForwarder");
     _trustedForwarder = forwarder;
   }
 
@@ -89,7 +100,7 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
    * This way, we don't need to understand the RelayHub API in order to replenish the paymaster.
    */
   receive() external payable {
-    require(address(relayHub) != address(0), "relay hub address not set");
+    if (address(relayHub) == address(0)) revert RelayHubAddressNotSet();
     relayHub.depositFor{value: msg.value}(address(this));
   }
 
@@ -109,15 +120,24 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
     bytes calldata /* signature */,
     bytes calldata approvalData,
     uint256 /* maxPossibleGas */
-  ) external view override(IPaymaster) returns (bytes memory, bool) {
-    _verifyRelayHubOnly();
-    _verifyForwarder(relayRequest);
-    _verifyValue(relayRequest);
-    _verifyPaymasterData(relayRequest);
-    _verifyApprovalData(approvalData);
+  ) external view override(IPaymaster) verifyRelayHubOnly returns (bytes memory, bool) {
     /**
-     * @notice internal logic the paymasters need to provide to select which transactions they are willing to pay for
-     * @notice see the documentation for `IPaymaster::preRelayedCall` for details
+     * This method must be called from preRelayedCall to validate that the forwarder
+     * is approved by the paymaster as well as by the recipient contract.
+     */
+
+    if (getTrustedForwarder() != relayRequest.relayData.forwarder)
+      revert ForwarderNotTrusted(relayRequest.relayData.forwarder);
+    // TODO: Check what this calls...
+    GsnEip712Library.verifyForwarderTrusted(relayRequest);
+
+    if (relayRequest.request.value != 0) revert ValueTransferNotSupported();
+    if (relayRequest.relayData.paymasterData.length != 0) revert ICustomErrors.InvalidPaymasterDataLength();
+    if (approvalData.length != 0) revert ApprovalDataNotEmpty();
+
+    /**
+     * Internal logic the paymasters need to provide to select which transactions they are willing to pay for
+     * see the documentation for `IPaymaster::preRelayedCall` for details
      */
     if (approvalData.length == 0) revert ICustomErrors.InvalidApprovalDataLength();
     if (relayRequest.relayData.paymasterData.length == 0) revert ICustomErrors.InvalidPaymasterDataLength();
@@ -131,12 +151,10 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
     bool success,
     uint256 gasUseWithoutPost,
     GsnTypes.RelayData calldata relayData
-  ) external view override(IPaymaster) {
-    _verifyRelayHubOnly();
-
+  ) external view override(IPaymaster) verifyRelayHubOnly {
     /**
-     * @notice internal logic the paymasters need to provide if they need to take some action after the transaction
-     * @notice see the documentation for `IPaymaster::postRelayedCall` for details
+     * Internal logic the paymasters need to provide if they need to take some action after the transaction
+     * see the documentation for `IPaymaster::postRelayedCall` for details
      */
     (context, success, gasUseWithoutPost, relayData);
   }
@@ -145,35 +163,10 @@ contract PaymasterTopFacet is IPaymaster, ERC165 {
     return "3.0.0-beta.9+opengsn.tokensphere.ipaymaster";
   }
 
-  /// Helpers.
+  /// Modifiers.
 
-  // TODO: Swap out require's for revert if's with ICustomError messages...
-
-  /**
-   * @notice this method must be called from preRelayedCall to validate that the forwarder
-   * is approved by the paymaster as well as by the recipient contract.
-   */
-  function _verifyForwarder(GsnTypes.RelayRequest calldata relayRequest) internal view virtual {
-    require(getTrustedForwarder() == relayRequest.relayData.forwarder, "Forwarder is not trusted");
-    GsnEip712Library.verifyForwarderTrusted(relayRequest);
-  }
-
-  // error RequiresRelayHubCaller();
-
-  function _verifyRelayHubOnly() internal view virtual {
-    require(msg.sender == getRelayHub(), "can only be called by RelayHub");
-    // if (msg.sender != getRelayHub()) revert RequiresRelayHubCaller();
-  }
-
-  function _verifyValue(GsnTypes.RelayRequest calldata relayRequest) internal view virtual {
-    require(relayRequest.request.value == 0, "value transfer not supported");
-  }
-
-  function _verifyPaymasterData(GsnTypes.RelayRequest calldata relayRequest) internal view virtual {
-    require(relayRequest.relayData.paymasterData.length == 0, "should have no paymasterData");
-  }
-
-  function _verifyApprovalData(bytes calldata approvalData) internal view virtual {
-    require(approvalData.length == 0, "should have no approvalData");
+  modifier verifyRelayHubOnly() virtual {
+    if (msg.sender != getRelayHub()) revert RequiresRelayHubCaller();
+    _;
   }
 }
