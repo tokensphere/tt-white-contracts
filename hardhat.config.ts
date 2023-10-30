@@ -127,8 +127,7 @@ const config: HardhatUserConfig = {
         // Event types.
         // ...
         // Error types.
-        ["Facet$", "InvalidApprovalDataLength()"],
-        ["Facet$", "InvalidPaymasterDataLength()"],
+        // ...
       ]),
       include: [
         "IERC173",
