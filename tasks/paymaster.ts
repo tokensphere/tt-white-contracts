@@ -1,8 +1,9 @@
-import { task } from "hardhat/config";
+import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { parseEther } from "ethers/lib/utils";
 import { deploymentSalt } from "../src/utils";
 import { Paymaster } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
+import { RelayHub } from "@opengsn/contracts";
+import { BigNumber } from "ethers";
 
 // Tasks.
 
@@ -33,27 +34,31 @@ task("paymaster-update-facets", "Updates facets of our Paymaster")
   });
 
 
-interface PaymasterFundParams { }
+interface PaymasterFundParams {
+  readonly amount: BigNumber;
+}
 
 task("paymaster-fund", "Funds the Paymaster")
-  .setAction(async (_params: PaymasterFundParams, hre) => {
-    const { deployments, getNamedAccounts } = hre;
-    // Who will juice it?
+  .addParam("amount", "The amount of ETH to fund the Paymaster with", undefined, types.int)
+  .setAction(async (params: PaymasterFundParams, hre) => {
+    const { ethers, getNamedAccounts } = hre;
     const { issuerMember } = await getNamedAccounts();
+    const issuerMemberSigner = await ethers.getSigner(issuerMember);
 
-    // yeeettttttt this out...
-    const relayHubAddress = "0x3232f21A6E08312654270c78A773f00dd61d60f5";
-    const { address: paymasterAddress } = await deployments.get("Paymaster");
+    // Get a handle to the paymaster contract.
+    const paymaster = await ethers.getContract<Paymaster>("Paymaster");
+    const issuerPaymaster = paymaster.connect(issuerMemberSigner);
 
-    const RelayHub = await hre.ethers.getContractFactory("RelayHub");
-    const relayHub = await RelayHub.attach(relayHubAddress);
+    // Get the relay hub address using the address stored in the paymaster.
+    const relayHubAddress = await paymaster.getRelayHub();
+    const relayHub = await ethers.getContractAt<RelayHub>("RelayHub", relayHubAddress);
 
-    // params...
-    const tx = await relayHub.depositFor(paymasterAddress, { value: parseEther("0.1") });
+    // Fund the paymaster.
+    const tx = await issuerPaymaster.deposit({ value: params.amount });
     await tx.wait();
 
-    console.log('Paymaster balance:', await relayHub.balanceOf(paymasterAddress));
-    // console.log('Admin wallet balance', await provider.getBalance(admin.address));
+    console.log('Paymaster balance with relay hub:', await relayHub.balanceOf(paymaster.address));
+    console.log('Admin wallet balance', (await issuerMemberSigner.getBalance()).toString());
   });
 
 // Reusable functions and constants.
