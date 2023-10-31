@@ -111,7 +111,7 @@ contract PaymasterTopFacet is APaymasterFacet, IPaymaster {
 
   /// @inheritdoc IPaymaster
   function versionPaymaster() external pure override(IPaymaster) returns (string memory) {
-    return "3.0.0-beta.9+opengsn.tokensphere.ipaymaster";
+    return "3.0.0-beta.10+opengsn.tokensphere.ipaymaster";
   }
 
   /// Setters and utility methods.
@@ -121,7 +121,7 @@ contract PaymasterTopFacet is APaymasterFacet, IPaymaster {
    *         **Warning** The deposit on the previous RelayHub must be withdrawn first.
    * @param hub The address of the new RelayHub.
    */
-  function setRelayHub(IRelayHub hub) public onlyOwner {
+  function setRelayHub(IRelayHub hub) public onlyIssuerMember {
     if (!IERC165(address(hub)).supportsInterface(type(IRelayHub).interfaceId))
       revert ICustomErrors.InterfaceNotSupported("IRelayHub");
     relayHub = hub;
@@ -132,7 +132,7 @@ contract PaymasterTopFacet is APaymasterFacet, IPaymaster {
    *         the Recipients must trust this Forwarder as well in order for the configuration to remain functional.
    * @param forwarder The address of the new Forwarder.
    */
-  function setTrustedForwarder(address forwarder) public onlyOwner {
+  function setTrustedForwarder(address forwarder) public onlyIssuerMember {
     if (!IERC165(forwarder).supportsInterface(type(IForwarder).interfaceId))
       revert ICustomErrors.InterfaceNotSupported("IForwarder");
     trustedForwarder = forwarder;
@@ -151,20 +151,23 @@ contract PaymasterTopFacet is APaymasterFacet, IPaymaster {
    * @param amount The amount to be subtracted from the sender.
    * @param target The target to which the amount will be transferred.
    */
-  function withdrawRelayHubDepositTo(uint256 amount, address payable target) public onlyOwner {
+  function withdrawRelayHubDepositTo(uint256 amount, address payable target) public onlyIssuerMember {
     relayHub.withdraw(target, amount);
   }
 
   /// Modifiers.
 
-  modifier onlyRelayHub() virtual {
+  /// @notice Ensures that a method can only be called by the RelayHub.
+  modifier onlyRelayHub() {
     if (msg.sender != getRelayHub()) revert IPaymasterErrors.RequiresRelayHubCaller();
     _;
   }
 
-  // TODO: Who is owner?
-  modifier onlyOwner() {
-    //   if (msg.sender != LibPaymaster.data().owner) revert ICustomErrors.RequiresOwner();
+  // TODO: Check this.
+  /// @notice Ensures that a method can only be called by an Issuer.
+  modifier onlyIssuerMember() {
+    LibPaymaster.Data storage s = LibPaymaster.data();
+    if (!AHasMembers(s.issuer).isMember(msg.sender)) revert ICustomErrors.RequiresIssuerMemberCaller();
     _;
   }
 }

@@ -11,6 +11,7 @@ import { impersonateContract } from "../utils";
 import { DEPLOYER_FACTORY_COMMON } from "../../src/utils";
 import {
   Marketplace,
+  Issuer,
   Paymaster,
 } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
@@ -19,6 +20,7 @@ chai.use(smock.matchers);
 describe("PaymasterInitFacet", () => {
   let deployer: SignerWithAddress;
   let marketplace: FakeContract<Marketplace>,
+    issuer: FakeContract<Issuer>,
     paymaster: Paymaster,
     top: PaymasterTopFacet;
 
@@ -31,6 +33,8 @@ describe("PaymasterInitFacet", () => {
     [deployer] = await ethers.getSigners();
     // Mock a Marketplace contract.
     marketplace = await smock.fake("Marketplace");
+    // Mock an Issuer contract.
+    issuer = await smock.fake("Issuer");
   });
 
   beforeEach(async () => {
@@ -48,6 +52,7 @@ describe("PaymasterInitFacet", () => {
       },
       initWith: {
         marketplace: marketplace.address,
+        issuer: issuer.address,
       },
     });
   });
@@ -65,6 +70,7 @@ describe("PaymasterInitFacet", () => {
       );
       const subject = paymasterInitAsItself.initialize({
         marketplace: marketplace.address,
+        issuer: issuer.address,
       });
 
       await expect(subject).to.have.revertedWith("AlreadyInitialized");
@@ -105,10 +111,6 @@ describe("PaymasterInitFacet", () => {
     });
 
     it("stores the given Marketplace address")
-    //, async () => {
-    // Querying the Marketplace address via the PaymasterTopFacet should return the stored address.
-    // const subject = await top.marketplaceAddress();
-    // expect(subject).to.be.eq(marketplace.address);
-    // });
+    it("stores the given Issuer address")
   });
 });

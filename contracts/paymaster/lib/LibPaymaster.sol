@@ -12,6 +12,8 @@ library LibPaymaster {
     uint16 version;
     /// @notice The internal pointer to the Marketplace contract.
     address marketplace;
+    /// @notice The internal pointer to the Issuer contract.
+    address issuer;
   }
 
   function data() internal pure returns (Data storage s) {

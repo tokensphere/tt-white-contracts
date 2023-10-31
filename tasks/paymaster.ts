@@ -12,7 +12,8 @@ interface PaymasterDeployParams { }
 task("paymaster-deploy", "Deploys the main Paymaster contract").setAction(
   async (_params: PaymasterDeployParams, hre) => {
     const { address: marketplaceAddr } = await hre.deployments.get("Marketplace");
-    await deployPaymaster(hre, marketplaceAddr);
+    const { address: issuerAddr } = await hre.deployments.get("Issuer");
+    await deployPaymaster(hre, marketplaceAddr, issuerAddr);
   }
 );
 
@@ -58,7 +59,7 @@ task("paymaster-fund", "Funds the Paymaster")
     await tx.wait();
 
     console.log('Paymaster balance with relay hub:', await relayHub.balanceOf(paymaster.address));
-    console.log('Admin wallet balance', (await issuerMemberSigner.getBalance()).toString());
+    console.log('Admin wallet balance:', (await issuerMemberSigner.getBalance()).toString());
   });
 
 // Reusable functions and constants.
@@ -69,7 +70,8 @@ const PAYMASTER_FACETS = [
 
 const deployPaymaster = async (
   hre: HardhatRuntimeEnvironment,
-  marketplaceAddr: string
+  marketplaceAddr: string,
+  issuerAddr: string
 ): Promise<Paymaster> => {
   const { ethers, deployments, getNamedAccounts } = hre;
   const { diamond } = deployments;
@@ -87,7 +89,10 @@ const deployPaymaster = async (
       execute: {
         contract: "PaymasterInitFacet",
         methodName: "initialize",
-        args: [{ marketplace: marketplaceAddr }],
+        args: [{
+          marketplace: marketplaceAddr,
+          issuer: issuerAddr
+        }],
       },
       deterministicSalt: deploymentSalt(hre),
       log: true,
