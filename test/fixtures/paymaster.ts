@@ -14,6 +14,7 @@ import { Paymaster } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI
 export const PAYMASTER_INIT_DEFAULTS: PaymasterInitFacet.InitializerParamsStruct =
 {
   marketplace: ZERO_ADDRESS,
+  issuer: ZERO_ADDRESS,
 };
 
 interface PaymasterFixtureResult {

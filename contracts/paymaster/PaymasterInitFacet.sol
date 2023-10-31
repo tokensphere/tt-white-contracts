@@ -18,6 +18,7 @@ contract PaymasterInitFacet is APaymasterFacet {
 
   struct InitializerParams {
     address marketplace;
+    address issuer;
   }
 
   function initialize(InitializerParams calldata params) external onlyDeployer {
@@ -38,5 +39,6 @@ contract PaymasterInitFacet is APaymasterFacet {
     LibPaymaster.Data storage topData = LibPaymaster.data();
     topData.version = LibPaymaster.STORAGE_VERSION;
     topData.marketplace = params.marketplace;
+    topData.issuer = params.issuer;
   }
 }
