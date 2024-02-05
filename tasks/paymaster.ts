@@ -1,6 +1,6 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { deploymentSalt } from "../src/utils";
+import { ZERO_ADDRESS, deploymentSalt } from "../src/utils";
 import { Paymaster } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 import { RelayHub } from "@opengsn/contracts";
 import { BigNumber } from "ethers";
@@ -31,6 +31,9 @@ task("paymaster-update-facets", "Updates facets of our Paymaster")
       facets: PAYMASTER_FACETS,
       deterministicSalt: deploymentSalt(hre),
       log: true,
+      excludeSelectors: {
+        "PaymasterTopFacet": ["supportsInterface"]
+      }
     });
   });
 
@@ -52,14 +55,21 @@ task("paymaster-fund", "Funds the Paymaster")
 
     // Get the relay hub address using the address stored in the paymaster.
     const relayHubAddress = await paymaster.getRelayHub();
+
+    if (relayHubAddress === ZERO_ADDRESS) {
+      throw Error("Paymaster's RelayHub address has not been set!");
+    }
+
     const relayHub = await ethers.getContractAt<RelayHub>("RelayHub", relayHubAddress);
+
+    console.log(`Funding RelayHub ${relayHubAddress} with ${params.amount} MATIC...`);
 
     // Fund the paymaster.
     const tx = await issuerPaymaster.deposit({ value: params.amount });
     await tx.wait();
 
-    console.log('Paymaster balance with relay hub:', await relayHub.balanceOf(paymaster.address));
-    console.log('Admin wallet balance:', (await issuerMemberSigner.getBalance()).toString());
+    console.log(`Paymaster balance with relay hub: ${await relayHub.balanceOf(paymaster.address)}`);
+    console.log(`Admin wallet balance: ${await issuerMemberSigner.getBalance()}`);
   });
 
 // Reusable functions and constants.
