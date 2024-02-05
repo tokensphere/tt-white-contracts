@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
+import "../common/AHasContext.sol";
+import "../common/AHasForwarder.sol";
 import "./lib/AMarketplaceFacet.sol";
 import "./lib/LibMarketplaceFastDeploymentRequests.sol";
 
@@ -8,7 +10,14 @@ import "./lib/LibMarketplaceFastDeploymentRequests.sol";
  * @title The Marketplace Smart Contract.
  * @notice The Marketplace Fast Deployments facet is in charge of keeping track of requested Fast Deployments.
  */
-contract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet {
+contract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet, AHasContext {
+
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
   /**
    * @notice Allows querying the current price for a FAST deployment request.
    * @return An uint256 representing the price for a FAST deployment request.
@@ -53,7 +62,7 @@ contract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet {
    * @notice This function allows users to request a FAST deployment.
    * @param params The parameters for the FAST deployment.
    */
-  function requestDeployment(string memory params) external payable onlyMember(msg.sender) {
+  function requestDeployment(string memory params) external payable onlyMember(_msgSender()) {
     // Grab a pointer to our storage slot.
     LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();
     // Not enough attached Eth.
@@ -63,6 +72,6 @@ contract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet {
     // Emit!
     emit FastDeploymentRequested(data.requests.length);
     // Enqueue the request.
-    data.requests.push(LibRequestedFastDeployments.Request({sender: msg.sender, paid: data.price, params: params}));
+    data.requests.push(LibRequestedFastDeployments.Request({sender: _msgSender(), paid: data.price, params: params}));
   }
 }

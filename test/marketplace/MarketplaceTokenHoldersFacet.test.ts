@@ -70,7 +70,7 @@ describe("MarketplaceTokenHoldersFacet", () => {
     issuer.isFastRegistered.returns(false);
   });
 
-  describe("holdingsUpdated", () => {
+  describe("fastBalanceChanged", () => {
     it("reverts if not called by a FAST contract", async () => {
       // Trigger the holding update callback.
       const subject = tokenHolders.fastBalanceChanged(alice.address, 0);

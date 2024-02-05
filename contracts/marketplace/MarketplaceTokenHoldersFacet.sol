@@ -6,11 +6,19 @@ import "./lib/LibMarketplaceTokenHolders.sol";
 import "../issuer/IssuerTopFacet.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/ICustomErrors.sol";
+import "../common/AHasContext.sol";
+import "../common/AHasForwarder.sol";
 
 /** @dev The Marketplace FAST balances facet.
  */
-contract MarketplaceTokenHoldersFacet is AMarketplaceFacet {
+contract MarketplaceTokenHoldersFacet is AMarketplaceFacet, AHasContext {
   using LibAddressSet for LibAddressSet.Data;
+
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
 
   /** @dev The callback used when a balance changes on a FAST.
    */
@@ -21,7 +29,7 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet {
     }
 
     // Verify that the given address is in fact a registered FAST contract.
-    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(_msgSender())) {
       revert ICustomErrors.RequiresFastContractCaller();
     }
 
@@ -29,12 +37,12 @@ contract MarketplaceTokenHoldersFacet is AMarketplaceFacet {
     LibMarketplaceTokenHolders.Data storage s = LibMarketplaceTokenHolders.data();
 
     // If this is a positive balance and it doesn't already exist in the set, add address.
-    if (balance > 0 && !s.fastHoldings[account].contains(msg.sender)) {
-      s.fastHoldings[account].add(msg.sender, false);
+    if (balance > 0 && !s.fastHoldings[account].contains(_msgSender())) {
+      s.fastHoldings[account].add(_msgSender(), false);
     }
     // If the balance is 0 and it exists in the set, remove it.
-    else if (balance == 0 && s.fastHoldings[account].contains(msg.sender)) {
-      s.fastHoldings[account].remove(msg.sender, false);
+    else if (balance == 0 && s.fastHoldings[account].contains(_msgSender())) {
+      s.fastHoldings[account].remove(_msgSender(), false);
     }
   }
 
