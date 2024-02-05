@@ -7,7 +7,7 @@ import "../interfaces/ICustomErrors.sol";
 import "./lib/LibHasMembers.sol";
 
 /**
- * @title The Fast Smart Contract.
+ * @title The Members behaviour abstract contract.
  * @notice The Fast Members abstract contract is in charge of keeping track of automaton accounts.
  */
 abstract contract AHasMembers {
@@ -32,6 +32,14 @@ abstract contract AHasMembers {
    * @param member is the address of the removed member.
    */
   event MemberRemoved(address indexed member);
+
+  /**
+   * @notice Default implementation - points to `msg.sender`.
+   * @dev May be overriden by the inheriting contract.
+   */
+  function _msgSender() internal view virtual returns (address) {
+    return msg.sender;
+  }
 
   /**
    * @notice Checks whether the given address is a members manager or not.
@@ -94,7 +102,7 @@ abstract contract AHasMembers {
    * @notice Adds a member to the list of known members.
    * @param who is the address to be added.
    */
-  function addMember(address who) external onlyMemberManager(msg.sender) onlyValidMember(who) {
+  function addMember(address who) external onlyMemberManager(_msgSender()) onlyValidMember(who) {
     // Add the member.
     LibHasMembers.data().memberSet.add(who, false);
     // Notify via callback.
@@ -109,7 +117,7 @@ abstract contract AHasMembers {
    * @notice Requires that the caller is a member of this Issuer.
    * @notice Emits a `AHasMembers.MemberRemoved` event.
    */
-  function removeMember(address member) external onlyMemberManager(msg.sender) {
+  function removeMember(address member) external onlyMemberManager(_msgSender()) {
     // Notify via callback.
     onMemberRemoved(member);
     // Remove member.
