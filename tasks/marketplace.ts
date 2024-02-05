@@ -58,6 +58,7 @@ const MARKETPLACE_FACETS = [
   "MarketplaceTokenHoldersFacet",
   "MarketplaceAutomatonsFacet",
   "MarketplaceFastDeploymentRequestsFacet",
+  "MarketplaceForwardableFacet",
 ];
 
 const deployMarketplace = async (
