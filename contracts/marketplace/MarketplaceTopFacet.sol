@@ -3,6 +3,8 @@ pragma solidity 0.8.10;
 
 import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
+import "../common/AHasContext.sol";
+import "../common/AHasForwarder.sol";
 import "../issuer/IssuerTopFacet.sol";
 import "./lib/LibMarketplace.sol";
 import "./lib/AMarketplaceFacet.sol";
@@ -12,7 +14,14 @@ import "./lib/AMarketplaceFacet.sol";
  * @notice The Marketplace Top facet is in charge of keeping track of common parameters and provides
  * generic functionality.
  */
-contract MarketplaceTopFacet is AMarketplaceFacet {
+contract MarketplaceTopFacet is AMarketplaceFacet, AHasContext {
+
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
   // Getters.
 
   /**
@@ -28,7 +37,7 @@ contract MarketplaceTopFacet is AMarketplaceFacet {
    * @param amount is an uint256.
    */
   function withdrawEth(uint256 amount) external onlyIssuerMember {
-    address payable receiver = payable(msg.sender);
+    address payable receiver = payable(_msgSender());
     receiver.transfer(amount);
   }
 }

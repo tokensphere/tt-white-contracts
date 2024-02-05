@@ -13,6 +13,7 @@ import {
   Issuer,
   Marketplace,
 } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
+import { IForwarder } from "../../typechain";
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -29,6 +30,7 @@ describe("MarketplaceAccessFacet", () => {
   let issuer: FakeContract<Issuer>,
     fast: FakeContract<Fast>,
     marketplace: Marketplace,
+    forwarder: FakeContract<IForwarder>,
     access: MarketplaceAccessFacet,
     issuerMemberAccess: MarketplaceAccessFacet;
 
@@ -48,12 +50,19 @@ describe("MarketplaceAccessFacet", () => {
     issuer.isFastRegistered.returns(false);
   };
 
+  const resetIForwarderMock = () => {
+    forwarder.supportsInterface.reset();
+    forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+    forwarder.supportsInterface.returns(false);
+  }
+
   before(async () => {
     // Keep track of a few signers.
     [deployer, issuerMember, alice, bob, rob, john] = await ethers.getSigners();
-    // Mock Issuer and Fast contracts.
+    // Mock Issuer, Fast and IForwarder contracts.
     issuer = await smock.fake("Issuer");
     fast = await smock.fake("Fast");
+    forwarder = await smock.fake("IForwarder");
   });
 
   beforeEach(async () => {
@@ -77,6 +86,30 @@ describe("MarketplaceAccessFacet", () => {
 
     resetIssuerMock();
     resetFastMock();
+    resetIForwarderMock();
+  });
+
+  describe("AHasContext implementation", () => {
+    describe("_isTrustedForwarder", () => {
+      it("returns true if the address is a trusted forwarder", async () => {
+        // Set the trusted forwarder.
+        forwarder.supportsInterface.reset();
+        forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+        forwarder.supportsInterface.returns(false);
+
+        await marketplace.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+        // isTrustedForwarder() should delegate to _isTrustedForwarder().
+        const subject = await marketplace.connect(issuerMember).isTrustedForwarder(forwarder.address);
+        expect(subject).to.eq(true);
+      });
+    });
+
+    describe("_msgSender", () => {
+      it("returns the original msg.sender", async () => {
+        // Call a function on the Marketplace contract that's sponsored.
+      });
+    });
   });
 
   describe("IHasMembers", () => {
@@ -171,6 +204,34 @@ describe("MarketplaceAccessFacet", () => {
       });
 
       it("calls back onMemberAdded");
+
+      it("is callable by a trusted forwarder", async () => {
+        // Set the trusted forwarder.
+        await marketplace.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+        // Impersonate the trusted forwarder contract.
+        const accessAsForwarder = await impersonateContract(access, forwarder.address);
+
+        // Build the data to call addMember() on the Marketplace contract.
+        // Pack the issuerMember address at the end - this is sponsored callers address.
+        const encodedFunctionCall = await access.interface.encodeFunctionData("addMember", [alice.address]);
+        const data = ethers.utils.solidityPack(
+          ["bytes", "address"],
+          [encodedFunctionCall, issuerMember.address]
+        );
+
+        // As the forwarder send the packed transaction.
+        await accessAsForwarder.signer.sendTransaction(
+          {
+            data: data,
+            to: access.address,
+          }
+        );
+
+        // Check that Alice is a member.
+        const subject = await marketplace.isMember(alice.address);
+        expect(subject).to.eq(true);
+      });
     });
 
     describe("removeMember", () => {
@@ -224,6 +285,34 @@ describe("MarketplaceAccessFacet", () => {
       });
 
       it("calls back onMemberRemoved");
+
+      it("is callable by a trusted forwarder", async () => {
+        // Set the trusted forwarder.
+        await marketplace.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+        // Impersonate the trusted forwarder contract.
+        const accessAsForwarder = await impersonateContract(access, forwarder.address);
+
+        // Build the data to call removeMember() on the Marketplace contract.
+        // Pack the issuerMember address at the end - this is sponsored callers address.
+        const encodedFunctionCall = await access.interface.encodeFunctionData("removeMember", [alice.address]);
+        const data = ethers.utils.solidityPack(
+          ["bytes", "address"],
+          [encodedFunctionCall, issuerMember.address]
+        );
+
+        // As the forwarder send the packed transaction.
+        await accessAsForwarder.signer.sendTransaction(
+          {
+            data: data,
+            to: access.address,
+          }
+        );
+
+        // Check that Alice is not member.
+        const subject = await marketplace.isMember(alice.address);
+        expect(subject).to.eq(false);
+      });
     });
 
     describe("onMemberAdded", () => {

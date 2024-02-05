@@ -4,6 +4,8 @@ pragma solidity 0.8.10;
 import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
 import "../common/AHasMembers.sol";
+import "../common/AHasForwarder.sol";
+import "../common/AHasContext.sol";
 import "../issuer/IssuerTopFacet.sol";
 import "../interfaces/ICustomErrors.sol";
 import "../interfaces/IHasActiveMembers.sol";
@@ -15,8 +17,21 @@ import "./MarketplaceAutomatonsFacet.sol";
  * @title The Marketplace Smart Contract.
  * @notice The Marketplace Access facet is in charge of keeping track of marketplace members.
  */
-contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMembers {
+contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, AHasContext, IHasActiveMembers {
   using LibAddressSet for LibAddressSet.Data;
+
+  /// AHasContext implementation.
+
+  // TODO: Could _isTrustedForwarder actually have it's default implementation point to
+  // IHasForwarder(address(this)).isTrustedForwarder(forwarder) or similar?
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasMembers, AHasContext) returns (address) {
+    return AHasContext._msgSender();
+  }
 
   /// AHasMembers implementation.
 
@@ -56,12 +71,12 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    */
   function memberAddedToFast(address member) external {
     // Verify that the given address is in fact a registered FAST contract.
-    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(_msgSender())) {
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Keep track of the member's FAST membership.
     // TODO: We don't throw until we've fixed the `marketplace.fastMemberships`.
-    LibMarketplaceAccess.data().fastMemberships[member].add(msg.sender, true);
+    LibMarketplaceAccess.data().fastMemberships[member].add(_msgSender(), true);
   }
 
   /**
@@ -69,12 +84,12 @@ contract MarketplaceAccessFacet is AMarketplaceFacet, AHasMembers, IHasActiveMem
    * @param member The member for which a FAST membership has been removed.
    */
   function memberRemovedFromFast(address member) external {
-    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(msg.sender)) {
+    if (!IssuerTopFacet(LibMarketplace.data().issuer).isFastRegistered(_msgSender())) {
       revert ICustomErrors.RequiresFastContractCaller();
     }
     // Remove the tracked membership.
     // TODO: We don't throw until we've fixed the `marketplace.fastMemberships`.
-    LibMarketplaceAccess.data().fastMemberships[member].remove(msg.sender, true);
+    LibMarketplaceAccess.data().fastMemberships[member].remove(_msgSender(), true);
   }
 
   /// IHasActiveMembers implementation.
