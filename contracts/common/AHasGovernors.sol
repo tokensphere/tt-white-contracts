@@ -3,8 +3,8 @@ pragma solidity 0.8.10;
 
 import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
-import "../common/lib/LibHasGovernors.sol";
 import "../interfaces/ICustomErrors.sol";
+import "./lib/LibHasGovernors.sol";
 
 /**
  * @title The Fast Smart Contract.
