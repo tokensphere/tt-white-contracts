@@ -1,7 +1,10 @@
-# Building from the CI image (Circle CI)
-FROM cimg/node:16.20.1
+# Builder stage.
+FROM node:16.20.2-alpine3.18
 
 WORKDIR /app
+
+RUN apk update
+RUN apk add --no-cache build-base git python3 bash
 
 RUN git clone --depth 1 --branch v3.0.0-beta.10 \
   https://github.com/opengsn/gsn.git \
