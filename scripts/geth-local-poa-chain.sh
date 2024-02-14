@@ -16,13 +16,16 @@ geth init \
   --datadir "$DATADIR" \
   "${DATADIR}/genesis.json"
 
-# Run geth in dev mode (poa, sealing enabled).
+# Run geth in dev mode.
 geth --dev \
   --datadir "$DATADIR" \
   --miner.etherbase "0x53df057d9468b50702f5705a420031a059d71a87" \
   --http \
+  --networkid 18021980 \
   --http.addr "0.0.0.0" \
   --http.port 8546 \
   --http.api "eth,web3,net" \
   --http.corsdomain "*" \
-  --ipcdisable
+  --http.vhosts "geth,localhost" \
+  --ipcdisable \
+  --rpc.allow-unprotected-txs

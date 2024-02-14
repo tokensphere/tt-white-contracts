@@ -1,11 +1,13 @@
-version: "3.7"
+version: "3.8"
 
 services:
   geth:
-    image: ethereum/client-go:v1.10.19
+    image: ethereum/client-go:v1.13.11
     entrypoint: "/bin/sh -c"
     command: [ "apk add -U bash && ./scripts/geth-local-poa-chain.sh" ]
     working_dir: /data
+    networks:
+      - eth_network
     env_file:
       - './.env.docker'
     volumes:
@@ -14,3 +16,8 @@ services:
         target: /data
     ports:
       - "8546:8546"
+
+networks:
+  eth_network:
+    name: eth_network
+    attachable: true
