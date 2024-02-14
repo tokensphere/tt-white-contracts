@@ -1,0 +1,9 @@
+{
+  "relayHubAddress": "0x8aBb8E62Bd73f4c73b2CE7a02631B2dC911Ab720",
+  "ownerAddress": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+  "managerStakeTokenAddress": "0x3E8174689882c629de7478B4a0336266B6560C6D",
+  "maxMaxFeePerGas": 2000000000000,
+  "ethereumNodeUrl": "http://geth:8546",
+  "url": "http://localhost:8090",
+  "workdir": "/gsn-data"
+}
