@@ -103,6 +103,7 @@ describe("Crowdfunds", () => {
       fast: fast.address,
       token: erc20.address,
       ref: "Some reference",
+      cap: BigNumber.from(32_000_000_000)
     };
 
     deployCrowdfund = async (params) => {
@@ -150,6 +151,7 @@ describe("Crowdfunds", () => {
         fast: validParams.fast,
         token: validParams.token,
         ref: validParams.ref,
+        cap: validParams.cap
       });
     });
 
@@ -189,6 +191,7 @@ describe("Crowdfunds", () => {
           fast: validParams.fast,
           token: validParams.token,
           ref: validParams.ref,
+          cap: validParams.cap
         });
       });
 
