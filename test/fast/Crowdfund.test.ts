@@ -380,6 +380,11 @@ describe("Crowdfunds", () => {
         await expect(subject).to.have.revertedWith("InconsistentParameter");
       });
 
+      it("requires that the pledged amount + collected amount does not go over the cap", async () => {
+        const subject = crowdfund.connect(alice).pledge(32_000_000_001);
+        await expect(subject).to.have.revertedWith("CapExceeded");
+      });
+
       it("checks the allowance of the crowdfunding contract with the ERC20 contract", async () => {
         erc20.allowance.returns(100_000);
         erc20.transferFrom.returns(true);
