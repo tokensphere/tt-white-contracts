@@ -286,6 +286,20 @@ describe("Crowdfunds", () => {
     });
   });
 
+  describe("isCapped", () => {
+    it("returns false if the cap is not set", async () => {
+      await deployCrowdfund({ ...validParams, cap: 0 });
+      const subject = await crowdfund.isCapped();
+      expect(subject).to.be.false;
+    });
+
+    it("returns true if the cap is set", async () => {
+      await deployCrowdfund({ ...validParams, cap: 10_000_000_000_000 });
+      const subject = await crowdfund.isCapped();
+      expect(subject).to.be.true;
+    });
+  });
+
   describe("advanceToFunding", () => {
     describe("from an invalid phase", () => {
       it("reverts", async () => {
@@ -677,6 +691,21 @@ describe("Crowdfunds", () => {
   });
 
   describe("details", () => {
-    it("MUST BE TESTED");
+    it("returns a details struct", async () => {
+      await deployCrowdfund(validParams);
+      const subject = await crowdfund.details();
+      const obj = abiStructToObj(subject);
+      expect(obj).to.eql({
+        addr: crowdfund.address,
+        VERSION: 3,
+        params: await crowdfund.paramsStruct(),
+        phase: CrowdFundPhase.Setup,
+        creationBlock: await crowdfund.creationBlock(),
+        collected: BigNumber.from(0),
+        feeAmount: BigNumber.from(0),
+        pledgerCount: BigNumber.from(0),
+        isCapped: true
+      });
+    });
   });
 });
