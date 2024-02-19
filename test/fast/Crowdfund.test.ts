@@ -266,6 +266,26 @@ describe("Crowdfunds", () => {
     });
   });
 
+  describe("pledgerCount", () => {
+    it("returns the number of pledgers", async () => {
+      await deployCrowdfund(validParams);
+
+      // Provision ERC20 token for bob and alice.
+      for (const user of [alice, bob]) {
+        erc20.allowance.returns(1_000_000_000);
+        erc20.transferFrom.returns(true);
+      }
+
+      await crowdfundAsIssuer.advanceToFunding(20_00);
+      // Pledge 1000 tokens from bob and alice.
+      await Promise.all(
+        [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
+      );
+      const subject = await crowdfund.pledgerCount();
+      expect(subject).to.eq(2);
+    });
+  });
+
   describe("advanceToFunding", () => {
     describe("from an invalid phase", () => {
       it("reverts", async () => {
