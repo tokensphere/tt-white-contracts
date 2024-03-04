@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { deployments, ethers, getNamedAccounts } from "hardhat";
-import { Marketplace } from "../typechain";
+import { Marketplace, IERC20 } from "../typechain";
 import { FastAutomatonPrivilege, toBaseUnit, ZERO_ADDRESS } from "../src/utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
@@ -29,6 +29,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       deterministicDeployment: true,
     });
     console.log(`DDD deployed at ${ddd.address}.`);
+
+    console.log("Minting X DDD tokens... to user1");
+    const dddToken = await ethers.getContractAt([
+      "function mint(address, uint256)"
+    ], ddd.address);
+    await (await dddToken.connect(issuerMemberSigner).mint(user1, 5000000)).wait();
+    console.log("done...");
   }
 
   console.log("Adding user[1-10] to the Marketplace as members...");
