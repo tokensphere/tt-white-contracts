@@ -3,6 +3,7 @@ pragma solidity 0.8.10;
 
 import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
+import "../common/AHasContext.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasGovernors.sol";
 import "../marketplace/MarketplaceAccessFacet.sol";
@@ -19,7 +20,7 @@ import "./FastAutomatonsFacet.sol";
  * @notice The FAST Access facet is the source of truth when it comes to
  * permissioning and ACLs within a given FAST.
  */
-contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
+contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers, AHasContext {
   using LibAddressSet for LibAddressSet.Data;
   /// Structs.
 
@@ -33,6 +34,17 @@ contract FastAccessFacet is AFastFacet, AHasGovernors, AHasMembers {
     bool isGovernor;
     /// @notice Whether or not the item in scope is considered a member of this FAST.
     bool isMember;
+  }
+
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasMembers, AHasGovernors, AHasContext) returns (address) {
+    return AHasContext._msgSender();
   }
 
   /// AHasGovernors implementation.
