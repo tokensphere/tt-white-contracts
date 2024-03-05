@@ -210,8 +210,9 @@ const FAST_FACETS = [
   "FastTokenFacet",
   "FastHistoryFacet",
   "FastFrontendFacet",
+  "FastForwardableFacet",
   "FastDistributionsFacet",
-  "FastCrowdfundsFacet",
+  "FastCrowdfundsFacet"
 ];
 interface FastDeployParams {
   readonly governor: string;
