@@ -34,6 +34,14 @@ abstract contract AHasGovernors {
   event GovernorRemoved(address indexed governor);
 
   /**
+   * @notice Default implementation - points to `_msgSender()`.
+   * @dev May be overriden by the inheriting contract.
+   */
+  function _msgSender() internal view virtual returns (address) {
+    return msg.sender;
+  }
+
+  /**
    * @notice Checks whether the caller is a governor manager or not.
    * @dev Must be implemented by the inheriting contract.
    * @param who is the address to test.
@@ -94,7 +102,7 @@ abstract contract AHasGovernors {
    * @notice Adds a governor to the list of known governors.
    * @param who is the address to be added.
    */
-  function addGovernor(address who) external onlyGovernorManager(msg.sender) onlyValidGovernor(who) {
+  function addGovernor(address who) external onlyGovernorManager(_msgSender()) onlyValidGovernor(who) {
     // Add the governor.
     LibHasGovernors.data().governorSet.add(who, false);
     // Notify via callback.
@@ -109,7 +117,7 @@ abstract contract AHasGovernors {
    * @notice Requires that the caller is a governor of this Issuer.
    * @notice Emits a `AHasGovernors.GovernorRemoved` event.
    */
-  function removeGovernor(address governor) external onlyGovernorManager(msg.sender) {
+  function removeGovernor(address governor) external onlyGovernorManager(_msgSender()) {
     // Notify via callback.
     onGovernorRemoved(governor);
     // Remove governor.
