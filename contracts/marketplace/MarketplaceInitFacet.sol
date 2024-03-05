@@ -6,7 +6,6 @@ import "../common/lib/LibHasAutomatons.sol";
 import "../common/lib/LibHasForwarder.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasAutomatons.sol";
-import "../common/AHasForwarder.sol";
 import "../interfaces/IERC165.sol"; // Interface Support.
 import "../interfaces/IERC173.sol"; // Ownership.
 import "../interfaces/IDiamondCut.sol"; // Facet management.
@@ -67,6 +66,8 @@ contract MarketplaceInitFacet is AMarketplaceFacet {
     // ------------------------------------- //
 
     // Initialize forwarder storage.
-    LibHasForwarder.data().forwarderAddress = address(0);
+    LibHasForwarder.Data storage forwarderData = LibHasForwarder.data();
+    forwarderData.version = LibHasForwarder.STORAGE_VERSION;
+    forwarderData.forwarderAddress = address(0);
   }
 }
