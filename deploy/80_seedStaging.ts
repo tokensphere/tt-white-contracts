@@ -3,17 +3,17 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { deployments, ethers, getNamedAccounts } from "hardhat";
 import { deployFast, fastMint } from "../tasks/fast";
 import { Marketplace } from "../typechain";
-import { BigNumber } from "ethers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  // We only want to do this in local development nodes.
+  // We only want to do this in local development nodes and testnets.
   const { name: netName } = hre.network;
   if (
     netName !== "hardhat" &&
     netName !== "localhost" &&
     netName !== "dev" &&
     netName !== "staging" &&
-    netName !== "mumbai"
+    netName !== "mumbai" &&
+    netName !== "amoy"
   )
     return;
   console.log("----------------------------------- 80_seedStaging");
