@@ -142,6 +142,13 @@ const config: HardhatUserConfig = {
       chainId: 80001,
       accounts: accounts("mumbai"),
     },
+    amoy: {
+      live: true,
+      saveDeployments: true,
+      url: "https://rpc-amoy.polygon.technology",
+      chainId: 80002,
+      accounts: accounts("amoy"),
+    },
     polygon: {
       live: true,
       saveDeployments: true,
@@ -194,7 +201,7 @@ const config: HardhatUserConfig = {
       signedTx:
         "0xf8a98085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3840225fcdba01590b43af70aef60a9342a33eaf1536b07df9ba36e96f0e5102485b4f23f7720a01e6266145487736a1809cf67cbc0a86d9eee3438cc97e0bd523694f3f3e9e1cb",
     },
-    // Polygon Testnet.
+    // Polygon Testnet - Mumbai.
     80001: {
       ...DEPLOYER_FACTORY_COMMON,
       signedTx:
