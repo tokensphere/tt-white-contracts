@@ -138,7 +138,7 @@ const config: HardhatUserConfig = {
     mumbai: {
       live: true,
       saveDeployments: true,
-      url: "https://rpc-mumbai.maticvigil.com",
+      url: "https://rpc-mumbai.polygon.technology",
       chainId: 80001,
       accounts: accounts("mumbai"),
     },
