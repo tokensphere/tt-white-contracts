@@ -207,6 +207,12 @@ const config: HardhatUserConfig = {
       signedTx:
         "0xf8a88085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf383027125a05f9ad6b5fd17d50ec5b92745a600a89fe389f8d4bae2f06189efe0543374acb2a0570b22388a260bc0d2ace93767114ab9a4f7776177778b2293c1233118c725b5",
     },
+    // Polygon Testnet - Amoy.
+    80002: {
+      ...DEPLOYER_FACTORY_COMMON,
+      signedTx:
+        "",
+    },
     // Polygon Mainnet.
     137: {
       ...DEPLOYER_FACTORY_COMMON,
