@@ -8,19 +8,9 @@ import '@nomiclabs/hardhat-etherscan'
 
 import fs from 'fs'
 import { type HardhatUserConfig } from 'hardhat/config'
-import { type NetworkUserConfig } from 'hardhat/src/types/config'
 import path from 'path'
 import chalk from 'chalk'
 import './src/exportTask'
-
-function getNetwork(url: string): NetworkUserConfig {
-  return {
-    url,
-    accounts: [
-      /* user1 - exposed local dev account */ "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba"
-    ]
-  }
-}
 
 const CONTRACTS_LINK = 'contracts-link'
 
@@ -32,6 +22,17 @@ if (!fs.existsSync(path.join(CONTRACTS_LINK, 'paymasters/SingleRecipientPaymaste
   console.log('== creating symlink', chalk.yellow(CONTRACTS_LINK + '/paymasters'), 'for contracts')
   fs.symlinkSync('../../paymasters/contracts', CONTRACTS_LINK + '/paymasters')
 }
+
+export const accounts = (networkName: string): string[] => {
+  try {
+    return JSON.parse(
+      fs.readFileSync(`./conf/keys.${networkName}.json`, "utf8")
+    );
+  } catch (_error) {
+    console.warn(`Cannot read keys file at conf/keys.${networkName}.json .`);
+    return [];
+  }
+};
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -49,7 +50,21 @@ const config: HardhatUserConfig = {
   networks: {
     // TS updates
     // Local geth node
-    dev: getNetwork('http://geth:8546'),
+    dev: {
+      url: 'http://geth:8546',
+      chainId: 18021980,
+      saveDeployments: true,
+      live: true,
+      accounts: accounts("dev")
+    },
+    // Polygon Amoy
+    amoy: {
+      url: "https://rpc-amoy.polygon.technology",
+      chainId: 80002,
+      saveDeployments: true,
+      live: true,
+      accounts: accounts("amoy")
+    },
   }
 }
 

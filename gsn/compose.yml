@@ -7,7 +7,7 @@ services:
     build:
       context: ./
     working_dir: /app/packages/deployer
-    command: ["yarn", "deploy", "--network", "dev"]
+    entrypoint: ["yarn", "deploy"]
     networks:
       - eth_network
     volumes:
@@ -20,9 +20,14 @@ services:
       - type: bind
         source: ./deploy/config/deployment-config.ts
         target: /app/packages/deployer/deployments/deployment-config.ts
-        # Deployments held in memory.
-      - type: tmpfs
+      - type: bind
+        source: ./deploy/data/deployments
         target: /app/packages/deployer/deployments/networks
+    secrets:
+      - source: gsn_amoy_deployer_key_json
+        target: /app/packages/deployer/conf/keys.amoy.json
+      - source: gsn_dev_deployer_key_json
+        target: /app/packages/deployer/conf/keys.dev.json
 
   gsn_relay:
     image: ts-opengsn
@@ -52,3 +57,9 @@ networks:
   eth_network:
     name: eth_network
     external: true
+
+secrets:
+  gsn_amoy_deployer_key_json:
+    environment: GSN_AMOY_DEPLOYER_KEY_JSON
+  gsn_dev_deployer_key_json:
+    environment: GSN_DEV_DEPLOYER_KEY_JSON
