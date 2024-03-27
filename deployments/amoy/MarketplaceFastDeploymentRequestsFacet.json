@@ -1,0 +1,277 @@
+{
+  "address": "0x33E83A084703D5C16b7F720d9F6D0A3020EC2d14",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "InsufficientFunds",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OutOfBounds",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Overfunded",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresIssuerMembership",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "who",
+          "type": "address"
+        }
+      ],
+      "name": "RequiresMarketplaceMembership",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "FastDeploymentRequested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberActivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "member",
+          "type": "address"
+        }
+      ],
+      "name": "MemberDeactivated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "fastDeploymentRequest",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "paid",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "params",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct LibRequestedFastDeployments.Request",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fastDeploymentRequestPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fastDeploymentRequestsCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "params",
+          "type": "string"
+        }
+      ],
+      "name": "requestDeployment",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "setFastDeploymentRequestPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xa6cf5c35a332041a0c0b27045340dc3f3d04b0de25a6fcc0be62fa6c9887a1cc",
+  "receipt": {
+    "to": "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7",
+    "from": "0x717634cfe06FFAB2CEAA7fcf1b9019813f4B25FE",
+    "contractAddress": null,
+    "transactionIndex": 0,
+    "gasUsed": "608931",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000008000000000000000000000000000000000000000000000000040000000800000000000000000000100080000000000000000000000000000000000000000000000000000000080000000000000020000000000000000000000000040000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000000100000000000000000000000000000000400000000000000000000000000000000000000100000",
+    "blockHash": "0x914bcf2144474dc49949322f5113b12677eb4afa8ab7ff948bd0e194b069f5f3",
+    "transactionHash": "0xa6cf5c35a332041a0c0b27045340dc3f3d04b0de25a6fcc0be62fa6c9887a1cc",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 5152567,
+        "transactionHash": "0xa6cf5c35a332041a0c0b27045340dc3f3d04b0de25a6fcc0be62fa6c9887a1cc",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000717634cfe06ffab2ceaa7fcf1b9019813f4b25fe",
+          "0x0000000000000000000000006dc2dd54f24979ec26212794c71afefed722280c"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000d855f3aac5b800000000000000000000000000000000000000000000000000093181ae4176655e000000000000000000000000000000000000000000000018382b2d49830e35ae00000000000000000000000000000000000000000000000008592bba96b0ad5e0000000000000000000000000000000000000000000000183903833d2dd3edae",
+        "logIndex": 0,
+        "blockHash": "0x914bcf2144474dc49949322f5113b12677eb4afa8ab7ff948bd0e194b069f5f3"
+      }
+    ],
+    "blockNumber": 5152567,
+    "cumulativeGasUsed": "608931",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "c2c86c4488a50dc9c880be0e80e5f441",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"InsufficientFunds\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OutOfBounds\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Overfunded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"RequiresIssuerMembership\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"RequiresMarketplaceMembership\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"FastDeploymentRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"MemberActivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"member\",\"type\":\"address\"}],\"name\":\"MemberDeactivated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"fastDeploymentRequest\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"paid\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"params\",\"type\":\"string\"}],\"internalType\":\"struct LibRequestedFastDeployments.Request\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fastDeploymentRequestPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fastDeploymentRequestsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"params\",\"type\":\"string\"}],\"name\":\"requestDeployment\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newPrice\",\"type\":\"uint256\"}],\"name\":\"setFastDeploymentRequestPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"fastDeploymentRequest(uint256)\":{\"params\":{\"index\":\"is the index at which to retrieve the request.\"}},\"fastDeploymentRequestPrice()\":{\"returns\":{\"_0\":\"An uint256 representing the price for a FAST deployment request.\"}},\"fastDeploymentRequestsCount()\":{\"returns\":{\"_0\":\"An uint256 representing the number of FAST deployment requests ever made.\"}},\"requestDeployment(string)\":{\"params\":{\"params\":\"The parameters for the FAST deployment.\"}},\"setFastDeploymentRequestPrice(uint256)\":{\"params\":{\"newPrice\":\"The new price of a FAST deployment request.\"}}},\"title\":\"The Marketplace Smart Contract.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"fastDeploymentRequest(uint256)\":{\"notice\":\"This function allows to get previously made FAST deployment requests.\"},\"fastDeploymentRequestPrice()\":{\"notice\":\"Allows querying the current price for a FAST deployment request.\"},\"fastDeploymentRequestsCount()\":{\"notice\":\"This function returns the number of FAST deployment requests ever made.\"},\"requestDeployment(string)\":{\"notice\":\"This function allows users to request a FAST deployment.\"},\"setFastDeploymentRequestPrice(uint256)\":{\"notice\":\"This function allows an issuer member to change the price of a FAST deployment request.\"}},\"notice\":\"The Marketplace Fast Deployments facet is in charge of keeping track of requested Fast Deployments.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/marketplace/MarketplaceFastDeploymentRequestsFacet.sol\":\"MarketplaceFastDeploymentRequestsFacet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":1000000},\"remappings\":[]},\"sources\":{\"contracts/common/AHasMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../lib/LibAddressSet.sol\\\";\\nimport \\\"../lib/LibPaginate.sol\\\";\\nimport \\\"../common/lib/LibHasMembers.sol\\\";\\nimport \\\"../interfaces/ICustomErrors.sol\\\";\\n\\n/**\\n * @title The Fast Smart Contract.\\n * @notice The Fast Members abstract contract is in charge of keeping track of automaton accounts.\\n */\\nabstract contract AHasMembers {\\n  using LibAddressSet for LibAddressSet.Data;\\n\\n  /// Errors.\\n\\n  /// @notice Happens when a function is called by an address that is not a members manager.\\n  error RequiresMembersManager(address who);\\n  /// @notice Happens when an address is used as a member but is not valid.\\n  error RequiresValidMember(address who);\\n\\n  /// Events.\\n\\n  /**\\n   * @notice Emited when a member is added to the implementing contract.\\n   * @param member is the address of the added member.\\n   */\\n  event MemberAdded(address indexed member);\\n  /**\\n   * @notice Emited when a member is removed to the implementing contract.\\n   * @param member is the address of the removed member.\\n   */\\n  event MemberRemoved(address indexed member);\\n\\n  /**\\n   * @notice Checks whether the given address is a members manager or not.\\n   * @dev Must be implemented by the inheriting contract.\\n   * @param who is the address to test.\\n   */\\n  function isMembersManager(address who) internal view virtual returns (bool);\\n\\n  /**\\n   * @notice Checks whether the given address can be added as a member or not.\\n   * @dev Must be implemented by the inheriting contract.\\n   * @param who is the address to test.\\n   */\\n  function isValidMember(address who) internal view virtual returns (bool);\\n\\n  /**\\n   * @notice This callback is called when a member is added to the contract.\\n   * @dev May be overriden by the inheriting contract.\\n   * @param member is the address which was added.\\n   */\\n  function onMemberAdded(address member) internal virtual {}\\n\\n  /**\\n   * @notice This callback is called when a member is removed to the contract.\\n   * @dev May be overriden by the inheriting contract.\\n   * @param member is the address which was removed.\\n   */\\n  function onMemberRemoved(address member) internal virtual {}\\n\\n  // Members management.\\n\\n  /**\\n   * @notice Queries whether a given address is a member or not.\\n   * @param who is the address to test.\\n   * @return A `bool` equal to `true` when `candidate` is a member.\\n   */\\n  function isMember(address who) external view returns (bool) {\\n    return LibHasMembers.data().memberSet.contains(who);\\n  }\\n\\n  /**\\n   * @notice Queries the number of members.\\n   * @return An `uint256`.\\n   */\\n  function memberCount() external view returns (uint256) {\\n    return LibHasMembers.data().memberSet.values.length;\\n  }\\n\\n  /**\\n   * @notice Queries pages of members based on a start index and a page size.\\n   * @param index is the offset at which the pagination operation should start.\\n   * @param perPage is how many items should be returned.\\n   * @return A `(address[], uint256)` tuple, which first item is the list of addresses and the second item a cursor to the next page.\\n   */\\n  function paginateMembers(uint256 index, uint256 perPage) external view returns (address[] memory, uint256) {\\n    return LibPaginate.addresses(LibHasMembers.data().memberSet.values, index, perPage);\\n  }\\n\\n  /**\\n   * @notice Adds a member to the list of known members.\\n   * @param who is the address to be added.\\n   */\\n  function addMember(address who) external onlyMemberManager(msg.sender) onlyValidMember(who) {\\n    // Add the member.\\n    LibHasMembers.data().memberSet.add(who, false);\\n    // Notify via callback.\\n    onMemberAdded(who);\\n    // Emit!\\n    emit MemberAdded(who);\\n  }\\n\\n  /**\\n   * @notice Removes a member from this contract.\\n   * @param member The address of the member to be removed.\\n   * @notice Requires that the caller is a member of this Issuer.\\n   * @notice Emits a `AHasMembers.MemberRemoved` event.\\n   */\\n  function removeMember(address member) external onlyMemberManager(msg.sender) {\\n    // Notify via callback.\\n    onMemberRemoved(member);\\n    // Remove member.\\n    LibHasMembers.data().memberSet.remove(member, false);\\n    // Emit!\\n    emit MemberRemoved(member);\\n  }\\n\\n  /// Modifiers.\\n\\n  modifier onlyMemberManager(address who) {\\n    if (!isMembersManager(who)) revert RequiresMembersManager(who);\\n    _;\\n  }\\n\\n  modifier onlyValidMember(address who) {\\n    if (!isValidMember(who)) revert RequiresValidMember(who);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0xe9876fc4ec6dadc0d7e37e5562cb359b4b1dc6d188651893e73fc541be1e56a3\",\"license\":\"MIT\"},\"contracts/common/lib/LibHasMembers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../../lib/LibAddressSet.sol\\\";\\n\\nlibrary LibHasMembers {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is `keccak256('HasMembers.storage.Main')`.\\n  bytes32 internal constant STORAGE_SLOT = 0xd56529bfa3ed57257eed4751494e1d0c0f212cfe38768380e006e3bee06ffb91;\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice This is where we hold our automatons data.\\n    LibAddressSet.Data memberSet;\\n  }\\n\\n  function data() internal pure returns (Data storage s) {\\n    assembly {\\n      s.slot := STORAGE_SLOT\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0x03ea8d9c47249e9456deba85130e859afd6eba800e330527bcb9bc3438adb6a4\",\"license\":\"MIT\"},\"contracts/fast/lib/LibFastHistory.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n/**\\n * @notice This library centralises shared functionality between FAST diamonds facets that have to do with transfer\\n * history tracking.\\n * @dev Note that if you feel like a method should be created inside this library, you might want to really consider\\n * whether or not it is the right place for it. Any facet using a method from internal libraries see their bytecode\\n * size increase, kind of defeating the benefits of using facets in the first place. So please keep it reasonable.\\n */\\nlibrary LibFastHistory {\\n  /// @notice The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  /// @notice This is keccak256('Fast.storage.History'):\\n  bytes32 internal constant STORAGE_SLOT = 0x6bc8b61a9dd5fc049ea98027492a801d74e35fdf4d80d7fecd551a16e88fdbb4;\\n\\n  // Storage structures.\\n\\n  /**\\n   * @notice The history data structure required for operating any given FAST diamond.\\n   * @dev The `version` field is used to ensure that storage is at a known version during upgrades.\\n   */\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice All minting proofs are kept here.\\n    SupplyProof[] supplyProofs;\\n    /// @notice All transfer proofs are kept here.\\n    TransferProof[] transferProofs;\\n    /// @notice All transfers indices involving a given address are kept here.\\n    mapping(address => uint256[]) transferProofInvolvements;\\n  }\\n\\n  // Other structures.\\n\\n  /// @notice A minting operation could either be to mint or burn tokens.\\n  enum SupplyOp {\\n    Mint,\\n    Burn\\n  }\\n\\n  /// @notice Minting operations are recorded for papertrail. This is the structure that keeps track of them.\\n  struct SupplyProof {\\n    /// @notice How...\\n    SupplyOp op;\\n    /// @notice How much...\\n    uint256 amount;\\n    /// @notice When...\\n    uint256 blockNumber;\\n    /// @notice Why...\\n    string ref;\\n  }\\n\\n  /// @notice Every transfer in is recorded. This is the structure that keeps track of them.\\n  struct TransferProof {\\n    /// @notice Who spent...\\n    address spender;\\n    /// @notice Who performed the transfer...\\n    address from;\\n    /// @notice Who received...\\n    address to;\\n    /// @notice How much...\\n    uint256 amount;\\n    /// @notice When...\\n    uint256 blockNumber;\\n    /// @notice Why...\\n    string ref;\\n  }\\n\\n  /**\\n   * @notice Returns the history storage for the calling FAST.\\n   * @return s a struct pointer for history FAST data storage.\\n   */\\n  function data() internal pure returns (Data storage s) {\\n    assembly {\\n      s.slot := STORAGE_SLOT\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0x21e2cb01ca5bc6109080cd9695296e4ae346a2936c8cae3b3c0b68cef9a90a5e\",\"license\":\"MIT\"},\"contracts/interfaces/ICustomErrors.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\ninterface ICustomErrors {\\n  error AlreadyInitialized();\\n  error CannotSelfRemove(address who);\\n  error DuplicateEntry();\\n  error InconsistentParameter(string param);\\n  error InsufficientFunds(uint256 amount);\\n  error InternalMethod();\\n  error InvalidCrowdfundBasisPointsFee(uint32 fee);\\n  error InvalidPhase();\\n  error NonExistentEntry();\\n  error OutOfBounds();\\n  error Overfunded(uint256 amount);\\n  error ReentrancyError();\\n  error RequiresAutomatonsManager(address who);\\n  error RequiresContinuousSupply();\\n  error RequiresDiamondOwnership(address who);\\n  error RequiresDifferentSenderAndRecipient(address a);\\n  error RequiresFastCaller();\\n  error RequiresFastContractCaller();\\n  error RequiresFastGovernorship(address who);\\n  error RequiresFastMemberCaller();\\n  error RequiresFastMembership(address who);\\n  error RequiresGovernorsManager(address who);\\n  error RequiresIssuerMemberCaller();\\n  error RequiresIssuerMemberOrIssuerCaller();\\n  error RequiresIssuerMembership(address who);\\n  error RequiresManagerCaller();\\n  error RequiresMarketplaceActiveMembership(address who);\\n  error RequiresMarketplaceDeactivatedMember(address who);\\n  error RequiresMarketplaceMembership(address who);\\n  error RequiresMembersManager(address who);\\n  error RequiresNoFastMemberships(address who);\\n  error RequiresOwner(address who);\\n  error RequiresPositiveBalance(address holder);\\n  error RequiresTransfersEnabled();\\n  error RequiresValidGovernor(address who);\\n  error RequiresValidMember(address who);\\n  error RequiresValidTokenHolder(address who);\\n  error TokenContractError();\\n  error UnknownBeneficiary(address who);\\n  error UnknownPledger(address who);\\n  error UnsupportedOperation();\\n}\\n\",\"keccak256\":\"0x62cf23c6bccffebc753940b8f9260626f04455dd305736aee200d8d1545eb3e4\",\"license\":\"MIT\"},\"contracts/interfaces/IERC173.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\n/**\\n * @title ERC173 Contract Ownership Standard\\n * @dev The ERC165 identifier for this interface is 0x7f5828d0.\\n */\\ninterface IERC173 {\\n  /// @notice This emits when ownership of a contract changes.\\n  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n  /// @notice Get the address of the owner\\n  /// @return owner_ The address of the owner.\\n  function owner() external view returns (address owner_);\\n\\n  /// @notice Set the address of the new owner of the contract\\n  /// @notice Set _newOwner to address(0) to renounce any ownership.\\n  /// @param _newOwner The address of the new owner of the contract\\n  function transferOwnership(address _newOwner) external;\\n}\\n\",\"keccak256\":\"0x797855e7870ec3c9f32dda93166bd12dc19fec66cc9a8a7a58f03339a31439c0\",\"license\":\"MIT\"},\"contracts/lib/LibAddressSet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nlibrary LibAddressSet {\\n  /// @notice Represents a list of addresses.\\n  struct Data {\\n    mapping(address => uint256) indices;\\n    address[] values;\\n  }\\n\\n  /**\\n   * @notice Adds an item into the storage set. If the address already exists in the set, the method reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be added.\\n   */\\n  function add(Data storage d, address key, bool noThrow) internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && exists) {\\n      return;\\n    }\\n    require(!exists, \\\"Address already in set\\\");\\n    d.indices[key] = d.values.length;\\n    d.values.push(key);\\n  }\\n\\n  /**\\n   * @notice Removes an item from the storage set. If the address does not exist in the set, the method reverts.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to be removed.\\n   */\\n  function remove(Data storage d, address key, bool noThrow) internal {\\n    bool exists = contains(d, key);\\n    if (noThrow && !exists) {\\n      return;\\n    }\\n    require(exists, \\\"Address does not exist in set\\\");\\n    address keyToMove = d.values[d.values.length - 1];\\n    uint256 idxToReplace = d.indices[key];\\n    d.indices[keyToMove] = idxToReplace;\\n    d.values[idxToReplace] = keyToMove;\\n\\n    delete d.indices[key];\\n    d.values.pop();\\n  }\\n\\n  /**\\n   * @notice Tests whether or not a given item already exists in the set.\\n   * @param d is the internal data storage to use.\\n   * @param key is the address to test.\\n   * @return a boolean.\\n   */\\n  function contains(Data storage d, address key) internal view returns (bool) {\\n    return d.values.length == 0 ? false : d.values[d.indices[key]] == key;\\n  }\\n}\\n\",\"keccak256\":\"0x47c911c8b83ffd42c9d6088104f3c2c5eac2899fdf200b3683d1de10ca96b1a8\",\"license\":\"MIT\"},\"contracts/lib/LibHelpers.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"./LibHelpers.sol\\\";\\nimport \\\"../interfaces/IERC173.sol\\\";\\n\\nlibrary LibHelpers {\\n  address internal constant ZERO_ADDRESS = address(0);\\n  address internal constant DEPLOYER_CONTRACT = 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7;\\n\\n  function _isDiamondFacet(address who) internal view returns (bool) {\\n    return who == address(this);\\n  }\\n\\n  function _isDiamondOwner(address who) internal view returns (bool) {\\n    return who == IERC173(address(this)).owner();\\n  }\\n\\n  function _isDeployer(address who) internal pure returns (bool) {\\n    return who == LibHelpers.DEPLOYER_CONTRACT;\\n  }\\n}\\n\",\"keccak256\":\"0x68cdf87179f5ea101e0d9da04169fb72de37c99649cea169c0feadb59b3e5565\",\"license\":\"MIT\"},\"contracts/lib/LibPaginate.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../fast/lib/LibFastHistory.sol\\\";\\n\\nlibrary LibPaginate {\\n  function addresses(\\n    address[] storage collection,\\n    uint256 cursor,\\n    uint256 perPage\\n  ) internal view returns (address[] memory, uint256) {\\n    uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n    address[] memory values = new address[](length);\\n    for (uint256 i = 0; i < length; ) {\\n      values[i] = collection[cursor + i];\\n      unchecked {\\n        ++i;\\n      }\\n    }\\n    return (values, cursor + length);\\n  }\\n\\n  function uint256s(\\n    uint256[] storage collection,\\n    uint256 cursor,\\n    uint256 perPage\\n  ) internal view returns (uint256[] memory, uint256) {\\n    uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n    uint256[] memory values = new uint256[](length);\\n    for (uint256 i = 0; i < length; ) {\\n      values[i] = collection[cursor + i];\\n      unchecked {\\n        ++i;\\n      }\\n    }\\n    return (values, cursor + length);\\n  }\\n\\n  function supplyProofs(\\n    LibFastHistory.SupplyProof[] storage collection,\\n    uint256 cursor,\\n    uint256 perPage\\n  ) internal view returns (LibFastHistory.SupplyProof[] memory, uint256) {\\n    uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n    LibFastHistory.SupplyProof[] memory values = new LibFastHistory.SupplyProof[](length);\\n    for (uint256 i = 0; i < length; ) {\\n      values[i] = collection[cursor + i];\\n      unchecked {\\n        ++i;\\n      }\\n    }\\n    return (values, cursor + length);\\n  }\\n\\n  function transferProofs(\\n    LibFastHistory.TransferProof[] storage collection,\\n    uint256 cursor,\\n    uint256 perPage\\n  ) internal view returns (LibFastHistory.TransferProof[] memory, uint256) {\\n    uint256 length = (perPage > collection.length - cursor) ? collection.length - cursor : perPage;\\n    LibFastHistory.TransferProof[] memory values = new LibFastHistory.TransferProof[](length);\\n    for (uint256 i = 0; i < length; ) {\\n      values[i] = collection[cursor + i];\\n      unchecked {\\n        ++i;\\n      }\\n    }\\n    return (values, cursor + length);\\n  }\\n}\\n\",\"keccak256\":\"0xf2f7e33b965e27fa953f0b95922856f42b2563f9a037a17e1973af5a496899ca\",\"license\":\"MIT\"},\"contracts/marketplace/MarketplaceFastDeploymentRequestsFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"./lib/AMarketplaceFacet.sol\\\";\\nimport \\\"./lib/LibMarketplaceFastDeploymentRequests.sol\\\";\\n\\n/**\\n * @title The Marketplace Smart Contract.\\n * @notice The Marketplace Fast Deployments facet is in charge of keeping track of requested Fast Deployments.\\n */\\ncontract MarketplaceFastDeploymentRequestsFacet is AMarketplaceFacet {\\n  /**\\n   * @notice Allows querying the current price for a FAST deployment request.\\n   * @return An uint256 representing the price for a FAST deployment request.\\n   */\\n  function fastDeploymentRequestPrice() external view returns (uint256) {\\n    return LibRequestedFastDeployments.data().price;\\n  }\\n\\n  /**\\n   * @notice This function allows an issuer member to change the price of a FAST deployment request.\\n   * @param newPrice The new price of a FAST deployment request.\\n   */\\n  function setFastDeploymentRequestPrice(uint256 newPrice) external onlyIssuerMember {\\n    // Grab a pointer to our storage slot.\\n    LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();\\n    // Set the new price.\\n    data.price = newPrice;\\n  }\\n\\n  /**\\n   * @notice This function returns the number of FAST deployment requests ever made.\\n   * @return An uint256 representing the number of FAST deployment requests ever made.\\n   */\\n  function fastDeploymentRequestsCount() external view returns (uint256) {\\n    return LibRequestedFastDeployments.data().requests.length;\\n  }\\n\\n  /**\\n   * @notice This function allows to get previously made FAST deployment requests.\\n   * @param index is the index at which to retrieve the request.\\n   */\\n  function fastDeploymentRequest(uint256 index) external view returns (LibRequestedFastDeployments.Request memory) {\\n    // Grab a pointer to our storage slot.\\n    LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();\\n    // Out of bounds.\\n    if (index >= data.requests.length) revert ICustomErrors.OutOfBounds();\\n    // Return the request.\\n    return data.requests[index];\\n  }\\n\\n  /**\\n   * @notice This function allows users to request a FAST deployment.\\n   * @param params The parameters for the FAST deployment.\\n   */\\n  function requestDeployment(string memory params) external payable onlyMember(msg.sender) {\\n    // Grab a pointer to our storage slot.\\n    LibRequestedFastDeployments.Data storage data = LibRequestedFastDeployments.data();\\n    // Not enough attached Eth.\\n    if (msg.value < data.price) revert ICustomErrors.InsufficientFunds(data.price - msg.value);\\n    // Too much attached Eth.\\n    else if (msg.value > data.price) revert ICustomErrors.Overfunded(msg.value - data.price);\\n    // Emit!\\n    emit FastDeploymentRequested(data.requests.length);\\n    // Enqueue the request.\\n    data.requests.push(LibRequestedFastDeployments.Request({sender: msg.sender, paid: data.price, params: params}));\\n  }\\n}\\n\",\"keccak256\":\"0xb1321b89a1cfe544688fe12a3e2bc73c5861b7bc55e539cec5985a6fc58c8c0e\",\"license\":\"MIT\"},\"contracts/marketplace/lib/AMarketplaceFacet.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../../lib/LibHelpers.sol\\\";\\nimport \\\"../../common/AHasMembers.sol\\\";\\nimport \\\"../../interfaces/ICustomErrors.sol\\\";\\nimport \\\"../lib/LibMarketplace.sol\\\";\\nimport \\\"./IMarketplaceEvents.sol\\\";\\n\\n/**\\n * @notice This contract is a group of modifiers that can be used by any Marketplace facets to guard against\\n *       certain permissions.\\n */\\nabstract contract AMarketplaceFacet is IMarketplaceEvents {\\n  /// Internal ACL functions.\\n\\n  function _isIssuerMember(address who) internal view returns (bool) {\\n    return AHasMembers(LibMarketplace.data().issuer).isMember(who);\\n  }\\n\\n  // Modifiers.\\n\\n  /// @notice Ensures that a method can only be called by the singleton deployer contract factory.\\n  modifier onlyDeployer() virtual {\\n    if (!LibHelpers._isDeployer(msg.sender)) revert ICustomErrors.InternalMethod();\\n    _;\\n  }\\n\\n  /**\\n   * @notice Requires that the message sender is a member of the linked Issuer.\\n   */\\n  modifier onlyIssuerMember() virtual {\\n    if (!_isIssuerMember(msg.sender)) revert ICustomErrors.RequiresIssuerMembership(msg.sender);\\n    _;\\n  }\\n\\n  /**\\n   * @notice Requires that the given address is a member of the marketplace.\\n   * @param who is the address to be checked.\\n   */\\n  modifier onlyMember(address who) virtual {\\n    if (!AHasMembers(address(this)).isMember(who)) revert ICustomErrors.RequiresMarketplaceMembership(who);\\n    _;\\n  }\\n}\\n\",\"keccak256\":\"0xb9569fef0cef86a40828714a131f6dafb98ae4cd21ff44e710f8e57413bd6ffb\",\"license\":\"MIT\"},\"contracts/marketplace/lib/IMarketplaceEvents.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\ninterface IMarketplaceEvents {\\n  /// @dev See `IHasActiveMembers`.\\n  event MemberActivated(address indexed member);\\n  /// @dev See `IHasActiveMembers`.\\n  event MemberDeactivated(address indexed member);\\n  /// @dev Emitted when a FAST deployment is requested.\\n  event FastDeploymentRequested(uint256 indexed index);\\n}\\n\",\"keccak256\":\"0xeb89df40f51b42b444f698f8d13cf4318396f9393d7fab049c131e2f6bd45b4d\",\"license\":\"MIT\"},\"contracts/marketplace/lib/LibMarketplace.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../../lib/LibAddressSet.sol\\\";\\n\\nlibrary LibMarketplace {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Marketplace.storage'):\\n  bytes32 internal constant STORAGE_SLOT = 0xb59ec141376cee83f618e10e881bbb4789cdeee27e0d441a8c37ead3cb8b93c1;\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice The internal pointer to the Issuer contract.\\n    address issuer;\\n  }\\n\\n  function data() internal pure returns (Data storage s) {\\n    assembly {\\n      s.slot := STORAGE_SLOT\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0xba63d4c8f5878ca351ca9fb34f5bc1937dd4a90efaccbc739948eaa3cbf4e526\",\"license\":\"MIT\"},\"contracts/marketplace/lib/LibMarketplaceFastDeploymentRequests.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.10;\\n\\nimport \\\"../../lib/LibAddressSet.sol\\\";\\n\\nlibrary LibRequestedFastDeployments {\\n  // The current version of the storage.\\n  uint16 internal constant STORAGE_VERSION = 1;\\n  // This is keccak256('Marketplace.storage.RequestedFastDeployments'):\\n  bytes32 internal constant STORAGE_SLOT = 0x76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61231;\\n\\n  struct Request {\\n    address sender;\\n    uint256 paid;\\n    string params;\\n  }\\n\\n  struct Data {\\n    /// @notice The latest intializer version that was called.\\n    uint16 version;\\n    /// @notice The price of a FAST Deployment Request.\\n    uint256 price;\\n    /// @notice This is the list of requested deployments.\\n    Request[] requests;\\n  }\\n\\n  function data() internal pure returns (Data storage s) {\\n    assembly {\\n      s.slot := STORAGE_SLOT\\n    }\\n  }\\n}\\n\",\"keccak256\":\"0x36294afe0f85bbdd2067400046dfa6a0db6a77e9a17c667259992ce4f3ce09cb\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610a19806100206000396000f3fe60806040526004361061005a5760003560e01c806391abd7fd1161004357806391abd7fd146100b75780639d966ac8146100e4578063b3b8280c1461010457600080fd5b80630173028f1461005f5780634362f99514610074575b600080fd5b61007261006d36600461076c565b610138565b005b34801561008057600080fd5b507f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61233545b6040519081526020015b60405180910390f35b3480156100c357600080fd5b506100d76100d236600461083b565b6103bd565b6040516100ae9190610854565b3480156100f057600080fd5b506100726100ff36600461083b565b61057d565b34801561011057600080fd5b507f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61232546100a4565b6040517fa230c524000000000000000000000000000000000000000000000000000000008152336004820181905290309063a230c52490602401602060405180830381865afa15801561018f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101b391906108f9565b610206576040517f9ac2720600000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff821660048201526024015b60405180910390fd5b7f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61232547f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d6123190341015610296573481600101546102619190610922565b6040517fcb78cce20000000000000000000000000000000000000000000000000000000081526004016101fd91815260200190565b80600101543411156102e65760018101546102b19034610922565b6040517f7a1b34be0000000000000000000000000000000000000000000000000000000081526004016101fd91815260200190565b60028101546040517f091c4a7672d4dd8af4d47f061917806ca7b5357b7d3f2dd1dbd3542e69beb0ca90600090a2604080516060810182523381526001838101546020808401918252938301878152600280870180548086018255600091825290879020865160039092020180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff909216919091178155925193830193909355518051939491936103b59385019291909101906106a4565b505050505050565b604080516060808201835260008083526020830152918101919091527f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61233547f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61231908310610455576040517fb4120f1400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80600201838154811061046a5761046a610960565b90600052602060002090600302016040518060600160405290816000820160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001600182015481526020016002820180546104f39061098f565b80601f016020809104026020016040519081016040528092919081815260200182805461051f9061098f565b801561056c5780601f106105415761010080835404028352916020019161056c565b820191906000526020600020905b81548152906001019060200180831161054f57829003601f168201915b505050505081525050915050919050565b610586336105e2565b6105be576040517f1dd41c4d0000000000000000000000000000000000000000000000000000000081523360048201526024016101fd565b7f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d6123255565b60007fb59ec141376cee83f618e10e881bbb4789cdeee27e0d441a8c37ead3cb8b93c1546040517fa230c52400000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8481166004830152620100009092049091169063a230c52490602401602060405180830381865afa15801561067a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061069e91906108f9565b92915050565b8280546106b09061098f565b90600052602060002090601f0160209004810192826106d25760008555610718565b82601f106106eb57805160ff1916838001178555610718565b82800160010185558215610718579182015b828111156107185782518255916020019190600101906106fd565b50610724929150610728565b5090565b5b808211156107245760008155600101610729565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60006020828403121561077e57600080fd5b813567ffffffffffffffff8082111561079657600080fd5b818401915084601f8301126107aa57600080fd5b8135818111156107bc576107bc61073d565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156108025761080261073d565b8160405282815287602084870101111561081b57600080fd5b826020860160208301376000928101602001929092525095945050505050565b60006020828403121561084d57600080fd5b5035919050565b6000602080835273ffffffffffffffffffffffffffffffffffffffff845116818401528084015160408401526040840151606080850152805180608086015260005b818110156108b25782810184015186820160a001528301610896565b818111156108c457600060a083880101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169390930160a001949350505050565b60006020828403121561090b57600080fd5b8151801515811461091b57600080fd5b9392505050565b60008282101561095b577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b600181811c908216806109a357607f821691505b602082108114156109dd577f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b5091905056fea26469706673582212205cef9de292c76708b6cba43b19b992b5ba91d1b64cd24f3d2d65528289a557ac64736f6c634300080a0033",
+  "deployedBytecode": "0x60806040526004361061005a5760003560e01c806391abd7fd1161004357806391abd7fd146100b75780639d966ac8146100e4578063b3b8280c1461010457600080fd5b80630173028f1461005f5780634362f99514610074575b600080fd5b61007261006d36600461076c565b610138565b005b34801561008057600080fd5b507f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61233545b6040519081526020015b60405180910390f35b3480156100c357600080fd5b506100d76100d236600461083b565b6103bd565b6040516100ae9190610854565b3480156100f057600080fd5b506100726100ff36600461083b565b61057d565b34801561011057600080fd5b507f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61232546100a4565b6040517fa230c524000000000000000000000000000000000000000000000000000000008152336004820181905290309063a230c52490602401602060405180830381865afa15801561018f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101b391906108f9565b610206576040517f9ac2720600000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff821660048201526024015b60405180910390fd5b7f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61232547f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d6123190341015610296573481600101546102619190610922565b6040517fcb78cce20000000000000000000000000000000000000000000000000000000081526004016101fd91815260200190565b80600101543411156102e65760018101546102b19034610922565b6040517f7a1b34be0000000000000000000000000000000000000000000000000000000081526004016101fd91815260200190565b60028101546040517f091c4a7672d4dd8af4d47f061917806ca7b5357b7d3f2dd1dbd3542e69beb0ca90600090a2604080516060810182523381526001838101546020808401918252938301878152600280870180548086018255600091825290879020865160039092020180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff909216919091178155925193830193909355518051939491936103b59385019291909101906106a4565b505050505050565b604080516060808201835260008083526020830152918101919091527f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61233547f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d61231908310610455576040517fb4120f1400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b80600201838154811061046a5761046a610960565b90600052602060002090600302016040518060600160405290816000820160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001600182015481526020016002820180546104f39061098f565b80601f016020809104026020016040519081016040528092919081815260200182805461051f9061098f565b801561056c5780601f106105415761010080835404028352916020019161056c565b820191906000526020600020905b81548152906001019060200180831161054f57829003601f168201915b505050505081525050915050919050565b610586336105e2565b6105be576040517f1dd41c4d0000000000000000000000000000000000000000000000000000000081523360048201526024016101fd565b7f76bf4334ce845be36ecb43e6a03f2ab49f02f279a30e4e516a514e2032d6123255565b60007fb59ec141376cee83f618e10e881bbb4789cdeee27e0d441a8c37ead3cb8b93c1546040517fa230c52400000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8481166004830152620100009092049091169063a230c52490602401602060405180830381865afa15801561067a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061069e91906108f9565b92915050565b8280546106b09061098f565b90600052602060002090601f0160209004810192826106d25760008555610718565b82601f106106eb57805160ff1916838001178555610718565b82800160010185558215610718579182015b828111156107185782518255916020019190600101906106fd565b50610724929150610728565b5090565b5b808211156107245760008155600101610729565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60006020828403121561077e57600080fd5b813567ffffffffffffffff8082111561079657600080fd5b818401915084601f8301126107aa57600080fd5b8135818111156107bc576107bc61073d565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019083821181831017156108025761080261073d565b8160405282815287602084870101111561081b57600080fd5b826020860160208301376000928101602001929092525095945050505050565b60006020828403121561084d57600080fd5b5035919050565b6000602080835273ffffffffffffffffffffffffffffffffffffffff845116818401528084015160408401526040840151606080850152805180608086015260005b818110156108b25782810184015186820160a001528301610896565b818111156108c457600060a083880101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169390930160a001949350505050565b60006020828403121561090b57600080fd5b8151801515811461091b57600080fd5b9392505050565b60008282101561095b577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b600181811c908216806109a357607f821691505b602082108114156109dd577f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b5091905056fea26469706673582212205cef9de292c76708b6cba43b19b992b5ba91d1b64cd24f3d2d65528289a557ac64736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "fastDeploymentRequest(uint256)": {
+        "params": {
+          "index": "is the index at which to retrieve the request."
+        }
+      },
+      "fastDeploymentRequestPrice()": {
+        "returns": {
+          "_0": "An uint256 representing the price for a FAST deployment request."
+        }
+      },
+      "fastDeploymentRequestsCount()": {
+        "returns": {
+          "_0": "An uint256 representing the number of FAST deployment requests ever made."
+        }
+      },
+      "requestDeployment(string)": {
+        "params": {
+          "params": "The parameters for the FAST deployment."
+        }
+      },
+      "setFastDeploymentRequestPrice(uint256)": {
+        "params": {
+          "newPrice": "The new price of a FAST deployment request."
+        }
+      }
+    },
+    "title": "The Marketplace Smart Contract.",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "fastDeploymentRequest(uint256)": {
+        "notice": "This function allows to get previously made FAST deployment requests."
+      },
+      "fastDeploymentRequestPrice()": {
+        "notice": "Allows querying the current price for a FAST deployment request."
+      },
+      "fastDeploymentRequestsCount()": {
+        "notice": "This function returns the number of FAST deployment requests ever made."
+      },
+      "requestDeployment(string)": {
+        "notice": "This function allows users to request a FAST deployment."
+      },
+      "setFastDeploymentRequestPrice(uint256)": {
+        "notice": "This function allows an issuer member to change the price of a FAST deployment request."
+      }
+    },
+    "notice": "The Marketplace Fast Deployments facet is in charge of keeping track of requested Fast Deployments.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
