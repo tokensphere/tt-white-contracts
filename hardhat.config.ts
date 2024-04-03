@@ -224,7 +224,9 @@ const config: HardhatUserConfig = {
     },
     // Polygon Testnet - Amoy.
     80002: {
-      ...DEPLOYER_FACTORY_COMMON,
+      deployer: "0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37",
+      factory: "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7",
+      funding: "10000000000000000",
       signedTx:
         "0xf8a88085746a52880f830174a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf383027128a0983a0a2de9444f60b6405a227cce730f6d1025f02ff2d37c638e976389f8a073a07846164338796cbf55c45d80f7b328ff55f495d0264574a7cb876673808161bc",
     },

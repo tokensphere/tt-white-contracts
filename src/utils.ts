@@ -7,8 +7,8 @@ export const ZERO_ADDRESS = ethers.constants.AddressZero;
 export const ZERO_ACCOUNT_MOCK = { getAddress: () => ZERO_ADDRESS };
 
 export const DEPLOYER_FACTORY_COMMON = {
-  deployer: "0xE1CB04A0fA36DdD16a06ea828007E35e1a3cBC37",
-  factory: "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7",
+  deployer: "0xfa570a9Fd418FF0B8A5C792497a79059070A3A8e",
+  factory: "0x6DF2D25d8C6FD680730ee658b530A05a99BB769a",
   funding: "10000000000000000",
 };
 
