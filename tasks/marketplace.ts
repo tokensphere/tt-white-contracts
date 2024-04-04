@@ -6,7 +6,7 @@ import { Marketplace } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.
 
 // Tasks.
 
-interface MarketplaceDeployParams {}
+interface MarketplaceDeployParams { }
 
 task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
   async (_params: MarketplaceDeployParams, hre) => {
@@ -15,7 +15,7 @@ task("marketplace-deploy", "Deploys the main Marketplace contract").setAction(
   }
 );
 
-interface MarketplaceUpdateFacetsParams {}
+interface MarketplaceUpdateFacetsParams { }
 
 task(
   "marketplace-update-facets",
