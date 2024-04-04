@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ZERO_ADDRESS, deploymentSalt, gasAdjustments } from "../src/utils";
 import { Marketplace, Issuer, Paymaster } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 import { RelayHub, RelayHub__factory, StakeManager, StakeManager__factory } from "@opengsn/contracts";
-import { BigNumber } from "ethers";
+import { ethers, BigNumber } from "ethers";
 import { IERC20 } from "../typechain";
 
 // Tasks.
@@ -34,7 +34,8 @@ task("paymaster-update-facets", "Updates facets of our Paymaster")
       log: true,
       excludeSelectors: {
         "PaymasterTopFacet": ["supportsInterface"]
-      }
+      },
+      ...await gasAdjustments(hre)
     });
   });
 
@@ -58,8 +59,8 @@ task("paymaster-setup", "Sets up the Paymaster")
     const issuerPaymaster = paymaster.connect(issuerMemberSigner);
 
     console.log("Setting trusted forwarder and relay address...");
-    await (await issuerPaymaster.setRelayHub(params.relayHubAddress)).wait();
-    await (await issuerPaymaster.setTrustedForwarder(params.trustedForwarderAddress)).wait();
+    await (await issuerPaymaster.setRelayHub(params.relayHubAddress, { ...await gasAdjustments(hre) })).wait();
+    await (await issuerPaymaster.setTrustedForwarder(params.trustedForwarderAddress, { ...await gasAdjustments(hre) })).wait();
   });
 
 interface PaymasterFundParams {
@@ -91,10 +92,10 @@ task("paymaster-fund", "Funds the Paymaster")
       relayHubAddress
     );
 
-    console.log(`Funding RelayHub ${relayHubAddress} with ${params.amount} MATIC...`);
+    console.log(`Funding RelayHub ${relayHubAddress} with ${params.amount} wei...`);
 
     // Fund the paymaster.
-    await (await issuerPaymaster.deposit({ value: params.amount })).wait();
+    await (await issuerPaymaster.deposit({ value: params.amount, ...await gasAdjustments(hre) })).wait();
 
     console.log(`Paymaster balance with relay hub: ${await relayHub.balanceOf(paymaster.address)}`);
     console.log(`Admin wallet balance: ${await issuerMemberSigner.getBalance()}`);
@@ -293,7 +294,7 @@ const deployPaymaster = async (
 };
 
 // TODO: Tidy this up... any is too slack.
-const abiFromFactory = (factory: any): [string] => {
+const abiFromFactory = (factory: any): string | string[] => {
   return new ethers.utils.Interface(factory.abi)
     .format(ethers.utils.FormatTypes.simple);
 };
