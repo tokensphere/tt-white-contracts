@@ -67,14 +67,14 @@ export const abiElementToSignature = (abiElement: JsonFragment): string =>
 export type AbiIgnoreList = ReadonlyArray<[Readonly<string>, Readonly<string>]>;
 export const abiFilter =
   (ignoreList: AbiIgnoreList) =>
-  (abiElement: any, index: number, abi: any, contractName: string) =>
-    // Find the first filter that matches...
-    !ignoreList.some(
-      ([nameMatcher, sig]) =>
-        // If the name matches the name matcher and the function signature, we can set it to "ignore".
-        contractName.match(nameMatcher) &&
-        abiElementToSignature(abiElement) === sig
-    );
+    (abiElement: any, index: number, abi: any, contractName: string) =>
+      // Find the first filter that matches...
+      !ignoreList.some(
+        ([nameMatcher, sig]) =>
+          // If the name matches the name matcher and the function signature, we can set it to "ignore".
+          contractName.match(nameMatcher) &&
+          abiElementToSignature(abiElement) === sig
+      );
 
 export const fromBaseUnit = (
   amount: BigNumber | string | number,

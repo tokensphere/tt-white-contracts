@@ -15,7 +15,7 @@ task("issuer-deploy", "Deploys the main Issuer contract")
     await deployIssuer(hre, member);
   });
 
-interface IssuerUpdateFacetsParams {}
+interface IssuerUpdateFacetsParams { }
 
 task("issuer-update-facets", "Updates facets of our Issuer").setAction(
   async (_params: IssuerUpdateFacetsParams, hre) => {
