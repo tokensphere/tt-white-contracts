@@ -1,7 +1,7 @@
 import { ContractTransaction } from "ethers";
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { deploymentSalt } from "../src/utils";
+import { deploymentSalt, gasAdjustments } from "../src/utils";
 import { Marketplace } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
@@ -31,6 +31,7 @@ task(
     facets: MARKETPLACE_FACETS,
     deterministicSalt: deploymentSalt(hre),
     log: true,
+    ...await gasAdjustments(hre)
   });
 });
 
@@ -85,6 +86,7 @@ const deployMarketplace = async (
       },
       deterministicSalt: deploymentSalt(hre),
       log: true,
+      ...await gasAdjustments(hre),
     });
   }
   // Return a handle to the diamond.
@@ -102,7 +104,7 @@ const addMarketplaceMember = async (
   const marketplace = (
     await ethers.getContract<Marketplace>("Marketplace")
   ).connect(issuerMemberSigner);
-  return marketplace.addMember(address);
+  return marketplace.addMember(address, { ...await gasAdjustments(hre) });
 };
 
 export { MARKETPLACE_FACETS, deployMarketplace };

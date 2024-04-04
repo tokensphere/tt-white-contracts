@@ -39,6 +39,27 @@ export const deploymentSalt = ({
   }
 };
 
+// Attempts to adjust the gas based on the current network.
+export const gasAdjustments = async ({
+  network: { name: netName },
+  ethers: { provider },
+}: HardhatRuntimeEnvironment): Promise<{}> => {
+  // Staging or production environments.
+  if (netName !== "hardhat" && netName !== "localhost" && netName !== "dev") {
+    const rawMaxPriorityFeePerGas = await provider.send("eth_maxPriorityFeePerGas", [])
+    const maxPriorityFeePerGas = parseInt(rawMaxPriorityFeePerGas, 16);
+    // Set a high static base fee.
+    const baseFee = 20;
+    return {
+      maxFeePerGas: BigNumber.from(baseFee * 2 + maxPriorityFeePerGas),
+      maxPriorityFeePerGas: BigNumber.from(maxPriorityFeePerGas),
+    };
+  } else {
+    // No adjustment needed.
+    return {};
+  }
+};
+
 // Transforms an ABIElement
 export const abiElementToSignature = (abiElement: JsonFragment): string =>
   ethers.utils.Fragment.fromObject(abiElement).format();
