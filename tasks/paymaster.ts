@@ -1,6 +1,6 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { ZERO_ADDRESS, deploymentSalt } from "../src/utils";
+import { ZERO_ADDRESS, deploymentSalt, gasAdjustments } from "../src/utils";
 import { Paymaster } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 import { RelayHub } from "@opengsn/contracts";
 import { BigNumber } from "ethers";
@@ -108,7 +108,8 @@ const deployPaymaster = async (
       log: true,
       excludeSelectors: {
         "PaymasterTopFacet": ["supportsInterface"]
-      }
+      },
+      ...await gasAdjustments(hre),
     });
   }
   // Return a handle to the diamond.

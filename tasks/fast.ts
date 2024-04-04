@@ -6,6 +6,7 @@ import {
   fromBaseUnit,
   toBaseUnit,
   ZERO_ADDRESS,
+  gasAdjustments,
 } from "../src/utils";
 import { id } from "ethers/lib/utils";
 import {
@@ -106,6 +107,7 @@ task("fast-update-facets", "Updates facets for a given FAST")
         facets: FAST_FACETS,
         deterministicSalt: deploymentSalt(hre),
         log: true,
+        ...await gasAdjustments(hre)
       });
     }
   );
@@ -146,7 +148,8 @@ task("fast-mint", "Mints FASTs to a specified recipient")
     const { decimals, baseAmount } = await fastMint(
       issuerMemberFast,
       params.amount,
-      params.ref
+      params.ref,
+      { ...await gasAdjustments(hre) }
     );
     console.log(`Minted ${params.symbol}: `);
     console.log(`  In base unit: = ${baseAmount} `);
@@ -268,6 +271,7 @@ const deployFast = async (
       },
       deterministicSalt,
       log: true,
+      ...await gasAdjustments(hre),
     });
   }
 
@@ -281,7 +285,7 @@ const deployFast = async (
       `Registering ${diamondName} at ${deploy.address} with the Issuer...`
     );
     await (
-      await issuer.connect(issuerMemberSigner).registerFast(deploy.address)
+      await issuer.connect(issuerMemberSigner).registerFast(deploy.address, { ...await gasAdjustments(hre) })
     ).wait();
   }
 
@@ -290,7 +294,7 @@ const deployFast = async (
 
   // Add governor to the FAST.
   console.log(`Adding governor ${params.governor} to ${diamondName}...`);
-  await fast.connect(issuerMemberSigner).addGovernor(params.governor);
+  await fast.connect(issuerMemberSigner).addGovernor(params.governor, { ...await gasAdjustments(hre) });
 
   return { fast, diamondName };
 };
@@ -318,14 +322,15 @@ const fastBySymbol = async (
 const fastMint = async (
   fast: Fast,
   amount: number | BigNumber,
-  ref: string
+  ref: string,
+  opts: {} = {}
 ) => {
   const [decimals, symbol] = await Promise.all([
     fast.decimals(),
     fast.symbol(),
   ]);
   const baseAmount = toBaseUnit(BigNumber.from(amount), decimals);
-  await (await fast.mint(baseAmount, ref)).wait();
+  await (await fast.mint(baseAmount, ref, opts)).wait();
   return { symbol, decimals, baseAmount };
 };
 

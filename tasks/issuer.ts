@@ -1,6 +1,6 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { deploymentSalt } from "../src/utils";
+import { deploymentSalt, gasAdjustments } from "../src/utils";
 import { Issuer } from "../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 
 // Tasks.
@@ -29,6 +29,7 @@ task("issuer-update-facets", "Updates facets of our Issuer").setAction(
       facets: ISSUER_FACETS,
       deterministicSalt: deploymentSalt(hre),
       log: true,
+      ...await gasAdjustments(hre)
     });
   }
 );
@@ -68,6 +69,7 @@ const deployIssuer = async (
       facets: [...ISSUER_FACETS, "IssuerInitFacet"],
       deterministicSalt: deploymentSalt(hre),
       log: true,
+      ...await gasAdjustments(hre),
     });
   }
   const issuer = await ethers.getContract<Issuer>("Issuer");
@@ -83,7 +85,7 @@ const deployIssuer = async (
       "IssuerInitFacet",
       deploy.address
     );
-    await (await issuerInitFacet.initialize({ member: issuerMember })).wait();
+    await (await issuerInitFacet.initialize({ member: issuerMember }, { ...await gasAdjustments(hre) })).wait();
   }
 
   // Return a handle to the diamond.
