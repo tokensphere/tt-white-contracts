@@ -1,34 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import "./lib/AFastFacet.sol";
-import "./FastTopFacet.sol";
 import "../lib/LibPaginate.sol";
-import "../issuer/IssuerAutomatonsFacet.sol";
-import "./lib/LibFastCrowdfunds.sol";
-import "./Crowdfund.sol";
+import "../common/AHasContext.sol";
 import "../interfaces/ICustomErrors.sol";
+import "../issuer/IssuerAutomatonsFacet.sol";
+import "./lib/AFastFacet.sol";
+import "./lib/LibFastCrowdfunds.sol";
+import "./FastTopFacet.sol";
+import "./Crowdfund.sol";
 
 /**
  * @title The Fast Smart Contract.
  * @notice The Fast Crowdfunds facet is in charge of deploying and keeping track of crowdfunds.
  */
-contract FastCrowdfundsFacet is AFastFacet {
+contract FastCrowdfundsFacet is AFastFacet, AHasContext {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice Happens when there are insufficient funds somewhere.
   error RequiresPrivilege(address who, uint32 privilege);
 
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasContext) returns (address) {
+    return AHasContext._msgSender();
+  }
+
   /**
    * @notice Creates a crowdfund contract.
    * @param token is the address of the ERC20 token that should be collected.
    */
-  function createCrowdfund(IERC20 token, address beneficiary, string memory ref) external onlyGovernor(msg.sender) {
+  function createCrowdfund(IERC20 token, address beneficiary, string memory ref) external onlyGovernor(_msgSender()) {
     address issuer = FastTopFacet(address(this)).issuerAddress();
     // Deploy a new Crowdfund contract.
     Crowdfund crowdfund = new Crowdfund(
       Crowdfund.Params({
-        owner: msg.sender,
+        owner: _msgSender(),
         issuer: issuer,
         fast: address(this),
         beneficiary: beneficiary,

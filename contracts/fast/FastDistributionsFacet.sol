@@ -1,23 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-import "./lib/AFastFacet.sol";
-import "./FastTopFacet.sol";
 import "../lib/LibPaginate.sol";
+import "../common/AHasContext.sol";
+import "./lib/AFastFacet.sol";
 import "./lib/LibFastDistributions.sol";
+import "./FastTopFacet.sol";
 import "./Distribution.sol";
 
 /**
  * @title The Fast Smart Contract.
  * @notice The Fast Distributions facet is in charge of deploying and keeping track of distributions.
  */
-contract FastDistributionsFacet is AFastFacet {
+contract FastDistributionsFacet is AFastFacet, AHasContext {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice Happens when a call to the ERC20 token contract fails.
   error TokenContractError();
   /// @notice Happens when there are insufficient funds somewhere.
   error InsufficientFunds(uint256 amount);
+
+  /// AHasContext implementation.
+
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(address(this)).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasContext) returns (address) {
+    return AHasContext._msgSender();
+  }
 
   /**
    * @notice Creates a distribution contract.
@@ -30,9 +42,9 @@ contract FastDistributionsFacet is AFastFacet {
     uint256 total,
     uint256 blockLatch,
     string memory ref
-  ) external onlyMember(msg.sender) {
+  ) external onlyMember(_msgSender()) {
     // Make sure the current FAST contract has at least `total` allowance over the user's ERC20 tokens.
-    uint256 allowance = token.allowance(msg.sender, address(this));
+    uint256 allowance = token.allowance(_msgSender(), address(this));
     if (allowance < total) revert InsufficientFunds(total - allowance);
 
     // Deploy a new Distribution contract locked onto the current FAST and target currency token.
@@ -41,7 +53,7 @@ contract FastDistributionsFacet is AFastFacet {
         issuer: FastTopFacet(address(this)).issuerAddress(),
         fast: address(this),
         blockLatch: blockLatch,
-        distributor: msg.sender,
+        distributor: _msgSender(),
         token: token,
         total: total,
         ref: ref
@@ -50,7 +62,7 @@ contract FastDistributionsFacet is AFastFacet {
     // Register our newly created distribution and keep track of it.
     LibFastDistributions.data().distributionSet.add(address(dist), false);
     // Transfer the ERC20 tokens to the distribution contract.
-    if (!token.transferFrom(msg.sender, address(dist), total)) revert TokenContractError();
+    if (!token.transferFrom(_msgSender(), address(dist), total)) revert TokenContractError();
     // Advance to the FeeSetup phase - only the FAST contract can do that.
     dist.advanceToFeeSetup();
     // Emit!
