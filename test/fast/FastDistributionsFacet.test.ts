@@ -183,10 +183,43 @@ describe("FastDistributionsFacet", () => {
   });
 
   describe("removeDistribution", () => {
-    it("requires the caller to be an issuer member");
-    it("removes the distribution from the list of deployed distributions");
-    it("emits a DistributionRemoved event");
-    it("reverts when the distribution does not exist");
+    let tx: any, distAddr: string, dist: Distribution;
+
+    beforeEach(async () => {
+      await (tx = distributionsAsMember.createDistribution(
+        erc20.address,
+        100,
+        0,
+        "Blah"
+      ));
+      const [dists] = await distributions.paginateDistributions(0, 1);
+      distAddr = dists[0];
+      dist = await ethers.getContractAt("Distribution", distAddr);
+    });
+
+    it("requires the caller to be an issuer member", async () => {
+      const subject = distributions.removeDistribution(distAddr);
+      await expect(subject).to.have.revertedWith("RequiresIssuerMembership");
+    });
+
+    it("removes the distribution from the list of deployed distributions", async () => {
+      // Remove...
+      distributions.connect(issuerMember).removeDistribution(distAddr);
+
+      const subject = await distributions.distributionCount();
+      expect(subject).to.eq(0);
+    });
+
+    it("emits a DistributionRemoved event", async () => {
+      await expect(distributions.connect(issuerMember).removeDistribution(distAddr))
+        .to.emit(distributions, "DistributionRemoved")
+        .withArgs(distAddr);
+    });
+
+    it("reverts when the distribution does not exist", async () => {
+      const subject = distributions.connect(issuerMember).removeDistribution("0x0");
+      await expect(subject).to.have.revertedWith("");
+    });
   });
 
   describe("distributionCount", () => {
