@@ -9,9 +9,11 @@ import {
   FastDistributionsFacet,
   IERC20,
   Distribution,
+  IForwarder,
+  Fast
 } from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
-import { DistributionPhase } from "../utils";
+import { DistributionPhase, impersonateContract, abiStructToObj } from "../utils";
 import {
   Issuer,
   Marketplace,
@@ -30,10 +32,18 @@ describe("FastDistributionsFacet", () => {
   let issuer: FakeContract<Issuer>,
     marketplace: FakeContract<Marketplace>,
     erc20: FakeContract<IERC20>,
+    forwarder: FakeContract<IForwarder>,
+    fast: Fast,
     distributions: FastDistributionsFacet,
     distributionsAsMember: FastDistributionsFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
+
+  const resetIForwarderMock = () => {
+    forwarder.supportsInterface.reset();
+    forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+    forwarder.supportsInterface.returns(false);
+  }
 
   before(async () => {
     // Keep track of a few signers.
@@ -43,6 +53,7 @@ describe("FastDistributionsFacet", () => {
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
     erc20 = await smock.fake("IERC20");
+    forwarder = await smock.fake("IForwarder");
     marketplace.issuerAddress.returns(issuer.address);
   });
 
@@ -76,7 +87,8 @@ describe("FastDistributionsFacet", () => {
       opts: {
         name: "FastDistributionsFixture",
         deployer: deployer.address,
-        afterDeploy: async ({ fast }) => {
+        afterDeploy: async (args) => {
+          ({ fast } = args);
           await fast.connect(issuerMember).addGovernor(governor.address);
           distributions = await ethers.getContractAt<FastDistributionsFacet>(
             "FastDistributionsFacet",
@@ -94,6 +106,24 @@ describe("FastDistributionsFacet", () => {
         issuer: issuer.address,
         marketplace: marketplace.address,
       },
+    });
+
+    resetIForwarderMock();
+  });
+
+  describe("AHasContext implementation", () => {
+    describe("_isTrustedForwarder", () => {
+      it("returns true if the address is a trusted forwarder", async () => {
+        await fast.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+        // isTrustedForwarder() should delegate to _isTrustedForwarder().
+        const subject = await fast.connect(issuerMember).isTrustedForwarder(forwarder.address);
+        expect(subject).to.eq(true);
+      });
+    });
+
+    describe("_msgSender", () => {
+      it("returns the original msg.sender");
     });
   });
 
@@ -129,6 +159,36 @@ describe("FastDistributionsFacet", () => {
       );
       const [page] = await distributions.paginateDistributions(0, 10);
       expect(page.length).to.eq(1);
+    });
+
+    it("is callable by a trusted forwarder", async () => {
+      // Set the trusted forwarder.
+      await fast.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+      // Impersonate the trusted forwarder contract.
+      const distributionsAsForwarder = await impersonateContract(distributions, forwarder.address);
+
+      // Build the data to call the sponsored function.
+      // Pack the original msg.sender address at the end - this is sponsored callers address.
+      const encodedFunctionCall = await distributions.interface.encodeFunctionData("createDistribution", [erc20.address, 100, 0, "Reference"]);
+      const data = ethers.utils.solidityPack(
+        ["bytes", "address"],
+        [encodedFunctionCall, alice.address]
+      );
+
+      // As the forwarder send the packed transaction.
+      await distributionsAsForwarder.signer.sendTransaction(
+        {
+          data: data,
+          to: distributions.address,
+        }
+      );
+
+      // Inspect the owner of the Distribution.
+      const [page] = await distributions.paginateDistributions(0, 1);
+      const distribution = await ethers.getContractAt<Distribution>("Distribution", page[0]);
+      const subject = abiStructToObj(await distribution.paramsStruct());
+      expect(subject.distributor).to.eq(alice.address);
     });
 
     describe("deploys a distribution and", () => {

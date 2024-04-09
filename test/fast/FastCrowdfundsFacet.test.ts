@@ -10,6 +10,8 @@ import {
   IERC20,
   Crowdfund,
   FastFrontendFacet,
+  IForwarder,
+  Fast
 } from "../../typechain";
 import { fastFixtureFunc } from "../fixtures/fast";
 import {
@@ -17,6 +19,7 @@ import {
   Marketplace,
 } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 import { ZERO_ADDRESS } from "../../src/utils";
+import { abiStructToObj, impersonateContract } from "../utils";
 chai.use(solidity);
 chai.use(smock.matchers);
 
@@ -32,12 +35,20 @@ describe("FastCrowdfundsFacet", () => {
     marketplace: FakeContract<Marketplace>,
     erc20: FakeContract<IERC20>,
     frontendMock: FakeContract<FastFrontendFacet>,
+    forwarder: FakeContract<IForwarder>,
+    fast: Fast,
     crowdfunds: FastCrowdfundsFacet,
     crowdfundsAsMember: FastCrowdfundsFacet,
     crowdfundsAsGovernor: FastCrowdfundsFacet,
     crowdfundsAsIssuer: FastCrowdfundsFacet;
 
   const fastDeployFixture = deployments.createFixture(fastFixtureFunc);
+
+  const resetIForwarderMock = () => {
+    forwarder.supportsInterface.reset();
+    forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+    forwarder.supportsInterface.returns(false);
+  }
 
   before(async () => {
     // Keep track of a few signers.
@@ -47,6 +58,7 @@ describe("FastCrowdfundsFacet", () => {
     issuer = await smock.fake("Issuer");
     marketplace = await smock.fake("Marketplace");
     erc20 = await smock.fake("IERC20");
+    forwarder = await smock.fake("IForwarder");
     marketplace.issuerAddress.returns(issuer.address);
   });
 
@@ -84,7 +96,7 @@ describe("FastCrowdfundsFacet", () => {
         name: "FastCrowdfundsFixture",
         deployer: deployer.address,
         afterDeploy: async (args) => {
-          const { fast } = args;
+          ({ fast } = args);
           ({ frontendMock } = args);
           crowdfunds = await ethers.getContractAt<FastCrowdfundsFacet>(
             "FastCrowdfundsFacet",
@@ -105,6 +117,24 @@ describe("FastCrowdfundsFacet", () => {
         issuer: issuer.address,
         marketplace: marketplace.address,
       },
+    });
+
+    resetIForwarderMock();
+  });
+
+  describe("AHasContext implementation", () => {
+    describe("_isTrustedForwarder", () => {
+      it("returns true if the address is a trusted forwarder", async () => {
+        await fast.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+        // isTrustedForwarder() should delegate to _isTrustedForwarder().
+        const subject = await fast.connect(issuerMember).isTrustedForwarder(forwarder.address);
+        expect(subject).to.eq(true);
+      });
+    });
+
+    describe("_msgSender", () => {
+      it("returns the original msg.sender");
     });
   });
 
@@ -166,6 +196,36 @@ describe("FastCrowdfundsFacet", () => {
       );
       const [page] = await crowdfundsAsGovernor.paginateCrowdfunds(0, 1);
       expect(page.length).to.eq(1);
+    });
+
+    it("is callable by a trusted forwarder", async () => {
+      // Set the trusted forwarder.
+      await fast.connect(issuerMember).setTrustedForwarder(forwarder.address);
+
+      // Impersonate the trusted forwarder contract.
+      const crowdfundsAsForwarder = await impersonateContract(crowdfunds, forwarder.address);
+
+      // Build the data to call the sponsored function.
+      // Pack the original msg.sender address at the end - this is sponsored callers address.
+      const encodedFunctionCall = await crowdfunds.interface.encodeFunctionData("createCrowdfund", [erc20.address, alice.address, "Sponsored call reference"]);
+      const data = ethers.utils.solidityPack(
+        ["bytes", "address"],
+        [encodedFunctionCall, governor.address]
+      );
+
+      // As the forwarder send the packed transaction.
+      await crowdfundsAsForwarder.signer.sendTransaction(
+        {
+          data: data,
+          to: crowdfunds.address,
+        }
+      );
+
+      // Inspect the owner of the crowdfund.
+      const [page] = await crowdfunds.paginateCrowdfunds(0, 1);
+      const crowdfund = await ethers.getContractAt<Crowdfund>("Crowdfund", page[0]);
+      const subject = abiStructToObj(await crowdfund.paramsStruct());
+      expect(subject.owner).to.eq(governor.address);
     });
 
     describe("deploys a crowdfund and", () => {
