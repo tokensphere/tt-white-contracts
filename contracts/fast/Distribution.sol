@@ -4,6 +4,8 @@ pragma solidity 0.8.10;
 import "../lib/LibAddressSet.sol";
 import "../lib/LibPaginate.sol";
 import "../interfaces/IERC20.sol";
+import "../common/AHasContext.sol";
+import "../common/AHasForwarder.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasAutomatons.sol";
 import "./FastAutomatonsFacet.sol";
@@ -19,7 +21,7 @@ import "./FastAutomatonsFacet.sol";
  * - Withdrawal, during which each beneficiary can withdraw their proceeds.
  * - Terminated, during which nothing is possible.
  */
-contract Distribution {
+contract Distribution is AHasContext {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice Happens when a function requires an unmet phase.
@@ -127,6 +129,18 @@ contract Distribution {
     params = p;
     available = p.total;
     creationBlock = block.number;
+  }
+
+  /// AHasContext implementation.
+
+  // The trusted forwarder in this instance is the parent FAST's trusted forwarder.
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(params.fast).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasContext) returns (address) {
+    return AHasContext._msgSender();
   }
 
   function advanceToFeeSetup() public onlyDuring(Phase.Funding) onlyFastCaller {
@@ -284,7 +298,7 @@ contract Distribution {
     // Transfer to the beneficiary all of their ownings.
     if (!params.token.transfer(beneficiary, amount)) revert TokenContractError();
     // Emit!
-    emit Withdrawal(msg.sender, beneficiary, amount);
+    emit Withdrawal(_msgSender(), beneficiary, amount);
   }
 
   /**

@@ -5,12 +5,12 @@ import { BigNumber } from "ethers";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "hardhat-deploy-ethers/signers";
-import { Crowdfund, Crowdfund__factory, IERC20 } from "../../typechain";
-import { abiStructToObj, CrowdFundPhase } from "../utils";
+import { Crowdfund, Crowdfund__factory, IERC20, IForwarder } from "../../typechain";
+import { abiStructToObj, CrowdFundPhase, impersonateContract } from "../utils";
 import {
   Fast,
   Issuer,
-  Marketplace,
+  Marketplace
 } from "../../typechain/hardhat-diamond-abi/HardhatDiamondABI.sol";
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -28,10 +28,17 @@ describe("Crowdfunds", () => {
     marketplace: FakeContract<Marketplace>,
     fast: FakeContract<Fast>,
     erc20: FakeContract<IERC20>,
+    forwarder: FakeContract<IForwarder>,
     crowdfund: Crowdfund,
     crowdfundAsIssuer: Crowdfund,
     validParams: Crowdfund.ParamsStruct,
     deployCrowdfund: (params: Crowdfund.ParamsStruct) => void;
+
+  const resetIForwarderMock = () => {
+    forwarder.supportsInterface.reset();
+    forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+    forwarder.supportsInterface.returns(false);
+  }
 
   before(async () => {
     // Keep track of a few signers.
@@ -45,6 +52,7 @@ describe("Crowdfunds", () => {
     marketplace = await smock.fake("Marketplace");
     fast = await smock.fake("Fast");
     erc20 = await smock.fake("IERC20");
+    forwarder = await smock.fake("IForwarder");
 
     issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
@@ -75,6 +83,8 @@ describe("Crowdfunds", () => {
     // Bob and Paul are FAST members.
     fast.isMember.whenCalledWith(bob.address).returns(true);
     fast.isMember.whenCalledWith(paul.address).returns(true);
+    // Trusted forwarder setup.
+    fast.isTrustedForwarder.whenCalledWith(forwarder.address).returns(true);
 
     erc20.balanceOf.reset();
     erc20.transfer.reset();
@@ -105,6 +115,18 @@ describe("Crowdfunds", () => {
         .deploy({ ...params, fast: fast.address });
       crowdfundAsIssuer = crowdfund.connect(issuerMember);
     };
+
+    resetIForwarderMock();
+  });
+
+  describe("AHasContext implementation", () => {
+    describe("_isTrustedForwarder", () => {
+      it("returns true if the address is a trusted forwarder");
+    });
+
+    describe("_msgSender", () => {
+      it("returns the original msg.sender");
+    });
   });
 
   describe("various synthesized getters", () => {
@@ -400,6 +422,35 @@ describe("Crowdfunds", () => {
         await expect(subject)
           .to.emit(crowdfund, "Pledge")
           .withArgs(alice.address, 500);
+      });
+
+      it("is callable by a trusted forwarder", async () => {
+        // Impersonate the trusted forwarder contract.
+        const crowdfundsAsForwarder = await impersonateContract(crowdfund, forwarder.address);
+
+        // Set the allowance and transferFrom to succeed.
+        erc20.allowance.returns(20);
+        erc20.transferFrom.returns(true);
+
+        // Build the data to call the sponsored function.
+        // Pack the original msg.sender address at the end - this is sponsored callers address.
+        const encodedFunctionCall = await crowdfund.interface.encodeFunctionData("pledge", [20]);
+        const data = ethers.utils.solidityPack(
+          ["bytes", "address"],
+          [encodedFunctionCall, alice.address]
+        );
+
+        // As the forwarder send the packed transaction.
+        await crowdfundsAsForwarder.signer.sendTransaction(
+          {
+            data: data,
+            to: crowdfund.address,
+          }
+        );
+
+        // Inspect the owner of the crowdfund.
+        const [pledgers] = await crowdfund.paginatePledgers(0, 2);
+        expect(pledgers).to.have.members([alice.address]);
       });
     });
   });

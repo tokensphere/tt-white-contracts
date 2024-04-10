@@ -3,6 +3,8 @@ pragma solidity 0.8.10;
 
 import "../lib/LibAddressSet.sol";
 import "../interfaces/IERC20.sol";
+import "../common/AHasContext.sol";
+import "../common/AHasForwarder.sol";
 import "../common/AHasMembers.sol";
 import "../common/AHasGovernors.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
@@ -11,7 +13,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
  * @title The `Crowdfund` FAST contract.
  * @notice This contract is used to manage a crowdfunding campaign.
  */
-contract Crowdfund {
+contract Crowdfund is AHasContext {
   using LibAddressSet for LibAddressSet.Data;
 
   /// @notice Happens when a function requires an unmet phase.
@@ -118,6 +120,18 @@ contract Crowdfund {
     creationBlock = block.number;
   }
 
+  /// AHasContext implementation.
+
+  // The trusted forwarder in this instance is the parent FAST's trusted forwarder.
+  function _isTrustedForwarder(address forwarder) internal view override(AHasContext) returns (bool) {
+    return AHasForwarder(params.fast).isTrustedForwarder(forwarder);
+  }
+
+  // Override base classes to use the AHasContext implementation.
+  function _msgSender() internal view override(AHasContext) returns (address) {
+    return AHasContext._msgSender();
+  }
+
   /// @dev Given a total and a fee in basis points, returns the fee amount rounded up.
   function feeAmount() public view returns (uint256) {
     return Math.mulDiv(collected, params.basisPointsFee, 10_000, Math.Rounding.Up);
@@ -147,18 +161,18 @@ contract Crowdfund {
     // Make sure the amount is non-zero.
     if (amount == 0) revert InconsistentParameter("amount");
     // Make sure that the message sender gave us allowance for at least this amount.
-    uint256 allowance = params.token.allowance(msg.sender, address(this));
+    uint256 allowance = params.token.allowance(_msgSender(), address(this));
     if (allowance < amount) revert InsufficientFunds(amount - allowance);
     // Keep track of the pledger - don't throw if already present.
-    pledgerSet.add(msg.sender, true);
+    pledgerSet.add(_msgSender(), true);
     // Add the pledged amount to the existing pledge.
-    pledges[msg.sender] += amount;
+    pledges[_msgSender()] += amount;
     // Update the collected amount.
     collected += amount;
     // Transfer the tokens to this contract.
-    if (!params.token.transferFrom(msg.sender, address(this), amount)) revert TokenContractError();
+    if (!params.token.transferFrom(_msgSender(), address(this), amount)) revert TokenContractError();
     // Emit!
-    emit Pledge(msg.sender, amount);
+    emit Pledge(_msgSender(), amount);
   }
 
   /**
@@ -291,7 +305,7 @@ contract Crowdfund {
   }
 
   modifier onlyFastMember() {
-    if (!isFastMember(msg.sender)) revert RequiresFastMemberCaller();
+    if (!isFastMember(_msgSender())) revert RequiresFastMemberCaller();
     _;
   }
 }
