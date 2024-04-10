@@ -106,9 +106,7 @@ describe("MarketplaceAccessFacet", () => {
     });
 
     describe("_msgSender", () => {
-      it("returns the original msg.sender", async () => {
-        // Call a function on the Marketplace contract that's sponsored.
-      });
+      it("returns the original msg.sender");
     });
   });
 

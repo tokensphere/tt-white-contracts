@@ -12,8 +12,9 @@ import {
   Distribution__factory,
   IERC20,
   Fast,
+  IForwarder
 } from "../../typechain";
-import { abiStructToObj, DistributionPhase } from "../utils";
+import { abiStructToObj, DistributionPhase, impersonateContract } from "../utils";
 import { FastAutomatonPrivilege } from "../../src/utils";
 chai.use(solidity);
 chai.use(smock.matchers);
@@ -32,11 +33,18 @@ describe("Distribution", () => {
     marketplace: FakeContract<Marketplace>,
     fast: FakeContract<Fast>,
     erc20: FakeContract<IERC20>,
+    forwarder: FakeContract<IForwarder>,
     distribution: Distribution,
     distributionAsIssuer: Distribution,
     distributionAsAutomaton: Distribution,
     validParams: Distribution.ParamsStruct,
     deployDistribution: (params: Distribution.ParamsStruct) => void;
+
+  const resetIForwarderMock = () => {
+    forwarder.supportsInterface.reset();
+    forwarder.supportsInterface.whenCalledWith(/* IForwarder */ "0x25e23e64").returns(true);
+    forwarder.supportsInterface.returns(false);
+  }
 
   before(async () => {
     // Keep track of a few signers.
@@ -50,6 +58,7 @@ describe("Distribution", () => {
     marketplace = await smock.fake("Marketplace");
     fast = await smock.fake("Fast");
     erc20 = await smock.fake("IERC20");
+    forwarder = await smock.fake("IForwarder");
 
     issuer.isMember.reset();
     issuer.isMember.whenCalledWith(issuerMember.address).returns(true);
@@ -73,6 +82,8 @@ describe("Distribution", () => {
     fast.isMember.whenCalledWith(bob.address).returns(true);
     fast.isMember.whenCalledWith(paul.address).returns(true);
     fast.automatonCan.reset();
+    // Trusted forwarder setup.
+    fast.isTrustedForwarder.whenCalledWith(forwarder.address).returns(true);
 
     erc20.balanceOf.reset();
     erc20.transfer.reset();
@@ -103,6 +114,18 @@ describe("Distribution", () => {
       distributionAsIssuer = distribution.connect(issuerMember);
       distributionAsAutomaton = distribution.connect(automaton);
     };
+
+    resetIForwarderMock();
+  });
+
+  describe("AHasContext implementation", () => {
+    describe("_isTrustedForwarder", () => {
+      it("returns true if the address is a trusted forwarder");
+    });
+
+    describe("_msgSender", () => {
+      it("returns the original msg.sender");
+    });
   });
 
   describe("various synthesized getters", () => {
@@ -697,7 +720,7 @@ describe("Distribution", () => {
         it("marks the withdrawal as done", async () => {
           await distribution.withdraw(alice.address);
           const subject = await distribution.withdrawn(alice.address);
-          await expect(subject).to.eq(true);
+          expect(subject).to.eq(true);
         });
 
         it("delegates to ERC20.transfer method", async () => {
@@ -717,6 +740,30 @@ describe("Distribution", () => {
           await expect(subject)
             .to.emit(distribution, "Withdrawal")
             .withArgs(deployer.address, alice.address, BigNumber.from(20));
+        });
+
+        it("is callable by a trusted forwarder", async () => {
+          // Impersonate the trusted forwarder contract.
+          const crowdfundsAsForwarder = await impersonateContract(distribution, forwarder.address);
+
+          // Build the data to call the sponsored function.
+          // Pack the original msg.sender address at the end - this is sponsored callers address.
+          const encodedFunctionCall = await distribution.interface.encodeFunctionData("withdraw", [alice.address]);
+          const data = ethers.utils.solidityPack(
+            ["bytes", "address"],
+            [encodedFunctionCall, alice.address]
+          );
+
+          // As the forwarder send the packed transaction.
+          await crowdfundsAsForwarder.signer.sendTransaction(
+            {
+              data: data,
+              to: distribution.address,
+            }
+          );
+
+          const subject = await distribution.withdrawn(alice.address);
+          expect(subject).to.eq(true);
         });
       });
     });
