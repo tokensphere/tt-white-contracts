@@ -103,6 +103,7 @@ describe("Crowdfunds", () => {
       fast: fast.address,
       token: erc20.address,
       ref: "Some reference",
+      cap: BigNumber.from(32_000_000_000)
     };
 
     deployCrowdfund = async (params) => {
@@ -135,7 +136,7 @@ describe("Crowdfunds", () => {
     });
 
     it("expose VERSION", async () => {
-      expect(await crowdfund.VERSION()).to.be.eq(2);
+      expect(await crowdfund.VERSION()).to.be.eq(3);
     });
 
     it("expose initial params", async () => {
@@ -150,6 +151,7 @@ describe("Crowdfunds", () => {
         fast: validParams.fast,
         token: validParams.token,
         ref: validParams.ref,
+        cap: validParams.cap
       });
     });
 
@@ -189,6 +191,7 @@ describe("Crowdfunds", () => {
           fast: validParams.fast,
           token: validParams.token,
           ref: validParams.ref,
+          cap: validParams.cap
         });
       });
 
@@ -260,6 +263,40 @@ describe("Crowdfunds", () => {
       const subject = await crowdfund.feeAmount();
       // The result should be 0.01% of 1000 rounded up: 1.
       expect(subject).to.eq(1);
+    });
+  });
+
+  describe("pledgerCount", () => {
+    it("returns the number of pledgers", async () => {
+      await deployCrowdfund(validParams);
+
+      // Provision ERC20 token for bob and alice.
+      for (const user of [alice, bob]) {
+        erc20.allowance.returns(1_000_000_000);
+        erc20.transferFrom.returns(true);
+      }
+
+      await crowdfundAsIssuer.advanceToFunding(20_00);
+      // Pledge 1000 tokens from bob and alice.
+      await Promise.all(
+        [alice, bob].map((user) => crowdfund.connect(user).pledge(500))
+      );
+      const subject = await crowdfund.pledgerCount();
+      expect(subject).to.eq(2);
+    });
+  });
+
+  describe("isCapped", () => {
+    it("returns false if the cap is not set", async () => {
+      await deployCrowdfund({ ...validParams, cap: 0 });
+      const subject = await crowdfund.isCapped();
+      expect(subject).to.be.false;
+    });
+
+    it("returns true if the cap is set", async () => {
+      await deployCrowdfund({ ...validParams, cap: 10_000_000_000_000 });
+      const subject = await crowdfund.isCapped();
+      expect(subject).to.be.true;
     });
   });
 
@@ -341,6 +378,11 @@ describe("Crowdfunds", () => {
       it("requires the amount to not be zero", async () => {
         const subject = crowdfund.connect(alice).pledge(0);
         await expect(subject).to.have.revertedWith("InconsistentParameter");
+      });
+
+      it("requires that the pledged amount + collected amount does not go over the cap", async () => {
+        const subject = crowdfund.connect(alice).pledge(32_000_000_001);
+        await expect(subject).to.have.revertedWith("CapExceeded");
       });
 
       it("checks the allowance of the crowdfunding contract with the ERC20 contract", async () => {
@@ -654,6 +696,21 @@ describe("Crowdfunds", () => {
   });
 
   describe("details", () => {
-    it("MUST BE TESTED");
+    it("returns a details struct", async () => {
+      await deployCrowdfund(validParams);
+      const subject = await crowdfund.details();
+      const obj = abiStructToObj(subject);
+      expect(obj).to.eql({
+        addr: crowdfund.address,
+        VERSION: 3,
+        params: await crowdfund.paramsStruct(),
+        phase: CrowdFundPhase.Setup,
+        creationBlock: await crowdfund.creationBlock(),
+        collected: BigNumber.from(0),
+        feeAmount: BigNumber.from(0),
+        pledgerCount: BigNumber.from(0),
+        isCapped: true
+      });
+    });
   });
 });

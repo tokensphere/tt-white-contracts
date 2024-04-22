@@ -28,6 +28,8 @@ contract Crowdfund is AHasContext {
   error TokenContractError();
   /// @notice Happens when there are insufficient funds somewhere.
   error InsufficientFunds(uint256 amount);
+  /// @notice Happens when overfunding occurs.
+  error CapExceeded();
 
   /// @notice Happens when an address is not an issuer member.
   error RequiresIssuerMemberCaller();
@@ -81,10 +83,12 @@ contract Crowdfund is AHasContext {
     IERC20 token;
     /// @notice An arbitrary reference string to keep track of.
     string ref;
+    /// @notice The cap of the crowdfund if specified.
+    uint256 cap;
   }
 
   /// @notice A version identifier for us to track what's deployed.
-  uint16 public constant VERSION = 2;
+  uint16 public constant VERSION = 3;
 
   /// @notice The initial params, as passed to the contract's constructor.
   Params private params;
@@ -160,6 +164,8 @@ contract Crowdfund is AHasContext {
   function pledge(uint256 amount) public onlyDuring(Phase.Funding) onlyFastMember {
     // Make sure the amount is non-zero.
     if (amount == 0) revert InconsistentParameter("amount");
+    // Make sure this will not result in overfunding.
+    if (isCapped() && collected + amount > params.cap) revert CapExceeded();
     // Make sure that the message sender gave us allowance for at least this amount.
     uint256 allowance = params.token.allowance(_msgSender(), address(this));
     if (allowance < amount) revert InsufficientFunds(amount - allowance);
@@ -181,6 +187,14 @@ contract Crowdfund is AHasContext {
    */
   function pledgerCount() public view returns (uint256) {
     return pledgerSet.values.length;
+  }
+
+  /**
+   * @notice Queries whether the crowdfund is capped or not.
+   * @return A `boolean`.
+   */
+  function isCapped() public view returns (bool) {
+    return params.cap > 0;
   }
 
   /**
@@ -259,6 +273,7 @@ contract Crowdfund is AHasContext {
     uint256 collected;
     uint256 feeAmount;
     uint256 pledgerCount;
+    bool isCapped;
   }
 
   /**
@@ -275,7 +290,8 @@ contract Crowdfund is AHasContext {
         creationBlock: creationBlock,
         collected: collected,
         feeAmount: feeAmount(),
-        pledgerCount: pledgerCount()
+        pledgerCount: pledgerCount(),
+        isCapped: isCapped()
       });
   }
 
