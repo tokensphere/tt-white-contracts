@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Whitelabelable smart contracts to be deployed on the Consilience Ventures chain.",
   "main": "index.js",
-  "repository": "https://github/com/tableturn/tt-white-contracts",
+  "repository": "https://github/com/tokensphere/tt-white-contracts",
   "author": "Pierre Martin",
   "license": "MIT",
   "private": false,
